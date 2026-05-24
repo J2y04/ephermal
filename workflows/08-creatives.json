@@ -1,0 +1,105 @@
+{
+  "name": "Ephermal - 08 Creatives",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "ephermal/creatives",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a8000001-0000-0000-0000-000000000001",
+      "name": "Webhook List",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 200],
+      "webhookId": "w8000001-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ephermal/creatives/action",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a8000001-0000-0000-0000-000000000002",
+      "name": "Webhook Action",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 460],
+      "webhookId": "w8000002-0000-0000-0000-000000000002"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read creatives from workflow static data\nconst store = $getWorkflowStaticData('global');\nif (!store.creatives) store.creatives = [];\nconst statusFilter = ($input.item.json.query?.status || '');\nlet result = store.creatives;\nif (statusFilter) result = result.filter(c => c.status === statusFilter);\nresult = result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 50);\nreturn [{ json: result }];"
+      },
+      "id": "a8000001-0000-0000-0000-000000000003",
+      "name": "List Creatives",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.item.json.body || {};\nconst id = body.id;\nconst action = body.action;\nif (!id || !['approve','reject'].includes(action)) {\n  return [{ json: { ok: false, error: 'Invalid id or action' } }];\n}\nconst store = $getWorkflowStaticData('global');\nif (!store.creatives) store.creatives = [];\nconst idx = store.creatives.findIndex(c => c.id === id);\nif (idx === -1) return [{ json: { ok: false, error: 'Creative not found' } }];\nstore.creatives[idx].status = action === 'approve' ? 'approved' : 'rejected';\nreturn [{ json: { ok: true, id, status: store.creatives[idx].status } }];"
+      },
+      "id": "a8000001-0000-0000-0000-000000000004",
+      "name": "Update Creative",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 460]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "a8000001-0000-0000-0000-000000000005",
+      "name": "Respond List",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "a8000001-0000-0000-0000-000000000006",
+      "name": "Respond Action",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [680, 460]
+    }
+  ],
+  "connections": {
+    "Webhook List": {
+      "main": [[{ "node": "List Creatives", "type": "main", "index": 0 }]]
+    },
+    "Webhook Action": {
+      "main": [[{ "node": "Update Creative", "type": "main", "index": 0 }]]
+    },
+    "List Creatives": {
+      "main": [[{ "node": "Respond List", "type": "main", "index": 0 }]]
+    },
+    "Update Creative": {
+      "main": [[{ "node": "Respond Action", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}

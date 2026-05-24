@@ -1,0 +1,84 @@
+{
+  "name": "Ephermal - 03 Campaign Toggle",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ephermal/campaigns/toggle",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a3000001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w3000001-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst body = $input.item.json.body || {};\nconst token = h['x-meta-token'];\nconst campaignId = body.campaign_id;\nconst status = body.status;\nif (!token) $execution.abort({ message: 'Missing Meta token' });\nif (!campaignId) $execution.abort({ message: 'Missing campaign_id' });\nif (!['ACTIVE','PAUSED'].includes(status)) $execution.abort({ message: 'status must be ACTIVE or PAUSED' });\nreturn [{ json: { token, campaignId, status } }];"
+      },
+      "id": "a3000001-0000-0000-0000-000000000002",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v19.0/{{ $input.item.json.campaignId }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "access_token", "value": "={{ $input.item.json.token }}" }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "status", "value": "={{ $input.item.json.status }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a3000001-0000-0000-0000-000000000003",
+      "name": "Meta Toggle Campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\":true,\"campaign_id\":\"{{ $('Validate').item.json.campaignId }}\",\"status\":\"{{ $('Validate').item.json.status }}\"}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "a3000001-0000-0000-0000-000000000004",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Validate", "type": "main", "index": 0 }]]
+    },
+    "Validate": {
+      "main": [[{ "node": "Meta Toggle Campaign", "type": "main", "index": 0 }]]
+    },
+    "Meta Toggle Campaign": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}

@@ -1,0 +1,119 @@
+{
+  "name": "Ephermal - 02 Campaigns",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "ephermal/campaigns",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a2000001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w2000001-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst token = h['x-meta-token'];\nconst account = h['x-meta-account'];\nif (!token || !account) {\n  $execution.abort({ message: 'Missing Meta credentials' });\n}\nreturn [{ json: { token, account } }];"
+      },
+      "id": "a2000001-0000-0000-0000-000000000002",
+      "name": "Extract Credentials",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v19.0/{{ $('Extract Credentials').item.json.account }}/campaigns",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "fields", "value": "id,name,status,objective,daily_budget,lifetime_budget,budget_remaining,start_time,stop_time" },
+            { "name": "limit", "value": "100" },
+            { "name": "access_token", "value": "={{ $('Extract Credentials').item.json.token }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a2000001-0000-0000-0000-000000000003",
+      "name": "Meta Campaigns",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v19.0/{{ $('Extract Credentials').item.json.account }}/insights",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "fields", "value": "campaign_id,campaign_name,spend,impressions,clicks,ctr,actions,purchase_roas" },
+            { "name": "level", "value": "campaign" },
+            { "name": "date_preset", "value": "last_30d" },
+            { "name": "limit", "value": "100" },
+            { "name": "access_token", "value": "={{ $('Extract Credentials').item.json.token }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a2000001-0000-0000-0000-000000000004",
+      "name": "Meta Campaign Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const campaigns = ($('Meta Campaigns').item.json.data || []);\nconst insights = ($input.item.json.data || []);\n\nconst insightMap = {};\nfor (const ins of insights) {\n  insightMap[ins.campaign_id] = ins;\n}\n\nconst merged = campaigns.map(c => {\n  const ins = insightMap[c.id] || {};\n  const roasEntry = (ins.purchase_roas || []).find(r => r.action_type === 'omni_purchase' || r.action_type === 'purchase');\n  const roas = roasEntry ? Math.round(parseFloat(roasEntry.value) * 100) / 100 : null;\n  const purchaseAction = (ins.actions || []).find(a => a.action_type === 'purchase' || a.action_type === 'omni_purchase');\n  const conversions = purchaseAction ? parseInt(purchaseAction.value) : 0;\n  const dailyBudget = c.daily_budget ? parseFloat(c.daily_budget) / 100 : null;\n  const lifetimeBudget = c.lifetime_budget ? parseFloat(c.lifetime_budget) / 100 : null;\n  return {\n    id: c.id,\n    name: c.name,\n    status: c.status === 'ACTIVE' ? 'live' : c.status === 'PAUSED' ? 'paused' : c.status === 'ARCHIVED' ? 'paused' : 'draft',\n    platform: 'meta',\n    objective: c.objective || null,\n    daily_budget: dailyBudget,\n    lifetime_budget: lifetimeBudget,\n    roas: roas,\n    total_spend: ins.spend ? parseFloat(ins.spend) : 0,\n    impressions: ins.impressions ? parseInt(ins.impressions) : 0,\n    clicks: ins.clicks ? parseInt(ins.clicks) : 0,\n    ctr: ins.ctr ? Math.round(parseFloat(ins.ctr) * 100) / 100 : 0,\n    conversions: conversions\n  };\n});\n\nreturn [{ json: merged }];"
+      },
+      "id": "a2000001-0000-0000-0000-000000000005",
+      "name": "Merge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "a2000001-0000-0000-0000-000000000006",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Extract Credentials", "type": "main", "index": 0 }]]
+    },
+    "Extract Credentials": {
+      "main": [[{ "node": "Meta Campaigns", "type": "main", "index": 0 }]]
+    },
+    "Meta Campaigns": {
+      "main": [[{ "node": "Meta Campaign Insights", "type": "main", "index": 0 }]]
+    },
+    "Meta Campaign Insights": {
+      "main": [[{ "node": "Merge", "type": "main", "index": 0 }]]
+    },
+    "Merge": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}

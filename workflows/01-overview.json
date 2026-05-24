@@ -1,0 +1,95 @@
+{
+  "name": "Ephermal - 01 Overview",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "ephermal/overview",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a1000001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w1000001-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst token = h['x-meta-token'];\nconst account = h['x-meta-account'];\nif (!token || !account) {\n  $execution.abort({ message: 'Missing Meta credentials' });\n}\nreturn [{ json: { token, account } }];"
+      },
+      "id": "a1000001-0000-0000-0000-000000000002",
+      "name": "Extract Credentials",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v19.0/{{ $('Extract Credentials').item.json.account }}/insights",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "fields", "value": "spend,impressions,clicks,ctr,actions,purchase_roas" },
+            { "name": "date_preset", "value": "last_30d" },
+            { "name": "level", "value": "account" },
+            { "name": "access_token", "value": "={{ $('Extract Credentials').item.json.token }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000001-0000-0000-0000-000000000003",
+      "name": "Meta Account Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json.data?.[0] || {};\nconst roasEntry = (data.purchase_roas || []).find(r => r.action_type === 'omni_purchase' || r.action_type === 'purchase');\nconst roas = roasEntry ? parseFloat(roasEntry.value) : 0;\nconst purchaseAction = (data.actions || []).find(a => a.action_type === 'purchase' || a.action_type === 'omni_purchase');\nconst conversions = purchaseAction ? parseInt(purchaseAction.value) : 0;\nreturn [{\n  json: {\n    roas: Math.round(roas * 100) / 100,\n    total_spend: parseFloat(data.spend || 0),\n    total_impressions: parseInt(data.impressions || 0),\n    total_clicks: parseInt(data.clicks || 0),\n    total_conversions: conversions,\n    total_creatives: 0\n  }\n}];"
+      },
+      "id": "a1000001-0000-0000-0000-000000000004",
+      "name": "Transform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "a1000001-0000-0000-0000-000000000005",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Extract Credentials", "type": "main", "index": 0 }]]
+    },
+    "Extract Credentials": {
+      "main": [[{ "node": "Meta Account Insights", "type": "main", "index": 0 }]]
+    },
+    "Meta Account Insights": {
+      "main": [[{ "node": "Transform", "type": "main", "index": 0 }]]
+    },
+    "Transform": {
+      "main": [[{ "node": "Respond", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}
