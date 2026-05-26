@@ -3,7 +3,7 @@ import { ClerkProvider } from '@clerk/clerk-react';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!}>
+    <ClerkProvider publishableKey="pk_live_Y2xlcmsuZXBoZXJtYWwuYXBwJA">
       {children}
     </ClerkProvider>
   );
