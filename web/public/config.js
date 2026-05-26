@@ -11,7 +11,7 @@
 
   // Google OAuth Client ID — create at console.cloud.google.com → APIs & Services → Credentials
   // Add https://ephermal.app and https://ephermal.app/setup.html to "Authorized JavaScript origins"
-  window.GOOGLE_OAUTH_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+  window.GOOGLE_OAUTH_CLIENT_ID = '678288442294-2jush076ag5ltauja1aq6njdp96tvtm3.apps.googleusercontent.com';
 
   // Supabase — replace with your project values (safe to expose — RLS protects data)
   window.SUPABASE_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co';
