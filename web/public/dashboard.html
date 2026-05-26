@@ -743,16 +743,34 @@ select.form-input{cursor:pointer}
         <div class="panel-head"><div class="panel-title">Integrations</div></div>
         <div class="settings-form">
           <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;padding-bottom:4px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" fill="#1877F2"/></svg>Meta Ads <span style="font-size:10px;padding:2px 7px;border-radius:8px;background:rgba(52,211,153,0.12);color:var(--success);font-weight:700">All plans</span></div>
-          <div class="form-group"><label class="form-label">Meta Ads Access Token</label><input class="form-input" id="s-meta-token" type="password" placeholder="EAAxxxxxxxxxxxxxxx"></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Meta Ad Account ID</label><input class="form-input" id="s-meta-account" placeholder="act_123456789"></div>
-            <div class="form-group"><label class="form-label">Store URL (for analysis)</label><input class="form-input" id="s-store-url" placeholder="https://yourstore.com" type="url"></div>
+          <!-- Meta OAuth -->
+          <div id="dash-meta-badge" style="display:none;background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.22);border-radius:11px;padding:11px 14px;align-items:center;justify-content:space-between;gap:10px">
+            <div style="display:flex;align-items:center;gap:9px">
+              <div style="width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 7px rgba(52,211,153,0.5);flex-shrink:0"></div>
+              <div><div style="font-size:13px;font-weight:600;color:#34d399" id="dash-meta-name">Meta Ads connected</div><div style="font-size:11px;color:var(--muted)" id="dash-meta-id"></div></div>
+            </div>
+            <button onclick="dashDisconnectMeta()" style="font-size:11px;font-weight:600;background:transparent;border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer;color:var(--muted);font-family:'Inter',sans-serif">Disconnect</button>
           </div>
+          <button id="dash-meta-oauth-btn" onclick="dashStartMetaOAuth()" style="display:flex;width:100%;padding:12px 18px;background:#1877F2;border:none;border-radius:11px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;gap:8px;transition:background .2s,transform .2s,box-shadow .2s" onmouseover="this.style.background='#1565d8';this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(24,119,242,0.38)'" onmouseout="this.style.background='#1877F2';this.style.transform='none';this.style.boxShadow='none'"><svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0" fill="white"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg>Continue with Facebook</button>
+          <div id="dash-meta-picker" style="display:none"><label class="form-label" style="margin-top:4px">Select Ad Account</label><select class="form-input" id="dash-meta-select" onchange="dashSelectMetaAccount()" style="cursor:pointer"></select></div>
+          <div class="form-group" style="margin-top:4px"><label class="form-label">Store URL (for analysis)</label><input class="form-input" id="s-store-url" placeholder="https://yourstore.com" type="url"></div>
           <div id="google-ads-section" class="paywall-wrap">
             <div style="margin-top:8px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:16px" id="google-ads-fields">
               <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Google Ads <span style="font-size:10px;padding:2px 7px;border-radius:8px;background:rgba(99,102,241,0.12);color:var(--primary);font-weight:700">Growth+</span></div>
-              <div class="form-group"><label class="form-label">Google Ads Developer Token</label><input class="form-input" id="s-google-token" type="password" placeholder="Google Ads API developer token" id="s-google-token"></div>
-              <div class="form-group"><label class="form-label">Google Ads Customer ID</label><input class="form-input" id="s-google-account" placeholder="123-456-7890"></div>
+              <!-- Google OAuth -->
+              <div id="dash-google-badge" style="display:none;background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.22);border-radius:11px;padding:11px 14px;align-items:center;justify-content:space-between;gap:10px">
+                <div style="display:flex;align-items:center;gap:9px">
+                  <div style="width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 7px rgba(52,211,153,0.5);flex-shrink:0"></div>
+                  <div><div style="font-size:13px;font-weight:600;color:#34d399">Google Ads connected</div><div style="font-size:11px;color:var(--muted)" id="dash-google-cid-label"></div></div>
+                </div>
+                <button onclick="dashDisconnectGoogle()" style="font-size:11px;font-weight:600;background:transparent;border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer;color:var(--muted);font-family:'Inter',sans-serif">Disconnect</button>
+              </div>
+              <button id="dash-google-oauth-btn" onclick="dashStartGoogleOAuth()" style="display:flex;width:100%;padding:12px 18px;background:#fff;border:1px solid rgba(0,0,0,0.15);border-radius:11px;color:#3c4043;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;cursor:pointer;align-items:center;justify-content:center;gap:8px;transition:box-shadow .2s,transform .2s" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,0.15)';this.style.transform='translateY(-1px)'" onmouseout="this.style.boxShadow='none';this.style.transform='none'"><svg viewBox="0 0 24 24" style="width:18px;height:18px;flex-shrink:0" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>Continue with Google</button>
+              <div id="dash-google-cid-area" style="display:none;margin-top:4px">
+                <label class="form-label">Google Ads Customer ID</label>
+                <div style="display:flex;gap:8px"><input class="form-input" id="dash-s-google-account" placeholder="123-456-7890" style="flex:1"><button onclick="dashSaveGoogleAccount()" style="padding:0 18px;background:var(--primary);border:none;border-radius:11px;color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">Connect</button></div>
+                <div style="font-size:11px;color:var(--muted);margin-top:5px">Find this at the top of your Google Ads dashboard</div>
+              </div>
             </div>
             <div class="paywall-lock" id="google-ads-paywall" style="display:none">
               <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -1786,11 +1804,24 @@ function dashDisconnectShopify() {
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 function loadSettingsFields() { try { _loadSettingsFieldsInner(); } catch(e) { console.warn('Settings load error:', e); } }
 function _loadSettingsFieldsInner() {
-  const mt = document.getElementById('s-meta-token'); if (mt) mt.value = localStorage.getItem('meta_token') ? '••••••••' : '';
-  const ma = document.getElementById('s-meta-account'); if (ma) ma.value = localStorage.getItem('meta_account') || '';
+  // Meta — show badge if already connected, else show OAuth button
+  const metaToken = localStorage.getItem('meta_token');
+  const metaAccount = localStorage.getItem('meta_account');
+  if (metaToken && metaAccount) {
+    dashShowMetaBadge(metaAccount, metaAccount, false);
+  } else {
+    const b = document.getElementById('dash-meta-badge'); if (b) b.style.display = 'none';
+    const btn = document.getElementById('dash-meta-oauth-btn'); if (btn) btn.style.display = 'flex';
+  }
+  // Google — show badge if already connected, else show OAuth button
+  const googleAccount = localStorage.getItem('google_account');
+  if (googleAccount) {
+    dashShowGoogleBadge(googleAccount, false);
+  } else {
+    const b = document.getElementById('dash-google-badge'); if (b) b.style.display = 'none';
+    const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display = 'flex';
+  }
   const su = document.getElementById('s-store-url'); if (su) su.value = localStorage.getItem('last_analyzed_store') || '';
-  const gt = document.getElementById('s-google-token'); if (gt) gt.value = localStorage.getItem('google_token') ? '••••••••' : '';
-  const ga = document.getElementById('s-google-account'); if (ga) ga.value = localStorage.getItem('google_account') || '';
   const sht = document.getElementById('s-shopify-token'); if (sht) sht.value = localStorage.getItem('shopify_token') ? '••••••••' : '';
   const shs = document.getElementById('s-shopify-store'); if (shs) shs.value = localStorage.getItem('shopify_store') || '';
   refreshDashShopifyState();
@@ -1810,41 +1841,32 @@ function _loadSettingsFieldsInner() {
 }
 
 async function saveIntegrations() {
-  const metaToken = (document.getElementById('s-meta-token').value || '').trim();
-  const metaAccount = (document.getElementById('s-meta-account').value || '').trim();
-  const storeUrl = (document.getElementById('s-store-url').value || '').trim();
-  const googleToken = canAccess('googleads') ? (document.getElementById('s-google-token')?.value || '').trim() : '';
-  const googleAccount = canAccess('googleads') ? (document.getElementById('s-google-account')?.value || '').trim() : '';
+  const storeUrl = (document.getElementById('s-store-url')?.value || '').trim();
   const shopifyToken = (document.getElementById('s-shopify-token')?.value || '').trim();
   const shopifyStore = (document.getElementById('s-shopify-store')?.value || '').trim();
   const btn = document.querySelector('#page-settings .btn-save[onclick="saveIntegrations()"]');
   if (btn) { btn.disabled=true; btn.textContent='Saving…'; }
-  // Require at least one platform
-  const hasMeta = (metaToken && metaToken !== '••••••••') || localStorage.getItem('meta_token');
-  const hasGoogle = (googleToken && googleToken !== '••••••••') || localStorage.getItem('google_token');
-  if (!hasMeta && !hasGoogle && !metaAccount && !googleAccount) {
-    showToast('Connect at least one ad platform (Meta Ads or Google Ads)', 'warn');
+  // Require at least one ad platform connected via OAuth
+  const hasMeta = !!localStorage.getItem('meta_token');
+  const hasGoogle = !!localStorage.getItem('google_token');
+  if (!hasMeta && !hasGoogle) {
+    showToast('Connect at least one ad platform (Meta or Google Ads) using the buttons above', 'warn');
     if (btn) { btn.disabled=false; btn.textContent='Save Integrations'; }
     return;
   }
-  if (metaToken && metaToken !== '••••••••') localStorage.setItem('meta_token', metaToken);
-  if (metaAccount) localStorage.setItem('meta_account', metaAccount);
   if (storeUrl) localStorage.setItem('last_analyzed_store', storeUrl);
-  if (googleToken && googleToken !== '••••••••') localStorage.setItem('google_token', googleToken);
-  if (googleAccount) localStorage.setItem('google_account', googleAccount);
   if (shopifyToken && shopifyToken !== '••••••••') localStorage.setItem('shopify_token', shopifyToken);
   if (shopifyStore) localStorage.setItem('shopify_store', shopifyStore);
-  saveIntegrationsToSupabase(metaToken, metaAccount, storeUrl);
+  saveIntegrationsToSupabase('', localStorage.getItem('meta_account'), storeUrl);
   const analysisUrlEl = document.getElementById('analysis-url');
   if (storeUrl && analysisUrlEl && !analysisUrlEl.value) analysisUrlEl.value = storeUrl;
   refreshMetaStatus();
   refreshGoogleStatus();
   updatePlatformBanner();
-  showToast('Integrations saved — loading your data…');
-  if (btn) { btn.disabled=false; btn.textContent='Save Integrations'; }
-  if (localStorage.getItem('meta_token') && localStorage.getItem('meta_account')) {
+  showToast('Settings saved!');
+  if (btn) { btn.disabled=false; btn.textContent='Save Settings'; }
+  if (hasMeta) {
     await Promise.all([loadOverview(), loadCampaigns(), loadCreatives('pending_review','creatives-body')]);
-    showToast('Meta account connected — live data loaded');
   }
 }
 
@@ -2478,6 +2500,121 @@ async function createUGCForNewProduct() {
   if (lastStore && analysisUrlEl) analysisUrlEl.value = lastStore;
   await Promise.all([loadOverview(), loadCampaigns(), loadCreatives('pending_review','creatives-body')]);
 })();
+
+// ── DASHBOARD META OAUTH ──────────────────────────────────────────────────────
+function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+window.fbAsyncInit = function() {
+  const id = window.META_APP_ID;
+  if (id && id !== 'YOUR_META_APP_ID') FB.init({appId:id, cookie:true, xfbml:false, version:'v19.0'});
+};
+
+function dashStartMetaOAuth() {
+  const id = window.META_APP_ID;
+  if (!id || id === 'YOUR_META_APP_ID') { showToast('Meta App ID not configured in config.js', 'error'); return; }
+  if (typeof FB === 'undefined') { showToast('Loading Facebook SDK — please try again in a moment', 'warn'); return; }
+  FB.login(function(res) {
+    if (res.authResponse) { dashFetchMetaAdAccounts(res.authResponse.accessToken); }
+    else { showToast('Meta login cancelled', 'warn'); }
+  }, {scope:'ads_read,ads_management,business_management'});
+}
+
+async function dashFetchMetaAdAccounts(token) {
+  try {
+    const r = await fetch(`https://graph.facebook.com/v19.0/me/adaccounts?fields=name,account_id&access_token=${token}`);
+    const data = await r.json();
+    if (data.error) { showToast('Meta: ' + data.error.message, 'error'); return; }
+    const accounts = data.data || [];
+    if (!accounts.length) { showToast('No ad accounts found on this Facebook account', 'warn'); return; }
+    localStorage.setItem('meta_token', token);
+    if (accounts.length === 1) {
+      localStorage.setItem('meta_account', accounts[0].id);
+      dashShowMetaBadge(accounts[0].name, accounts[0].id);
+    } else {
+      const sel = document.getElementById('dash-meta-select');
+      sel.innerHTML = accounts.map(a=>`<option value="${_esc(a.id)}">${_esc(a.name)} (${_esc(a.id)})</option>`).join('');
+      localStorage.setItem('meta_account', accounts[0].id);
+      const picker = document.getElementById('dash-meta-picker'); if (picker) picker.style.display='';
+      const btn = document.getElementById('dash-meta-oauth-btn'); if (btn) btn.style.display='none';
+    }
+  } catch(e) { showToast('Failed to fetch Meta ad accounts', 'error'); }
+}
+
+function dashSelectMetaAccount() {
+  const sel = document.getElementById('dash-meta-select');
+  const val = sel.value;
+  const text = sel.selectedOptions[0]?.text || val;
+  localStorage.setItem('meta_account', val);
+  const picker = document.getElementById('dash-meta-picker'); if (picker) picker.style.display='none';
+  dashShowMetaBadge(text, val);
+}
+
+function dashShowMetaBadge(name, id, toast=true) {
+  const badge = document.getElementById('dash-meta-badge'); if (!badge) return;
+  const nameEl = document.getElementById('dash-meta-name'); if (nameEl) nameEl.textContent = name || 'Meta Ads connected';
+  const idEl = document.getElementById('dash-meta-id'); if (idEl) idEl.textContent = id || '';
+  badge.style.display = 'flex';
+  const btn = document.getElementById('dash-meta-oauth-btn'); if (btn) btn.style.display='none';
+  refreshMetaStatus(); updatePlatformBanner();
+  if (toast) showToast('Meta Ads connected');
+}
+
+function dashDisconnectMeta() {
+  localStorage.removeItem('meta_token'); localStorage.removeItem('meta_account');
+  const badge = document.getElementById('dash-meta-badge'); if (badge) badge.style.display='none';
+  const btn = document.getElementById('dash-meta-oauth-btn'); if (btn) btn.style.display='flex';
+  refreshMetaStatus(); updatePlatformBanner();
+  showToast('Meta Ads disconnected', 'warn');
+}
+
+// ── DASHBOARD GOOGLE OAUTH ────────────────────────────────────────────────────
+function dashStartGoogleOAuth() {
+  const clientId = window.GOOGLE_OAUTH_CLIENT_ID;
+  if (!clientId || clientId.includes('YOUR_GOOGLE')) { showToast('Google Client ID not configured in config.js', 'error'); return; }
+  if (!window.google?.accounts?.oauth2) { showToast('Loading Google SDK — please try again in a moment', 'warn'); return; }
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: clientId,
+    scope: 'https://www.googleapis.com/auth/adwords',
+    callback: (resp) => {
+      if (resp.error) { showToast('Google auth failed: ' + resp.error, 'error'); return; }
+      localStorage.setItem('google_token', resp.access_token);
+      const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display='none';
+      const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display='';
+      showToast('Google authorised — enter your Customer ID below');
+    }
+  });
+  client.requestAccessToken();
+}
+
+function dashSaveGoogleAccount() {
+  const raw = (document.getElementById('dash-s-google-account')?.value || '').trim().replace(/-/g,'');
+  if (!raw || !/^\d{8,10}$/.test(raw)) { showToast('Enter a valid Customer ID (8-10 digits)', 'warn'); return; }
+  localStorage.setItem('google_account', raw);
+  const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display='none';
+  dashShowGoogleBadge(raw);
+}
+
+function dashShowGoogleBadge(cid, toast=true) {
+  const badge = document.getElementById('dash-google-badge'); if (!badge) return;
+  const lbl = document.getElementById('dash-google-cid-label'); if (lbl) lbl.textContent = 'Customer ID: ' + cid;
+  badge.style.display = 'flex';
+  const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display='none';
+  refreshGoogleStatus(); updatePlatformBanner();
+  if (toast) showToast('Google Ads connected');
+}
+
+function dashDisconnectGoogle() {
+  localStorage.removeItem('google_token'); localStorage.removeItem('google_account');
+  const badge = document.getElementById('dash-google-badge'); if (badge) badge.style.display='none';
+  const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display='flex';
+  const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display='none';
+  refreshGoogleStatus(); updatePlatformBanner();
+  showToast('Google Ads disconnected', 'warn');
+}
 </script>
+<!-- Facebook SDK — required for Meta OAuth -->
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+<!-- Google Identity Services — required for Google Ads OAuth -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </body>
 </html>
