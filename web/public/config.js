@@ -3,11 +3,11 @@
   window.CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuZXBoZXJtYWwuYXBwJA';
 
   // API base URL — hardcoded, NOT user-controllable via localStorage (prevents JWT theft)
-  window.API_BASE = 'https://YOUR_BACKEND/webhook/ephermal';
+  window.API_BASE = 'https://jamhich.de/webhook/ephermal';
 
   // Meta (Facebook) App ID — create at developers.facebook.com → My Apps → Create App
   // Set "App Domain" to ephermal.app and add "Facebook Login" product
-  window.META_APP_ID = 'YOUR_META_APP_ID';
+  window.META_APP_ID = '37434197291344952';
 
   // Google OAuth Client ID — create at console.cloud.google.com → APIs & Services → Credentials
   // Add https://ephermal.app and https://ephermal.app/setup.html to "Authorized JavaScript origins"
@@ -25,9 +25,9 @@
   };
 
   // Shopify app credentials — set these after creating your Shopify Partner app
-  window.SHOPIFY_APP_KEY = 'YOUR_SHOPIFY_APP_CLIENT_ID';
+  window.SHOPIFY_APP_KEY = '1be2b522a704c34e1949034e774cf34d';
   // n8n webhook URL for Shopify OAuth callback (workflow 14)
-  window.SHOPIFY_CALLBACK_URL = 'https://YOUR_N8N_DOMAIN/webhook/ephermal/shopify/callback';
+  window.SHOPIFY_CALLBACK_URL = 'https://jamhich.de/webhook/ephermal/shopify/callback';
   // Where n8n sends the user back after OAuth completes
   window.SHOPIFY_SETUP_RETURN_URL = 'https://ephermal.app/setup.html';
 
