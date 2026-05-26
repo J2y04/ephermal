@@ -24,3 +24,7 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+web/node_modules
+web/out
+web/.next
+web/tsconfig.tsbuildinfo

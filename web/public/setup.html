@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ephermal — Account Setup</title>
+<link rel="icon" type="image/x-icon" href="/ephermal_transparent.ico">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="/config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow-x:hidden}
+body{background:#04050f;font-family:'Inter',sans-serif;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:32px 20px 60px}
+canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.blob{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;transition:transform 1.2s cubic-bezier(0.22,1,0.36,1)}
+.blob-1{width:600px;height:600px;background:rgba(99,102,241,0.13);top:-200px;left:-200px}
+.blob-2{width:500px;height:500px;background:rgba(139,92,246,0.09);bottom:-150px;right:-150px}
+.page{position:relative;z-index:1;width:100%;max-width:520px;padding-top:16px}
+.logo-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px;opacity:0;transform:translateY(16px);animation:up .6s cubic-bezier(0.22,1,0.36,1) .05s both}
+.logo-wrap img{width:34px;height:34px;border-radius:9px;object-fit:cover}
+.logo-wrap span{font-size:19px;font-weight:800;letter-spacing:-.3px;color:#f0f2ff}
+.welcome{text-align:center;margin-bottom:32px;opacity:0;transform:translateY(16px);animation:up .6s cubic-bezier(0.22,1,0.36,1) .12s both}
+.welcome h1{font-size:26px;font-weight:800;color:#f0f2ff;letter-spacing:-.6px;line-height:1.2;margin-bottom:8px}
+.welcome p{font-size:15px;color:#8892b0;line-height:1.5}
+/* Step progress */
+.progress-row{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:8px;opacity:0;animation:up .6s cubic-bezier(0.22,1,0.36,1) .2s both}
+.s-node{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid rgba(99,102,241,0.25);color:#8892b0;background:#0a0d1f;transition:all .4s;flex-shrink:0}
+.s-node.active{border-color:#6366f1;color:#6366f1;background:rgba(99,102,241,0.1);box-shadow:0 0 16px rgba(99,102,241,0.25)}
+.s-node.done{border-color:#34d399;background:rgba(52,211,153,0.1);color:#34d399}
+.s-node.done span::before{content:'✓'}
+.s-node.done span{font-size:0}
+.s-node.done span::before{font-size:14px}
+.s-line{flex:1;height:2px;background:rgba(99,102,241,0.15);max-width:60px;transition:background .4s}
+.s-line.done{background:rgba(52,211,153,0.4)}
+.step-lbls{display:flex;justify-content:space-between;margin-bottom:28px;padding:0 2px;opacity:0;animation:up .6s cubic-bezier(0.22,1,0.36,1) .26s both}
+.step-lbls span{font-size:11px;font-weight:600;color:#8892b0;text-transform:uppercase;letter-spacing:.5px;text-align:center;flex:1}
+/* Cards */
+.step-card{background:rgba(10,13,31,0.88);border:1px solid rgba(99,102,241,0.15);border-radius:24px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 32px 80px rgba(0,0,0,0.4);padding:36px;opacity:0;transform:translateY(20px);animation:up .7s cubic-bezier(0.22,1,0.36,1) .32s both;transition:border-color .3s}
+.step-card.hidden{display:none}
+.step-card.slide-in{animation:up .55s cubic-bezier(0.22,1,0.36,1) both}
+.platform-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2)}
+.platform-icon.shopify{background:rgba(149,191,71,0.1);border-color:rgba(149,191,71,0.25)}
+.platform-icon.meta{background:rgba(24,119,242,0.1);border-color:rgba(24,119,242,0.25)}
+.platform-icon.google{background:rgba(234,67,53,0.08);border-color:rgba(234,67,53,0.2)}
+.platform-icon svg{width:30px;height:30px}
+.step-card h2{font-size:20px;font-weight:800;color:#f0f2ff;letter-spacing:-.4px;text-align:center;margin-bottom:8px}
+.step-card>p{font-size:14px;color:#8892b0;text-align:center;line-height:1.6;margin-bottom:24px}
+label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.field{position:relative;margin-bottom:14px}
+.field input{width:100%;background:#111530;border:1px solid rgba(99,102,241,0.18);border-radius:12px;color:#f0f2ff;font-family:'Inter',sans-serif;font-size:15px;padding:13px 16px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input::placeholder{color:#3a4060}
+.field input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
+.field-hint{font-size:12px;color:#3a4060;margin-top:5px;padding-left:2px}
+.err{font-size:13px;color:#f87171;min-height:20px;margin-bottom:10px;text-align:center}
+.btn-primary{width:100%;padding:14px 24px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.1px;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(99,102,241,0.45)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-primary svg{width:18px;height:18px;flex-shrink:0}
+.skip-link{display:block;text-align:center;font-size:13px;color:#4a5280;text-decoration:none;transition:color .2s;padding:4px}
+.skip-link:hover{color:#8892b0}
+.connected-badge{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.connected-badge .dot{width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0;box-shadow:0 0 8px rgba(52,211,153,0.5)}
+.connected-badge span{font-size:14px;color:#34d399;font-weight:600}
+.connected-badge small{font-size:12px;color:#8892b0;display:block;font-weight:400;margin-top:2px}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(99,102,241,0.12)}
+.divider span{font-size:12px;color:#3a4060}
+@keyframes up{to{opacity:1;transform:none;filter:blur(0)}}
+.spin{animation:rotate .8s linear infinite}
+@keyframes rotate{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="blob blob-1" id="b1"></div>
+<div class="blob blob-2" id="b2"></div>
+
+<div class="page">
+  <div class="logo-wrap">
+    <img src="/ephermal.png" alt="Ephermal" onerror="this.style.display='none'">
+    <span>Ephermal</span>
+  </div>
+
+  <div class="welcome">
+    <h1 id="welcome-heading">Let's set up your account</h1>
+    <p>Connect your store and ad accounts to start automating</p>
+  </div>
+
+  <div class="progress-row">
+    <div class="s-node active" id="sn-1"><span>1</span></div>
+    <div class="s-line" id="sl-1"></div>
+    <div class="s-node" id="sn-2"><span>2</span></div>
+    <div class="s-line" id="sl-2"></div>
+    <div class="s-node" id="sn-3"><span>3</span></div>
+  </div>
+  <div class="step-lbls">
+    <span>Shopify</span><span>Meta Ads</span><span>Google Ads</span>
+  </div>
+
+  <!-- Step 1: Shopify -->
+  <div class="step-card" id="card-1">
+    <div class="platform-icon shopify">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M15.5 3.5C15.5 3.5 15.1 3.6 14.6 3.7C14.3 2.7 13.7 1.8 12.7 1.8C12.4 1.8 12.2 1.9 11.9 2C11.6 1.6 11.2 1.4 10.8 1.4C8.3 1.4 7.1 4.5 6.7 6.1C5.6 6.4 4.8 6.7 4.7 6.7C4.1 6.9 4.1 6.9 4 7.5L2.5 19L15 21.3L21 19.9L19.5 3.2C19.4 3.3 15.5 3.5 15.5 3.5Z" fill="#95BF47"/><path d="M14.6 3.7C14.3 2.7 13.7 1.8 12.7 1.8C12.4 1.8 12.2 1.9 11.9 2C12.7 2.8 13.1 4 13.3 5C13.9 4.8 14.3 4.7 14.6 3.7Z" fill="#5E8E3E"/><path d="M10.8 6.7L10.3 8.6C10.3 8.6 9.7 8.3 9 8.3C8 8.3 7.9 9 7.9 9.1C7.9 10.3 10.4 10.7 10.4 13C10.4 14.7 9.3 15.8 7.8 15.8C6.1 15.8 5.2 14.7 5.2 14.7L5.7 12.8C5.7 12.8 6.6 13.6 7.4 13.6C7.9 13.6 8.1 13.2 8.1 12.9C8.1 11.3 6.1 11.3 6.1 9.1C6.1 7.2 7.4 5.4 10 5.4C11 5.4 10.8 6.7 10.8 6.7Z" fill="white"/></svg>
+    </div>
+    <h2>Connect your Shopify store</h2>
+    <p>Automatically sync products, orders and revenue data to power your ad campaigns</p>
+    <div id="shopify-connected-badge" class="connected-badge" style="display:none">
+      <div class="dot"></div>
+      <div><span id="shopify-badge-name">Store connected</span><small id="shopify-badge-domain"></small></div>
+    </div>
+    <div class="field" id="shopify-field">
+      <label>Store URL</label>
+      <input type="text" id="shopify-url" placeholder="yourstore.myshopify.com" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <div class="field-hint">Enter your .myshopify.com URL or just the subdomain</div>
+    </div>
+    <div class="err" id="err-1"></div>
+    <button class="btn-primary" id="btn-shopify" onclick="startShopifyOAuth()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+      Connect Store
+    </button>
+    <a class="skip-link" href="#" onclick="return skipStep(2)">I'll connect later →</a>
+  </div>
+
+  <!-- Step 2: Meta Ads -->
+  <div class="step-card hidden" id="card-2">
+    <div class="platform-icon meta">
+      <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+    </div>
+    <h2>Connect Meta Ads</h2>
+    <p>Automate and optimize your Facebook & Instagram ad campaigns</p>
+    <div id="meta-connected-badge" class="connected-badge" style="display:none">
+      <div class="dot"></div>
+      <div><span>Meta Ads connected</span><small id="meta-badge-account"></small></div>
+    </div>
+    <div id="meta-fields">
+      <div class="field">
+        <label>Ad Account ID</label>
+        <input type="text" id="meta-account" placeholder="act_123456789" autocomplete="off">
+        <div class="field-hint">Found in Meta Business Manager → Ad Accounts</div>
+      </div>
+      <div class="field">
+        <label>Access Token</label>
+        <input type="password" id="meta-token" placeholder="EAAxxxxxxxxxxxxxxx">
+        <div class="field-hint">Generate in Meta for Developers → Tools → Graph API Explorer</div>
+      </div>
+    </div>
+    <div class="err" id="err-2"></div>
+    <button class="btn-primary" id="btn-meta" onclick="connectMeta()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      Connect Meta Ads
+    </button>
+    <a class="skip-link" href="#" onclick="return skipStep(3)">Skip for now →</a>
+  </div>
+
+  <!-- Step 3: Google Ads -->
+  <div class="step-card hidden" id="card-3">
+    <div class="platform-icon google">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+    </div>
+    <h2>Connect Google Ads</h2>
+    <p>Automate Search, Shopping and Performance Max campaigns with AI</p>
+    <div id="google-connected-badge" class="connected-badge" style="display:none">
+      <div class="dot"></div>
+      <div><span>Google Ads connected</span><small id="google-badge-account"></small></div>
+    </div>
+    <div id="google-fields">
+      <div class="field">
+        <label>Customer ID</label>
+        <input type="text" id="google-account" placeholder="123-456-7890" autocomplete="off">
+        <div class="field-hint">Found at the top of your Google Ads account</div>
+      </div>
+      <div class="field">
+        <label>OAuth Access Token</label>
+        <input type="password" id="google-token" placeholder="ya29.xxxxxxxxxxxxxxxx">
+        <div class="field-hint">Generate via Google OAuth 2.0 with ads scope</div>
+      </div>
+    </div>
+    <div class="err" id="err-3"></div>
+    <button class="btn-primary" id="btn-google" onclick="connectGoogle()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      Connect Google Ads
+    </button>
+    <a class="skip-link" href="#" onclick="return finishSetup()">Skip for now →</a>
+  </div>
+</div>
+
+<script>
+// ── Particles (same as register.html) ────────────────────────────────────────
+const canvas = document.getElementById('particles'), ctx = canvas.getContext('2d');
+let W, H, pts = [];
+function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+resize(); window.addEventListener('resize', resize);
+class P {
+  constructor() { this.reset(); }
+  reset() { this.x=Math.random()*W; this.y=Math.random()*H; this.vx=(Math.random()-.5)*.25; this.vy=(Math.random()-.5)*.25; this.r=Math.random()*1.2+.3; this.a=Math.random()*.35+.08; this.c=Math.random()>.5?'99,102,241':'139,92,246'; }
+  update() { this.x+=this.vx; this.y+=this.vy; if(this.x<0||this.x>W||this.y<0||this.y>H) this.reset(); }
+  draw() { ctx.beginPath(); ctx.arc(this.x,this.y,this.r,0,Math.PI*2); ctx.fillStyle=`rgba(${this.c},${this.a})`; ctx.fill(); }
+}
+for(let i=0;i<90;i++) pts.push(new P());
+function drawLines() {
+  for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
+    const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.sqrt(dx*dx+dy*dy);
+    if(d<110){ ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.strokeStyle=`rgba(99,102,241,${.08*(1-d/110)})`; ctx.lineWidth=.5; ctx.stroke(); }
+  }
+}
+(function anim(){ ctx.clearRect(0,0,W,H); pts.forEach(p=>{p.update();p.draw();}); drawLines(); requestAnimationFrame(anim); })();
+document.addEventListener('mousemove', e => {
+  const rx=(e.clientX/window.innerWidth-.5)*30, ry=(e.clientY/window.innerHeight-.5)*30;
+  document.getElementById('b1').style.transform=`translate(${rx*.6}px,${ry*.6}px)`;
+});
+
+// ── Step state ────────────────────────────────────────────────────────────────
+let currentStep = 1;
+const stepsDone = { 1: false, 2: false, 3: false };
+
+function setNodeDone(n) {
+  const node = document.getElementById(`sn-${n}`);
+  node.classList.remove('active'); node.classList.add('done');
+  if(n<3) document.getElementById(`sl-${n}`).classList.add('done');
+  stepsDone[n] = true;
+}
+function setNodeActive(n) {
+  const node = document.getElementById(`sn-${n}`);
+  node.classList.remove('done'); node.classList.add('active');
+}
+function showCard(n) {
+  document.querySelectorAll('.step-card').forEach(c => c.classList.add('hidden'));
+  const card = document.getElementById(`card-${n}`);
+  card.classList.remove('hidden');
+  card.classList.remove('slide-in');
+  void card.offsetWidth; // reflow
+  card.classList.add('slide-in');
+  currentStep = n;
+  setNodeActive(n);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function skipStep(next) {
+  setNodeDone(currentStep);
+  if(next > 3) { finishSetup(); return false; }
+  showCard(next);
+  return false;
+}
+
+// ── Shopify OAuth ─────────────────────────────────────────────────────────────
+function startShopifyOAuth() {
+  const raw = document.getElementById('shopify-url').value.trim();
+  document.getElementById('err-1').textContent = '';
+  if (!raw) { document.getElementById('err-1').textContent = 'Please enter your store URL'; return; }
+  if (!window.SHOPIFY_APP_KEY || window.SHOPIFY_APP_KEY === 'YOUR_SHOPIFY_APP_CLIENT_ID') {
+    document.getElementById('err-1').textContent = 'Shopify app not configured — contact support';
+    return;
+  }
+  let shop = raw.replace(/https?:\/\//,'').replace(/\/.*$/,'').toLowerCase().trim();
+  if (!shop.includes('.')) shop = shop + '.myshopify.com';
+  if (!/^[a-z0-9-]+\.myshopify\.com$/.test(shop)) {
+    document.getElementById('err-1').textContent = 'Enter a valid Shopify store URL (e.g. mystore.myshopify.com)';
+    return;
+  }
+  const state = ([...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,'0')).join(''));
+  localStorage.setItem('shopify_oauth_state', state);
+  localStorage.setItem('shopify_oauth_shop', shop);
+  const btn = document.getElementById('btn-shopify');
+  btn.disabled = true; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting to Shopify...';
+  const params = new URLSearchParams({
+    client_id: window.SHOPIFY_APP_KEY,
+    scope: 'read_products,read_orders,read_analytics,read_customers',
+    redirect_uri: window.SHOPIFY_CALLBACK_URL,
+    state
+  });
+  window.location.href = `https://${shop}/admin/oauth/authorize?${params}`;
+}
+
+// ── Handle Shopify callback return ────────────────────────────────────────────
+function handleShopifyReturn() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('shopify_connected') !== '1') return;
+  const token = p.get('token'), shop = p.get('shop'), shopName = p.get('shop_name'), state = p.get('state');
+  const savedState = localStorage.getItem('shopify_oauth_state');
+  if (!token || !shop) { document.getElementById('err-1').textContent = 'OAuth failed — missing token. Please try again.'; return; }
+  if (state !== savedState) { document.getElementById('err-1').textContent = 'Security check failed — please try again.'; return; }
+  localStorage.setItem('shopify_token', token);
+  localStorage.setItem('shopify_domain', shop);
+  localStorage.setItem('shopify_shop_name', shopName || shop);
+  localStorage.removeItem('shopify_oauth_state');
+  localStorage.removeItem('shopify_oauth_shop');
+  window.history.replaceState({}, '', '/setup.html');
+  // Show connected badge
+  document.getElementById('shopify-field').style.display = 'none';
+  const badge = document.getElementById('shopify-connected-badge');
+  badge.style.display = 'flex';
+  document.getElementById('shopify-badge-name').textContent = shopName || shop;
+  document.getElementById('shopify-badge-domain').textContent = shop;
+  document.getElementById('btn-shopify').textContent = 'Continue →';
+  document.getElementById('btn-shopify').disabled = false;
+  document.getElementById('btn-shopify').onclick = () => { setNodeDone(1); showCard(2); };
+}
+
+// ── Meta Ads connection ───────────────────────────────────────────────────────
+async function connectMeta() {
+  const accountRaw = document.getElementById('meta-account').value.trim();
+  const token = document.getElementById('meta-token').value.trim();
+  document.getElementById('err-2').textContent = '';
+  if (!accountRaw || !token) { document.getElementById('err-2').textContent = 'Both fields are required'; return; }
+  const account = accountRaw.replace(/^act_/, '');
+  if (!/^\d+$/.test(account)) { document.getElementById('err-2').textContent = 'Account ID must be numeric (e.g. act_123456789)'; return; }
+  const btn = document.getElementById('btn-meta');
+  btn.disabled = true; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Verifying...';
+  try {
+    const r = await fetch(`https://graph.facebook.com/v19.0/act_${account}?fields=name,account_status&access_token=${encodeURIComponent(token)}`);
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+    localStorage.setItem('meta_token', token);
+    localStorage.setItem('meta_account', `act_${account}`);
+    document.getElementById('meta-fields').style.display = 'none';
+    document.getElementById('meta-connected-badge').style.display = 'flex';
+    document.getElementById('meta-badge-account').textContent = d.name || `act_${account}`;
+    btn.disabled = false; btn.innerHTML = 'Continue →';
+    btn.onclick = () => { setNodeDone(2); showCard(3); };
+  } catch(e) {
+    document.getElementById('err-2').textContent = e.message || 'Could not verify — check your token and account ID';
+    btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Connect Meta Ads';
+  }
+}
+
+// ── Google Ads connection ─────────────────────────────────────────────────────
+function connectGoogle() {
+  const accountRaw = document.getElementById('google-account').value.trim();
+  const token = document.getElementById('google-token').value.trim();
+  document.getElementById('err-3').textContent = '';
+  if (!accountRaw || !token) { document.getElementById('err-3').textContent = 'Both fields are required'; return; }
+  const account = accountRaw.replace(/-/g, '');
+  if (!/^\d+$/.test(account)) { document.getElementById('err-3').textContent = 'Customer ID must be numeric (e.g. 123-456-7890)'; return; }
+  localStorage.setItem('google_token', token);
+  localStorage.setItem('google_account', account);
+  document.getElementById('google-fields').style.display = 'none';
+  document.getElementById('google-connected-badge').style.display = 'flex';
+  document.getElementById('google-badge-account').textContent = accountRaw;
+  const btn = document.getElementById('btn-google');
+  btn.innerHTML = 'Go to Dashboard →';
+  btn.onclick = finishSetup;
+  setNodeDone(3);
+}
+
+// ── Finish setup ──────────────────────────────────────────────────────────────
+function finishSetup() {
+  localStorage.setItem('setup_complete', '1');
+  window.location.href = '/dashboard.html';
+  return false;
+}
+
+// ── Boot: Clerk auth check ────────────────────────────────────────────────────
+async function boot() {
+  if (localStorage.getItem('setup_complete')) { window.location.replace('/dashboard.html'); return; }
+  // Wait for Clerk
+  await new Promise(resolve => {
+    if(window.Clerk) { resolve(); return; }
+    const t = setInterval(() => { if(window.Clerk) { clearInterval(t); resolve(); } }, 50);
+    setTimeout(() => { clearInterval(t); resolve(); }, 5000);
+  });
+  if (window.Clerk) {
+    try {
+      await window.Clerk.load();
+      if (!window.Clerk.user) { window.location.replace('/auth/register.html'); return; }
+      const name = window.Clerk.user.firstName || window.Clerk.user.username || '';
+      if (name) document.getElementById('welcome-heading').textContent = `Welcome, ${name} — let's set up your account`;
+    } catch(e) {}
+  }
+  handleShopifyReturn();
+}
+boot();
+</script>
+<script
+  async crossorigin="anonymous"
+  data-clerk-publishable-key="pk_test_aHVtYW5lLXNocmltcC00Mi5jbGVyay5hY2NvdW50cy5kZXYk"
+  src="https://humane-shrimp-42.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js"
+></script>
+</body>
+</html>

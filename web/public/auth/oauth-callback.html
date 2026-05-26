@@ -1,0 +1,43 @@
+<!-- LEGACY: This file was used for raw Supabase OAuth. Auth is now handled by Clerk. -->
+<!-- Kept for safety in case any existing OAuth redirect URIs still point here. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Signing in…</title>
+<style>
+body{background:#04050f;color:#f0f2ff;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;margin:0;flex-direction:column;gap:16px}
+.spinner{width:32px;height:32px;border:3px solid rgba(99,102,241,0.3);border-top-color:#6366f1;border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+p{color:#8892b0;font-size:14px}
+</style>
+</head>
+<body>
+<div class="spinner"></div>
+<p>Completing sign in…</p>
+<script>
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const access_token = params.get('access_token');
+  const refresh_token = params.get('refresh_token');
+  const error = params.get('error');
+
+  if (error || !access_token) {
+    // Redirect back to login with error
+    window.location.href = 'login.html?error=' + encodeURIComponent(error || 'OAuth failed');
+    return;
+  }
+
+  localStorage.setItem('access_token', access_token);
+  localStorage.setItem('refresh_token', refresh_token);
+
+  // Validate redirect target — only allow relative paths, never external URLs
+  const rawNext = params.get('next') || '';
+  const safeNext = (rawNext && /^[./]/.test(rawNext) && !rawNext.includes('://') && !rawNext.startsWith('//'))
+    ? rawNext
+    : '../dashboard.html';
+  window.location.href = safeNext;
+})();
+</script>
+</body>
+</html>
