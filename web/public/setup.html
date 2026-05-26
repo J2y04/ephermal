@@ -56,6 +56,9 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(99,102,241,0.45)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-primary svg{width:18px;height:18px;flex-shrink:0}
+.btn-shopify-connect{width:100%;padding:14px 24px;background:#95BF47;border:none;border-radius:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.1px;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
+.btn-shopify-connect:hover{background:#7ea83a;transform:translateY(-2px);box-shadow:0 8px 32px rgba(149,191,71,0.4)}
+.btn-shopify-connect:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .skip-link{display:block;text-align:center;font-size:13px;color:#4a5280;text-decoration:none;transition:color .2s;padding:4px}
 .skip-link:hover{color:#8892b0}
 .connected-badge{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
@@ -114,9 +117,13 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
       <div class="field-hint">Enter your .myshopify.com URL or just the subdomain</div>
     </div>
     <div class="err" id="err-1"></div>
-    <button class="btn-primary" id="btn-shopify" onclick="startShopifyOAuth()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-      Connect Store
+    <button class="btn-shopify-connect" id="btn-shopify" onclick="startShopifyOAuth()">
+      <svg viewBox="0 0 24 24" fill="none" style="width:20px;height:20px;flex-shrink:0">
+        <path d="M15.5 3.5S15.1 3.6 14.6 3.7C14.3 2.7 13.7 1.8 12.7 1.8c-.3 0-.5.1-.8.2-.3-.4-.7-.6-1.1-.6C8.3 1.4 7.1 4.5 6.7 6.1 5.6 6.4 4.8 6.7 4.7 6.7c-.6.2-.6.2-.7.8L2.5 19 15 21.3l6-1.4L19.5 3.2S15.5 3.5 15.5 3.5z" fill="white"/>
+        <path d="M14.6 3.7C14.3 2.7 13.7 1.8 12.7 1.8c-.3 0-.5.1-.8.2.8.8 1.2 2 1.4 3 .6-.2 1-.3 1.3-1.3z" fill="rgba(255,255,255,0.55)"/>
+        <path d="M10.8 6.7 10.3 8.6S9.7 8.3 9 8.3C8 8.3 7.9 9 7.9 9.1c0 1.2 2.5 1.6 2.5 3.9 0 1.7-1.1 2.8-2.6 2.8-1.7 0-2.6-1.1-2.6-1.1l.5-1.9s.9.8 1.7.8c.5 0 .7-.4.7-.7 0-1.6-2-1.6-2-3.8C5.1 7.2 6.4 5.4 9 5.4c1 0 .8 1.3.8 1.3z" fill="white"/>
+      </svg>
+      Connect with Shopify
     </button>
     <a class="skip-link" href="#" onclick="return skipStep(2)">I'll connect later →</a>
   </div>
@@ -260,7 +267,7 @@ function startShopifyOAuth() {
   localStorage.setItem('shopify_oauth_state', state);
   localStorage.setItem('shopify_oauth_shop', shop);
   const btn = document.getElementById('btn-shopify');
-  btn.disabled = true; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting to Shopify...';
+  btn.disabled = true; btn.className = 'btn-shopify-connect'; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting to Shopify...';
   const params = new URLSearchParams({
     client_id: window.SHOPIFY_APP_KEY,
     scope: 'read_products,read_orders,read_analytics,read_customers',

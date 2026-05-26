@@ -757,7 +757,26 @@ select.form-input{cursor:pointer}
           </div>
           <div style="margin-top:8px;padding-top:16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:16px">
             <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:8px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20.5 7.5l-1.5-3H5L3.5 7.5M12 7.5v12M3.5 7.5h17M8 7.5V19m8-11.5V19" stroke="#96BF48" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>Shopify <span style="font-size:10px;padding:2px 7px;border-radius:8px;background:rgba(52,211,153,0.12);color:var(--success);font-weight:700">All plans</span></div>
-            <div class="form-group"><label class="form-label">Shopify Access Token</label><input class="form-input" id="s-shopify-token" type="password" placeholder="shpat_xxxxxxxxxxxxxxxxxxxxxxxx"></div>
+            <!-- Shopify OAuth connect -->
+            <div id="dash-shopify-connected-badge" style="display:none;background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.22);border-radius:11px;padding:11px 14px;align-items:center;justify-content:space-between;gap:10px">
+              <div style="display:flex;align-items:center;gap:9px">
+                <div style="width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 7px rgba(52,211,153,0.5);flex-shrink:0"></div>
+                <div>
+                  <div style="font-size:13px;font-weight:600;color:#34d399" id="dash-shopify-shop-name">Store connected</div>
+                  <div style="font-size:11px;color:var(--muted)" id="dash-shopify-shop-domain"></div>
+                </div>
+              </div>
+              <button onclick="dashDisconnectShopify()" style="font-size:11px;font-weight:600;background:transparent;border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer;color:var(--muted);font-family:'Inter',sans-serif;transition:border-color .15s">Disconnect</button>
+            </div>
+            <button id="dash-shopify-oauth-btn" onclick="dashStartShopifyOAuth()" style="display:flex;width:100%;padding:12px 18px;background:#95BF47;border:none;border-radius:11px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.1px;cursor:pointer;align-items:center;justify-content:center;gap:8px;transition:background .2s,transform .2s,box-shadow .2s" onmouseover="this.style.background='#7ea83a';this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(149,191,71,0.38)'" onmouseout="this.style.background='#95BF47';this.style.transform='none';this.style.boxShadow='none'">
+              <svg viewBox="0 0 24 24" fill="none" style="width:18px;height:18px;flex-shrink:0">
+                <path d="M15.5 3.5S15.1 3.6 14.6 3.7C14.3 2.7 13.7 1.8 12.7 1.8c-.3 0-.5.1-.8.2-.3-.4-.7-.6-1.1-.6C8.3 1.4 7.1 4.5 6.7 6.1 5.6 6.4 4.8 6.7 4.7 6.7c-.6.2-.6.2-.7.8L2.5 19 15 21.3l6-1.4L19.5 3.2S15.5 3.5 15.5 3.5z" fill="white"/>
+                <path d="M14.6 3.7C14.3 2.7 13.7 1.8 12.7 1.8c-.3 0-.5.1-.8.2.8.8 1.2 2 1.4 3 .6-.2 1-.3 1.3-1.3z" fill="rgba(255,255,255,0.55)"/>
+                <path d="M10.8 6.7 10.3 8.6S9.7 8.3 9 8.3C8 8.3 7.9 9 7.9 9.1c0 1.2 2.5 1.6 2.5 3.9 0 1.7-1.1 2.8-2.6 2.8-1.7 0-2.6-1.1-2.6-1.1l.5-1.9s.9.8 1.7.8c.5 0 .7-.4.7-.7 0-1.6-2-1.6-2-3.8C5.1 7.2 6.4 5.4 9 5.4c1 0 .8 1.3.8 1.3z" fill="white"/>
+              </svg>
+              Connect with Shopify
+            </button>
+            <div class="form-group"><label class="form-label" style="font-size:11px;opacity:.6">Access Token (manual override)</label><input class="form-input" id="s-shopify-token" type="password" placeholder="shpat_xxxxxxxxxxxxxxxxxxxxxxxx"></div>
             <div class="form-group"><label class="form-label">Store Domain</label><input class="form-input" id="s-shopify-store" placeholder="yourstore.myshopify.com"><div style="font-size:11px;color:var(--muted);margin-top:4px">Your myshopify.com domain. Used for live product sync and ad creation.</div></div>
           </div>
           <div style="font-size:12px;color:var(--muted)">Your credentials are encrypted and used only to manage your ad accounts. At least one ad platform must be connected.</div>
@@ -1644,6 +1663,47 @@ async function analyzeStore() {
   finally { btn.disabled=false; btn.textContent='Analyse Store'; }
 }
 
+// ── SHOPIFY OAUTH (dashboard settings) ───────────────────────────────────────
+function refreshDashShopifyState() {
+  const token = localStorage.getItem('shopify_token');
+  const shop = localStorage.getItem('shopify_domain') || localStorage.getItem('shopify_store');
+  const name = localStorage.getItem('shopify_shop_name');
+  const badge = document.getElementById('dash-shopify-connected-badge');
+  const btn = document.getElementById('dash-shopify-oauth-btn');
+  if (!badge || !btn) return;
+  if (token && shop) {
+    badge.style.display = 'flex'; btn.style.display = 'none';
+    const nameEl = document.getElementById('dash-shopify-shop-name');
+    const domainEl = document.getElementById('dash-shopify-shop-domain');
+    if (nameEl) nameEl.textContent = name || shop;
+    if (domainEl) domainEl.textContent = shop;
+  } else {
+    badge.style.display = 'none'; btn.style.display = 'flex';
+  }
+}
+function dashStartShopifyOAuth() {
+  const storeEl = document.getElementById('s-shopify-store');
+  const raw = (storeEl ? storeEl.value.trim() : '') || localStorage.getItem('shopify_store') || '';
+  if (!raw || !window.SHOPIFY_APP_KEY || window.SHOPIFY_APP_KEY === 'YOUR_SHOPIFY_APP_CLIENT_ID') {
+    window.location.href = '/setup.html'; return;
+  }
+  let shop = raw.replace(/https?:\/\//,'').replace(/\/.*$/,'').toLowerCase().trim();
+  if (!shop.includes('.')) shop += '.myshopify.com';
+  const state = [...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  localStorage.setItem('shopify_oauth_state', state);
+  localStorage.setItem('shopify_oauth_shop', shop);
+  const params = new URLSearchParams({ client_id: window.SHOPIFY_APP_KEY, scope: 'read_products,read_orders,read_analytics,read_customers', redirect_uri: window.SHOPIFY_CALLBACK_URL, state });
+  window.location.href = `https://${shop}/admin/oauth/authorize?${params}`;
+}
+function dashDisconnectShopify() {
+  if (!confirm('Disconnect your Shopify store?')) return;
+  localStorage.removeItem('shopify_token'); localStorage.removeItem('shopify_domain');
+  localStorage.removeItem('shopify_shop_name'); localStorage.removeItem('shopify_store');
+  const sht = document.getElementById('s-shopify-token'); if (sht) sht.value = '';
+  const shs = document.getElementById('s-shopify-store'); if (shs) shs.value = '';
+  refreshDashShopifyState();
+}
+
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
 function loadSettingsFields() {
   const mt = document.getElementById('s-meta-token'); if (mt) mt.value = localStorage.getItem('meta_token') ? '••••••••' : '';
@@ -1653,6 +1713,7 @@ function loadSettingsFields() {
   const ga = document.getElementById('s-google-account'); if (ga) ga.value = localStorage.getItem('google_account') || '';
   const sht = document.getElementById('s-shopify-token'); if (sht) sht.value = localStorage.getItem('shopify_token') ? '••••••••' : '';
   const shs = document.getElementById('s-shopify-store'); if (shs) shs.value = localStorage.getItem('shopify_store') || '';
+  refreshDashShopifyState();
   // Show/hide Google Ads paywall
   const paywall = document.getElementById('google-ads-paywall');
   const fields = document.getElementById('google-ads-fields');
