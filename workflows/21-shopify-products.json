@@ -1,0 +1,90 @@
+{
+  "name": "Ephermal - 21 Shopify Products",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "ephermal/shopify/products",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a1000021-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w1000021-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst token = h['x-shopify-token'];\nconst store = h['x-shopify-store'];\nif (!token || !store) {\n  $execution.abort({ message: 'Missing Shopify credentials. Connect your store in Settings.' });\n}\n// Normalise store domain: strip protocol, ensure .myshopify.com\nlet domain = store.replace(/^https?:\\/\\//,'').replace(/\\/.*$/,'');\nif (!domain.includes('.myshopify.com') && !domain.includes('.')) {\n  domain = `${domain}.myshopify.com`;\n}\nreturn [{ json: { token, domain } }];"
+      },
+      "id": "a1000021-0000-0000-0000-000000000002",
+      "name": "Extract & Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://{{ $('Extract & Validate').item.json.domain }}/admin/api/2024-01/products.json",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "limit", "value": "50" },
+            { "name": "status", "value": "active" },
+            { "name": "fields", "value": "id,title,handle,status,variants,images,product_type,tags,updated_at" }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "X-Shopify-Access-Token", "value": "={{ $('Extract & Validate').item.json.token }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1000021-0000-0000-0000-000000000003",
+      "name": "Fetch Products",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.item.json.products || [];\nconst products = raw.map(p => {\n  const price = p.variants?.[0]?.price || '0';\n  const compareAt = p.variants?.[0]?.compare_at_price;\n  const img = p.images?.[0]?.src || null;\n  const stock = (p.variants || []).reduce((s,v) => s + (parseInt(v.inventory_quantity)||0), 0);\n  return {\n    id: p.id,\n    title: p.title,\n    handle: p.handle,\n    status: p.status,\n    product_type: p.product_type || '',\n    tags: p.tags || '',\n    price: parseFloat(price),\n    compare_at_price: compareAt ? parseFloat(compareAt) : null,\n    image: img,\n    variant_count: (p.variants||[]).length,\n    total_stock: stock,\n    updated_at: p.updated_at\n  };\n});\nreturn [{ json: { products, total: products.length } }];"
+      },
+      "id": "a1000021-0000-0000-0000-000000000004",
+      "name": "Transform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }]
+          }
+        }
+      },
+      "id": "a1000021-0000-0000-0000-000000000005",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Extract & Validate", "type": "main", "index": 0 }]] },
+    "Extract & Validate": { "main": [[{ "node": "Fetch Products", "type": "main", "index": 0 }]] },
+    "Fetch Products": { "main": [[{ "node": "Transform", "type": "main", "index": 0 }]] },
+    "Transform": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}

@@ -1,0 +1,63 @@
+{
+  "name": "Ephermal - 20 Meta Campaign Create",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ephermal/meta/campaigns/create",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a1000020-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w1000020-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst body = $input.item.json.body || {};\nconst token = h['x-meta-token'];\nconst account = h['x-meta-account'];\nif (!token || !account) {\n  $execution.abort({ message: 'Missing Meta credentials' });\n}\nconst name = (body.name || '').trim();\nif (!name) {\n  $execution.abort({ message: 'Campaign name is required' });\n}\nconst VALID_OBJECTIVES = ['OUTCOME_SALES','OUTCOME_TRAFFIC','OUTCOME_LEADS','OUTCOME_AWARENESS','OUTCOME_ENGAGEMENT','OUTCOME_APP_PROMOTION'];\nconst objective = VALID_OBJECTIVES.includes(body.objective) ? body.objective : 'OUTCOME_SALES';\nconst daily_budget = Math.max(100, parseInt(body.daily_budget) || 1000); // in cents\nconst countries = Array.isArray(body.countries) && body.countries.length ? body.countries : ['US'];\nconst start_time = body.start_time || new Date().toISOString();\nreturn [{ json: { token, account, name, objective, daily_budget, countries, start_time } }];"
+      },
+      "id": "a1000020-0000-0000-0000-000000000002",
+      "name": "Extract & Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { token, account, name, objective, daily_budget, countries, start_time } = $input.item.json;\nconst GRAPH = 'https://graph.facebook.com/v19.0';\n\n// Step 1: Create Campaign\nconst campaignRes = await fetch(`${GRAPH}/act_${account}/campaigns`, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },\n  body: new URLSearchParams({\n    name,\n    objective,\n    status: 'PAUSED',\n    special_ad_categories: '[]',\n    access_token: token\n  }).toString()\n});\nconst campaign = await campaignRes.json();\nif (campaign.error) {\n  return [{ json: { success: false, error: campaign.error.message, step: 'campaign_create' } }];\n}\nconst campaign_id = campaign.id;\n\n// Step 2: Create Ad Set\nconst targeting = JSON.stringify({\n  geo_locations: { countries },\n  age_min: 18,\n  age_max: 65,\n  publisher_platforms: ['facebook','instagram']\n});\nconst adSetBody = new URLSearchParams({\n  name: `${name} - Ad Set`,\n  campaign_id,\n  daily_budget: String(daily_budget),\n  billing_event: 'IMPRESSIONS',\n  optimization_goal: objective === 'OUTCOME_SALES' ? 'OFFSITE_CONVERSIONS' : objective === 'OUTCOME_TRAFFIC' ? 'LINK_CLICKS' : 'REACH',\n  targeting,\n  status: 'PAUSED',\n  start_time,\n  access_token: token\n});\nconst adSetRes = await fetch(`${GRAPH}/act_${account}/adsets`, {\n  method: 'POST',\n  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },\n  body: adSetBody.toString()\n});\nconst adSet = await adSetRes.json();\nif (adSet.error) {\n  return [{ json: { success: false, error: adSet.error.message, step: 'adset_create', campaign_id } }];\n}\n\nreturn [{ json: {\n  success: true,\n  campaign_id,\n  adset_id: adSet.id,\n  campaign_name: name,\n  objective,\n  daily_budget,\n  countries,\n  status: 'PAUSED',\n  message: `Campaign \"${name}\" created successfully (paused — review and activate when ready)`\n} }];"
+      },
+      "id": "a1000020-0000-0000-0000-000000000003",
+      "name": "Create Campaign & Ad Set",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }]
+          }
+        }
+      },
+      "id": "a1000020-0000-0000-0000-000000000004",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Extract & Validate", "type": "main", "index": 0 }]] },
+    "Extract & Validate": { "main": [[{ "node": "Create Campaign & Ad Set", "type": "main", "index": 0 }]] },
+    "Create Campaign & Ad Set": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
