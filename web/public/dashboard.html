@@ -2452,11 +2452,12 @@ async function createUGCForNewProduct() {
   window.__clerk = window.Clerk;
   // Load server-side data from Supabase (plan, credits, integrations)
   await Promise.all([loadPlanFromSupabase(), loadCreditsFromSupabase(), loadIntegrationsFromSupabase()]);
-  // ── Connection check: if no platform is connected, redirect to setup
+  // ── Connection check: only redirect to setup if the user has never finished it
+  const _setupDone = localStorage.getItem('setup_complete');
   const _hasShopify = localStorage.getItem('shopify_token');
   const _hasMeta = localStorage.getItem('meta_token');
   const _hasGoogle = localStorage.getItem('google_token');
-  if (!_hasShopify && !_hasMeta && !_hasGoogle) {
+  if (!_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle) {
     window.location.href = '/setup.html'; return;
   }
   refreshMetaStatus();
