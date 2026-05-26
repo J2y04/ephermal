@@ -481,10 +481,10 @@ async function boot() {
 }
 boot();
 </script>
-<!-- Facebook SDK — required for Meta OAuth -->
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
-<!-- Google Identity Services — required for Google Ads OAuth -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- Facebook SDK (async only — defer conflicts with async) -->
+<script async crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+<!-- Google Identity Services -->
+<script async defer src="https://accounts.google.com/gsi/client"></script>
 <script
   async crossorigin="anonymous"
   data-clerk-publishable-key="pk_live_Y2xlcmsuZXBoZXJtYWwuYXBwJA"

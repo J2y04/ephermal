@@ -2615,9 +2615,18 @@ function dashDisconnectGoogle() {
   showToast('Google Ads disconnected', 'warn');
 }
 </script>
-<!-- Facebook SDK — required for Meta OAuth -->
-<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
-<!-- Google Identity Services — required for Google Ads OAuth -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- fbAsyncInit must be defined BEFORE the SDK script executes -->
+<script>
+window.fbAsyncInit = function() {
+  var id = window.META_APP_ID;
+  if (id && id !== 'YOUR_META_APP_ID') {
+    FB.init({ appId: id, cookie: true, xfbml: false, version: 'v19.0' });
+  }
+};
+</script>
+<!-- Facebook SDK (async only — defer conflicts with async) -->
+<script async crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+<!-- Google Identity Services -->
+<script async defer src="https://accounts.google.com/gsi/client"></script>
 </body>
 </html>
