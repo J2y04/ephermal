@@ -1,0 +1,63 @@
+{
+  "name": "Ephermal - 19 Bulk Campaign Action",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ephermal/campaigns/bulk-action",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a1000019-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w1000019-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst body = $input.item.json.body || {};\nconst token = h['x-meta-token'];\nconst account = h['x-meta-account'];\nif (!token) {\n  $execution.abort({ message: 'Missing Meta token' });\n}\nconst allowedActions = ['pause', 'enable', 'scale_budget'];\nconst action = allowedActions.includes(body.action) ? body.action : null;\nif (!action) {\n  $execution.abort({ message: 'Invalid action. Use: pause, enable, or scale_budget' });\n}\nconst ids = Array.isArray(body.campaign_ids) ? body.campaign_ids.slice(0, 50) : [];\nif (!ids.length) {\n  $execution.abort({ message: 'campaign_ids must be a non-empty array (max 50)' });\n}\nconst multiplier = Math.min(2.0, Math.max(1.01, parseFloat(body.budget_multiplier) || 1.15));\nreturn [{ json: { token, account, action, ids, multiplier } }];"
+      },
+      "id": "a1000019-0000-0000-0000-000000000002",
+      "name": "Extract & Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const { token, account, action, ids, multiplier } = $input.item.json;\nconst GRAPH = 'https://graph.facebook.com/v19.0';\nconst results = [];\nconst errors = [];\n\nfor (const id of ids) {\n  try {\n    let body;\n    if (action === 'pause') {\n      body = { status: 'PAUSED', access_token: token };\n    } else if (action === 'enable') {\n      body = { status: 'ACTIVE', access_token: token };\n    } else if (action === 'scale_budget') {\n      // First fetch current budget\n      const infoRes = await fetch(`${GRAPH}/${id}?fields=daily_budget,lifetime_budget&access_token=${token}`);\n      const info = await infoRes.json();\n      if (info.daily_budget) {\n        body = { daily_budget: Math.round(parseInt(info.daily_budget) * multiplier), access_token: token };\n      } else if (info.lifetime_budget) {\n        body = { lifetime_budget: Math.round(parseInt(info.lifetime_budget) * multiplier), access_token: token };\n      } else {\n        errors.push({ id, error: 'No budget found' });\n        continue;\n      }\n    }\n    const res = await fetch(`${GRAPH}/${id}`, {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(body)\n    });\n    const data = await res.json();\n    if (data.error) {\n      errors.push({ id, error: data.error.message });\n    } else {\n      results.push({ id, success: true });\n    }\n  } catch(e) {\n    errors.push({ id, error: e.message || 'Request failed' });\n  }\n}\n\nreturn [{ json: {\n  action,\n  total: ids.length,\n  succeeded: results.length,\n  failed: errors.length,\n  errors: errors.slice(0, 10),\n  message: `${action} applied to ${results.length} of ${ids.length} campaign${ids.length > 1 ? 's' : ''}`\n} }];"
+      },
+      "id": "a1000019-0000-0000-0000-000000000003",
+      "name": "Execute Bulk Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [{ "name": "Content-Type", "value": "application/json" }, { "name": "Access-Control-Allow-Origin", "value": "*" }]
+          }
+        }
+      },
+      "id": "a1000019-0000-0000-0000-000000000004",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Extract & Validate", "type": "main", "index": 0 }]] },
+    "Extract & Validate": { "main": [[{ "node": "Execute Bulk Action", "type": "main", "index": 0 }]] },
+    "Execute Bulk Action": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "tags": []
+}
