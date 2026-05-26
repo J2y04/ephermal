@@ -1,0 +1,121 @@
+{
+  "name": "Ephermal - 13 ROAS Optimizer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ephermal/optimize/roas",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a1300001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w1300001-0000-0000-0000-130000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst body = $input.item.json.body || {};\n// Meta credentials (required)\nconst metaToken   = h['x-meta-token'];\nconst metaAccount = h['x-meta-account'];\n// Google credentials (optional)\nconst googleToken   = h['x-google-token'];\nconst googleAccount = (h['x-google-account'] || '').replace(/-/g, '');\nconst googleDevToken = $env.GOOGLE_ADS_DEV_TOKEN;\n// Thresholds (with sensible defaults)\nconst pauseBelow  = parseFloat(body.pause_below  ?? 1.5);  // ROAS below this → pause\nconst scaleAbove  = parseFloat(body.scale_above  ?? 4.0);  // ROAS above this → +15% budget\nconst minSpend    = parseFloat(body.min_spend    ?? 50);   // ignore campaigns with < $50 spend\nif (!metaToken || !metaAccount) $execution.abort({ message: 'Missing Meta credentials' });\nreturn [{ json: { metaToken, metaAccount, googleToken, googleAccount, googleDevToken, pauseBelow, scaleAbove, minSpend, hasGoogle: !!(googleToken && googleAccount && googleDevToken) } }];"
+      },
+      "id": "a1300001-0000-0000-0000-000000000002",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v19.0/{{ $input.item.json.metaAccount }}/insights",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "fields",      "value": "campaign_id,campaign_name,spend,purchase_roas,actions" },
+            { "name": "level",       "value": "campaign" },
+            { "name": "date_preset", "value": "last_30d" },
+            { "name": "limit",       "value": "100" },
+            { "name": "access_token","value": "={{ $input.item.json.metaToken }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1300001-0000-0000-0000-000000000003",
+      "name": "Fetch Meta Insights",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://graph.facebook.com/v19.0/{{ $('Validate').item.json.metaAccount }}/campaigns",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            { "name": "fields",       "value": "id,name,status,daily_budget" },
+            { "name": "limit",        "value": "100" },
+            { "name": "access_token", "value": "={{ $('Validate').item.json.metaToken }}" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1300001-0000-0000-0000-000000000004",
+      "name": "Fetch Meta Campaigns",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── Build enriched campaign list (Meta) ──────────────────────────────────────\nconst creds      = $('Validate').item.json;\nconst insights   = ($('Fetch Meta Insights').item.json.data || []);\nconst campaigns  = ($('Fetch Meta Campaigns').item.json.data || []);\nconst insightMap = {};\nfor (const ins of insights) insightMap[ins.campaign_id] = ins;\nconst metaCampaigns = campaigns.map(c => {\n  const ins = insightMap[c.id] || {};\n  const roasEntry = (ins.purchase_roas || []).find(r => ['omni_purchase','purchase'].includes(r.action_type));\n  const roas      = roasEntry ? Math.round(parseFloat(roasEntry.value) * 100) / 100 : null;\n  return {\n    id: c.id, name: c.name,\n    status: c.status, // ACTIVE | PAUSED\n    platform: 'meta',\n    daily_budget: c.daily_budget ? parseFloat(c.daily_budget) / 100 : null,\n    roas, spend: parseFloat(ins.spend || 0)\n  };\n});\n\n// ── Google campaigns (if connected) ──────────────────────────────────────────\n// Google data comes in separately — placeholder array for now\nconst googleCampaigns = [];\n\nreturn [{ json: { creds, metaCampaigns, googleCampaigns } }];"
+      },
+      "id": "a1300001-0000-0000-0000-000000000005",
+      "name": "Merge Campaigns",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ── ROAS Optimizer — apply rules and execute mutations ───────────────────────\n// Uses this.helpers.request() to call Meta / Google APIs in a loop.\nconst { creds, metaCampaigns } = $input.item.json;\nconst { pauseBelow, scaleAbove, minSpend, metaToken, metaAccount } = creds;\n\nconst actions = [];\nconst recommendations = [];\n\nfor (const c of metaCampaigns) {\n  if (c.roas === null || c.spend < minSpend) {\n    recommendations.push({ platform: 'meta', id: c.id, name: c.name, reason: c.spend < minSpend ? 'insufficient_spend' : 'no_roas_data' });\n    continue;\n  }\n\n  if (c.roas < pauseBelow && c.status === 'ACTIVE') {\n    // ── PAUSE underperformer ──────────────────────────────────────────────────\n    try {\n      await this.helpers.request({\n        method: 'POST',\n        uri: `https://graph.facebook.com/v19.0/${c.id}`,\n        qs: { access_token: metaToken, status: 'PAUSED' },\n        json: true\n      });\n      actions.push({ platform: 'meta', id: c.id, name: c.name, action: 'paused', roas: c.roas, spend: c.spend });\n    } catch (e) {\n      actions.push({ platform: 'meta', id: c.id, name: c.name, action: 'pause_failed', error: String(e.message), roas: c.roas });\n    }\n\n  } else if (c.roas > scaleAbove && c.status === 'ACTIVE' && c.daily_budget) {\n    // ── SCALE UP budget +15% ─────────────────────────────────────────────────\n    const newBudgetCents = Math.round(c.daily_budget * 1.15 * 100);\n    try {\n      await this.helpers.request({\n        method: 'POST',\n        uri: `https://graph.facebook.com/v19.0/${c.id}`,\n        qs: { access_token: metaToken, daily_budget: newBudgetCents },\n        json: true\n      });\n      actions.push({ platform: 'meta', id: c.id, name: c.name, action: 'budget_scaled', roas: c.roas, spend: c.spend, old_budget: c.daily_budget, new_budget: newBudgetCents / 100 });\n    } catch (e) {\n      actions.push({ platform: 'meta', id: c.id, name: c.name, action: 'scale_failed', error: String(e.message), roas: c.roas });\n    }\n\n  } else {\n    // ── No action needed — within healthy range ───────────────────────────────\n    recommendations.push({ platform: 'meta', id: c.id, name: c.name, roas: c.roas, spend: c.spend, reason: 'healthy' });\n  }\n}\n\nconst paused = actions.filter(a => a.action === 'paused').length;\nconst scaled = actions.filter(a => a.action === 'budget_scaled').length;\nconst failed = actions.filter(a => a.action.includes('failed')).length;\n\nreturn [{ json: {\n  ok: true,\n  summary: { paused, scaled, failed, recommendations: recommendations.length },\n  actions,\n  recommendations,\n  thresholds: { pause_below: pauseBelow, scale_above: scaleAbove, min_spend: minSpend },\n  ran_at: new Date().toISOString()\n} }];"
+      },
+      "id": "a1300001-0000-0000-0000-000000000006",
+      "name": "Execute Optimizations",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "a1300001-0000-0000-0000-000000000007",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1340, 300]
+    }
+  ],
+  "connections": {
+    "Webhook":              { "main": [[{ "node": "Validate", "type": "main", "index": 0 }]] },
+    "Validate":             { "main": [[{ "node": "Fetch Meta Insights",  "type": "main", "index": 0 },
+                                        { "node": "Fetch Meta Campaigns", "type": "main", "index": 0 }]] },
+    "Fetch Meta Insights":  { "main": [[{ "node": "Merge Campaigns", "type": "main", "index": 0 }]] },
+    "Fetch Meta Campaigns": { "main": [[{ "node": "Merge Campaigns", "type": "main", "index": 1 }]] },
+    "Merge Campaigns":      { "main": [[{ "node": "Execute Optimizations", "type": "main", "index": 0 }]] },
+    "Execute Optimizations":{ "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}

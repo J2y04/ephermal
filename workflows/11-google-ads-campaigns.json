@@ -1,0 +1,89 @@
+{
+  "name": "Ephermal - 11 Google Ads Campaigns",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "ephermal/google/campaigns",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a1100001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w1100001-0000-0000-0000-110000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst token = h['x-google-token'];\nconst account = (h['x-google-account'] || '').replace(/-/g, '');\nconst devToken = $env.GOOGLE_ADS_DEV_TOKEN;\nif (!token || !account) $execution.abort({ message: 'Missing Google credentials' });\nif (!devToken) $execution.abort({ message: 'GOOGLE_ADS_DEV_TOKEN env var not set in n8n' });\nreturn [{ json: { token, account, devToken } }];"
+      },
+      "id": "a1100001-0000-0000-0000-000000000002",
+      "name": "Extract Credentials",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://googleads.googleapis.com/v17/customers/{{ $input.item.json.account }}/googleAds:search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $input.item.json.token }}" },
+            { "name": "developer-token", "value": "={{ $input.item.json.devToken }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"query\": \"SELECT campaign.id, campaign.name, campaign.status, campaign.advertising_channel_type, campaign_budget.amount_micros, campaign_budget.resource_name, metrics.cost_micros, metrics.conversions, metrics.conversions_value, metrics.clicks, metrics.impressions FROM campaign WHERE segments.date DURING LAST_30_DAYS AND campaign.status != 'REMOVED' ORDER BY metrics.cost_micros DESC LIMIT 50\"}",
+        "options": {}
+      },
+      "id": "a1100001-0000-0000-0000-000000000003",
+      "name": "Google Ads Query",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = $input.item.json.results || [];\nconst TYPE_MAP = { SEARCH: 'Search', DISPLAY: 'Display', SHOPPING: 'Shopping', VIDEO: 'YouTube', PERFORMANCE_MAX: 'PMAX', SMART: 'Smart' };\nconst mapped = results.map(r => {\n  const c = r.campaign || {};\n  const b = r.campaignBudget || {};\n  const m = r.metrics || {};\n  const costMicros = parseInt(m.costMicros || 0);\n  const convValue  = parseFloat(m.conversionsValue || 0);\n  const spend      = costMicros / 1_000_000;\n  const roas       = spend > 0 ? Math.round((convValue / spend) * 100) / 100 : null;\n  const statusRaw  = c.status || '';\n  const status     = statusRaw === 'ENABLED' ? 'live' : statusRaw === 'PAUSED' ? 'paused' : 'draft';\n  const channelType = c.advertisingChannelType || '';\n  const typeLabel   = TYPE_MAP[channelType] || channelType;\n  const budgetMicros = parseInt(b.amountMicros || 0);\n  return {\n    id: c.id,\n    name: `Google · ${typeLabel}${c.name ? ' · ' + c.name : ''}`,\n    status,\n    platform: 'google',\n    channel_type: channelType,\n    daily_budget: budgetMicros > 0 ? budgetMicros / 1_000_000 : null,\n    budget_resource: b.resourceName || null,\n    roas,\n    total_spend:   Math.round(spend * 100) / 100,\n    impressions:   parseInt(m.impressions || 0),\n    clicks:        parseInt(m.clicks || 0),\n    conversions:   Math.round(parseFloat(m.conversions || 0))\n  };\n});\nreturn [{ json: mapped }];"
+      },
+      "id": "a1100001-0000-0000-0000-000000000004",
+      "name": "Transform",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "a1100001-0000-0000-0000-000000000005",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook":             { "main": [[{ "node": "Extract Credentials", "type": "main", "index": 0 }]] },
+    "Extract Credentials": { "main": [[{ "node": "Google Ads Query",    "type": "main", "index": 0 }]] },
+    "Google Ads Query":    { "main": [[{ "node": "Transform",           "type": "main", "index": 0 }]] },
+    "Transform":           { "main": [[{ "node": "Respond",             "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}

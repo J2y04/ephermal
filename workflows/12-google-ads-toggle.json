@@ -1,0 +1,77 @@
+{
+  "name": "Ephermal - 12 Google Ads Toggle",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ephermal/google/campaigns/toggle",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "a1200001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "w1200001-0000-0000-0000-120000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h = $input.item.json.headers || {};\nconst body = $input.item.json.body || {};\nconst token    = h['x-google-token'];\nconst account  = (h['x-google-account'] || '').replace(/-/g, '');\nconst devToken = $env.GOOGLE_ADS_DEV_TOKEN;\nconst campaignId = String(body.campaign_id || '');\nconst status   = body.status; // 'ENABLED' or 'PAUSED'\nif (!token || !account)  $execution.abort({ message: 'Missing Google credentials' });\nif (!devToken)           $execution.abort({ message: 'GOOGLE_ADS_DEV_TOKEN env var not set' });\nif (!campaignId)         $execution.abort({ message: 'Missing campaign_id' });\nif (!['ENABLED','PAUSED'].includes(status)) $execution.abort({ message: 'status must be ENABLED or PAUSED' });\nreturn [{ json: { token, account, devToken, campaignId, status } }];"
+      },
+      "id": "a1200001-0000-0000-0000-000000000002",
+      "name": "Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://googleads.googleapis.com/v17/customers/{{ $input.item.json.account }}/campaigns:mutate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "=Bearer {{ $input.item.json.token }}" },
+            { "name": "developer-token", "value": "={{ $input.item.json.devToken }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ operations: [{ update: { resourceName: `customers/${$input.item.json.account}/campaigns/${$input.item.json.campaignId}`, status: $input.item.json.status }, updateMask: 'status' }] }) }}",
+        "options": {}
+      },
+      "id": "a1200001-0000-0000-0000-000000000003",
+      "name": "Google Toggle Campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true, campaign_id: $('Validate').item.json.campaignId, status: $('Validate').item.json.status }) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        }
+      },
+      "id": "a1200001-0000-0000-0000-000000000004",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Webhook":              { "main": [[{ "node": "Validate",              "type": "main", "index": 0 }]] },
+    "Validate":             { "main": [[{ "node": "Google Toggle Campaign", "type": "main", "index": 0 }]] },
+    "Google Toggle Campaign":{ "main": [[{ "node": "Respond",              "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}
