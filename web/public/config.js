@@ -5,6 +5,14 @@
   // API base URL — hardcoded, NOT user-controllable via localStorage (prevents JWT theft)
   window.API_BASE = 'https://YOUR_BACKEND/webhook/ephermal';
 
+  // Meta (Facebook) App ID — create at developers.facebook.com → My Apps → Create App
+  // Set "App Domain" to ephermal.app and add "Facebook Login" product
+  window.META_APP_ID = 'YOUR_META_APP_ID';
+
+  // Google OAuth Client ID — create at console.cloud.google.com → APIs & Services → Credentials
+  // Add https://ephermal.app and https://ephermal.app/setup.html to "Authorized JavaScript origins"
+  window.GOOGLE_OAUTH_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
+
   // Supabase — replace with your project values (safe to expose — RLS protects data)
   window.SUPABASE_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co';
   window.SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3ZmducWRkb3FlcXJqaGdpb3hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MTk3MjMsImV4cCI6MjA5NTE5NTcyM30.Qosoe62X7ZyPEArhm5Tbg2p97LBo8KQ5NQu9SsqE8k4';

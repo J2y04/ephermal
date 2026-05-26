@@ -59,6 +59,15 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
 .btn-shopify-connect{width:100%;padding:14px 24px;background:#95BF47;border:none;border-radius:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.1px;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
 .btn-shopify-connect:hover{background:#7ea83a;transform:translateY(-2px);box-shadow:0 8px 32px rgba(149,191,71,0.4)}
 .btn-shopify-connect:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-meta-oauth{width:100%;padding:14px 24px;background:#1877F2;border:none;border-radius:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.1px;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
+.btn-meta-oauth:hover{background:#1565d8;transform:translateY(-2px);box-shadow:0 8px 32px rgba(24,119,242,0.45)}
+.btn-meta-oauth:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-google-oauth{width:100%;padding:13px 24px;background:#fff;border:1px solid rgba(0,0,0,0.18);border-radius:13px;color:#3c4043;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
+.btn-google-oauth:hover{background:#f6f6f6;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.18)}
+.btn-google-oauth:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.account-picker{width:100%;background:#111530;border:1px solid rgba(99,102,241,0.25);border-radius:12px;color:#f0f2ff;font-family:'Inter',sans-serif;font-size:14px;padding:12px 16px;margin-bottom:14px;outline:none;appearance:none;cursor:pointer}
+.account-picker:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
+.oauth-info{font-size:12px;color:#3a4060;text-align:center;margin-bottom:14px;line-height:1.6}
 .skip-link{display:block;text-align:center;font-size:13px;color:#4a5280;text-decoration:none;transition:color .2s;padding:4px}
 .skip-link:hover{color:#8892b0}
 .connected-badge{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;margin-bottom:20px}
@@ -134,28 +143,26 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
       <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
     </div>
     <h2>Connect Meta Ads</h2>
-    <p>Automate and optimize your Facebook & Instagram ad campaigns</p>
+    <p>Log in with Facebook to link your Meta Business ad account — no API keys needed</p>
+    <!-- Connected badge -->
     <div id="meta-connected-badge" class="connected-badge" style="display:none">
       <div class="dot"></div>
       <div><span>Meta Ads connected</span><small id="meta-badge-account"></small></div>
     </div>
-    <div id="meta-fields">
-      <div class="field">
-        <label>Ad Account ID</label>
-        <input type="text" id="meta-account" placeholder="act_123456789" autocomplete="off">
-        <div class="field-hint">Found in Meta Business Manager → Ad Accounts</div>
-      </div>
-      <div class="field">
-        <label>Access Token</label>
-        <input type="password" id="meta-token" placeholder="EAAxxxxxxxxxxxxxxx">
-        <div class="field-hint">Generate in Meta for Developers → Tools → Graph API Explorer</div>
-      </div>
+    <!-- Account picker (shown when user has multiple ad accounts) -->
+    <div id="meta-account-picker" style="display:none">
+      <label for="meta-account-select">Select Ad Account</label>
+      <select class="account-picker" id="meta-account-select"><option value="">Choose an account…</option></select>
+      <div class="err" id="err-2b"></div>
+      <button class="btn-primary" onclick="selectMetaAccount()">Connect this account →</button>
     </div>
+    <!-- OAuth button -->
     <div class="err" id="err-2"></div>
-    <button class="btn-primary" id="btn-meta" onclick="connectMeta()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-      Connect Meta Ads
+    <button class="btn-meta-oauth" id="btn-meta" onclick="startMetaOAuth()">
+      <svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      Continue with Facebook
     </button>
+    <p class="oauth-info">You'll be taken to Facebook to authorise access.<br>Ephermal only requests ad account read/write permissions.</p>
     <a class="skip-link" href="#" onclick="return skipStep(3)">Skip for now →</a>
   </div>
 
@@ -165,28 +172,29 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
       <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
     </div>
     <h2>Connect Google Ads</h2>
-    <p>Automate Search, Shopping and Performance Max campaigns with AI</p>
+    <p>Sign in with Google to link your Google Ads account — no API keys needed</p>
+    <!-- Connected badge -->
     <div id="google-connected-badge" class="connected-badge" style="display:none">
       <div class="dot"></div>
       <div><span>Google Ads connected</span><small id="google-badge-account"></small></div>
     </div>
-    <div id="google-fields">
+    <!-- Step 2 after OAuth: enter Customer ID -->
+    <div id="google-account-area" style="display:none">
       <div class="field">
-        <label>Customer ID</label>
-        <input type="text" id="google-account" placeholder="123-456-7890" autocomplete="off">
-        <div class="field-hint">Found at the top of your Google Ads account</div>
+        <label>Google Ads Customer ID</label>
+        <input type="text" id="google-account" placeholder="123-456-7890" autocomplete="off" inputmode="numeric">
+        <div class="field-hint">Visible at the top of your Google Ads account · <a href="https://ads.google.com" target="_blank" rel="noopener noreferrer" style="color:#6366f1">Open Google Ads →</a></div>
       </div>
-      <div class="field">
-        <label>OAuth Access Token</label>
-        <input type="password" id="google-token" placeholder="ya29.xxxxxxxxxxxxxxxx">
-        <div class="field-hint">Generate via Google OAuth 2.0 with ads scope</div>
-      </div>
+      <div class="err" id="err-3b"></div>
+      <button class="btn-primary" id="btn-google-save" onclick="saveGoogleAccount()">Connect Google Ads →</button>
     </div>
+    <!-- OAuth button -->
     <div class="err" id="err-3"></div>
-    <button class="btn-primary" id="btn-google" onclick="connectGoogle()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-      Connect Google Ads
+    <button class="btn-google-oauth" id="btn-google" onclick="startGoogleOAuth()">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+      Continue with Google
     </button>
+    <p class="oauth-info">You'll be taken to Google to authorise access.<br>Ephermal only requests Google Ads permissions.</p>
     <a class="skip-link" href="#" onclick="return finishSetup()">Skip for now →</a>
   </div>
 </div>
@@ -302,50 +310,147 @@ function handleShopifyReturn() {
   document.getElementById('btn-shopify').onclick = () => { setNodeDone(1); showCard(2); };
 }
 
-// ── Meta Ads connection ───────────────────────────────────────────────────────
-async function connectMeta() {
-  const accountRaw = document.getElementById('meta-account').value.trim();
-  const token = document.getElementById('meta-token').value.trim();
-  document.getElementById('err-2').textContent = '';
-  if (!accountRaw || !token) { document.getElementById('err-2').textContent = 'Both fields are required'; return; }
-  const account = accountRaw.replace(/^act_/, '');
-  if (!/^\d+$/.test(account)) { document.getElementById('err-2').textContent = 'Account ID must be numeric (e.g. act_123456789)'; return; }
+// ── Facebook SDK init ─────────────────────────────────────────────────────────
+window.fbAsyncInit = function() {
+  if (window.META_APP_ID && window.META_APP_ID !== 'YOUR_META_APP_ID') {
+    FB.init({ appId: window.META_APP_ID, cookie: true, xfbml: false, version: 'v19.0' });
+  }
+};
+
+// ── Meta OAuth ────────────────────────────────────────────────────────────────
+function _metaOAuthIcon() {
+  return '<svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Continue with Facebook';
+}
+function startMetaOAuth() {
+  const err = document.getElementById('err-2');
+  err.textContent = '';
+  if (!window.META_APP_ID || window.META_APP_ID === 'YOUR_META_APP_ID') {
+    err.textContent = 'Meta app not configured — contact support@ephermal.app';
+    return;
+  }
+  if (!window.FB) {
+    err.textContent = 'Loading Facebook SDK — please wait a moment and try again.';
+    return;
+  }
   const btn = document.getElementById('btn-meta');
-  btn.disabled = true; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Verifying...';
+  btn.disabled = true;
+  btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Connecting…';
+  FB.login(function(response) {
+    if (response.authResponse) {
+      fetchMetaAdAccounts(response.authResponse.accessToken);
+    } else {
+      err.textContent = 'Login cancelled or permission denied — please try again.';
+      btn.disabled = false; btn.innerHTML = _metaOAuthIcon();
+    }
+  }, { scope: 'ads_read,ads_management,business_management' });
+}
+
+async function fetchMetaAdAccounts(token) {
+  const err = document.getElementById('err-2');
+  const btn = document.getElementById('btn-meta');
   try {
-    const r = await fetch(`https://graph.facebook.com/v19.0/act_${account}?fields=name,account_status&access_token=${encodeURIComponent(token)}`);
+    const r = await fetch(`https://graph.facebook.com/v19.0/me/adaccounts?fields=name,account_id,account_status&limit=25&access_token=${encodeURIComponent(token)}`);
     const d = await r.json();
     if (d.error) throw new Error(d.error.message);
+    const accounts = (d.data || []).filter(a => a.account_status !== 2); // filter disabled
+    if (!accounts.length) {
+      err.textContent = 'No active Meta ad accounts found. Make sure you have Business Manager access.';
+      btn.disabled = false; btn.innerHTML = _metaOAuthIcon(); return;
+    }
     localStorage.setItem('meta_token', token);
-    localStorage.setItem('meta_account', `act_${account}`);
-    document.getElementById('meta-fields').style.display = 'none';
-    document.getElementById('meta-connected-badge').style.display = 'flex';
-    document.getElementById('meta-badge-account').textContent = d.name || `act_${account}`;
-    btn.disabled = false; btn.innerHTML = 'Continue →';
-    btn.onclick = () => { setNodeDone(2); showCard(3); };
+    if (accounts.length === 1) {
+      const acc = accounts[0];
+      localStorage.setItem('meta_account', acc.id);
+      showMetaConnected(acc.name || acc.id, acc.id);
+    } else {
+      // Multiple accounts — show picker
+      const sel = document.getElementById('meta-account-select');
+      sel.innerHTML = '<option value="">Choose an account…</option>' +
+        accounts.map(a => `<option value="${_esc(a.id)}">${_esc(a.name || a.id)} (${_esc(a.id)})</option>`).join('');
+      btn.style.display = 'none';
+      document.querySelector('.oauth-info').style.display = 'none';
+      document.getElementById('meta-account-picker').style.display = 'block';
+    }
   } catch(e) {
-    document.getElementById('err-2').textContent = e.message || 'Could not verify — check your token and account ID';
-    btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> Connect Meta Ads';
+    err.textContent = e.message || 'Could not fetch ad accounts — check your permissions.';
+    btn.disabled = false; btn.innerHTML = _metaOAuthIcon();
   }
 }
 
-// ── Google Ads connection ─────────────────────────────────────────────────────
-function connectGoogle() {
-  const accountRaw = document.getElementById('google-account').value.trim();
-  const token = document.getElementById('google-token').value.trim();
-  document.getElementById('err-3').textContent = '';
-  if (!accountRaw || !token) { document.getElementById('err-3').textContent = 'Both fields are required'; return; }
-  const account = accountRaw.replace(/-/g, '');
-  if (!/^\d+$/.test(account)) { document.getElementById('err-3').textContent = 'Customer ID must be numeric (e.g. 123-456-7890)'; return; }
-  localStorage.setItem('google_token', token);
-  localStorage.setItem('google_account', account);
-  document.getElementById('google-fields').style.display = 'none';
-  document.getElementById('google-connected-badge').style.display = 'flex';
-  document.getElementById('google-badge-account').textContent = accountRaw;
+function selectMetaAccount() {
+  const sel = document.getElementById('meta-account-select');
+  const val = sel.value;
+  if (!val) { document.getElementById('err-2b').textContent = 'Please select an account.'; return; }
+  const name = sel.options[sel.selectedIndex].text;
+  localStorage.setItem('meta_account', val);
+  showMetaConnected(name, val);
+}
+
+function showMetaConnected(name, id) {
+  document.getElementById('meta-account-picker').style.display = 'none';
+  document.getElementById('btn-meta').style.display = 'none';
+  document.getElementById('err-2').textContent = '';
+  const infoEl = document.querySelector('#card-2 .oauth-info');
+  if (infoEl) infoEl.style.display = 'none';
+  document.getElementById('meta-connected-badge').style.display = 'flex';
+  document.getElementById('meta-badge-account').textContent = id || name;
+  setNodeDone(2);
+  setTimeout(() => showCard(3), 700);
+}
+
+function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── Google OAuth ──────────────────────────────────────────────────────────────
+function _googleBtnHTML() {
+  return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Continue with Google';
+}
+
+function startGoogleOAuth() {
+  const err = document.getElementById('err-3');
+  err.textContent = '';
+  if (!window.GOOGLE_OAUTH_CLIENT_ID || window.GOOGLE_OAUTH_CLIENT_ID.includes('YOUR_GOOGLE')) {
+    err.textContent = 'Google OAuth not configured — contact support@ephermal.app';
+    return;
+  }
+  if (!window.google?.accounts?.oauth2) {
+    err.textContent = 'Loading Google SDK — please wait a moment and try again.';
+    return;
+  }
   const btn = document.getElementById('btn-google');
-  btn.innerHTML = 'Go to Dashboard →';
-  btn.onclick = finishSetup;
+  btn.disabled = true; btn.textContent = 'Connecting…';
+  const client = google.accounts.oauth2.initTokenClient({
+    client_id: window.GOOGLE_OAUTH_CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/adwords',
+    callback: (response) => {
+      if (response.error) {
+        err.textContent = response.error_description || 'Google sign-in failed — please try again.';
+        btn.disabled = false; btn.innerHTML = _googleBtnHTML();
+        return;
+      }
+      if (response.access_token) {
+        localStorage.setItem('google_token', response.access_token);
+        btn.style.display = 'none';
+        document.querySelector('#card-3 .oauth-info').style.display = 'none';
+        document.getElementById('google-account-area').style.display = 'block';
+      }
+    }
+  });
+  client.requestAccessToken();
+}
+
+function saveGoogleAccount() {
+  const raw = document.getElementById('google-account').value.trim();
+  const err = document.getElementById('err-3b');
+  err.textContent = '';
+  if (!raw) { err.textContent = 'Please enter your Customer ID'; return; }
+  const account = raw.replace(/-/g, '');
+  if (!/^\d{7,12}$/.test(account)) { err.textContent = 'Customer ID must be 7–12 digits (e.g. 123-456-7890)'; return; }
+  localStorage.setItem('google_account', account);
+  document.getElementById('google-account-area').style.display = 'none';
+  document.getElementById('google-connected-badge').style.display = 'flex';
+  document.getElementById('google-badge-account').textContent = raw;
   setNodeDone(3);
+  setTimeout(finishSetup, 700);
 }
 
 // ── Finish setup ──────────────────────────────────────────────────────────────
@@ -376,6 +481,10 @@ async function boot() {
 }
 boot();
 </script>
+<!-- Facebook SDK — required for Meta OAuth -->
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
+<!-- Google Identity Services — required for Google Ads OAuth -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script
   async crossorigin="anonymous"
   data-clerk-publishable-key="pk_live_Y2xlcmsuZXBoZXJtYWwuYXBwJA"

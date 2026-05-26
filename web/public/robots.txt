@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+Sitemap: https://ephermal.app/sitemap.xml
