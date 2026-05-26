@@ -1,7 +1,7 @@
 {
   "buildCommand": "cd web && npm run build",
-  "outputDirectory": "web/out",
-  "installCommand": "git submodule update --init && cd web && npm install",
+  "outputDirectory": "web/.next",
+  "installCommand": "cd web && npm install",
   "headers": [
     {
       "source": "/(.*)",
