@@ -1,6 +1,6 @@
 (function () {
   // PUBLISHABLE key — safe in client code. Never put sk_... here.
-  window.CLERK_PUBLISHABLE_KEY = 'pk_test_aHVtYW5lLXNocmltcC00Mi5jbGVyay5hY2NvdW50cy5kZXYk';
+  window.CLERK_PUBLISHABLE_KEY = 'pk_live_Y2xlcmsuZXBoZXJtYWwuYXBwJA';
 
   // API base URL — hardcoded, NOT user-controllable via localStorage (prevents JWT theft)
   window.API_BASE = 'https://YOUR_BACKEND/webhook/ephermal';
@@ -15,13 +15,6 @@
     growth: 'https://buy.stripe.com/REPLACE_GROWTH',
     scale: 'https://buy.stripe.com/REPLACE_SCALE',
   };
-
-  // Shopify app credentials — set these after creating your Shopify Partner app
-  window.SHOPIFY_APP_KEY = 'YOUR_SHOPIFY_APP_CLIENT_ID';
-  // n8n webhook URL for Shopify OAuth callback (workflow 14)
-  window.SHOPIFY_CALLBACK_URL = 'https://YOUR_N8N_DOMAIN/webhook/ephermal/shopify/callback';
-  // Where n8n sends the user back after OAuth completes (your app's setup page)
-  window.SHOPIFY_SETUP_RETURN_URL = 'https://YOUR_APP_DOMAIN/setup.html';
 
   // Client-side rate limiter — real protection must be at CDN/backend level
   const _buckets = {};
