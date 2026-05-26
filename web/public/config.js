@@ -16,6 +16,13 @@
     scale: 'https://buy.stripe.com/REPLACE_SCALE',
   };
 
+  // Shopify app credentials — set these after creating your Shopify Partner app
+  window.SHOPIFY_APP_KEY = 'YOUR_SHOPIFY_APP_CLIENT_ID';
+  // n8n webhook URL for Shopify OAuth callback (workflow 14)
+  window.SHOPIFY_CALLBACK_URL = 'https://YOUR_N8N_DOMAIN/webhook/ephermal/shopify/callback';
+  // Where n8n sends the user back after OAuth completes
+  window.SHOPIFY_SETUP_RETURN_URL = 'https://ephermal.app/setup.html';
+
   // Client-side rate limiter — real protection must be at CDN/backend level
   const _buckets = {};
   window.RateLimit = {
