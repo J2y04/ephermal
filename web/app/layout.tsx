@@ -80,8 +80,7 @@ export const metadata: Metadata = {
     apple: '/ephermal.png',
   },
   verification: {
-    // Add your Google Search Console verification code here:
-    // google: 'YOUR_GOOGLE_SITE_VERIFICATION_CODE',
+    google: 'Ma33K9sWndhjW6Tq7lZ1J22xZfHe9k1RQl5JuI4enU0',
   },
 };
 
