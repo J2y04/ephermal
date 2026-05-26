@@ -2475,6 +2475,7 @@ async function createUGCForNewProduct() {
   if (!_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle) {
     window.location.href = '/setup.html'; return;
   }
+  checkMetaOAuthReturn(); // Handle redirect back from Meta OAuth
   refreshMetaStatus();
   refreshGoogleStatus();
   updatePlatformBanner();
@@ -2496,43 +2497,40 @@ async function createUGCForNewProduct() {
   await Promise.all([loadOverview(), loadCampaigns(), loadCreatives('pending_review','creatives-body')]);
 })();
 
-// ── DASHBOARD META OAUTH ──────────────────────────────────────────────────────
+// ── DASHBOARD META OAUTH (server-side redirect — no FB SDK needed) ────────────
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-window.fbAsyncInit = function() {
-  const id = window.META_APP_ID;
-  if (id && id !== 'YOUR_META_APP_ID') FB.init({appId:id, cookie:true, xfbml:false, version:'v19.0'});
-};
-
 function dashStartMetaOAuth() {
-  const id = window.META_APP_ID;
-  if (!id || id === 'YOUR_META_APP_ID') { showToast('Meta App ID not configured in config.js', 'error'); return; }
-  if (typeof FB === 'undefined') { showToast('Loading Facebook SDK — please try again in a moment', 'warn'); return; }
-  FB.login(function(res) {
-    if (res.authResponse) { dashFetchMetaAdAccounts(res.authResponse.accessToken); }
-    else { showToast('Meta login cancelled', 'warn'); }
-  }, {scope:'ads_read,ads_management,business_management'});
+  const appId = window.META_APP_ID;
+  const callbackUrl = window.META_CALLBACK_URL;
+  if (!appId || appId === 'YOUR_META_APP_ID' || !callbackUrl) { showToast('Meta not configured in config.js', 'error'); return; }
+  const scope = 'ads_read,ads_management,business_management';
+  window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${scope}&state=dashboard`;
 }
 
-async function dashFetchMetaAdAccounts(token) {
-  try {
-    const r = await fetch(`https://graph.facebook.com/v19.0/me/adaccounts?fields=name,account_id&access_token=${token}`);
-    const data = await r.json();
-    if (data.error) { showToast('Meta: ' + data.error.message, 'error'); return; }
-    const accounts = data.data || [];
-    if (!accounts.length) { showToast('No ad accounts found on this Facebook account', 'warn'); return; }
-    localStorage.setItem('meta_token', token);
-    if (accounts.length === 1) {
-      localStorage.setItem('meta_account', accounts[0].id);
-      dashShowMetaBadge(accounts[0].name, accounts[0].id);
-    } else {
-      const sel = document.getElementById('dash-meta-select');
-      sel.innerHTML = accounts.map(a=>`<option value="${_esc(a.id)}">${_esc(a.name)} (${_esc(a.id)})</option>`).join('');
-      localStorage.setItem('meta_account', accounts[0].id);
-      const picker = document.getElementById('dash-meta-picker'); if (picker) picker.style.display='';
-      const btn = document.getElementById('dash-meta-oauth-btn'); if (btn) btn.style.display='none';
-    }
-  } catch(e) { showToast('Failed to fetch Meta ad accounts', 'error'); }
+function checkMetaOAuthReturn() {
+  const p = new URLSearchParams(window.location.search);
+  const token = p.get('meta_token');
+  const accountsRaw = p.get('meta_accounts');
+  const metaError = p.get('meta_error');
+  if (!token && !metaError) return;
+  window.history.replaceState({}, document.title, window.location.pathname);
+  if (metaError) { showToast('Meta auth failed: ' + decodeURIComponent(metaError), 'error'); return; }
+  let accounts = [];
+  try { accounts = JSON.parse(decodeURIComponent(accountsRaw || '[]')); } catch(e) {}
+  localStorage.setItem('meta_token', token);
+  if (!accounts.length) { showToast('No ad accounts found on this Facebook account', 'warn'); return; }
+  if (accounts.length === 1) {
+    localStorage.setItem('meta_account', accounts[0].id);
+    dashShowMetaBadge(accounts[0].name, accounts[0].id);
+  } else {
+    const sel = document.getElementById('dash-meta-select');
+    if (sel) sel.innerHTML = accounts.map(a=>`<option value="${_esc(a.id)}">${_esc(a.name)} (${_esc(a.id)})</option>`).join('');
+    localStorage.setItem('meta_account', accounts[0].id);
+    const picker = document.getElementById('dash-meta-picker'); if (picker) picker.style.display='';
+    const btn = document.getElementById('dash-meta-oauth-btn'); if (btn) btn.style.display='none';
+    navigate('settings');
+  }
 }
 
 function dashSelectMetaAccount() {
@@ -2609,16 +2607,8 @@ function dashDisconnectGoogle() {
 </script>
 <!-- fbAsyncInit must be defined BEFORE the SDK script executes -->
 <script>
-window.fbAsyncInit = function() {
-  var id = window.META_APP_ID;
-  if (id && id !== 'YOUR_META_APP_ID') {
-    FB.init({ appId: id, cookie: true, xfbml: false, version: 'v19.0' });
-  }
-};
 </script>
-<!-- Facebook SDK (async only — defer conflicts with async) -->
-<script async crossorigin="anonymous" src="https://connect.facebook.net/en_US/sdk.js"></script>
-<!-- Google Identity Services -->
+<!-- Google Identity Services — for Google Ads OAuth -->
 <script async defer src="https://accounts.google.com/gsi/client"></script>
 </body>
 </html>

@@ -1,0 +1,45 @@
+{
+  "name": "Ephermal - E Meta OAuth Callback",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "ephermal/meta/callback",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ee000001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "we000001-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const q=$input.item.json.query||{};\nconst code=q.code;\nconst state=q.state||'setup';\nconst page=state==='dashboard'?'dashboard.html':'setup.html';\nconst base='https://ephermal.app';\n\nif(!code){\n  return[{json:{redirectUrl:`${base}/${page}?meta_error=missing_code`}}];\n}\n\nconst appId=$env.META_APP_ID;\nconst appSecret=$env.META_APP_SECRET;\nconst callbackUrl=$env.META_CALLBACK_URL||'https://jamhich.de/webhook/ephermal/meta/callback';\n\nif(!appId||!appSecret){\n  return[{json:{redirectUrl:`${base}/${page}?meta_error=server_not_configured`}}];\n}\n\n// Exchange code for access token\nconst tokenRes=await fetch(`https://graph.facebook.com/v19.0/oauth/access_token?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&client_secret=${appSecret}&code=${code}`);\nconst tokenData=await tokenRes.json();\n\nif(tokenData.error||!tokenData.access_token){\n  const msg=encodeURIComponent((tokenData.error&&tokenData.error.message)||'token_exchange_failed');\n  return[{json:{redirectUrl:`${base}/${page}?meta_error=${msg}`}}];\n}\n\nconst token=tokenData.access_token;\n\n// Fetch ad accounts\nconst accRes=await fetch(`https://graph.facebook.com/v19.0/me/adaccounts?fields=name,account_id&limit=50&access_token=${token}`);\nconst accData=await accRes.json();\nconst accounts=(accData.data||[]).map(a=>({id:a.id,name:a.name}));\n\nconst redirectUrl=`${base}/${page}?meta_token=${encodeURIComponent(token)}&meta_accounts=${encodeURIComponent(JSON.stringify(accounts))}`;\nreturn[{json:{redirectUrl}}];"
+      },
+      "id": "ee000001-0000-0000-0000-000000000002",
+      "name": "Exchange Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "redirect",
+        "redirectURL": "={{ $json.redirectUrl }}"
+      },
+      "id": "ee000001-0000-0000-0000-000000000003",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [720, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Exchange Code", "type": "main", "index": 0 }]] },
+    "Exchange Code": { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" }
+}

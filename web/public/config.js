@@ -9,6 +9,10 @@
   // Set "App Domain" to ephermal.app and add "Facebook Login" product
   window.META_APP_ID = '37434197291344952';
 
+  // Meta OAuth callback — n8n webhook that receives the code from Meta and exchanges it for a token
+  // Add this URL to your Meta app: Facebook Login → Settings → Valid OAuth Redirect URIs
+  window.META_CALLBACK_URL = 'https://jamhich.de/webhook/ephermal/meta/callback';
+
   // Google OAuth Client ID — create at console.cloud.google.com → APIs & Services → Credentials
   // Add https://ephermal.app and https://ephermal.app/setup.html to "Authorized JavaScript origins"
   window.GOOGLE_OAUTH_CLIENT_ID = '678288442294-2jush076ag5ltauja1aq6njdp96tvtm3.apps.googleusercontent.com';
