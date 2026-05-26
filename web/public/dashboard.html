@@ -804,8 +804,6 @@ select.form-input{cursor:pointer}
               </svg>
               Connect with Shopify
             </button>
-            <div class="form-group"><label class="form-label" style="font-size:11px;opacity:.6">Access Token (manual override)</label><input class="form-input" id="s-shopify-token" type="password" placeholder="shpat_xxxxxxxxxxxxxxxxxxxxxxxx"></div>
-            <div class="form-group"><label class="form-label">Store Domain</label><input class="form-input" id="s-shopify-store" placeholder="yourstore.myshopify.com"><div style="font-size:11px;color:var(--muted);margin-top:4px">Your myshopify.com domain. Used for live product sync and ad creation.</div></div>
           </div>
           <div style="font-size:12px;color:var(--muted)">Your credentials are stored locally and used only to manage your ad accounts. At least one ad platform must be connected.</div>
           <div style="display:flex;justify-content:flex-end"><button class="btn-save" onclick="saveIntegrations()">Save Settings</button></div>
@@ -1825,8 +1823,6 @@ function _loadSettingsFieldsInner() {
     const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display = 'flex';
   }
   const su = document.getElementById('s-store-url'); if (su) su.value = localStorage.getItem('last_analyzed_store') || '';
-  const sht = document.getElementById('s-shopify-token'); if (sht) sht.value = localStorage.getItem('shopify_token') ? '••••••••' : '';
-  const shs = document.getElementById('s-shopify-store'); if (shs) shs.value = localStorage.getItem('shopify_store') || '';
   refreshDashShopifyState();
   // Show/hide Google Ads paywall
   const paywall = document.getElementById('google-ads-paywall');
@@ -1845,8 +1841,6 @@ function _loadSettingsFieldsInner() {
 
 async function saveIntegrations() {
   const storeUrl = (document.getElementById('s-store-url')?.value || '').trim();
-  const shopifyToken = (document.getElementById('s-shopify-token')?.value || '').trim();
-  const shopifyStore = (document.getElementById('s-shopify-store')?.value || '').trim();
   const btn = document.querySelector('#page-settings .btn-save[onclick="saveIntegrations()"]');
   if (btn) { btn.disabled=true; btn.textContent='Saving…'; }
   // Require at least one ad platform connected via OAuth
@@ -1858,8 +1852,6 @@ async function saveIntegrations() {
     return;
   }
   if (storeUrl) localStorage.setItem('last_analyzed_store', storeUrl);
-  if (shopifyToken && shopifyToken !== '••••••••') localStorage.setItem('shopify_token', shopifyToken);
-  if (shopifyStore) localStorage.setItem('shopify_store', shopifyStore);
   saveIntegrationsToSupabase('', localStorage.getItem('meta_account'), storeUrl);
   const analysisUrlEl = document.getElementById('analysis-url');
   if (storeUrl && analysisUrlEl && !analysisUrlEl.value) analysisUrlEl.value = storeUrl;
