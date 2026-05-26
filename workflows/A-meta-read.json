@@ -1,0 +1,54 @@
+{
+  "name": "Ephermal - A Meta Read (overview / campaigns / audiences / pixel)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "ephermal/meta/read",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "aa000001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "wa000001-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const h=$input.item.json.headers||{};\nconst q=$input.item.json.query||{};\nconst token=h['x-meta-token'];\nconst account=h['x-meta-account'];\nconst action=(q.action||'overview').toLowerCase();\nif(!token||!account)return[{json:{error:'Missing Meta credentials'}}];\nconst GRAPH='https://graph.facebook.com/v19.0';\nlet result;\n\nif(action==='overview'){\n  const r=await fetch(`${GRAPH}/${account}/insights?fields=spend,impressions,clicks,ctr,actions,purchase_roas&date_preset=last_30d&level=account&access_token=${token}`);\n  const d=(await r.json()).data?.[0]||{};\n  const re=(d.purchase_roas||[]).find(x=>x.action_type==='omni_purchase'||x.action_type==='purchase');\n  const pa=(d.actions||[]).find(a=>a.action_type==='purchase'||a.action_type==='omni_purchase');\n  result={roas:Math.round((re?parseFloat(re.value):0)*100)/100,total_spend:parseFloat(d.spend||0),total_impressions:parseInt(d.impressions||0),total_clicks:parseInt(d.clicks||0),total_conversions:pa?parseInt(pa.value):0,total_creatives:0};\n\n}else if(action==='campaigns'){\n  const[cRes,iRes]=await Promise.all([\n    fetch(`${GRAPH}/${account}/campaigns?fields=id,name,status,objective,daily_budget,lifetime_budget,budget_remaining,start_time,stop_time&limit=100&access_token=${token}`),\n    fetch(`${GRAPH}/${account}/insights?fields=campaign_id,campaign_name,spend,impressions,clicks,ctr,actions,purchase_roas&level=campaign&date_preset=last_30d&limit=100&access_token=${token}`)\n  ]);\n  const campaigns=(await cRes.json()).data||[];\n  const insightMap={};\n  for(const ins of((await iRes.json()).data||[]))insightMap[ins.campaign_id]=ins;\n  result=campaigns.map(c=>{\n    const ins=insightMap[c.id]||{};\n    const re=(ins.purchase_roas||[]).find(x=>x.action_type==='omni_purchase'||x.action_type==='purchase');\n    const pa=(ins.actions||[]).find(a=>a.action_type==='purchase'||a.action_type==='omni_purchase');\n    return{\n      id:c.id,name:c.name,\n      status:c.status==='ACTIVE'?'live':c.status==='PAUSED'?'paused':'draft',\n      platform:'meta',objective:c.objective||null,\n      daily_budget:c.daily_budget?parseFloat(c.daily_budget)/100:null,\n      lifetime_budget:c.lifetime_budget?parseFloat(c.lifetime_budget)/100:null,\n      roas:re?Math.round(parseFloat(re.value)*100)/100:null,\n      total_spend:ins.spend?parseFloat(ins.spend):0,\n      impressions:ins.impressions?parseInt(ins.impressions):0,\n      clicks:ins.clicks?parseInt(ins.clicks):0,\n      ctr:ins.ctr?Math.round(parseFloat(ins.ctr)*100)/100:0,\n      conversions:pa?parseInt(pa.value):0\n    };\n  });\n\n}else if(action==='audiences'){\n  const r=await fetch(`${GRAPH}/${account}/customaudiences?fields=id,name,approximate_count,subtype,delivery_status,description,creation_time&limit=100&access_token=${token}`);\n  const audiences=((await r.json()).data||[]).map(a=>({\n    id:a.id,name:a.name,\n    approximate_count:a.approximate_count||0,\n    subtype:a.subtype||'CUSTOM',\n    delivery_status:a.delivery_status||{},\n    description:a.description||'',\n    creation_time:a.creation_time||''\n  }));\n  result={audiences,total:audiences.length};\n\n}else if(action==='pixel'){\n  const r=await fetch(`${GRAPH}/${account}/adspixels?fields=id,name,last_fired_time,creation_time,is_created_by_business,owner_business&access_token=${token}`);\n  const pixels=((await r.json()).data||[]).map(p=>({\n    id:p.id,name:p.name||'Meta Pixel',\n    last_fired_time:p.last_fired_time||null,\n    creation_time:p.creation_time||null\n  }));\n  result={pixels,total:pixels.length};\n\n}else{\n  result={error:`Unknown action: ${action}`};\n}\n\nreturn[{json:result}];"
+      },
+      "id": "aa000001-0000-0000-0000-000000000002",
+      "name": "Router",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "aa000001-0000-0000-0000-000000000003",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Router", "type": "main", "index": 0 }]] },
+    "Router":  { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}

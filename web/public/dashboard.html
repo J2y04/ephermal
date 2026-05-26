@@ -1428,7 +1428,7 @@ async function loadOverview() {
     if (el && el.textContent === '—') el.classList.add('skeleton');
   });
   try {
-    const r = await authFetch('/overview');
+    const r = await authFetch('/meta/read?action=overview');
     if (!r || !r.ok) return;
     const d = await r.json();
     ['stat-roas','stat-spend','stat-creatives','stat-conversions'].forEach(id => {
@@ -1508,10 +1508,11 @@ async function toggleCampaign(id, checkbox) {
   const newStatus = isGoogle
     ? (checkbox.checked ? 'ENABLED' : 'PAUSED')   // Google uses ENABLED
     : (checkbox.checked ? 'ACTIVE'  : 'PAUSED');   // Meta uses ACTIVE
-  const togglePath = isGoogle ? '/google/campaigns/toggle' : '/campaigns/toggle';
+  const togglePath = isGoogle ? '/google/ads' : '/meta/write';
+  const toggleAction = isGoogle ? 'toggle' : 'toggle';
   checkbox.disabled = true;
   try {
-    const r = await authFetch(togglePath, {method:'POST', body:JSON.stringify({campaign_id: id, status: newStatus})});
+    const r = await authFetch(togglePath, {method:'POST', body:JSON.stringify({action: toggleAction, campaign_id: id, status: newStatus})});
     if (r && r.ok) {
       if (campaignMap[id]) campaignMap[id].status = checkbox.checked ? 'live' : 'paused';
       const tlabel = document.getElementById('cd-toggle-label');
@@ -1529,7 +1530,7 @@ async function toggleCampaign(id, checkbox) {
 
 async function loadCampaigns() {
   try {
-    const rMeta = await authFetch('/campaigns');
+    const rMeta = await authFetch('/meta/read?action=campaigns');
     if (!rMeta || !rMeta.ok) return;
     const metaCampaigns = await rMeta.json();
 
@@ -1537,7 +1538,7 @@ async function loadCampaigns() {
     let googleCampaigns = [];
     if (canAccess('googleads') && localStorage.getItem('google_token') && localStorage.getItem('google_account')) {
       try {
-        const rGoogle = await authFetch('/google/campaigns');
+        const rGoogle = await authFetch('/google/ads', {method:'POST', body:JSON.stringify({action:'campaigns'})});
         if (rGoogle && rGoogle.ok) googleCampaigns = await rGoogle.json();
       } catch(e) {}
     }
@@ -1579,9 +1580,9 @@ async function launchCampaign() {
   const btn = document.getElementById('lc-submit-btn');
   btn.disabled = true; btn.textContent = 'Launching…';
   try {
-    const r = await authFetch('meta/campaigns/create', {
+    const r = await authFetch('/meta/write', {
       method: 'POST',
-      body: JSON.stringify({ name, objective, daily_budget, countries })
+      body: JSON.stringify({ action: 'create_campaign', name, objective, daily_budget, countries })
     });
     if (!r) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;margin-right:5px;vertical-align:-2px"><polygon points="5 3 19 12 5 21 5 3"/></svg>Launch Campaign'; return; }
     const d = await r.json();
@@ -1724,7 +1725,7 @@ async function analyzeStore() {
   btn.disabled=true; btn.textContent='Analysing…';
   const result = document.getElementById('analysis-result');
   try {
-    const r = await authFetch('/store/analyze', {method:'POST', body:JSON.stringify({url})});
+    const r = await authFetch('/ai', {method:'POST', body:JSON.stringify({action:'analyze', url})});
     if (!r) { showToast('Request failed — please try again', 'error'); return; }
     if (!r.ok) { const d = await r.json().catch(()=>({})); showToast(d.detail || 'Analysis failed', 'error'); return; }
     const d = await r.json();
@@ -1836,9 +1837,6 @@ async function saveIntegrations() {
   saveIntegrationsToSupabase(metaToken, metaAccount, storeUrl);
   const analysisUrlEl = document.getElementById('analysis-url');
   if (storeUrl && analysisUrlEl && !analysisUrlEl.value) analysisUrlEl.value = storeUrl;
-  try {
-    await authFetch('/integrations/save', {method:'POST', body:JSON.stringify({meta_token:metaToken!=='••••••••'?metaToken:undefined, meta_account_id:metaAccount, store_url:storeUrl})});
-  } catch(e) {}
   refreshMetaStatus();
   refreshGoogleStatus();
   updatePlatformBanner();
@@ -2033,9 +2031,9 @@ async function sendAIMessage() {
   const btn = document.getElementById('ai-send-btn');
   btn.disabled = true;
   try {
-    const r = await authFetch('/ai/chat', {
+    const r = await authFetch('/ai', {
       method: 'POST',
-      body: JSON.stringify({ message: msg, context: aiGetContext() })
+      body: JSON.stringify({ action: 'chat', message: msg, context: aiGetContext() })
     });
     typingEl.remove();
     if (r && r.ok) {
@@ -2062,9 +2060,9 @@ async function aiGenerateDescription() {
   btn.textContent = 'Generating…';
   btn.disabled = true;
   try {
-    const r = await authFetch('/ai/generate-description', {
+    const r = await authFetch('/ai', {
       method: 'POST',
-      body: JSON.stringify({ store_url: storeUrl, context: aiGetContext() })
+      body: JSON.stringify({ action: 'describe', store_url: storeUrl, context: aiGetContext() })
     });
     if (r && r.ok) {
       const d = await r.json();
@@ -2093,7 +2091,7 @@ async function loadPixelStatus() {
   const el = document.getElementById('audience-pixel-content');
   if (!el) return;
   try {
-    const r = await authFetch('/meta/pixel');
+    const r = await authFetch('/meta/read?action=pixel');
     if (!r || !r.ok) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">Could not load pixel data — check Meta credentials.</p>'; return; }
     const d = await r.json();
     const pixels = d.pixels || d.data || [];
@@ -2115,7 +2113,7 @@ async function loadAudiences() {
   if (!el) return;
   el.innerHTML = '<div class="skeleton" style="height:180px;border-radius:10px"></div>';
   try {
-    const r = await authFetch('/meta/audiences');
+    const r = await authFetch('/meta/read?action=audiences');
     if (!r || !r.ok) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:12px 0">Could not load audiences — check Meta credentials.</p>'; return; }
     const d = await r.json();
     const audiences = d.audiences || d.data || [];
@@ -2140,7 +2138,7 @@ async function createAudience() {
   const btn = document.querySelector('#page-audience .btn-save[onclick="createAudience()"]');
   if (btn) { btn.disabled=true; btn.textContent='Creating…'; }
   try {
-    const r = await authFetch('/meta/audiences/create', {method:'POST', body:JSON.stringify({name, type, description:desc})});
+    const r = await authFetch('/meta/write', {method:'POST', body:JSON.stringify({action:'create_audience', name, type, description:desc})});
     if (r && r.ok) {
       showToast('Audience created — refreshing list');
       if(document.getElementById('aud-name')) document.getElementById('aud-name').value='';
@@ -2161,7 +2159,7 @@ async function createLookalike() {
   const btn = document.querySelector('#page-audience .btn-save[onclick="createLookalike()"]');
   if (btn) { btn.disabled=true; btn.textContent='Creating…'; }
   try {
-    const r = await authFetch('/meta/audiences/lookalike', {method:'POST', body:JSON.stringify({source_audience_id:source, country, ratio})});
+    const r = await authFetch('/meta/write', {method:'POST', body:JSON.stringify({action:'create_lookalike', source_audience_id:source, country, ratio})});
     if (r && r.ok) {
       showToast('Lookalike audience created — may take a few minutes to populate');
       if(document.getElementById('look-source')) document.getElementById('look-source').value='';

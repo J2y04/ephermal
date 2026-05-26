@@ -1,0 +1,54 @@
+{
+  "name": "Ephermal - D AI (chat / describe / analyze)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ephermal/ai",
+        "responseMode": "responseNode",
+        "options": { "allowedOrigins": "*" }
+      },
+      "id": "ad000001-0000-0000-0000-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "wd000001-0000-0000-0000-000000000001"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body=$input.item.json.body||{};\nconst action=(body.action||'').toLowerCase();\nconst apiKey=$env.ANTHROPIC_API_KEY;\nif(!apiKey)return[{json:{error:'ANTHROPIC_API_KEY env var not set in n8n'}}];\n\nconst claudeReq=async(systemPrompt,userMsg,maxTokens)=>{\n  const payload={model:'claude-haiku-4-5-20251001',max_tokens:maxTokens||1024,messages:[{role:'user',content:userMsg}]};\n  if(systemPrompt)payload.system=systemPrompt;\n  const r=await fetch('https://api.anthropic.com/v1/messages',{\n    method:'POST',\n    headers:{'x-api-key':apiKey,'anthropic-version':'2023-06-01','content-type':'application/json'},\n    body:JSON.stringify(payload)\n  });\n  const d=await r.json();\n  return(d.content?.[0]?.text||'').trim();\n};\n\nlet result;\n\nif(action==='chat'){\n  const message=(body.message||'').trim();\n  if(!message)return[{json:{error:'Empty message'}}];\n  const ctx=body.context||{};\n  const systemPrompt=`You are Ephermal AI — an expert Meta advertising assistant built into the Ephermal platform for Shopify brands.\\n\\nUser's current account stats:\\n- ROAS: ${ctx.roas||'unknown'}\\n- Total Spend: ${ctx.spend||'unknown'}\\n- Creatives Made: ${ctx.creatives||'unknown'}\\n- Conversions: ${ctx.conversions||'unknown'}\\n- Store: ${ctx.store_url||'not analysed'}\\n\\nYou help with: improving ROAS, writing UGC scripts, Meta audience targeting, budget allocation, creative performance analysis, and Meta Ads strategy. Be concise, actionable, and specific. Speak like a senior performance marketer.`;\n  const reply=await claudeReq(systemPrompt,message,1024);\n  result={reply:reply||'Sorry, I could not generate a response.'};\n\n}else if(action==='describe'){\n  const storeUrl=body.store_url||(body.context||{}).store_url||'';\n  const prompt=`Write a compelling UGC ad product description for a Meta Ads video. The store is${storeUrl?': '+storeUrl:' a Shopify brand'}. Write 2-3 punchy sentences that a UGC creator would naturally say on camera. Focus on the main benefit, a pain point it solves, and a subtle CTA. Keep it under 100 words. Return ONLY the description, no preamble.`;\n  const description=await claudeReq(null,prompt,256);\n  result={description};\n\n}else if(action==='analyze'){\n  const url=(body.url||'').trim();\n  if(!url||!url.startsWith('http'))return[{json:{error:'Invalid URL'}}];\n  let html='';\n  try{\n    const pageRes=await fetch(url,{headers:{'User-Agent':'Mozilla/5.0 (compatible; Ephermal/1.0)'}});\n    html=await pageRes.text();\n  }catch(e){}\n  const text=html\n    .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi,'')\n    .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi,'')\n    .replace(/<[^>]+>/g,' ')\n    .replace(/\\s+/g,' ')\n    .trim()\n    .slice(0,3000);\n  const prompt=`Analyse this e-commerce store and return a JSON object with exactly these keys:\\n{\\n  \"summary\": \"1-2 sentence brand/product summary\",\\n  \"target_audience\": \"1-2 sentence description of ideal customer\",\\n  \"products\": [\"product1\", \"product2\", \"product3\"],\\n  \"ad_opportunities\": \"2-3 specific Meta ad angles that would work well\",\\n  \"meta_strategy\": \"Recommended Meta Ads strategy: campaign objective, audience targeting approach, and creative angle\"\\n}\\n\\nStore URL: ${url}\\nStore page content (truncated):\\n${text}\\n\\nReturn ONLY valid JSON, no markdown, no explanation.`;\n  const raw=await claudeReq(null,prompt,1024);\n  let parsed={};\n  try{parsed=JSON.parse(raw);}catch(e){const m=raw.match(/\\{[\\s\\S]*\\}/);try{parsed=JSON.parse(m?.[0]||'{}');}catch(e2){}}\n  result={\n    summary:parsed.summary||'Could not analyse store.',\n    target_audience:parsed.target_audience||'—',\n    products:Array.isArray(parsed.products)?parsed.products:[],\n    ad_opportunities:parsed.ad_opportunities||'—',\n    meta_strategy:parsed.meta_strategy||'—'\n  };\n\n}else{\n  result={error:`Unknown action: ${action}`};\n}\n\nreturn[{json:result}];"
+      },
+      "id": "ad000001-0000-0000-0000-000000000002",
+      "name": "Router",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.item.json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Content-Type", "value": "application/json" }
+            ]
+          }
+        }
+      },
+      "id": "ad000001-0000-0000-0000-000000000003",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [720, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Router", "type": "main", "index": 0 }]] },
+    "Router":  { "main": [[{ "node": "Respond", "type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" }
+}
