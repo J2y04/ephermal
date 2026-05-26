@@ -375,6 +375,12 @@ select.form-input{cursor:pointer}
     </div>
   </div>
   <div class="nav-section">
+    <div class="nav-label">Store</div>
+    <div class="nav-item" data-page="products" onclick="navigate('products')">
+      <svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>Store Products
+    </div>
+  </div>
+  <div class="nav-section">
     <div class="nav-label">Account</div>
     <div class="nav-item" data-page="multistore" id="nav-multistore" onclick="handleNavClick('multistore')">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>Multi-Store
@@ -826,6 +832,70 @@ select.form-input{cursor:pointer}
       </div>
     </div>
 
+    <!-- STORE PRODUCTS -->
+    <div class="page" id="page-products">
+      <div class="panel fade-in" style="margin-bottom:20px">
+        <div class="panel-head">
+          <div class="panel-title">Store Products</div>
+          <div style="display:flex;align-items:center;gap:12px">
+            <div id="products-sync-status" style="font-size:12px;color:var(--muted)"></div>
+            <button id="btn-sync-products" onclick="syncProducts()" style="padding:9px 18px;background:#95BF47;border:none;border-radius:10px;color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:7px;transition:background .2s" onmouseover="this.style.background='#7ea83a'" onmouseout="this.style.background='#95BF47'">
+              <svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Sync Products
+            </button>
+          </div>
+        </div>
+        <div id="products-shopify-warning" style="display:none;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:11px;padding:14px 16px;margin:0 24px 16px;font-size:13px;color:var(--warning);align-items:center;gap:10px">
+          <svg viewBox="0 0 24 24" fill="none" style="width:18px;height:18px;flex-shrink:0;stroke:var(--warning);stroke-width:2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Connect your Shopify store in <a onclick="navigate('settings')" style="color:var(--primary);cursor:pointer;text-decoration:underline">Settings</a> to sync products.
+        </div>
+        <div id="products-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px;padding:0 24px 24px">
+          <div id="products-empty" style="grid-column:1/-1;text-align:center;padding:56px 24px;color:var(--muted)">
+            <svg viewBox="0 0 24 24" fill="none" style="width:42px;height:42px;stroke:var(--muted);stroke-width:1.3;margin:0 auto 14px;display:block;opacity:.4"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <div style="font-size:15px;font-weight:600;margin-bottom:6px">No products synced yet</div>
+            <div style="font-size:13px">Click "Sync Products" to pull your Shopify catalog</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUBSCRIPTION GATE MODAL -->
+<div class="modal-overlay" id="sub-gate-modal">
+  <div class="modal" style="max-width:560px">
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      </div>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-.5px;margin-bottom:8px">Unlock Ephermal</div>
+      <div style="font-size:14px;color:var(--muted)">Choose a plan to start automating your Shopify ads with AI</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px" id="sub-gate-plans"><!-- rendered by JS --></div>
+    <div style="text-align:center">
+      <button onclick="closeSubModal()" style="font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Inter',sans-serif;padding:8px;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Remind me in 5 minutes</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW PRODUCT UGC MODAL -->
+<div class="modal-overlay" id="new-product-modal">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="document.getElementById('new-product-modal').classList.remove('open')">×</button>
+    <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:18px">
+      <img id="new-product-img" src="" alt="" style="width:72px;height:72px;border-radius:12px;object-fit:cover;background:var(--surface2);border:1px solid var(--border);flex-shrink:0">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:10px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.9px;margin-bottom:4px">✦ New Product Detected</div>
+        <div style="font-size:17px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px" id="new-product-title">Product Name</div>
+        <div style="font-size:13px;color:var(--muted)" id="new-product-price"></div>
+      </div>
+    </div>
+    <div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:22px">Would you like Ephermal to automatically create a UGC video ad for this product?</div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="document.getElementById('new-product-modal').classList.remove('open');_currentNewProductIdx++;setTimeout(showNextNewProduct,300)">Not Now</button>
+      <button id="btn-create-product-ugc" onclick="createUGCForNewProduct()" style="padding:10px 22px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:10px;color:#fff;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Create UGC Ad →</button>
+    </div>
   </div>
 </div>
 
@@ -1005,7 +1075,7 @@ select.form-input{cursor:pointer}
 
 <script>
 let allCampaigns = [];
-const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing'};
+const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
@@ -1027,6 +1097,13 @@ function getUserPlan() {
   return ['starter','growth','scale'].includes(cached) ? cached : 'starter';
 }
 function canAccess(feature) { const req = GATED[feature]; if (!req) return true; return PLAN_RANK[getUserPlan()] >= PLAN_RANK[req]; }
+function isSubscribed() {
+  const clerkPlan = window.__clerk?.user?.publicMetadata?.plan;
+  if (clerkPlan && ['starter','growth','scale'].includes(String(clerkPlan).toLowerCase())) return true;
+  const cached = (localStorage.getItem('ephermal_plan') || '').toLowerCase();
+  return ['starter','growth','scale'].includes(cached);
+}
+function requireSubscription() { if (isSubscribed()) return true; showSubModal(); return false; }
 function planInfo() { return PLANS[getUserPlan()] || PLANS.starter; }
 function ugcCreditsUsed() { const key = 'ugc_used_' + new Date().toISOString().slice(0,7); return parseInt(localStorage.getItem(key)||'0',10); }
 function ugcCreditsLeft() { return Math.max(0, planInfo().ugc - ugcCreditsUsed()); }
@@ -1260,6 +1337,7 @@ function navigate(page) {
     if (page === 'settings') loadSettingsFields();
     if (page === 'audience') { loadPixelStatus(); loadAudiences(); }
     if (page === 'bulk') loadBulkCampaigns();
+    if (page === 'products') loadProducts();
     if (page === 'multistore') loadMultiStore();
     if (page === 'whitelabel') loadWhitelabel();
   }, 200);
@@ -1705,7 +1783,8 @@ function dashDisconnectShopify() {
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
-function loadSettingsFields() {
+function loadSettingsFields() { try { _loadSettingsFieldsInner(); } catch(e) { console.warn('Settings load error:', e); } }
+function _loadSettingsFieldsInner() {
   const mt = document.getElementById('s-meta-token'); if (mt) mt.value = localStorage.getItem('meta_token') ? '••••••••' : '';
   const ma = document.getElementById('s-meta-account'); if (ma) ma.value = localStorage.getItem('meta_account') || '';
   const su = document.getElementById('s-store-url'); if (su) su.value = localStorage.getItem('last_analyzed_store') || '';
@@ -2223,6 +2302,146 @@ function applyWhitelabel() {
   updateWhitelabelPreview();
 }
 
+// ── SUBSCRIPTION GATE ────────────────────────────────────────────────────────
+function showSubModal() {
+  const modal = document.getElementById('sub-gate-modal');
+  if (!modal) return;
+  const grid = document.getElementById('sub-gate-plans');
+  if (grid && grid.children.length === 0) {
+    const plans = [
+      { id:'starter', name:'Starter', price:'$89',  ugc:'15',  desc:'15 UGC credits · 1 store',       highlight: false },
+      { id:'growth',  name:'Growth',  price:'$149', ugc:'75',  desc:'75 UGC credits · 3 stores',       highlight: true  },
+      { id:'scale',   name:'Scale',   price:'$299', ugc:'350', desc:'350 UGC credits · Unlimited',      highlight: false },
+    ];
+    grid.innerHTML = plans.map(p => `
+      <div style="border:1px solid ${p.highlight?'#6366f1':'var(--border)'};border-radius:14px;padding:18px;text-align:center;${p.highlight?'background:rgba(99,102,241,0.08);':''}transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
+        <div style="height:18px;margin-bottom:6px">${p.highlight?'<span style="font-size:10px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.8px">Most Popular</span>':''}</div>
+        <div style="font-size:15px;font-weight:800;margin-bottom:6px">${p.name}</div>
+        <div style="font-size:28px;font-weight:900;letter-spacing:-.5px">${p.price}<span style="font-size:12px;font-weight:400;color:var(--muted)">/mo</span></div>
+        <div style="font-size:11px;color:var(--muted);margin:8px 0 16px;line-height:1.4">${p.desc}</div>
+        <a href="${window.STRIPE_LINKS?.[p.id]||'#'}" target="_blank" style="display:block;padding:10px;background:${p.highlight?'linear-gradient(135deg,#6366f1,#8b5cf6)':'transparent'};border:1px solid ${p.highlight?'transparent':'var(--border)'};border-radius:9px;color:${p.highlight?'#fff':'var(--muted)'};text-decoration:none;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Get ${p.name} →</a>
+      </div>`).join('');
+  }
+  modal.classList.add('open');
+}
+function closeSubModal() {
+  const modal = document.getElementById('sub-gate-modal');
+  if (modal) modal.classList.remove('open');
+  clearTimeout(window.__subTimer);
+  if (!isSubscribed()) window.__subTimer = setTimeout(showSubModal, 5 * 60 * 1000);
+}
+
+// ── STORE PRODUCTS ────────────────────────────────────────────────────────────
+let _knownProductIds = new Set(JSON.parse(localStorage.getItem('known_product_ids') || '[]'));
+let _pendingNewProducts = [];
+let _currentNewProductIdx = 0;
+
+function loadProducts() {
+  const token = localStorage.getItem('shopify_token');
+  const warning = document.getElementById('products-shopify-warning');
+  if (!token) { if (warning) warning.style.display = 'flex'; return; }
+  if (warning) warning.style.display = 'none';
+  const cached = localStorage.getItem('products_cache');
+  if (cached) try { renderProducts(JSON.parse(cached)); } catch(e) {}
+}
+
+async function syncProducts() {
+  if (!requireSubscription()) return;
+  const token = localStorage.getItem('shopify_token');
+  if (!token) { showToast('Connect Shopify in Settings first', 'warn'); navigate('settings'); return; }
+  const btn = document.getElementById('btn-sync-products');
+  const status = document.getElementById('products-sync-status');
+  const syncSVG = '<svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
+  if (btn) { btn.disabled=true; btn.innerHTML='<svg class="spin" viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Syncing…'; }
+  if (status) status.textContent = 'Syncing…';
+  try {
+    const data = await authFetch('/ephermal/shopify/products');
+    if (!data) throw new Error('No response');
+    const products = Array.isArray(data) ? data : (data.products || []);
+    localStorage.setItem('products_cache', JSON.stringify(products));
+    _pendingNewProducts = [];
+    products.forEach(p => {
+      const id = String(p.id || p.title || Math.random());
+      if (!_knownProductIds.has(id)) { _pendingNewProducts.push(p); _knownProductIds.add(id); }
+    });
+    localStorage.setItem('known_product_ids', JSON.stringify([..._knownProductIds]));
+    renderProducts(products);
+    if (status) status.textContent = `${products.length} products · synced just now`;
+    showToast(`Synced ${products.length} products${_pendingNewProducts.length ? ` · ${_pendingNewProducts.length} new!` : ''}`, 'success');
+    if (_pendingNewProducts.length > 0) { _currentNewProductIdx = 0; setTimeout(showNextNewProduct, 600); }
+  } catch(e) {
+    showToast('Sync failed — check Shopify connection in Settings', 'error');
+    if (status) status.textContent = 'Sync failed';
+  } finally {
+    if (btn) { btn.disabled=false; btn.innerHTML = syncSVG + ' Sync Products'; }
+  }
+}
+
+function renderProducts(products) {
+  const grid = document.getElementById('products-grid');
+  if (!grid) return;
+  if (!products || products.length === 0) {
+    grid.innerHTML = '<div id="products-empty" style="grid-column:1/-1;text-align:center;padding:56px 24px;color:var(--muted)"><svg viewBox="0 0 24 24" fill="none" style="width:42px;height:42px;stroke:var(--muted);stroke-width:1.3;margin:0 auto 14px;display:block;opacity:.4"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><div style="font-size:15px;font-weight:600;margin-bottom:6px">No products found</div><div style="font-size:13px">Click Sync Products to pull your catalog</div></div>';
+    return;
+  }
+  grid.innerHTML = products.map(p => {
+    const img = p.image?.src || p.images?.[0]?.src || '';
+    const title = (p.title || p.name || 'Product').replace(/'/g,"&#39;");
+    const price = p.variants?.[0]?.price ? `$${p.variants[0].price}` : (p.price ? `$${p.price}` : '');
+    const id = String(p.id || p.title || '').replace(/'/g,"&#39;");
+    const imgEsc = img.replace(/'/g,"&#39;");
+    return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s" onmouseover="this.style.borderColor='rgba(99,102,241,0.4)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.25)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none';this.style.boxShadow='none'">
+      ${img?`<img src="${img}" alt="${title}" style="width:100%;height:140px;object-fit:cover">`:`<div style="width:100%;height:140px;background:var(--surface);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" style="width:32px;height:32px;stroke:var(--muted);stroke-width:1.5;opacity:.4"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>`}
+      <div style="padding:12px 14px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${price||'&nbsp;'}</div>
+        <button onclick="promptUGCForProduct('${id}','${title}','${imgEsc}','${price}')" style="width:100%;padding:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:8px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Create UGC Ad</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showNextNewProduct() {
+  if (_currentNewProductIdx >= _pendingNewProducts.length) return;
+  const p = _pendingNewProducts[_currentNewProductIdx];
+  const modal = document.getElementById('new-product-modal');
+  if (!modal) return;
+  document.getElementById('new-product-title').textContent = p.title || p.name || 'New Product';
+  document.getElementById('new-product-price').textContent = p.variants?.[0]?.price ? `$${p.variants[0].price}` : (p.price ? `$${p.price}` : '');
+  const imgEl = document.getElementById('new-product-img');
+  const imgSrc = p.image?.src || p.images?.[0]?.src || '';
+  imgEl.src = imgSrc; imgEl.style.display = imgSrc ? 'block' : 'none';
+  document.getElementById('btn-create-product-ugc').dataset.product = JSON.stringify({ id: p.id, title: p.title, image: imgSrc, price: p.variants?.[0]?.price || p.price });
+  modal.classList.add('open');
+}
+
+function promptUGCForProduct(id, title, img, price) {
+  if (!requireSubscription()) return;
+  const modal = document.getElementById('new-product-modal');
+  if (!modal) return;
+  document.getElementById('new-product-title').textContent = title;
+  document.getElementById('new-product-price').textContent = price || '';
+  const imgEl = document.getElementById('new-product-img');
+  imgEl.src = img; imgEl.style.display = img ? 'block' : 'none';
+  document.getElementById('btn-create-product-ugc').dataset.product = JSON.stringify({ id, title, image: img, price });
+  modal.classList.add('open');
+}
+
+async function createUGCForNewProduct() {
+  const btn = document.getElementById('btn-create-product-ugc');
+  let productData = {};
+  try { productData = btn?.dataset?.product ? JSON.parse(btn.dataset.product) : {}; } catch(e) {}
+  document.getElementById('new-product-modal').classList.remove('open');
+  _currentNewProductIdx++;
+  setTimeout(showNextNewProduct, 500);
+  showToast(`Queuing UGC ad for "${productData.title || 'product'}"…`, 'info');
+  try {
+    await authFetch('/ephermal/ugc/create', { method:'POST', body: JSON.stringify({ product_id: productData.id, product_title: productData.title, product_image: productData.image }) });
+    showToast('UGC ad queued! Check the Creatives tab shortly.', 'success');
+    consumeUGCCredit();
+  } catch(e) { showToast('UGC queued — check back in the Creatives tab.', 'info'); }
+}
+
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 (async function() {
   // Require Clerk — no dev fallback that could bypass auth in production
@@ -2233,12 +2452,24 @@ function applyWhitelabel() {
   window.__clerk = window.Clerk;
   // Load server-side data from Supabase (plan, credits, integrations)
   await Promise.all([loadPlanFromSupabase(), loadCreditsFromSupabase(), loadIntegrationsFromSupabase()]);
+  // ── Connection check: if no platform is connected, redirect to setup
+  const _hasShopify = localStorage.getItem('shopify_token');
+  const _hasMeta = localStorage.getItem('meta_token');
+  const _hasGoogle = localStorage.getItem('google_token');
+  if (!_hasShopify && !_hasMeta && !_hasGoogle) {
+    window.location.href = '/setup.html'; return;
+  }
   refreshMetaStatus();
   refreshGoogleStatus();
   updatePlatformBanner();
   loadUser();
   renderPlanUI();
   applyWhitelabel();
+  // ── Subscription check: show modal if not subscribed, repeat every 5 min
+  if (!isSubscribed()) {
+    setTimeout(showSubModal, 1800);
+    window.__subTimer = setTimeout(showSubModal, 5 * 60 * 1000);
+  }
   const lastStore = localStorage.getItem('last_analyzed_store');
   if (lastStore) {
     const cs = document.getElementById('conn-store');
