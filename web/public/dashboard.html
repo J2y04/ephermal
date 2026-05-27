@@ -163,6 +163,15 @@ select.form-input{cursor:pointer}
 .analysis-section h4{font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
 .analysis-section p{font-size:14px;color:var(--text);line-height:1.7}
 .analysis-tags{display:flex;flex-wrap:wrap;gap:8px}
+.analysis-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:600px){.analysis-grid{grid-template-columns:1fr}}
+.color-swatches{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.color-swatch{display:flex;flex-direction:column;align-items:center;gap:5px}
+.color-swatch-circle{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,0.12);box-shadow:0 2px 8px rgba(0,0,0,0.3);flex-shrink:0}
+.color-swatch-label{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.color-swatch-hex{font-size:11px;color:var(--text);font-family:monospace;font-weight:600}
+.font-chip{background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);color:var(--primary);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600}
+.vibe-badge{display:inline-block;background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.15));border:1px solid rgba(139,92,246,0.3);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--text)}
 .tag{padding:4px 12px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:20px;font-size:12px;font-weight:500;color:var(--primary)}
 /* RESPONSIVE */
 @media(max-width:1200px){.stat-row{grid-template-columns:repeat(2,1fr)}.grid-2,.charts-grid{grid-template-columns:1fr}.creatives-grid{grid-template-columns:repeat(2,1fr)}}
@@ -580,11 +589,58 @@ select.form-input{cursor:pointer}
         </div>
       </div>
       <div class="analysis-result" id="analysis-result">
-        <div class="analysis-section"><h4>Store Summary</h4><p id="ar-summary">—</p></div>
-        <div class="analysis-section"><h4>Target Audience</h4><p id="ar-audience">—</p></div>
+        <!-- Brand Identity Header -->
+        <div class="analysis-section" style="padding-bottom:20px;border-bottom:1px solid var(--border);margin-bottom:24px">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Brand Vibe</div>
+              <span class="vibe-badge" id="ar-vibe">—</span>
+            </div>
+            <div style="font-size:11px;color:var(--muted);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:5px 11px;font-weight:600">
+              ✦ Brand identity saved for UGC generation
+            </div>
+          </div>
+        </div>
+
+        <!-- Color Palette + Typography side by side -->
+        <div class="analysis-grid" style="margin-bottom:20px">
+          <div class="analysis-section" style="margin-bottom:0">
+            <h4>Color Palette</h4>
+            <div class="color-swatches" id="ar-colors"></div>
+          </div>
+          <div class="analysis-section" style="margin-bottom:0">
+            <h4>Typography Direction</h4>
+            <div id="ar-typography" style="display:flex;flex-direction:column;gap:8px">
+              <div style="font-size:13px;color:var(--text)" id="ar-font-heading">—</div>
+              <div style="font-size:12px;color:var(--muted)" id="ar-font-body">—</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px" id="ar-font-chips"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- UGC Creative Direction -->
+        <div style="background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(139,92,246,0.07));border:1px solid rgba(99,102,241,0.18);border-radius:12px;padding:16px 20px;margin-bottom:20px">
+          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">🎬 UGC Creative Direction</div>
+          <div class="analysis-grid" style="gap:20px">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Visual Style</div>
+              <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0" id="ar-ugc-visual">—</p>
+            </div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Tone &amp; Energy</div>
+              <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0" id="ar-ugc-tone">—</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Standard analysis sections -->
+        <div class="analysis-grid" style="margin-bottom:20px">
+          <div class="analysis-section" style="margin-bottom:0"><h4>Store Summary</h4><p id="ar-summary">—</p></div>
+          <div class="analysis-section" style="margin-bottom:0"><h4>Target Audience</h4><p id="ar-audience">—</p></div>
+        </div>
         <div class="analysis-section"><h4>Top Products / Categories</h4><div class="analysis-tags" id="ar-products"></div></div>
         <div class="analysis-section"><h4>Ad Opportunities</h4><p id="ar-opportunities">—</p></div>
-        <div class="analysis-section"><h4>Recommended Meta Ad Strategy</h4><p id="ar-strategy">—</p></div>
+        <div class="analysis-section" style="margin-bottom:0"><h4>Recommended Meta Ad Strategy</h4><p id="ar-strategy">—</p></div>
       </div>
     </div>
 
@@ -1746,21 +1802,75 @@ async function analyzeStore() {
   if (!url) { showToast('Enter a store URL first', 'error'); return; }
   const btn = document.getElementById('btn-analyze');
   btn.disabled=true; btn.textContent='Analysing…';
-  const result = document.getElementById('analysis-result');
+  const resultEl = document.getElementById('analysis-result');
   try {
     const r = await authFetch('/ai', {method:'POST', body:JSON.stringify({action:'analyze', url})});
     if (!r) { showToast('Request failed — please try again', 'error'); return; }
     if (!r.ok) { const d = await r.json().catch(()=>({})); showToast(d.detail || 'Analysis failed', 'error'); return; }
     const d = await r.json();
-    document.getElementById('ar-summary').textContent = d.summary || '—';
-    document.getElementById('ar-audience').textContent = d.target_audience || '—';
-    document.getElementById('ar-products').innerHTML = (d.products || []).map(p => `<span class="tag">${escHtml(p)}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">—</span>';
+
+    // ── Standard fields ────────────────────────────────────────────────────
+    document.getElementById('ar-summary').textContent      = d.summary          || '—';
+    document.getElementById('ar-audience').textContent     = d.target_audience  || '—';
     document.getElementById('ar-opportunities').textContent = d.ad_opportunities || '—';
-    document.getElementById('ar-strategy').textContent = d.meta_strategy || '—';
-    result.style.display = 'block';
+    document.getElementById('ar-strategy').textContent     = d.meta_strategy    || '—';
+    document.getElementById('ar-products').innerHTML       = (d.products || []).map(p => `<span class="tag">${escHtml(p)}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">—</span>';
+
+    // ── Brand vibe ─────────────────────────────────────────────────────────
+    document.getElementById('ar-vibe').textContent = d.brand_vibe || '—';
+
+    // ── Color palette swatches ─────────────────────────────────────────────
+    const palette = d.color_palette || {};
+    const swatchDefs = [
+      {key:'primary',   label:'Primary'},
+      {key:'secondary', label:'Secondary'},
+      {key:'accent',    label:'Accent'},
+      {key:'background',label:'BG'},
+      {key:'text_on_bg',label:'Text'},
+    ];
+    document.getElementById('ar-colors').innerHTML = swatchDefs.map(({key,label}) => {
+      const hex = palette[key] || '';
+      if (!hex || hex === '—') return '';
+      const display = hex.startsWith('#') ? hex : hex;
+      return `<div class="color-swatch">
+        <div class="color-swatch-circle" style="background:${escHtml(hex)}"></div>
+        <div class="color-swatch-label">${label}</div>
+        <div class="color-swatch-hex">${escHtml(hex.length > 9 ? hex.slice(0,9) : hex)}</div>
+      </div>`;
+    }).join('');
+
+    // ── Typography ─────────────────────────────────────────────────────────
+    const typo = d.typography || {};
+    const headEl  = document.getElementById('ar-font-heading');
+    const bodyEl  = document.getElementById('ar-font-body');
+    const chipsEl = document.getElementById('ar-font-chips');
+    if (headEl) headEl.textContent  = typo.heading_style ? `Heading: ${typo.heading_style}` : '—';
+    if (bodyEl) bodyEl.textContent  = typo.body_style    ? `Body: ${typo.body_style}`       : '';
+    if (chipsEl) chipsEl.innerHTML  = (typo.font_suggestions || []).map(f => `<span class="font-chip">${escHtml(f)}</span>`).join('');
+
+    // ── UGC creative direction ─────────────────────────────────────────────
+    document.getElementById('ar-ugc-visual').textContent = d.ugc_visual_style || '—';
+    document.getElementById('ar-ugc-tone').textContent   = d.ugc_tone         || '—';
+
+    // ── Show result block ──────────────────────────────────────────────────
+    resultEl.style.display = 'block';
+
+    // ── Persist brand identity for UGC generation + AI chat ───────────────
+    const brandIdentity = {
+      store_url:        url,
+      brand_vibe:       d.brand_vibe       || '',
+      color_palette:    palette,
+      typography:       typo,
+      ugc_visual_style: d.ugc_visual_style || '',
+      ugc_tone:         d.ugc_tone         || '',
+      analysed_at:      new Date().toISOString(),
+    };
+    localStorage.setItem('store_brand_identity', JSON.stringify(brandIdentity));
+    localStorage.setItem('last_analyzed_store', url);
+
     const stEl = document.getElementById('conn-store');
     try { if (stEl) { stEl.className='conn-status ok'; stEl.textContent=`● Last: ${new URL(url).hostname}`; } } catch(e) {}
-    localStorage.setItem('last_analyzed_store', url);
+    showToast('Store analysed — brand identity saved for UGC', 'success');
   } catch(e){ showToast('Request failed — please try again', 'error'); }
   finally { btn.disabled=false; btn.textContent='Analyse Store'; }
 }
@@ -2129,9 +2239,11 @@ async function aiGenerateDescription() {
   btn.textContent = 'Generating…';
   btn.disabled = true;
   try {
+    let brandIdentity = null;
+    try { brandIdentity = JSON.parse(localStorage.getItem('store_brand_identity') || 'null'); } catch(e) {}
     const r = await authFetch('/ai', {
       method: 'POST',
-      body: JSON.stringify({ action: 'describe', store_url: storeUrl, context: aiGetContext() })
+      body: JSON.stringify({ action: 'describe', store_url: storeUrl, context: aiGetContext(), brand_identity: brandIdentity })
     });
     if (r && r.ok) {
       const d = await r.json();
