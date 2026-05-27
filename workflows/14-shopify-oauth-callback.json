@@ -76,7 +76,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const shopData = $input.item.json.shop || {};\nconst prev = $('Extract Token').item.json;\nconst params = new URLSearchParams({\n  shopify_connected: '1',\n  token:     prev.access_token,\n  shop:      prev.shop,\n  shop_name: shopData.name || prev.shop,\n  state:     prev.state\n});\nconst redirectTo = `${prev.returnUrl}?${params.toString()}`;\nreturn [{ json: { redirectTo, shopName: shopData.name || prev.shop, shop: prev.shop } }];"
+        "jsCode": "const shopData = $input.item.json.shop || {};\nconst prev = $('Extract Token').item.json;\nconst state = prev.state || '';\n// If state starts with 'dashboard', return to dashboard.html instead of setup.html\nconst setupUrl = prev.returnUrl;\nconst returnUrl = state.startsWith('dashboard') ? setupUrl.replace('setup.html','dashboard.html') : setupUrl;\nconst params = new URLSearchParams({\n  shopify_connected: '1',\n  token:     prev.access_token,\n  shop:      prev.shop,\n  shop_name: shopData.name || prev.shop,\n  state:     state\n});\nconst redirectTo = `${returnUrl}?${params.toString()}`;\nreturn [{ json: { redirectTo, shopName: shopData.name || prev.shop, shop: prev.shop } }];"
       },
       "id": "a1400001-0000-0000-0000-000000000006",
       "name": "Build Redirect",

@@ -796,6 +796,10 @@ select.form-input{cursor:pointer}
               </div>
               <button onclick="dashDisconnectShopify()" style="font-size:11px;font-weight:600;background:transparent;border:1px solid var(--border);border-radius:7px;padding:4px 10px;cursor:pointer;color:var(--muted);font-family:'Inter',sans-serif;transition:border-color .15s">Disconnect</button>
             </div>
+            <div id="dash-shopify-input-wrap" style="display:block">
+              <input id="dash-shopify-url-input" type="text" placeholder="yourstore.myshopify.com" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" style="width:100%;box-sizing:border-box;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'Inter',sans-serif;font-size:14px;outline:none;margin-bottom:8px;transition:border-color .15s" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">
+              <div id="dash-shopify-url-err" style="font-size:12px;color:#f87171;margin-bottom:6px;min-height:16px"></div>
+            </div>
             <button id="dash-shopify-oauth-btn" onclick="dashStartShopifyOAuth()" style="display:flex;width:100%;padding:12px 18px;background:#95BF47;border:none;border-radius:11px;color:#fff;font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:-.1px;cursor:pointer;align-items:center;justify-content:center;gap:8px;transition:background .2s,transform .2s,box-shadow .2s" onmouseover="this.style.background='#7ea83a';this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 24px rgba(149,191,71,0.38)'" onmouseout="this.style.background='#95BF47';this.style.transform='none';this.style.boxShadow='none'">
               <svg viewBox="0 0 24 24" fill="none" style="width:18px;height:18px;flex-shrink:0">
                 <path d="M15.5 3.5S15.1 3.6 14.6 3.7C14.3 2.7 13.7 1.8 12.7 1.8c-.3 0-.5.1-.8.2-.3-.4-.7-.6-1.1-.6C8.3 1.4 7.1 4.5 6.7 6.1 5.6 6.4 4.8 6.7 4.7 6.7c-.6.2-.6.2-.7.8L2.5 19 15 21.3l6-1.4L19.5 3.2S15.5 3.5 15.5 3.5z" fill="white"/>
@@ -1768,37 +1772,64 @@ function refreshDashShopifyState() {
   const name = localStorage.getItem('shopify_shop_name');
   const badge = document.getElementById('dash-shopify-connected-badge');
   const btn = document.getElementById('dash-shopify-oauth-btn');
+  const inputWrap = document.getElementById('dash-shopify-input-wrap');
   if (!badge || !btn) return;
   if (token && shop) {
     badge.style.display = 'flex'; btn.style.display = 'none';
+    if (inputWrap) inputWrap.style.display = 'none';
     const nameEl = document.getElementById('dash-shopify-shop-name');
     const domainEl = document.getElementById('dash-shopify-shop-domain');
     if (nameEl) nameEl.textContent = name || shop;
     if (domainEl) domainEl.textContent = shop;
   } else {
     badge.style.display = 'none'; btn.style.display = 'flex';
+    if (inputWrap) inputWrap.style.display = 'block';
   }
 }
 function dashStartShopifyOAuth() {
-  const storeEl = document.getElementById('s-shopify-store');
-  const raw = (storeEl ? storeEl.value.trim() : '') || localStorage.getItem('shopify_store') || '';
-  if (!raw || !window.SHOPIFY_APP_KEY || window.SHOPIFY_APP_KEY === 'YOUR_SHOPIFY_APP_CLIENT_ID') {
-    window.location.href = '/setup.html'; return;
+  if (!window.SHOPIFY_APP_KEY || window.SHOPIFY_APP_KEY === 'YOUR_SHOPIFY_APP_CLIENT_ID') {
+    showToast('Shopify not configured — contact support', 'error'); return;
   }
+  const inputEl = document.getElementById('dash-shopify-url-input');
+  const raw = (inputEl ? inputEl.value.trim() : '') || localStorage.getItem('shopify_domain') || '';
+  const errEl = document.getElementById('dash-shopify-url-err');
+  if (errEl) errEl.textContent = '';
+  if (!raw) { if (errEl) errEl.textContent = 'Enter your store URL first'; return; }
   let shop = raw.replace(/https?:\/\//,'').replace(/\/.*$/,'').toLowerCase().trim();
   if (!shop.includes('.')) shop += '.myshopify.com';
-  const state = [...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  if (!/^[a-z0-9-]+\.myshopify\.com$/.test(shop)) {
+    if (errEl) errEl.textContent = 'Enter a valid .myshopify.com URL'; return;
+  }
+  const randomHex = [...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const state = 'dashboard:' + randomHex;
   localStorage.setItem('shopify_oauth_state', state);
   localStorage.setItem('shopify_oauth_shop', shop);
+  const btn = document.getElementById('dash-shopify-oauth-btn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Redirecting…'; }
   const params = new URLSearchParams({ client_id: window.SHOPIFY_APP_KEY, scope: 'read_products,read_orders,read_analytics,read_customers', redirect_uri: window.SHOPIFY_CALLBACK_URL, state });
   window.location.href = `https://${shop}/admin/oauth/authorize?${params}`;
+}
+function checkShopifyReturn() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.get('shopify_connected') !== '1') return;
+  const token = p.get('token'), shop = p.get('shop'), shopName = p.get('shop_name'), state = p.get('state');
+  window.history.replaceState({}, document.title, window.location.pathname);
+  const savedState = localStorage.getItem('shopify_oauth_state');
+  if (!token || !shop) { showToast('Shopify connection failed — missing token', 'error'); return; }
+  if (state !== savedState) { showToast('Shopify security check failed — please try again', 'error'); return; }
+  localStorage.setItem('shopify_token', token);
+  localStorage.setItem('shopify_domain', shop);
+  localStorage.setItem('shopify_shop_name', shopName || shop);
+  localStorage.removeItem('shopify_oauth_state');
+  localStorage.removeItem('shopify_oauth_shop');
+  refreshDashShopifyState();
+  navigate('settings');
+  showToast('Shopify connected: ' + (shopName || shop), 'success');
 }
 function dashDisconnectShopify() {
   if (!confirm('Disconnect your Shopify store?')) return;
   localStorage.removeItem('shopify_token'); localStorage.removeItem('shopify_domain');
   localStorage.removeItem('shopify_shop_name'); localStorage.removeItem('shopify_store');
-  const sht = document.getElementById('s-shopify-token'); if (sht) sht.value = '';
-  const shs = document.getElementById('s-shopify-store'); if (shs) shs.value = '';
   refreshDashShopifyState();
 }
 
@@ -2475,7 +2506,8 @@ async function createUGCForNewProduct() {
   if (!_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle) {
     window.location.href = '/setup.html'; return;
   }
-  checkMetaOAuthReturn(); // Handle redirect back from Meta OAuth
+  checkMetaOAuthReturn();   // Handle redirect back from Meta OAuth
+  checkShopifyReturn();     // Handle redirect back from Shopify OAuth
   refreshMetaStatus();
   refreshGoogleStatus();
   updatePlatformBanner();

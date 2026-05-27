@@ -299,7 +299,12 @@ function handleShopifyReturn() {
   localStorage.removeItem('shopify_oauth_state');
   localStorage.removeItem('shopify_oauth_shop');
   window.history.replaceState({}, '', '/setup.html');
-  // Show connected badge
+  // If initiated from dashboard, redirect back there
+  if (state && state.startsWith('dashboard:')) {
+    window.location.href = '/dashboard.html';
+    return;
+  }
+  // Show connected badge in setup flow
   document.getElementById('shopify-field').style.display = 'none';
   const badge = document.getElementById('shopify-connected-badge');
   badge.style.display = 'flex';
