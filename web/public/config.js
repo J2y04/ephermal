@@ -8,6 +8,7 @@
   // Meta (Facebook) App ID — create at developers.facebook.com → My Apps → Create App
   // Set "App Domain" to ephermal.app and add "Facebook Login" product
   window.META_APP_ID = '37434197291344952';
+  // META_APP_SECRET must NEVER go here — set it only in n8n environment variables
 
   // Meta OAuth callback — n8n webhook that receives the code from Meta and exchanges it for a token
   // Add this URL to your Meta app: Facebook Login → Settings → Valid OAuth Redirect URIs
