@@ -256,26 +256,50 @@ function skipStep(next) {
   return false;
 }
 
+// ── OAuth claim exchange helper ───────────────────────────────────────────────
+// Called after redirect back from Meta / Shopify to exchange the one-time
+// claim code for the actual access token (token never appears in the URL).
+async function claimOAuth(claimCode, userId, platform) {
+  try {
+    const res = await fetch(`${window.SUPABASE_URL}/functions/v1/claim-oauth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON },
+      body: JSON.stringify({ claim: claimCode, user_id: userId, platform })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) {
+    console.error('claimOAuth failed:', e);
+    return null;
+  }
+}
+
 // ── Shopify OAuth ─────────────────────────────────────────────────────────────
 function startShopifyOAuth() {
   const raw = document.getElementById('shopify-url').value.trim();
-  document.getElementById('err-1').textContent = '';
-  if (!raw) { document.getElementById('err-1').textContent = 'Please enter your store URL'; return; }
+  const errEl = document.getElementById('err-1');
+  errEl.textContent = '';
+  if (!raw) { errEl.textContent = 'Please enter your store URL'; return; }
   if (!window.SHOPIFY_APP_KEY || window.SHOPIFY_APP_KEY === 'YOUR_SHOPIFY_APP_CLIENT_ID') {
-    document.getElementById('err-1').textContent = 'Shopify app not configured — contact support';
+    errEl.textContent = 'Shopify app not configured — contact support';
     return;
   }
+  const userId = window.Clerk?.user?.id || '';
+  if (!userId) { errEl.textContent = 'Not signed in — please refresh and try again'; return; }
   let shop = raw.replace(/https?:\/\//,'').replace(/\/.*$/,'').toLowerCase().trim();
   if (!shop.includes('.')) shop = shop + '.myshopify.com';
   if (!/^[a-z0-9-]+\.myshopify\.com$/.test(shop)) {
-    document.getElementById('err-1').textContent = 'Enter a valid Shopify store URL (e.g. mystore.myshopify.com)';
+    errEl.textContent = 'Enter a valid Shopify store URL (e.g. mystore.myshopify.com)';
     return;
   }
-  const state = ([...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,'0')).join(''));
-  localStorage.setItem('shopify_oauth_state', state);
+  // State format: userId~sourcePage~nonce  (nonce stored in localStorage for CSRF check)
+  const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const state = `${userId}~setup~${nonce}`;
+  localStorage.setItem('shopify_oauth_nonce', nonce);
   localStorage.setItem('shopify_oauth_shop', shop);
   const btn = document.getElementById('btn-shopify');
-  btn.disabled = true; btn.className = 'btn-shopify-connect'; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting to Shopify...';
+  btn.disabled = true; btn.className = 'btn-shopify-connect';
+  btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting to Shopify…';
   const params = new URLSearchParams({
     client_id: window.SHOPIFY_APP_KEY,
     scope: 'read_products,read_orders,read_analytics,read_customers',
@@ -286,36 +310,72 @@ function startShopifyOAuth() {
 }
 
 // ── Handle Shopify callback return ────────────────────────────────────────────
-function handleShopifyReturn() {
+async function handleShopifyReturn() {
   const p = new URLSearchParams(window.location.search);
-  if (p.get('shopify_connected') !== '1') return;
-  const token = p.get('token'), shop = p.get('shop'), shopName = p.get('shop_name'), state = p.get('state');
-  const savedState = localStorage.getItem('shopify_oauth_state');
-  if (!token || !shop) { document.getElementById('err-1').textContent = 'OAuth failed — missing token. Please try again.'; return; }
-  if (state !== savedState) { document.getElementById('err-1').textContent = 'Security check failed — please try again.'; return; }
-  localStorage.setItem('shopify_token', token);
-  localStorage.setItem('shopify_domain', shop);
-  localStorage.setItem('shopify_shop_name', shopName || shop);
-  localStorage.removeItem('shopify_oauth_state');
-  localStorage.removeItem('shopify_oauth_shop');
-  window.history.replaceState({}, '', '/setup.html');
-  // If initiated from dashboard, redirect back there
-  if (state && state.startsWith('dashboard:')) {
-    window.location.href = '/dashboard.html';
+  const shopifyError = p.get('shopify_error');
+  const connected    = p.get('shopify_connected');
+  if (!connected && !shopifyError) return;
+
+  window.history.replaceState({}, document.title, '/setup.html');
+
+  if (shopifyError) {
+    document.getElementById('err-1').textContent = 'Shopify connection failed — please try again.';
     return;
   }
-  // Show connected badge in setup flow
+
+  const claimCode = p.get('claim');
+  const state     = p.get('state') || '';
+  if (connected !== '1' || !claimCode) {
+    document.getElementById('err-1').textContent = 'Invalid OAuth return — please try again.';
+    return;
+  }
+
+  // CSRF: validate nonce from localStorage against state URL param
+  const savedNonce  = localStorage.getItem('shopify_oauth_nonce');
+  const stateParts  = state.split('~');
+  const stateNonce  = stateParts[2];
+  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+    document.getElementById('err-1').textContent = 'Security check failed — please try again.';
+    return;
+  }
+  localStorage.removeItem('shopify_oauth_nonce');
+  localStorage.removeItem('shopify_oauth_shop');
+
+  const userId     = stateParts[0];
+  const sourcePage = stateParts[1];
+
+  // If initiated from dashboard settings, go back there
+  if (sourcePage === 'dashboard') { window.location.href = '/dashboard.html'; return; }
+
+  // Exchange one-time claim for token
+  const btn = document.getElementById('btn-shopify');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Connecting…'; }
+
+  const data = await claimOAuth(claimCode, userId, 'shopify');
+  if (!data || !data.access_token) {
+    document.getElementById('err-1').textContent = 'Connection timed out — please try again.';
+    if (btn) { btn.disabled = false; btn.textContent = 'Connect with Shopify'; }
+    return;
+  }
+
+  localStorage.setItem('shopify_token', data.access_token);
+  localStorage.setItem('shopify_domain', data.shop);
+  localStorage.setItem('shopify_shop_name', data.shop_name || data.shop);
+
+  // Show connected badge
   document.getElementById('shopify-field').style.display = 'none';
   const badge = document.getElementById('shopify-connected-badge');
   badge.style.display = 'flex';
-  document.getElementById('shopify-badge-name').textContent = shopName || shop;
-  document.getElementById('shopify-badge-domain').textContent = shop;
-  document.getElementById('btn-shopify').textContent = 'Continue →';
-  document.getElementById('btn-shopify').disabled = false;
-  document.getElementById('btn-shopify').onclick = () => { setNodeDone(1); showCard(2); };
+  document.getElementById('shopify-badge-name').textContent = data.shop_name || data.shop;
+  document.getElementById('shopify-badge-domain').textContent = data.shop;
+  if (btn) {
+    btn.textContent = 'Continue →';
+    btn.disabled = false;
+    btn.onclick = () => { setNodeDone(1); showCard(2); };
+  }
 }
 
-// ── Meta OAuth (server-side redirect — no FB SDK needed) ─────────────────────
+// ── Meta OAuth (server-side redirect via Supabase Edge Function) ──────────────
 function startMetaOAuth() {
   const err = document.getElementById('err-2');
   err.textContent = '';
@@ -325,11 +385,17 @@ function startMetaOAuth() {
     err.textContent = 'Meta app not configured — contact support@ephermal.app';
     return;
   }
+  const userId = window.Clerk?.user?.id || '';
+  if (!userId) { err.textContent = 'Not signed in — please refresh and try again'; return; }
   const btn = document.getElementById('btn-meta');
   btn.disabled = true;
   btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting…';
+  // State: userId~sourcePage~nonce — nonce stored for CSRF check on return
+  const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const state = `${userId}~setup~${nonce}`;
+  localStorage.setItem('meta_oauth_nonce', nonce);
   const scope = 'ads_read,ads_management,business_management';
-  window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${scope}&state=setup`;
+  window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${scope}&state=${encodeURIComponent(state)}`;
 }
 
 function selectMetaAccount() {
@@ -341,25 +407,59 @@ function selectMetaAccount() {
   showMetaConnected(name, val);
 }
 
-function checkMetaOAuthReturn() {
-  const p = new URLSearchParams(window.location.search);
-  const token = p.get('meta_token');
-  const accountsRaw = p.get('meta_accounts');
-  const metaError = p.get('meta_error');
-  if (!token && !metaError) return;
-  // Clean URL
-  window.history.replaceState({}, document.title, window.location.pathname);
+async function checkMetaOAuthReturn() {
+  const p          = new URLSearchParams(window.location.search);
+  const connected  = p.get('meta_connected');
+  const metaError  = p.get('meta_error');
+  if (!connected && !metaError) return;
+
+  window.history.replaceState({}, document.title, '/setup.html');
+
+  const errEl = document.getElementById('err-2');
   if (metaError) {
-    const err = document.getElementById('err-2');
-    if (err) err.textContent = 'Meta auth failed: ' + decodeURIComponent(metaError);
+    if (errEl) errEl.textContent = 'Meta connection failed — please try again.';
     return;
   }
-  let accounts = [];
-  try { accounts = JSON.parse(decodeURIComponent(accountsRaw || '[]')); } catch(e) {}
-  localStorage.setItem('meta_token', token);
+
+  const claimCode = p.get('claim');
+  const state     = p.get('state') || '';
+  if (connected !== '1' || !claimCode) {
+    if (errEl) errEl.textContent = 'Invalid OAuth return — please try again.';
+    return;
+  }
+
+  // CSRF nonce check
+  const savedNonce = localStorage.getItem('meta_oauth_nonce');
+  const stateParts = state.split('~');
+  const stateNonce = stateParts[2];
+  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+    if (errEl) errEl.textContent = 'Security check failed — please try again.';
+    return;
+  }
+  localStorage.removeItem('meta_oauth_nonce');
+
+  const userId = stateParts[0];
+
+  // Exchange one-time claim for token + account list
+  const btn = document.getElementById('btn-meta');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Finalizing…'; }
+
+  const data = await claimOAuth(claimCode, userId, 'meta');
+  if (!data || !data.access_token) {
+    if (errEl) errEl.textContent = 'Connection timed out — please try again.';
+    if (btn) { btn.disabled = false; btn.textContent = 'Connect Meta Ads'; }
+    return;
+  }
+
+  localStorage.setItem('meta_token', data.access_token);
+
+  const accounts = Array.isArray(data.accounts) && data.accounts.length
+    ? data.accounts
+    : (data.account_id ? [{ id: data.account_id, name: data.account_name || data.account_id }] : []);
+
   if (accounts.length === 0) {
-    const err = document.getElementById('err-2');
-    if (err) err.textContent = 'No ad accounts found on this Facebook account.';
+    if (errEl) errEl.textContent = 'No ad accounts found on this Facebook account.';
+    if (btn) { btn.disabled = false; btn.textContent = 'Connect Meta Ads'; }
     return;
   }
   if (accounts.length === 1) {
@@ -369,7 +469,7 @@ function checkMetaOAuthReturn() {
     const sel = document.getElementById('meta-account-select');
     sel.innerHTML = '<option value="">Choose an account…</option>' +
       accounts.map(a => `<option value="${_esc(a.id)}">${_esc(a.name||a.id)} (${_esc(a.id)})</option>`).join('');
-    const btn = document.getElementById('btn-meta'); if (btn) btn.style.display = 'none';
+    if (btn) btn.style.display = 'none';
     document.getElementById('meta-account-picker').style.display = 'block';
     showCard(2);
   }
@@ -451,9 +551,8 @@ function finishSetup() {
 
 // ── Boot: Clerk auth check ────────────────────────────────────────────────────
 async function boot() {
-  checkMetaOAuthReturn(); // Handle redirect back from Meta OAuth
   if (localStorage.getItem('setup_complete')) { window.location.replace('/dashboard.html'); return; }
-  // Wait for Clerk
+  // Wait for Clerk SDK to load (max 5s)
   await new Promise(resolve => {
     if(window.Clerk) { resolve(); return; }
     const t = setInterval(() => { if(window.Clerk) { clearInterval(t); resolve(); } }, 50);
@@ -467,7 +566,9 @@ async function boot() {
       if (name) document.getElementById('welcome-heading').textContent = `Welcome, ${name} — let's set up your account`;
     } catch(e) {}
   }
-  handleShopifyReturn();
+  // Handle OAuth redirects after Clerk is loaded (user ID needed for claim exchange)
+  await checkMetaOAuthReturn();
+  await handleShopifyReturn();
 }
 boot();
 </script>

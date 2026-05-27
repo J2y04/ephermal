@@ -1790,6 +1790,8 @@ function dashStartShopifyOAuth() {
   if (!window.SHOPIFY_APP_KEY || window.SHOPIFY_APP_KEY === 'YOUR_SHOPIFY_APP_CLIENT_ID') {
     showToast('Shopify not configured — contact support', 'error'); return;
   }
+  const userId = window.__clerk?.user?.id || '';
+  if (!userId) { showToast('Not signed in — please refresh', 'error'); return; }
   const inputEl = document.getElementById('dash-shopify-url-input');
   const raw = (inputEl ? inputEl.value.trim() : '') || localStorage.getItem('shopify_domain') || '';
   const errEl = document.getElementById('dash-shopify-url-err');
@@ -1800,31 +1802,50 @@ function dashStartShopifyOAuth() {
   if (!/^[a-z0-9-]+\.myshopify\.com$/.test(shop)) {
     if (errEl) errEl.textContent = 'Enter a valid .myshopify.com URL'; return;
   }
-  const randomHex = [...crypto.getRandomValues(new Uint8Array(18))].map(b=>b.toString(16).padStart(2,'0')).join('');
-  const state = 'dashboard:' + randomHex;
-  localStorage.setItem('shopify_oauth_state', state);
+  const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const state = `${userId}~dashboard~${nonce}`;
+  localStorage.setItem('shopify_oauth_nonce', nonce);
   localStorage.setItem('shopify_oauth_shop', shop);
   const btn = document.getElementById('dash-shopify-oauth-btn');
   if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Redirecting…'; }
   const params = new URLSearchParams({ client_id: window.SHOPIFY_APP_KEY, scope: 'read_products,read_orders,read_analytics,read_customers', redirect_uri: window.SHOPIFY_CALLBACK_URL, state });
   window.location.href = `https://${shop}/admin/oauth/authorize?${params}`;
 }
-function checkShopifyReturn() {
-  const p = new URLSearchParams(window.location.search);
-  if (p.get('shopify_connected') !== '1') return;
-  const token = p.get('token'), shop = p.get('shop'), shopName = p.get('shop_name'), state = p.get('state');
+async function checkShopifyReturn() {
+  const p            = new URLSearchParams(window.location.search);
+  const connected    = p.get('shopify_connected');
+  const shopifyError = p.get('shopify_error');
+  if (!connected && !shopifyError) return;
   window.history.replaceState({}, document.title, window.location.pathname);
-  const savedState = localStorage.getItem('shopify_oauth_state');
-  if (!token || !shop) { showToast('Shopify connection failed — missing token', 'error'); return; }
-  if (state !== savedState) { showToast('Shopify security check failed — please try again', 'error'); return; }
-  localStorage.setItem('shopify_token', token);
-  localStorage.setItem('shopify_domain', shop);
-  localStorage.setItem('shopify_shop_name', shopName || shop);
-  localStorage.removeItem('shopify_oauth_state');
+  if (shopifyError) { showToast('Shopify connection failed — please try again', 'error'); return; }
+  if (connected !== '1') return;
+
+  const claimCode = p.get('claim');
+  const state     = p.get('state') || '';
+  if (!claimCode) { showToast('Invalid OAuth return — please try again', 'error'); return; }
+
+  // CSRF nonce check
+  const savedNonce = localStorage.getItem('shopify_oauth_nonce');
+  const stateParts = state.split('~');
+  const stateNonce = stateParts[2];
+  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+    showToast('Security check failed — please try again', 'error'); return;
+  }
+  localStorage.removeItem('shopify_oauth_nonce');
   localStorage.removeItem('shopify_oauth_shop');
+
+  const userId = stateParts[0];
+  const data   = await claimOAuth(claimCode, userId, 'shopify');
+  if (!data || !data.access_token) {
+    showToast('Shopify claim expired — please reconnect', 'error'); return;
+  }
+
+  localStorage.setItem('shopify_token', data.access_token);
+  localStorage.setItem('shopify_domain', data.shop);
+  localStorage.setItem('shopify_shop_name', data.shop_name || data.shop);
   refreshDashShopifyState();
   navigate('settings');
-  showToast('Shopify connected: ' + (shopName || shop), 'success');
+  showToast('Shopify connected: ' + (data.shop_name || data.shop), 'success');
 }
 function dashDisconnectShopify() {
   if (!confirm('Disconnect your Shopify store?')) return;
@@ -2506,8 +2527,8 @@ async function createUGCForNewProduct() {
   if (!_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle) {
     window.location.href = '/setup.html'; return;
   }
-  checkMetaOAuthReturn();   // Handle redirect back from Meta OAuth
-  checkShopifyReturn();     // Handle redirect back from Shopify OAuth
+  await checkMetaOAuthReturn();   // Handle redirect back from Meta OAuth
+  await checkShopifyReturn();     // Handle redirect back from Shopify OAuth
   refreshMetaStatus();
   refreshGoogleStatus();
   updatePlatformBanner();
@@ -2529,29 +2550,72 @@ async function createUGCForNewProduct() {
   await Promise.all([loadOverview(), loadCampaigns(), loadCreatives('pending_review','creatives-body')]);
 })();
 
-// ── DASHBOARD META OAUTH (server-side redirect — no FB SDK needed) ────────────
+// ── DASHBOARD OAUTH HELPERS ───────────────────────────────────────────────────
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
+/** Exchange one-time claim code for access token (token never appears in URL) */
+async function claimOAuth(claimCode, userId, platform) {
+  try {
+    const res = await fetch(`${window.SUPABASE_URL}/functions/v1/claim-oauth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON },
+      body: JSON.stringify({ claim: claimCode, user_id: userId, platform })
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch(e) {
+    console.error('claimOAuth failed:', e);
+    return null;
+  }
+}
+
+// ── DASHBOARD META OAUTH (Supabase Edge Function) ─────────────────────────────
 function dashStartMetaOAuth() {
   const appId = window.META_APP_ID;
   const callbackUrl = window.META_CALLBACK_URL;
-  if (!appId || appId === 'YOUR_META_APP_ID' || !callbackUrl) { showToast('Meta not configured in config.js', 'error'); return; }
+  if (!appId || appId === 'YOUR_META_APP_ID' || !callbackUrl) { showToast('Meta not configured', 'error'); return; }
+  const userId = window.__clerk?.user?.id || '';
+  if (!userId) { showToast('Not signed in — please refresh', 'error'); return; }
+  const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const state = `${userId}~dashboard~${nonce}`;
+  localStorage.setItem('meta_oauth_nonce', nonce);
   const scope = 'ads_read,ads_management,business_management';
-  window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${scope}&state=dashboard`;
+  window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${scope}&state=${encodeURIComponent(state)}`;
 }
 
-function checkMetaOAuthReturn() {
-  const p = new URLSearchParams(window.location.search);
-  const token = p.get('meta_token');
-  const accountsRaw = p.get('meta_accounts');
+async function checkMetaOAuthReturn() {
+  const p         = new URLSearchParams(window.location.search);
+  const connected = p.get('meta_connected');
   const metaError = p.get('meta_error');
-  if (!token && !metaError) return;
+  if (!connected && !metaError) return;
   window.history.replaceState({}, document.title, window.location.pathname);
-  if (metaError) { showToast('Meta auth failed: ' + decodeURIComponent(metaError), 'error'); return; }
-  let accounts = [];
-  try { accounts = JSON.parse(decodeURIComponent(accountsRaw || '[]')); } catch(e) {}
-  localStorage.setItem('meta_token', token);
-  if (!accounts.length) { showToast('No ad accounts found on this Facebook account', 'warn'); return; }
+  if (metaError) { showToast('Meta connection failed — please try again', 'error'); return; }
+
+  const claimCode = p.get('claim');
+  const state     = p.get('state') || '';
+  if (connected !== '1' || !claimCode) return;
+
+  // CSRF nonce check
+  const savedNonce = localStorage.getItem('meta_oauth_nonce');
+  const stateParts = state.split('~');
+  const stateNonce = stateParts[2];
+  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+    showToast('Security check failed — please try again', 'error'); return;
+  }
+  localStorage.removeItem('meta_oauth_nonce');
+
+  const userId = stateParts[0];
+  const data   = await claimOAuth(claimCode, userId, 'meta');
+  if (!data || !data.access_token) {
+    showToast('Meta claim expired — please reconnect', 'error'); return;
+  }
+
+  localStorage.setItem('meta_token', data.access_token);
+  const accounts = Array.isArray(data.accounts) && data.accounts.length
+    ? data.accounts
+    : (data.account_id ? [{ id: data.account_id, name: data.account_name || data.account_id }] : []);
+
+  if (!accounts.length) { showToast('No Meta ad accounts found', 'warn'); return; }
   if (accounts.length === 1) {
     localStorage.setItem('meta_account', accounts[0].id);
     dashShowMetaBadge(accounts[0].name, accounts[0].id);

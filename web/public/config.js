@@ -10,9 +10,9 @@
   window.META_APP_ID = '37434197291344952';
   // META_APP_SECRET must NEVER go here — set it only in n8n environment variables
 
-  // Meta OAuth callback — n8n webhook that receives the code from Meta and exchanges it for a token
+  // Meta OAuth callback — Supabase Edge Function that receives the code from Meta and exchanges it for a token
   // Add this URL to your Meta app: Facebook Login → Settings → Valid OAuth Redirect URIs
-  window.META_CALLBACK_URL = 'https://jamhich.de/webhook/ephermal/meta/callback';
+  window.META_CALLBACK_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback';
 
   // Google OAuth Client ID — create at console.cloud.google.com → APIs & Services → Credentials
   // Add https://ephermal.app and https://ephermal.app/setup.html to "Authorized JavaScript origins"
@@ -31,8 +31,8 @@
 
   // Shopify app credentials — set these after creating your Shopify Partner app
   window.SHOPIFY_APP_KEY = '1be2b522a704c34e1949034e774cf34d';
-  // n8n webhook URL for Shopify OAuth callback (workflow 14)
-  window.SHOPIFY_CALLBACK_URL = 'https://jamhich.de/webhook/ephermal/shopify/callback';
+  // Supabase Edge Function for Shopify OAuth callback
+  window.SHOPIFY_CALLBACK_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/shopify-oauth-callback';
   // Where n8n sends the user back after OAuth completes
   window.SHOPIFY_SETUP_RETURN_URL = 'https://ephermal.app/setup.html';
 
