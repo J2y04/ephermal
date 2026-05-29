@@ -1572,16 +1572,22 @@ function getSupabase() {
   if (_sb) return _sb;
   const url = window.SUPABASE_URL, key = window.SUPABASE_ANON;
   if (!url || url.includes('YOUR_PROJECT') || !key || key.includes('YOUR_')) return null;
-  _sb = window.supabase?.createClient(url, key);
+  // Use Supabase Third-Party Auth (native Clerk support, no JWT template needed).
+  // The accessToken function is called automatically on every Supabase request.
+  _sb = window.supabase?.createClient(url, key, {
+    accessToken: async () => {
+      try { return await window.__clerk?.session?.getToken() ?? null; }
+      catch { return null; }
+    }
+  });
   return _sb;
 }
 
 async function supabaseToken() {
+  // Kept for legacy callers — direct token fetch from Clerk session
   if (!window.__clerk?.session) return null;
-  // Returns a Supabase-compatible JWT from Clerk
-  // Requires a "supabase" JWT template configured in Clerk Dashboard → JWT Templates
-  try { return await window.__clerk.session.getToken({ template: 'supabase' }); }
-  catch { return await window.__clerk.session.getToken(); }
+  try { return await window.__clerk.session.getToken(); }
+  catch { return null; }
 }
 
 async function loadPlanFromSupabase() {
@@ -1590,8 +1596,6 @@ async function loadPlanFromSupabase() {
   const clerkUserId = window.__clerk?.user?.id;
   if (!clerkUserId) return;
   try {
-    const token = await supabaseToken();
-    if (token) await sb.auth.setSession({ access_token: token, refresh_token: '' }).catch(() => {});
     const { data, error } = await sb
       .from('user_plans')
       .select('plan, period_end')
@@ -1612,9 +1616,6 @@ async function loadCreditsFromSupabase() {
   if (!clerkUserId) return;
   const month = new Date().toISOString().slice(0, 7);
   try {
-    const token = await supabaseToken();
-    if (token) await sb.auth.setSession({ access_token: token, refresh_token: '' }).catch(() => {});
-
     // Load UGC credits
     const { data: ugcData } = await sb
       .from('ugc_credits')
@@ -1667,8 +1668,6 @@ async function saveIntegrationsToSupabase(metaToken, metaAccount, storeUrl) {
   const clerkUserId = window.__clerk?.user?.id;
   if (!clerkUserId) return;
   try {
-    const token = await supabaseToken();
-    if (token) await sb.auth.setSession({ access_token: token, refresh_token: '' }).catch(() => {});
     await sb.from('user_integrations').upsert({
       user_id: clerkUserId,
       ...(metaToken && metaToken !== '••••••••' ? { meta_token: metaToken } : {}),
