@@ -26,7 +26,7 @@ function redirectTo(
   page: 'setup.html' | 'dashboard.html',
   params: Record<string, string>,
 ): Response {
-  const dest = new URL(`${base}/${page}`)
+  const dest = new URL(`${base.replace(/\/$/, '')}/${page}`)
   for (const [k, v] of Object.entries(params)) dest.searchParams.set(k, v)
   return new Response(null, { status: 302, headers: { Location: dest.toString() } })
 }

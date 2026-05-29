@@ -51,6 +51,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .content{padding:32px;flex:1}
 .page{display:none}.page.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
 .fade-in{animation:fadeUp .4s ease both}
 .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
 .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px;transition:all 0.3s cubic-bezier(0.22,1,0.36,1);cursor:default;animation:fadeUp .5s ease both}
@@ -118,6 +119,26 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .btn-approve:hover{background:rgba(52,211,153,0.2)}
 .btn-reject{flex:1;padding:7px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:8px;color:var(--danger);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.25s cubic-bezier(0.22,1,0.36,1)}
 .btn-reject:hover{background:rgba(248,113,113,0.15)}
+/* ── Creative Fatigue ── */
+.fatigue-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:1100px){.fatigue-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.fatigue-grid{grid-template-columns:1fr}}
+.fatigue-item{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;transition:border-color .25s}
+.fatigue-item:hover{border-color:rgba(99,102,241,.3)}
+.fatigue-item-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fatigue-item-name{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.fatigue-score-badge{font-size:11px;font-weight:800;padding:3px 9px;border-radius:6px;flex-shrink:0;white-space:nowrap}
+.fatigue-score-badge.critical{background:rgba(248,113,113,.18);color:var(--danger);border:1px solid rgba(248,113,113,.3)}
+.fatigue-score-badge.warn{background:rgba(251,191,36,.14);color:var(--warning);border:1px solid rgba(251,191,36,.25)}
+.fatigue-score-badge.ok{background:rgba(52,211,153,.12);color:var(--success);border:1px solid rgba(52,211,153,.22)}
+.fatigue-bar-track{height:6px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.fatigue-bar-fill{height:100%;border-radius:3px;transition:width 1.2s cubic-bezier(.22,1,.36,1)}
+.fatigue-signals{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px}
+.fatigue-signal{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;background:rgba(255,255,255,.05);color:var(--muted)}
+.fatigue-rec{font-size:12px;color:var(--muted);line-height:1.4;padding:6px 8px;background:rgba(255,255,255,.03);border-radius:7px;border-left:2px solid var(--border)}
+.fatigue-rec.critical{border-left-color:var(--danger);color:rgba(248,113,113,.9)}
+.fatigue-rec.warn{border-left-color:var(--warning);color:rgba(251,191,36,.9)}
+.fatigue-rec.ok{border-left-color:var(--success);color:rgba(52,211,153,.9)}
 .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 24px;color:var(--muted);text-align:center;gap:10px}
 .empty-state svg{width:36px;height:36px;stroke:rgba(99,102,241,0.2);fill:none;stroke-width:1.5}
 .empty-state p{font-size:13px}
@@ -175,7 +196,64 @@ select.form-input{cursor:pointer}
 .tag{padding:4px 12px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:20px;font-size:12px;font-weight:500;color:var(--primary)}
 /* RESPONSIVE */
 @media(max-width:1200px){.stat-row{grid-template-columns:repeat(2,1fr)}.grid-2,.charts-grid{grid-template-columns:1fr}.creatives-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:768px){.sidebar{transform:translateX(-100%)}.main{margin-left:0}.stat-row{grid-template-columns:1fr 1fr}.campaign-row{grid-template-columns:1fr 1fr}}
+
+/* ── Mobile sidebar toggle button ── */
+.sidebar-toggle{display:none;width:36px;height:36px;align-items:center;justify-content:center;background:none;border:1px solid var(--border);border-radius:9px;cursor:pointer;color:var(--text);flex-shrink:0;transition:all .2s}
+.sidebar-toggle:hover{background:rgba(99,102,241,0.08);border-color:rgba(99,102,241,0.3)}
+.sidebar-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── Sidebar backdrop ── */
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:48;backdrop-filter:blur(3px)}
+.sidebar-backdrop.open{display:block}
+
+@media(max-width:768px){
+  /* Sidebar: hidden by default, slides in when .open */
+  .sidebar{transform:translateX(-100%);transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);z-index:95}
+  .sidebar-backdrop{z-index:94}
+  .sidebar.open{transform:translateX(0);box-shadow:24px 0 80px rgba(0,0,0,0.45)}
+  .sidebar-toggle{display:flex}
+  .main{margin-left:0}
+  /* Topbar */
+  .topbar{padding:12px 16px;gap:10px}
+  /* Hide text label in Generate UGC button, keep icon */
+  .btn-new .btn-new-label{display:none}
+  .btn-new{padding:9px 11px}
+  /* Content area */
+  .content{padding:16px}
+  /* Stats */
+  .stat-row{grid-template-columns:1fr 1fr}
+  /* Campaign table: show only name + status + toggle on mobile */
+  .campaign-row{grid-template-columns:1fr auto auto;padding:12px 14px}
+  .campaign-row>*:nth-child(2),.campaign-row>*:nth-child(3),.campaign-row>*:nth-child(4){display:none}
+  /* AI panel full width on mobile */
+  .ai-panel{width:100%;border-left:none;border-top:1px solid var(--border)}
+  /* Analysis grid */
+  .analysis-grid{grid-template-columns:1fr}
+  /* Creatives */
+  .creatives-grid{grid-template-columns:1fr 1fr}
+  /* Modal */
+  .modal{margin:16px;max-width:calc(100vw - 32px)}
+  /* Camp detail grid */
+  .camp-detail-grid{grid-template-columns:1fr 1fr}
+  /* Billing plan cards */
+  #billing-plans-grid{grid-template-columns:1fr!important}
+  /* Settings form 2-col row collapses to 1-col */
+  .form-row{grid-template-columns:1fr!important}
+  /* Page title truncation */
+  .page-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+  /* Connect banner stacks vertically on mobile */
+  .meta-connect-banner{flex-direction:column;align-items:flex-start;gap:12px}
+  .meta-connect-banner .platform-btns{width:100%}
+  .meta-connect-banner .platform-btns .btn-save{flex:1;justify-content:center;text-align:center}
+  /* AI FAB position — avoid overlap with any bottom nav */
+  .ai-fab{bottom:20px;right:16px;width:44px;height:44px}
+}
+@media(max-width:480px){
+  .stat-row{grid-template-columns:1fr}
+  .creatives-grid{grid-template-columns:1fr}
+  .topbar .logout-btn{display:none}
+  .camp-detail-grid{grid-template-columns:1fr}
+}
 /* ── Page content transition ── */
 .content {
   transition: opacity 0.25s cubic-bezier(0.22,1,0.36,1),
@@ -202,17 +280,69 @@ select.form-input{cursor:pointer}
 .campaign-row:not(.header) {
   animation: rowIn 0.4s cubic-bezier(0.22,1,0.36,1) both;
 }
-/* ── Skeleton loading pulse ── */
+/* ── Skeleton / Phantom loading ── */
 @keyframes shimmer {
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
-.skeleton {
-  background: linear-gradient(90deg, var(--surface2) 25%, rgba(99,102,241,0.08) 50%, var(--surface2) 75%);
+.skeleton,.skel {
+  background: linear-gradient(90deg, var(--surface2) 25%, rgba(99,102,241,0.07) 50%, var(--surface2) 75%);
   background-size: 200% auto;
-  animation: shimmer 1.5s linear infinite;
-  border-radius: 6px;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: 8px;
   color: transparent !important;
+  pointer-events: none;
+  user-select: none;
+}
+/* Size helpers */
+.skel-h8  { height: 8px; }
+.skel-h12 { height: 12px; }
+.skel-h14 { height: 14px; }
+.skel-h16 { height: 16px; }
+.skel-h20 { height: 20px; }
+.skel-h28 { height: 28px; }
+.skel-h36 { height: 36px; }
+.skel-h48 { height: 48px; }
+.skel-h64 { height: 64px; }
+.skel-w20 { width: 20%; }
+.skel-w30 { width: 30%; }
+.skel-w40 { width: 40%; }
+.skel-w50 { width: 50%; }
+.skel-w60 { width: 60%; }
+.skel-w70 { width: 70%; }
+.skel-w100 { width: 100%; }
+.skel-circle { border-radius: 50%; }
+.skel-round  { border-radius: 12px; }
+/* Phantom stat card */
+.skel-stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px 22px;
+}
+/* Phantom campaign row */
+.skel-campaign-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 90px 56px;
+  align-items: center;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+/* Phantom creative card */
+.skel-creative-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+/* Phantom list item */
+.skel-list-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--border);
 }
 /* ── Sidebar nav active indicator ── */
 .nav-item {
@@ -320,6 +450,12 @@ select.form-input{cursor:pointer}
 .paywall-lock .btn-upgrade:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(99,102,241,.45)}
 /* ── Plan badge ── */
 .plan-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-left:auto}
+/* ── CEO / Admin role badge ── */
+.role-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(245,158,11,0.12));border:1px solid rgba(251,191,36,0.4);color:#f59e0b;margin-top:2px;width:fit-content}
+/* ── Dev tools nav item ── */
+.nav-item.dev-tools-nav{color:#f59e0b}
+.nav-item.dev-tools-nav svg{stroke:#f59e0b}
+.nav-item.dev-tools-nav:hover,.nav-item.dev-tools-nav.active{background:rgba(251,191,36,0.1)}
 /* ── Nav locked item ── */
 .nav-item.locked{opacity:.5;cursor:default}
 .nav-item.locked .lock-icon{width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2;margin-left:auto;flex-shrink:0}
@@ -337,7 +473,10 @@ select.form-input{cursor:pointer}
 </head>
 <body>
 
-<aside class="sidebar">
+<!-- Mobile sidebar backdrop -->
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <img src="/ephermal.png" alt="Ephermal" id="wl-brand-logo">
     <span id="wl-brand-name">Ephermal</span>
@@ -405,16 +544,24 @@ select.form-input{cursor:pointer}
     <div class="nav-item" data-page="billing" onclick="navigate('billing')">
       <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>Billing
     </div>
+    <div class="nav-item dev-tools-nav" id="nav-devtools" data-page="devtools" onclick="navigate('devtools')" style="display:none">
+      <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Dev Tools
+    </div>
   </div>
   <div class="sidebar-footer">
     <div class="credits-bar-wrap" id="credits-bar-wrap">
       <div class="credits-bar-label"><span>UGC Credits</span><strong id="credits-label">— / —</strong></div>
       <div class="credits-bar-track"><div class="credits-bar-fill" id="credits-bar-fill" style="width:0%;background:var(--primary)"></div></div>
     </div>
+    <div class="credits-bar-wrap" id="ai-credits-bar-wrap" style="margin-top:6px">
+      <div class="credits-bar-label"><span>AI Messages</span><strong id="ai-credits-label">— / —</strong></div>
+      <div class="credits-bar-track"><div class="credits-bar-fill" id="ai-credits-bar-fill" style="width:0%;background:var(--accent)"></div></div>
+    </div>
     <div class="user-pill" style="margin-top:8px">
       <div class="user-avatar" id="avatar-btn">?</div>
       <div class="user-info">
         <div class="name" id="sidebar-name">Loading…</div>
+        <div id="role-badge-wrap" style="display:none"><span class="role-badge">👑 CEO</span></div>
         <div class="email" id="sidebar-email"></div>
       </div>
       <span class="plan-badge" id="plan-badge" style="background:rgba(136,146,176,.15);color:var(--muted)">—</span>
@@ -424,14 +571,20 @@ select.form-input{cursor:pointer}
 
 <div class="main">
   <div class="topbar">
-    <div class="page-title" id="topbar-title">Dashboard</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+        <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="page-title" id="topbar-title">Dashboard</div>
+    </div>
     <div class="topbar-right">
       <button class="btn-new" onclick="openUGCModal()">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Generate UGC
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span class="btn-new-label">Generate UGC</span>
       </button>
       <div class="logout-btn" onclick="logout()">Sign out</div>
     </div>
   </div>
+
 
   <div class="content">
 
@@ -546,6 +699,23 @@ select.form-input{cursor:pointer}
 
     <!-- CREATIVES -->
     <div class="page" id="page-creatives">
+      <!-- Creative Fatigue Radar -->
+      <div class="panel fade-in" style="margin-bottom:20px">
+        <div class="panel-head">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="panel-title">Creative Fatigue Radar</div>
+            <span id="fatigue-alert-badge" style="display:none;background:rgba(248,113,113,.15);color:var(--danger);font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;border:1px solid rgba(248,113,113,.25)">Action needed</span>
+          </div>
+          <button class="panel-action" onclick="runFatigueAnalysis()" id="btn-fatigue-refresh">Analyse ↺</button>
+        </div>
+        <div id="fatigue-body" style="padding:16px 22px">
+          <div class="empty-state" style="padding:24px">
+            <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <p>Click Analyse to detect creative fatigue across launched ads</p>
+          </div>
+        </div>
+      </div>
+      <!-- Creatives list -->
       <div class="panel fade-in">
         <div class="panel-head">
           <div class="panel-title">All Creatives</div>
@@ -647,39 +817,123 @@ select.form-input{cursor:pointer}
     <!-- AUDIENCE INTELLIGENCE -->
     <div class="page" id="page-audience">
       <div class="paywall-wrap" id="audience-paywall-wrap">
-        <div class="panel fade-in">
-          <div class="panel-head"><div class="panel-title">Pixel Status</div></div>
-          <div id="audience-pixel-content" style="padding:8px 0"><div class="skeleton" style="height:48px;border-radius:10px"></div></div>
+        <!-- Page header -->
+        <div class="fade-in" style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(139,92,246,0.18));border:1px solid rgba(99,102,241,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:800;letter-spacing:-.3px">Audience Intelligence</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px">Build custom audiences, create lookalikes, and monitor your Meta Pixel.</div>
+          </div>
         </div>
-        <div class="panel fade-in" style="margin-top:20px">
+
+        <!-- Stats row -->
+        <div class="stat-row fade-in" style="margin-bottom:20px">
+          <div class="stat-card">
+            <div class="stat-top"><div class="stat-label">Pixel Status</div><div class="stat-icon" style="background:rgba(52,211,153,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div></div>
+            <div class="stat-value" id="aud-stat-pixel" style="font-size:20px">—</div>
+            <div class="stat-label" id="aud-stat-pixel-sub">Checking…</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><div class="stat-label">Custom Audiences</div><div class="stat-icon" style="background:rgba(99,102,241,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div>
+            <div class="stat-value" id="aud-stat-count">—</div>
+            <div class="stat-label">Audiences created</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><div class="stat-label">Largest Reach</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div></div>
+            <div class="stat-value" id="aud-stat-largest">—</div>
+            <div class="stat-label">Estimated people</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><div class="stat-label">Lookalikes</div><div class="stat-icon" style="background:rgba(139,92,246,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg></div></div>
+            <div class="stat-value" id="aud-stat-lookalikes">—</div>
+            <div class="stat-label">Lookalike audiences</div>
+          </div>
+        </div>
+
+        <!-- Pixel Panel -->
+        <div class="panel fade-in" style="margin-bottom:20px">
+          <div class="panel-head">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--muted)" id="aud-pixel-dot"></div>
+              <div class="panel-title">Meta Pixel</div>
+            </div>
+            <button class="panel-action" onclick="loadPixelStatus();loadAudiences()" style="display:flex;align-items:center;gap:5px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Refresh
+            </button>
+          </div>
+          <div id="audience-pixel-content" style="padding:12px 22px 16px">
+            <div class="skeleton" style="height:52px;border-radius:10px"></div>
+          </div>
+        </div>
+
+        <!-- Custom Audiences Panel -->
+        <div class="panel fade-in" style="margin-bottom:20px">
           <div class="panel-head">
             <div class="panel-title">Custom Audiences</div>
-            <button class="btn-save" style="font-size:12px;padding:7px 14px" onclick="loadAudiences()">↺ Refresh</button>
+            <button class="panel-action" onclick="loadAudiences()" style="display:flex;align-items:center;gap:5px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Refresh
+            </button>
           </div>
-          <div id="audience-list-content"><div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Loading audiences…</p></div></div>
+          <div id="audience-list-content" style="padding:8px 0">
+            <div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>Loading audiences…</p></div>
+          </div>
         </div>
-        <div class="panel fade-in" style="margin-top:20px">
-          <div class="panel-head"><div class="panel-title">Create Audience</div></div>
-          <div style="padding:4px 0 8px;display:flex;flex-direction:column;gap:16px">
-            <div class="form-row">
-              <div class="form-group"><label class="form-label">Audience Name</label><input class="form-input" id="aud-name" placeholder="e.g. High-value customers" oninput=""></div>
-              <div class="form-group"><label class="form-label">Type</label><select class="form-input" id="aud-type"><option value="CUSTOMER_FILE">Customer List</option><option value="WEBSITE">Website Visitors</option><option value="ENGAGEMENT">Engagement</option></select></div>
+
+        <!-- Create + Lookalike side by side -->
+        <div class="grid-2 fade-in">
+          <!-- Create Audience -->
+          <div class="panel">
+            <div class="panel-head">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:30px;height:30px;background:rgba(99,102,241,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                </div>
+                <div class="panel-title">Create Audience</div>
+              </div>
             </div>
-            <div class="form-group"><label class="form-label">Description (optional)</label><input class="form-input" id="aud-desc" placeholder="What this audience is for"></div>
-            <div style="display:flex;justify-content:flex-end"><button class="btn-save" onclick="createAudience()">Create Audience</button></div>
+            <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px">
+              <div class="form-group"><label class="form-label">Audience Name</label><input class="form-input" id="aud-name" placeholder="e.g. High-value customers"></div>
+              <div class="form-group"><label class="form-label">Audience Type</label><select class="form-input" id="aud-type"><option value="CUSTOMER_FILE">Customer List</option><option value="WEBSITE">Website Visitors</option><option value="ENGAGEMENT">Engagement</option></select></div>
+              <div class="form-group"><label class="form-label">Description (optional)</label><input class="form-input" id="aud-desc" placeholder="What this audience is for"></div>
+              <div style="display:flex;justify-content:flex-end">
+                <button class="btn-save" onclick="createAudience()" style="display:inline-flex;align-items:center;gap:7px">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create Audience
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="panel fade-in" style="margin-top:20px">
-          <div class="panel-head"><div class="panel-title">Lookalike Creator</div></div>
-          <div style="padding:4px 0 8px;display:flex;flex-direction:column;gap:16px">
-            <div class="form-row">
+
+          <!-- Lookalike Creator -->
+          <div class="panel">
+            <div class="panel-head">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:30px;height:30px;background:rgba(139,92,246,0.12);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg>
+                </div>
+                <div class="panel-title">Lookalike Creator</div>
+              </div>
+              <span style="font-size:11px;background:rgba(139,92,246,0.12);color:var(--secondary);border:1px solid rgba(139,92,246,0.25);padding:3px 8px;border-radius:6px;font-weight:700">AI-powered</span>
+            </div>
+            <div style="padding:20px 22px;display:flex;flex-direction:column;gap:16px">
               <div class="form-group"><label class="form-label">Source Audience ID</label><input class="form-input" id="look-source" placeholder="Custom audience ID (e.g. 1234567890)"></div>
-              <div class="form-group"><label class="form-label">Country Code</label><input class="form-input" id="look-country" placeholder="GB" maxlength="2" value="GB"></div>
+              <div class="form-row">
+                <div class="form-group"><label class="form-label">Country Code</label><input class="form-input" id="look-country" placeholder="GB" maxlength="2" value="GB"></div>
+                <div class="form-group"><label class="form-label">Similarity Ratio</label><input class="form-input" id="look-ratio" type="number" min="0.01" max="0.1" step="0.01" value="0.02" placeholder="0.01 – 0.10"></div>
+              </div>
+              <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.14);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.6">
+                <strong style="color:var(--secondary)">Tip:</strong> 0.02 = top 2% most similar to your source audience. Smaller ratio = higher precision, smaller pool.
+              </div>
+              <div style="display:flex;justify-content:flex-end">
+                <button class="btn-save" onclick="createLookalike()" style="display:inline-flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--secondary),#7c3aed)">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg>Create Lookalike
+                </button>
+              </div>
             </div>
-            <div class="form-group"><label class="form-label">Similarity Ratio (0.01 – 0.10)</label><input class="form-input" id="look-ratio" type="number" min="0.01" max="0.1" step="0.01" value="0.02" placeholder="0.02 = top 2% similar users"></div>
-            <div style="display:flex;justify-content:flex-end"><button class="btn-save" onclick="createLookalike()">Create Lookalike</button></div>
           </div>
         </div>
+
         <div class="paywall-lock" id="audience-paywall" style="display:none">
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <strong>Audience Intelligence — Growth Plan</strong>
@@ -692,24 +946,62 @@ select.form-input{cursor:pointer}
     <!-- BULK MANAGER -->
     <div class="page" id="page-bulk">
       <div class="paywall-wrap" id="bulk-paywall-wrap">
+        <!-- Page header -->
+        <div class="fade-in" style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,rgba(99,102,241,0.18),rgba(6,214,199,0.12));border:1px solid rgba(99,102,241,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:800;letter-spacing:-.3px">Bulk Campaign Manager</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px">Pause, enable, or scale budgets across all campaigns in one click.</div>
+          </div>
+        </div>
+
+        <!-- Stats row -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px" class="fade-in">
+          <div class="stat-card">
+            <div class="stat-top"><div class="stat-label">Total Campaigns</div><div class="stat-icon" style="background:rgba(99,102,241,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div></div>
+            <div class="stat-value" id="bulk-stat-total">—</div>
+            <div class="stat-label">Loaded</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><div class="stat-label">Live</div><div class="stat-icon" style="background:rgba(52,211,153,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div></div>
+            <div class="stat-value" id="bulk-stat-live" style="color:var(--success)">—</div>
+            <div class="stat-label">Active campaigns</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><div class="stat-label">Paused</div><div class="stat-icon" style="background:rgba(251,191,36,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></div></div>
+            <div class="stat-value" id="bulk-stat-paused" style="color:var(--warning)">—</div>
+            <div class="stat-label">Paused campaigns</div>
+          </div>
+        </div>
+
         <div class="panel fade-in">
-          <div class="panel-head">
-            <div class="panel-title">Bulk Campaign Manager</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn-save" style="font-size:12px;padding:7px 14px;background:rgba(248,113,113,.12);color:var(--danger);border:1px solid rgba(248,113,113,.3)" onclick="bulkAction('pause')">Pause Selected</button>
-              <button class="btn-save" style="font-size:12px;padding:7px 14px;background:rgba(52,211,153,.12);color:var(--success);border:1px solid rgba(52,211,153,.3)" onclick="bulkAction('enable')">Enable Selected</button>
-              <button class="btn-save" style="font-size:12px;padding:7px 14px" onclick="bulkAction('scale_budget')">Scale Budget +15%</button>
+          <div class="panel-head" style="flex-wrap:wrap;gap:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="bulk-select-all" onchange="toggleBulkAll(this)" style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary);flex-shrink:0">
+                <label for="bulk-select-all" style="font-size:13px;font-weight:600;cursor:pointer;user-select:none">Select all</label>
+              </div>
+              <span id="bulk-selected-count" style="font-size:12px;background:rgba(99,102,241,0.12);color:var(--primary);font-weight:700;padding:3px 10px;border-radius:20px;display:none"></span>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto">
+              <button onclick="bulkAction('pause')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s" onmouseover="this.style.background='rgba(248,113,113,.18)'" onmouseout="this.style.background='rgba(248,113,113,.1)'">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>Pause
+              </button>
+              <button onclick="bulkAction('enable')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s" onmouseover="this.style.background='rgba(52,211,153,.18)'" onmouseout="this.style.background='rgba(52,211,153,.1)'">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>Enable
+              </button>
+              <button onclick="bulkAction('scale_budget')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 15px rgba(99,102,241,.25)" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(99,102,241,.35)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(99,102,241,.25)'">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Scale +15%
+              </button>
             </div>
           </div>
-          <div style="padding:8px 0 4px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);margin-bottom:8px">
-            <input type="checkbox" id="bulk-select-all" onchange="toggleBulkAll(this)" style="width:16px;height:16px;cursor:pointer">
-            <label for="bulk-select-all" style="font-size:12px;color:var(--muted);cursor:pointer">Select all</label>
-            <span id="bulk-selected-count" style="font-size:12px;color:var(--primary);font-weight:600;margin-left:auto"></span>
-          </div>
-          <div id="bulk-campaigns-list" style="display:flex;flex-direction:column;gap:4px">
+          <div id="bulk-campaigns-list" style="padding:8px 0">
             <div class="empty-state"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/></svg><p>Visit Campaigns first to load data, then return here</p></div>
           </div>
         </div>
+
         <div class="paywall-lock" id="bulk-paywall" style="display:none">
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <strong>Bulk Campaign Manager — Scale Plan</strong>
@@ -886,6 +1178,73 @@ select.form-input{cursor:pointer}
       </div>
     </div>
 
+    <!-- DEV TOOLS (admin only) -->
+    <div class="page" id="page-devtools">
+      <div class="panel fade-in">
+        <div class="panel-head">
+          <div class="panel-title" style="color:#f59e0b">⚡ Dev Tools <span style="font-size:11px;font-weight:600;padding:2px 8px;background:rgba(251,191,36,0.15);border-radius:8px;color:#f59e0b;margin-left:8px">ADMIN</span></div>
+        </div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+
+          <!-- User Info -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">Session Info</div>
+            <div id="devtools-user-info" style="font-family:monospace;font-size:12px;color:var(--text);display:flex;flex-direction:column;gap:6px"></div>
+          </div>
+
+          <!-- Plan Override (testing) -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">Plan Override <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">(local test only, resets on reload)</span></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button onclick="devSetPlan('starter')" style="padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.3);color:#6366f1">Starter</button>
+              <button onclick="devSetPlan('growth')" style="padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);color:#8b5cf6">Growth</button>
+              <button onclick="devSetPlan('scale')" style="padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7">Scale</button>
+              <button onclick="devSetPlan(null)" style="padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid var(--border);color:var(--muted)">Reset</button>
+            </div>
+          </div>
+
+          <!-- Webhook Tester -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">n8n Webhook Tester</div>
+            <div style="display:flex;gap:10px;margin-bottom:12px">
+              <select id="devtools-wh-select" style="flex:1;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none">
+                <option value="ai">AI (/ephermal/ai)</option>
+                <option value="meta/read">Meta Read (/ephermal/meta/read)</option>
+                <option value="meta/write">Meta Write (/ephermal/meta/write)</option>
+                <option value="google/ads">Google Ads (/ephermal/google/ads)</option>
+                <option value="ugc/generate">UGC Generate (/ephermal/ugc/generate)</option>
+                <option value="creatives">Creatives (/ephermal/creatives)</option>
+                <option value="roas/optimize">ROAS Optimizer (/ephermal/roas/optimize)</option>
+                <option value="bulk/campaigns">Bulk Campaigns (/ephermal/bulk/campaigns)</option>
+                <option value="shopify/products">Shopify Products (/ephermal/shopify/products)</option>
+              </select>
+              <button onclick="devTestWebhook()" style="padding:9px 18px;background:#f59e0b;border:none;border-radius:9px;color:#000;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Ping</button>
+            </div>
+            <pre id="devtools-wh-result" style="background:#0a0d1f;border:1px solid var(--border);border-radius:9px;padding:14px;font-size:11px;color:#34d399;min-height:48px;margin:0;overflow-x:auto;white-space:pre-wrap"></pre>
+          </div>
+
+          <!-- LocalStorage Viewer -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b">LocalStorage</div>
+              <button onclick="devRefreshStorage()" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:7px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif">Refresh ↺</button>
+            </div>
+            <div id="devtools-storage" style="font-family:monospace;font-size:11px;color:var(--text);display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto"></div>
+          </div>
+
+          <!-- Danger -->
+          <div style="background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.2);border-radius:14px;padding:20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--danger);margin-bottom:14px">Danger Zone</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button onclick="if(confirm('Clear all localStorage?')){localStorage.clear();location.reload()}" style="padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid rgba(248,113,113,0.4);color:var(--danger)">Clear LocalStorage</button>
+              <button onclick="if(confirm('Force reload?')){location.reload(true)}" style="padding:8px 16px;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid var(--border);color:var(--muted)">Hard Reload</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
     <!-- BILLING -->
     <div class="page" id="page-billing">
       <div class="panel fade-in">
@@ -988,7 +1347,7 @@ select.form-input{cursor:pointer}
     </div>
     <div class="modal-title">Upgrade to <span id="upgrade-modal-plan">Growth</span></div>
     <div class="modal-sub">Unlock advanced analytics, campaign management, store analysis and more.</div>
-    <div style="font-size:32px;font-weight:900;margin-bottom:6px"><span id="upgrade-modal-price">$159</span><span style="font-size:14px;font-weight:400;color:var(--muted)">/month</span></div>
+    <div style="font-size:32px;font-weight:900;margin-bottom:6px"><span id="upgrade-modal-price">$199</span><span style="font-size:14px;font-weight:400;color:var(--muted)">/month</span></div>
     <div class="modal-actions" style="justify-content:center">
       <button class="btn-secondary" onclick="document.getElementById('upgrade-modal').classList.remove('open')">Maybe later</button>
       <a id="upgrade-modal-link" href="#" target="_blank" class="btn-save" style="text-decoration:none">Upgrade Now →</a>
@@ -1155,7 +1514,7 @@ select.form-input{cursor:pointer}
 
 <script>
 let allCampaigns = [];
-const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products'};
+const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'⚡ Dev Tools'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
@@ -1192,8 +1551,18 @@ function showUpgradeModal(feature) {
   const req = GATED[feature] || 'growth';
   const plan = PLANS[req];
   document.getElementById('upgrade-modal-plan').textContent = plan.name;
-  document.getElementById('upgrade-modal-price').textContent = req === 'growth' ? '$159' : '$349';
-  document.getElementById('upgrade-modal-link').href = window.STRIPE_LINKS?.[req] || '#';
+  document.getElementById('upgrade-modal-price').textContent = req === 'growth' ? '$199' : '$349';
+  // Use checkout Edge Function if price IDs are configured, otherwise fall back to static link
+  const upgradeLink = document.getElementById('upgrade-modal-link');
+  const priceId = window.STRIPE_PRICES?.[req];
+  if (priceId && !priceId.includes('REPLACE')) {
+    upgradeLink.href = '#';
+    upgradeLink.onclick = (e) => { e.preventDefault(); document.getElementById('upgrade-modal').classList.remove('open'); startCheckout(priceId); };
+  } else {
+    upgradeLink.href = window.STRIPE_LINKS?.[req] || '#';
+    upgradeLink.onclick = null;
+    upgradeLink.target = '_blank';
+  }
   document.getElementById('upgrade-modal').classList.add('open');
 }
 
@@ -1245,13 +1614,35 @@ async function loadCreditsFromSupabase() {
   try {
     const token = await supabaseToken();
     if (token) await sb.auth.setSession({ access_token: token, refresh_token: '' }).catch(() => {});
-    const { data } = await sb
+
+    // Load UGC credits
+    const { data: ugcData } = await sb
       .from('ugc_credits')
       .select('used')
       .eq('user_id', clerkUserId)
       .eq('month', month)
       .single();
-    if (data) localStorage.setItem('ugc_used_' + month, String(data.used));
+    if (ugcData) localStorage.setItem('ugc_used_' + month, String(ugcData.used));
+
+    // Load AI message credits (server-side — cannot be spoofed)
+    const { data: aiData } = await sb
+      .from('ai_credits')
+      .select('used')
+      .eq('user_id', clerkUserId)
+      .eq('month', month)
+      .single();
+    if (aiData) localStorage.setItem('ai_used_' + month, String(aiData.used));
+
+    // Load AI top-up pool for this month
+    const { data: topupData } = await sb
+      .from('ai_topups')
+      .select('credits')
+      .eq('user_id', clerkUserId)
+      .eq('month', month);
+    if (topupData) {
+      const totalTopup = topupData.reduce((sum, r) => sum + (r.credits || 0), 0);
+      localStorage.setItem('ai_topup_' + month, String(totalTopup));
+    }
   } catch(e) {}
 }
 
@@ -1337,14 +1728,102 @@ function renderPlanUI() {
   // UGC credits in modal
   const ugcRem = document.getElementById('ugc-credits-remaining');
   if (ugcRem) ugcRem.textContent = `${left} credit${left !== 1 ? 's' : ''}`;
+  // AI credits bar
+  updateAICreditsBar();
   // Billing page
   renderBillingPage();
+}
+
+// ── AI CREDITS BAR ────────────────────────────────────────────────────────────
+const AI_MSG_LIMITS = { starter: 50, growth: 300, scale: 999999 };
+function aiMsgLimit() { return AI_MSG_LIMITS[getUserPlan()] || 50; }
+function aiMsgUsedKey() { return 'ai_used_' + new Date().toISOString().slice(0, 7); }
+function aiTopupKey()   { return 'ai_topup_' + new Date().toISOString().slice(0, 7); }
+// Server-authoritative: reads from localStorage (populated by loadCreditsFromSupabase)
+function aiMsgUsed() { return parseInt(localStorage.getItem(aiMsgUsedKey()) || '0', 10); }
+function aiTopupCredits() { return parseInt(localStorage.getItem(aiTopupKey()) || '0', 10); }
+function aiEffectiveLimit() { return aiMsgLimit() + aiTopupCredits(); }
+
+function updateAICreditsBar() {
+  const plan = getUserPlan();
+  if (plan === 'scale') {
+    const wrap = document.getElementById('ai-credits-bar-wrap');
+    if (wrap) wrap.style.display = 'none';
+    return;
+  }
+  const limit = aiEffectiveLimit();
+  const used = aiMsgUsed();
+  const left = Math.max(0, limit - used);
+  const pct = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+  const label = document.getElementById('ai-credits-label');
+  const fill = document.getElementById('ai-credits-bar-fill');
+  const topup = aiTopupCredits();
+  if (label) label.textContent = topup > 0 ? `${left} / ${limit} (+${topup} top-up)` : `${left} / ${limit}`;
+  if (fill) {
+    fill.style.width = pct + '%';
+    fill.style.background = pct > 85 ? 'var(--danger)' : pct > 65 ? 'var(--warning)' : 'var(--accent)';
+  }
+}
+
+/** Increment AI usage in localStorage and sync to Supabase (best-effort) */
+async function recordAIMessage() {
+  const key = aiMsgUsedKey();
+  const newUsed = aiMsgUsed() + 1;
+  localStorage.setItem(key, String(newUsed));
+  updateAICreditsBar();
+  // Sync to Supabase ai_credits table (server-authoritative increment)
+  const sb = getSupabase();
+  if (!sb) return;
+  const clerkUserId = window.__clerk?.user?.id;
+  if (!clerkUserId) return;
+  const month = new Date().toISOString().slice(0, 7);
+  try {
+    await sb.from('ai_credits').upsert(
+      { user_id: clerkUserId, month, used: newUsed },
+      { onConflict: 'user_id,month' }
+    );
+  } catch(e) {}
+}
+
+// ── STRIPE CHECKOUT ──────────────────────────────────────────────────────────
+async function startCheckout(priceId) {
+  if (!priceId || priceId.startsWith('price_REPLACE')) {
+    // Fallback to static payment link if price IDs aren't configured yet
+    const linkMap = { 'price_REPLACE_STARTER':'starter','price_REPLACE_GROWTH':'growth','price_REPLACE_SCALE':'scale' };
+    const linkKey = linkMap[priceId];
+    if (linkKey && window.STRIPE_LINKS?.[linkKey] && !window.STRIPE_LINKS[linkKey].includes('REPLACE')) {
+      window.open(window.STRIPE_LINKS[linkKey], '_blank');
+    } else {
+      showToast('Payment not configured yet — contact support', 'error');
+    }
+    return;
+  }
+  const btn = event?.currentTarget;
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+  try {
+    await window.__clerkPending;
+    const token = await window.__clerk?.session?.getToken();
+    const userId = window.__clerk?.user?.id;
+    const email  = window.__clerk?.user?.primaryEmailAddress?.emailAddress;
+    if (!token || !userId) { showToast('Please sign in to continue', 'error'); return; }
+    const fnBase = window.SUPABASE_FN || `${window.SUPABASE_URL}/functions/v1`;
+    const res = await fetch(`${fnBase}/create-checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ price_id: priceId, clerk_user_id: userId, email }),
+    });
+    if (!res.ok) { const t = await res.text().catch(()=>''); showToast(t || 'Checkout failed — try again', 'error'); return; }
+    const { url } = await res.json();
+    if (url) window.location.href = url;
+    else showToast('No checkout URL returned', 'error');
+  } catch(e) { showToast('Checkout error — try again', 'error'); console.error(e); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Upgrade'; } }
 }
 
 function renderBillingPage() {
   const plan = getUserPlan();
   const info = planInfo();
-  const descs = { starter: '$89/month · 15 UGC credits/month · 1 store', growth: '$159/month · 75 UGC credits/month · 3 stores', scale: '$349/month · 350 UGC credits/month · Unlimited stores' };
+  const descs = { starter: '$89/month · 15 UGC credits/month · 1 store', growth: '$199/month · 75 UGC credits/month · 3 stores', scale: '$349/month · 350 UGC credits/month · Unlimited stores' };
   const el = (id, txt) => { const e = document.getElementById(id); if(e) e.textContent = txt; };
   el('billing-plan-name', info.name);
   el('billing-plan-desc', descs[plan] || '');
@@ -1360,7 +1839,7 @@ function renderBillingPage() {
   if (!grid) return;
   const planCards = [
     { id:'starter', name:'Starter', price:'$89', ugc:15, stores:'1', features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'White-label option',locked:true,badge:'Scale'}] },
-    { id:'growth',  name:'Growth',  price:'$159', ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'White-label option',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
+    { id:'growth',  name:'Growth',  price:'$199', ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'White-label option',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
     { id:'scale',   name:'Scale',   price:'$349', ugc:350, stores:'∞', features:['Unlimited stores','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','White-label option','Dedicated AI instance','Custom integrations','Slack support'] },
   ];
   grid.innerHTML = planCards.map(p => {
@@ -1384,7 +1863,7 @@ function renderBillingPage() {
     return `<div style="background:var(--surface);border:1px solid var(--border);${border}border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:14px">
       <div><div style="font-size:14px;font-weight:700">${p.name}</div><div style="font-size:26px;font-weight:900;letter-spacing:-1px;margin-top:4px">${p.price}<span style="font-size:13px;font-weight:400;color:var(--muted)">/mo</span></div></div>
       <ul style="list-style:none;display:flex;flex-direction:column;gap:2px">${featHtml}</ul>
-      <button onclick="${isCurrent ? '' : `window.open(window.STRIPE_LINKS?.['${p.id}']||'#','_blank')`}" style="padding:10px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;${btnStyle}">${btnTxt}</button>
+      <button onclick="${isCurrent ? '' : `startCheckout(window.STRIPE_PRICES?.['${p.id}']||'price_REPLACE_${p.id.toUpperCase()}')`}" style="padding:10px;border-radius:10px;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;${btnStyle}">${btnTxt}</button>
     </div>`;
   }).join('');
 }
@@ -1395,8 +1874,27 @@ function handleNavClick(page) {
 }
 
 // ── NAVIGATION ────────────────────────────────────────────────────────────────
+// ── MOBILE SIDEBAR ───────────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const bd = document.getElementById('sidebar-backdrop');
+  const isOpen = sb.classList.contains('open');
+  if (isOpen) { closeSidebar(); } else {
+    sb.classList.add('open');
+    bd.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-backdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 function navigate(page) {
   if (!TITLES[page]) return;  // guard unknown page IDs
+  // Close mobile sidebar on navigation
+  if (window.innerWidth <= 768) closeSidebar();
   const content = document.querySelector('.content');
   content.classList.add('transitioning');
   setTimeout(() => {
@@ -1410,20 +1908,51 @@ function navigate(page) {
     document.getElementById('topbar-title').textContent = TITLES[page] || page;
     window.scrollTo({ top: 0, behavior: 'smooth' });
     content.classList.remove('transitioning');
-    if (page === 'analytics') renderCharts();
+    if (page === 'analytics') {
+      // Show skeleton on analytics stat cards if data hasn't arrived yet
+      ['a-roas','a-impressions','a-clicks','a-conversions'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && (!el.textContent || el.textContent === '—')) {
+          el.classList.add('skel');
+          el.dataset.skelOrig = el.textContent;
+          el.textContent = '';
+        }
+      });
+      // Show phantom chart bars while campaigns load
+      const roasEl = document.getElementById('roas-chart');
+      if (roasEl && !allCampaigns.length) {
+        roasEl.innerHTML = `<div class="chart-bar-wrap">${SKELETONS.analytics(6)}</div>`;
+      }
+      renderCharts();
+    }
     if (page === 'billing') renderBillingPage();
-    if (page === 'creatives') loadAllCreatives();
+    if (page === 'creatives') { loadAllCreatives(); runFatigueAnalysis(); }
     if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } }
     if (page === 'settings') loadSettingsFields();
     if (page === 'audience') { loadPixelStatus(); loadAudiences(); }
     if (page === 'bulk') loadBulkCampaigns();
     if (page === 'products') loadProducts();
     if (page === 'multistore') loadMultiStore();
+    if (page === 'devtools') loadDevTools();
     if (page === 'whitelabel') loadWhitelabel();
   }, 200);
 }
 
 // ── AUTH / FETCH ──────────────────────────────────────────────────────────────
+// ── In-session memory cache (prevents duplicate calls within a page load) ────
+const _memCache = new Map(); // key → { data, expires }
+function _memGet(key) {
+  const entry = _memCache.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expires) { _memCache.delete(key); return null; }
+  return entry.data;
+}
+function _memSet(key, data, ttlMs) {
+  _memCache.set(key, { data, expires: Date.now() + ttlMs });
+}
+// TTLs for client-side dedup cache (shorter than Redis — just prevents double-firing)
+const _MEM_TTL = { overview:20000, campaigns:20000, audiences:30000, pixel:60000, products:30000, creatives:20000 };
+
 async function authFetch(path, opts = {}) {
   // Client-side rate limit — real enforcement is at the backend
   try { window.RateLimit?.check(path, 20); } catch(e) { showToast(e.message, 'error'); return null; }
@@ -1435,27 +1964,175 @@ async function authFetch(path, opts = {}) {
     token = localStorage.getItem('access_token');
     if (!token) { window.location.href = 'auth/login.html'; return null; }
   }
-  const metaHeaders = {};
+
+  // Build integration headers (passed to n8n / cache-proxy)
+  const extraHeaders = {};
   const mt = localStorage.getItem('meta_token');
   const ma = localStorage.getItem('meta_account');
-  if (mt) metaHeaders['x-meta-token'] = mt;
-  if (ma) metaHeaders['x-meta-account'] = ma;
+  if (mt) extraHeaders['x-meta-token'] = mt;
+  if (ma) extraHeaders['x-meta-account'] = ma;
   const gt = localStorage.getItem('google_token');
   const ga = localStorage.getItem('google_account');
-  if (gt) metaHeaders['x-google-token'] = gt;
-  if (ga) metaHeaders['x-google-account'] = ga;
+  if (gt) extraHeaders['x-google-token'] = gt;
+  if (ga) extraHeaders['x-google-account'] = ga;
   const st = localStorage.getItem('shopify_token');
   const ss = localStorage.getItem('shopify_store');
-  if (st) metaHeaders['x-shopify-token'] = st;
-  if (ss) metaHeaders['x-shopify-store'] = ss;
-  const r = await fetch(API() + path, {
-    ...opts,
-    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...metaHeaders, ...(opts.headers || {}) }
-  });
+  if (st) extraHeaders['x-shopify-token'] = st;
+  if (ss) extraHeaders['x-shopify-store'] = ss;
+
+  const method = (opts.method || 'GET').toUpperCase();
+  const isRead = method === 'GET';
+  const proxyUrl = window.CACHE_PROXY_URL;
+
+  // ── Route ALL requests through cache-proxy Edge Function ─────────────────
+  // GETs are cached by action TTL; POSTs are forwarded directly (never cached).
+  if (proxyUrl && !opts._direct) {
+    // Client-side dedup for GETs only
+    if (isRead) {
+      const memKey = path + JSON.stringify(extraHeaders);
+      const cached = _memGet(memKey);
+      if (cached) {
+        return { ok: true, status: 200, json: async () => cached, text: async () => JSON.stringify(cached) };
+      }
+    }
+    try {
+      // Parse POST body so cache-proxy can forward it as JSON
+      let reqBody = undefined;
+      if (!isRead && opts.body) {
+        try { reqBody = JSON.parse(opts.body); } catch { reqBody = opts.body; }
+      }
+      const r = await fetch(proxyUrl, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path, method, body: reqBody, headers: extraHeaders }),
+      });
+      if (r.status === 401) { window.location.href = 'auth/login.html'; return null; }
+      if (r.status === 429) { showToast('Too many requests — slow down', 'error'); return null; }
+      if (r.ok) {
+        const data = await r.json();
+        if (isRead) {
+          const action = new URLSearchParams(path.split('?')[1] || '').get('action') || 'default';
+          const ttl = _MEM_TTL[action] || 15000;
+          _memSet(path + JSON.stringify(extraHeaders), data, ttl);
+        }
+        return { ok: true, status: 200, json: async () => data, text: async () => JSON.stringify(data) };
+      }
+      return r;
+    } catch {
+      // Cache proxy unavailable — fall through to direct Supabase call
+    }
+  }
+
+  // ── Direct fallback to Supabase functions (no cache-proxy) ───────────────
+  const directHeaders = {
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json',
+    ...extraHeaders,
+    ...(opts.headers || {}),
+  };
+  const r = await fetch((window.SUPABASE_FN || window.API_BASE || '') + path, { ...opts, headers: directHeaders });
   if (r.status === 401) { window.location.href = 'auth/login.html'; return null; }
   if (r.status === 429) { showToast('Too many requests — slow down', 'error'); return null; }
   return r;
 }
+
+/** Invalidate a cached action for the current user (called after write operations) */
+function invalidateCache(action) {
+  // Evict from memory cache
+  for (const [key] of _memCache) {
+    if (key.includes(action)) _memCache.delete(key);
+  }
+}
+
+// ── PHANTOM SKELETON SCREENS ─────────────────────────────────────────────────
+// Returns HTML for a shimmer block. No spinners — pure phantom content.
+function skelBlock(width, height, extraStyle = '') {
+  return `<div class="skel" style="width:${width};height:${height}px;${extraStyle}"></div>`;
+}
+
+const SKELETONS = {
+  // Dashboard overview: 4 stat cards + campaign rows
+  dashboard() {
+    const card = `<div class="skel-stat-card" style="animation:statIn .5s both">
+      <div style="display:flex;justify-content:space-between;margin-bottom:14px">
+        ${skelBlock('45%', 11, 'border-radius:4px')}
+        ${skelBlock('36px', 36, 'border-radius:10px;flex-shrink:0')}
+      </div>
+      ${skelBlock('55%', 28, 'margin-bottom:6px')}
+      ${skelBlock('35%', 10, 'border-radius:4px')}
+    </div>`;
+    const row = `<div class="skel-campaign-row">
+      <div style="display:flex;align-items:center;gap:10px">${skelBlock('8px', 8, 'border-radius:50%;flex-shrink:0')}${skelBlock('60%', 13)}</div>
+      ${skelBlock('50%', 13)} ${skelBlock('50%', 13)} ${skelBlock('50%', 13)}
+      ${skelBlock('60px', 22, 'border-radius:6px')} ${skelBlock('38px', 22, 'border-radius:11px')}
+    </div>`;
+    return { stats: card.repeat(4), campaigns: row.repeat(5) };
+  },
+
+  // Campaigns page: header + rows
+  campaigns(n = 7) {
+    return Array.from({length: n}, () => `<div class="skel-campaign-row">
+      <div style="display:flex;align-items:center;gap:10px">${skelBlock('8px', 8, 'border-radius:50%;flex-shrink:0')}
+        <div style="flex:1">${skelBlock('65%', 13, 'margin-bottom:5px')}${skelBlock('40%', 10, 'border-radius:4px')}</div>
+      </div>
+      ${skelBlock('55%', 13)} ${skelBlock('55%', 13)} ${skelBlock('45%', 13)}
+      ${skelBlock('70px', 22, 'border-radius:6px')} ${skelBlock('38px', 22, 'border-radius:11px')}
+    </div>`).join('');
+  },
+
+  // Creatives grid: n cards
+  creatives(n = 8) {
+    return Array.from({length: n}, () => `<div class="skel-creative-card">
+      ${skelBlock('100%', 160, 'border-radius:0')}
+      <div style="padding:14px;display:flex;flex-direction:column;gap:8px">
+        ${skelBlock('75%', 13)} ${skelBlock('50%', 11, 'border-radius:4px')}
+        <div style="display:flex;gap:8px;margin-top:4px">${skelBlock('100%', 32, 'border-radius:8px')}${skelBlock('100%', 32, 'border-radius:8px')}</div>
+      </div>
+    </div>`).join('');
+  },
+
+  // Analytics: chart bars
+  analytics(n = 5) {
+    return Array.from({length: n}, (_, i) => {
+      const w = 30 + Math.random() * 60;
+      return `<div class="chart-bar-row">
+        ${skelBlock('130px', 11, 'border-radius:4px')}
+        ${skelBlock('100%', 10, `border-radius:5px;width:${w}%`)}
+        ${skelBlock('40px', 11, 'border-radius:4px')}
+      </div>`;
+    }).join('');
+  },
+
+  // Audience list items
+  audienceList(n = 4) {
+    return Array.from({length: n}, () => `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--border)">
+      ${skelBlock('34px', 34, 'border-radius:9px;flex-shrink:0')}
+      <div style="flex:1">${skelBlock('55%', 13, 'margin-bottom:6px')}${skelBlock('35%', 11, 'border-radius:4px')}</div>
+      ${skelBlock('70px', 22, 'border-radius:6px;flex-shrink:0')}
+    </div>`).join('');
+  },
+
+  // Bulk campaign list
+  bulkList(n = 5) {
+    return `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px 12px">` +
+      Array.from({length: n}, () => `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface2);border-radius:11px;border:1px solid var(--border)">
+        ${skelBlock('16px', 16, 'border-radius:3px;flex-shrink:0')}
+        ${skelBlock('8px', 8, 'border-radius:50%;flex-shrink:0')}
+        <div style="flex:1">${skelBlock('60%', 13, 'margin-bottom:5px')}${skelBlock('35%', 11, 'border-radius:4px')}</div>
+        ${skelBlock('65px', 22, 'border-radius:6px;flex-shrink:0')}
+      </div>`).join('') + `</div>`;
+  },
+
+  // Products grid
+  products(n = 6) {
+    return Array.from({length: n}, () => `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      ${skelBlock('100%', 150, 'border-radius:0')}
+      <div style="padding:12px;display:flex;flex-direction:column;gap:7px">
+        ${skelBlock('80%', 13)} ${skelBlock('40%', 11, 'border-radius:4px')}
+      </div>
+    </div>`).join('');
+  },
+};
 
 async function logout() {
   if (window.__clerk) await window.__clerk.signOut().catch(() => {});
@@ -1476,6 +2153,12 @@ function animateCounter(el, target, formatter, duration = 1600) {
   })(start);
 }
 
+// ── ADMIN CHECK ───────────────────────────────────────────────────────────────
+function isAdmin() {
+  const role = window.__clerk?.user?.publicMetadata?.role;
+  return role === 'admin' || role === 'ceo';
+}
+
 // ── LOAD USER (from Clerk session) ────────────────────────────────────────────
 function loadUser() {
   const u = window.__clerk?.user;
@@ -1488,6 +2171,77 @@ function loadUser() {
   const se = document.getElementById('sidebar-email'); if (se) se.textContent = email;
   const sName = document.getElementById('s-name'); if (sName) sName.value = name;
   const sEmail = document.getElementById('s-email'); if (sEmail) sEmail.value = email;
+  // ── Admin / CEO perks ────────────────────────────────────────────────────
+  if (isAdmin()) {
+    const roleBadge = document.getElementById('role-badge-wrap');
+    if (roleBadge) roleBadge.style.display = 'block';
+    const devNav = document.getElementById('nav-devtools');
+    if (devNav) devNav.style.display = 'flex';
+  }
+}
+
+// ── DEV TOOLS ─────────────────────────────────────────────────────────────────
+function loadDevTools() {
+  if (!isAdmin()) { navigate('dashboard'); return; }
+  // User info block
+  const u = window.__clerk?.user;
+  const infoEl = document.getElementById('devtools-user-info');
+  if (infoEl && u) {
+    const rows = [
+      ['Clerk ID', u.id],
+      ['Email', u.primaryEmailAddress?.emailAddress || '—'],
+      ['Full Name', u.fullName || '—'],
+      ['Role', u.publicMetadata?.role || '(not set)'],
+      ['Plan (metadata)', u.publicMetadata?.plan || '(not set)'],
+      ['Plan (local)', localStorage.getItem('ephermal_plan_override') || getUserPlan()],
+      ['Session ID', window.__clerk?.session?.id || '—'],
+    ];
+    infoEl.innerHTML = rows.map(([k,v]) =>
+      `<div style="display:flex;gap:12px"><span style="color:var(--muted);min-width:130px">${k}</span><span style="color:#34d399;word-break:break-all">${v}</span></div>`
+    ).join('');
+  }
+  devRefreshStorage();
+}
+function devSetPlan(plan) {
+  if (plan) { localStorage.setItem('ephermal_plan_override', plan); showToast(`Plan set to ${plan} (local only)`, 'success'); }
+  else { localStorage.removeItem('ephermal_plan_override'); showToast('Plan override cleared', 'success'); }
+  renderPlanUI();
+  loadDevTools();
+}
+async function devTestWebhook() {
+  const sel = document.getElementById('devtools-wh-select');
+  const resultEl = document.getElementById('devtools-wh-result');
+  const path = sel?.value || 'ai';
+  resultEl.textContent = 'Pinging…';
+  try {
+    const start = Date.now();
+    const token = window.__clerk?.session ? await window.__clerk.session.getToken() : '';
+    const r = await fetch(`${window.API_BASE || 'https://jamhich.de/webhook'}/${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ action: 'ping', user_id: window.__clerk?.user?.id || 'dev' }),
+    });
+    const ms = Date.now() - start;
+    const text = await r.text();
+    let display;
+    try { display = JSON.stringify(JSON.parse(text), null, 2); } catch { display = text; }
+    resultEl.textContent = `HTTP ${r.status} · ${ms}ms\n\n${display}`;
+    resultEl.style.color = r.ok ? '#34d399' : '#f87171';
+  } catch(e) {
+    resultEl.textContent = `Error: ${e.message}`;
+    resultEl.style.color = '#f87171';
+  }
+}
+function devRefreshStorage() {
+  const el = document.getElementById('devtools-storage');
+  if (!el) return;
+  const keys = Object.keys(localStorage).sort();
+  if (!keys.length) { el.innerHTML = '<span style="color:var(--muted)">Empty</span>'; return; }
+  el.innerHTML = keys.map(k => {
+    const v = localStorage.getItem(k);
+    const display = v && v.length > 80 ? v.slice(0, 80) + '…' : v;
+    return `<div style="display:flex;gap:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--muted);min-width:180px;flex-shrink:0">${escHtml(k)}</span><span style="color:#f0f2ff;word-break:break-all">${escHtml(display || '')}</span></div>`;
+  }).join('');
 }
 
 // ── META STATUS ───────────────────────────────────────────────────────────────
@@ -1502,17 +2256,29 @@ function refreshMetaStatus() {
 
 // ── LOAD ANALYTICS ────────────────────────────────────────────────────────────
 async function loadOverview() {
+  // Show phantom stat values
   ['stat-roas','stat-spend','stat-creatives','stat-conversions'].forEach(id => {
     const el = document.getElementById(id);
-    if (el && el.textContent === '—') el.classList.add('skeleton');
+    if (el) { el.classList.add('skel'); el.dataset.skelOrig = el.textContent; el.textContent = ''; }
   });
   try {
     const r = await authFetch('/meta/read?action=overview');
-    if (!r || !r.ok) return;
+    if (!r || !r.ok) {
+      ['stat-roas','stat-spend','stat-creatives','stat-conversions'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('skel'); el.textContent = el.dataset.skelOrig || '—'; }
+      });
+      return;
+    }
     const d = await r.json();
     ['stat-roas','stat-spend','stat-creatives','stat-conversions'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.classList.remove('skeleton');
+      if (el) el.classList.remove('skel');
+    });
+    // Also clear any analytics stat card skeletons
+    ['a-roas','a-impressions','a-clicks','a-conversions'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('skel');
     });
     const setVal = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
     const roasStr = d.roas > 0 ? `${d.roas.toFixed(1)}×` : '—';
@@ -1608,6 +2374,12 @@ async function toggleCampaign(id, checkbox) {
 }
 
 async function loadCampaigns() {
+  // Show phantom campaign rows while fetching
+  const skelHtml = SKELETONS.campaigns(5);
+  const b1 = document.getElementById('campaigns-body');
+  const b2 = document.getElementById('campaigns-body-full');
+  if (b1 && !b1.querySelector('.campaign-row:not(.header)')) b1.innerHTML = skelHtml;
+  if (b2 && !b2.querySelector('.campaign-row:not(.header)')) b2.innerHTML = skelHtml;
   try {
     const rMeta = await authFetch('/meta/read?action=campaigns');
     if (!rMeta || !rMeta.ok) return;
@@ -1633,6 +2405,8 @@ async function loadCampaigns() {
     const html = rowHtml + upgradeBanner;
     const b1 = document.getElementById('campaigns-body'); if (b1) { b1.innerHTML = html; setTimeout(() => { b1.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); }
     const b2 = document.getElementById('campaigns-body-full'); if (b2) { b2.innerHTML = html; setTimeout(() => { b2.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); }
+    // Refresh analytics charts if analytics page is currently visible
+    if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts();
   } catch(e){}
 }
 
@@ -1666,6 +2440,7 @@ async function launchCampaign() {
     if (!r) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;margin-right:5px;vertical-align:-2px"><polygon points="5 3 19 12 5 21 5 3"/></svg>Launch Campaign'; return; }
     const d = await r.json();
     if (d.success) {
+      invalidateCache('campaigns');
       showToast(`✓ "${name}" created — activate it from the campaigns list`, 'success');
       closeLaunchModal();
       document.getElementById('lc-name').value = '';
@@ -1706,17 +2481,23 @@ function renderCreativeCard(c, i) {
   const icon = c.type === 'video' ? '<svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>' : '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
   const thumb = c.thumbnail_url ? `<img src="${escHtml(c.thumbnail_url)}" alt="">` : `<div class="thumb-icon">${icon}</div>`;
   const title = c.headline || `${c.type === 'video' ? 'Video' : 'Image'} Creative`;
+  const safeCardId = escHtml(String(c.id));
   const actions = c.status === 'pending_review'
-    ? `<div class="creative-actions"><button class="btn-approve" onclick="approveCreative('${c.id}',this)">Approve</button><button class="btn-reject" onclick="rejectCreative('${c.id}',this)">Reject</button></div>`
-    : `<span style="font-size:11px;font-weight:600;color:${c.status==='approved'||c.status==='launched'?'var(--success)':'var(--muted)'}">${c.status}</span>`;
-  return `<div class="creative-card" style="animation-delay:${i*.05}s" id="card-${c.id}"><div class="creative-thumb">${thumb}<span class="creative-platform ugc">${c.type||'ugc'}</span></div><div class="creative-info"><div class="creative-title">${escHtml(title)}</div><div class="creative-meta">${timeSince(c.created_at)}</div>${actions}</div></div>`;
+    ? `<div class="creative-actions"><button class="btn-approve" onclick="approveCreative('${safeCardId}',this)">Approve</button><button class="btn-reject" onclick="rejectCreative('${safeCardId}',this)">Reject</button></div>`
+    : `<span style="font-size:11px;font-weight:600;color:${c.status==='approved'||c.status==='launched'?'var(--success)':'var(--muted)'}">${escHtml(c.status||'')}</span>`;
+  return `<div class="creative-card" style="animation-delay:${i*.05}s" id="card-${safeCardId}"><div class="creative-thumb">${thumb}<span class="creative-platform ugc">${escHtml(c.type||'ugc')}</span></div><div class="creative-info"><div class="creative-title">${escHtml(title)}</div><div class="creative-meta">${timeSince(c.created_at)}</div>${actions}</div></div>`;
 }
 
 async function loadCreatives(status = 'pending_review', containerId = 'creatives-body') {
   const url = status ? `/creatives?status=${encodeURIComponent(status)}` : '/creatives';
+  // Show phantom creative cards while loading
+  const container = document.getElementById(containerId);
+  if (container && !container.querySelector('.creative-card')) {
+    container.innerHTML = `<div class="creatives-grid">${SKELETONS.creatives(4)}</div>`;
+  }
   try {
     const r = await authFetch(url);
-    if (!r || !r.ok) return;
+    if (!r || !r.ok) { if(container) container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No creatives found</p></div>'; return; }
     const creatives = await r.json();
     if (containerId === 'creatives-body') {
       const badge = document.getElementById('creatives-badge');
@@ -1739,8 +2520,11 @@ async function approveCreative(id, btn) {
   btn.disabled=true; btn.textContent='…';
   try {
     const r = await authFetch('/creatives/action', {method:'POST', body:JSON.stringify({id, action:'approve'})});
-    if (r && r.ok) { const card=document.getElementById(`card-${id}`); if(card)card.style.cssText+='border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.05)'; btn.closest('.creative-actions').innerHTML='<span style="font-size:12px;color:var(--success);font-weight:600;width:100%;display:block;text-align:center">✓ Approved</span>'; }
-    else { btn.disabled=false; btn.textContent='Approve'; }
+    if (r && r.ok) {
+      invalidateCache('creatives');
+      const card=document.getElementById(`card-${id}`); if(card)card.style.cssText+='border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.05)';
+      btn.closest('.creative-actions').innerHTML='<span style="font-size:12px;color:var(--success);font-weight:600;width:100%;display:block;text-align:center">✓ Approved</span>';
+    } else { btn.disabled=false; btn.textContent='Approve'; }
   } catch(e){ btn.disabled=false; btn.textContent='Approve'; }
 }
 
@@ -1748,9 +2532,88 @@ async function rejectCreative(id, btn) {
   btn.disabled=true; btn.textContent='…';
   try {
     const r = await authFetch('/creatives/action', {method:'POST', body:JSON.stringify({id, action:'reject'})});
-    if (r && r.ok) { const card=document.getElementById(`card-${id}`); if(card){card.style.opacity='.3';card.style.transition='opacity .4s';setTimeout(()=>card.remove(),400);} }
-    else { btn.disabled=false; btn.textContent='Reject'; }
+    if (r && r.ok) {
+      invalidateCache('creatives');
+      const card=document.getElementById(`card-${id}`); if(card){card.style.opacity='.3';card.style.transition='opacity .4s';setTimeout(()=>card.remove(),400);}
+    } else { btn.disabled=false; btn.textContent='Reject'; }
   } catch(e){ btn.disabled=false; btn.textContent='Reject'; }
+}
+
+// ── CREATIVE FATIGUE PREDICTION ───────────────────────────────────────────────
+// Scores each launched creative 0–100 based on: frequency, CTR decline,
+// ROAS decline, creative age, impression volume. Higher = more fatigued.
+function computeFatigueScore(c) {
+  let score = 0;
+  const signals = [];
+  const freq = parseFloat(c.frequency) || 0;
+  if (freq >= 5)        { score += 35; signals.push(`Freq ${freq.toFixed(1)}×`); }
+  else if (freq >= 3.5) { score += 20; signals.push(`Freq ${freq.toFixed(1)}×`); }
+  else if (freq >= 2.5) { score += 8; }
+  const ctr = parseFloat(c.ctr) || 0;
+  const ctrBase = parseFloat(c.ctr_7d_ago || c.ctr_prev) || ctr;
+  if (ctrBase > 0 && ctr < ctrBase) {
+    const drop = (ctrBase - ctr) / ctrBase;
+    if (drop >= 0.35) { score += 25; signals.push(`CTR ↓${Math.round(drop*100)}%`); }
+    else if (drop >= 0.2) { score += 14; signals.push(`CTR ↓${Math.round(drop*100)}%`); }
+  }
+  const roas = parseFloat(c.roas) || 0;
+  const roasBase = parseFloat(c.roas_7d_ago || c.roas_prev) || roas;
+  if (roasBase > 0 && roas < roasBase) {
+    const drop = (roasBase - roas) / roasBase;
+    if (drop >= 0.35) { score += 20; signals.push(`ROAS ↓${Math.round(drop*100)}%`); }
+    else if (drop >= 0.2) { score += 10; signals.push(`ROAS ↓${Math.round(drop*100)}%`); }
+  }
+  if (c.created_at) {
+    const days = Math.floor((Date.now() - new Date(c.created_at)) / 86400000);
+    if (days > 30) { score += 10; signals.push(`${days}d old`); }
+    else if (days > 21) { score += 5; signals.push(`${days}d old`); }
+  }
+  const imp = parseInt(c.impressions || c.total_impressions) || 0;
+  if (imp > 100000) { score += 10; signals.push(`${fmt(imp)} impr`); }
+  else if (imp > 50000) { score += 5; }
+  if (c.fatigue_score != null) return { score: Math.min(100, parseInt(c.fatigue_score)), signals };
+  return { score: Math.min(100, score), signals };
+}
+
+function fatigueLevel(score) { return score >= 65 ? 'critical' : score >= 35 ? 'warn' : 'ok'; }
+function fatigueRec(score) {
+  if (score >= 65) return 'Pause immediately — severe fatigue. Replace or refresh this creative.';
+  if (score >= 35) return 'Monitor closely — performance declining. Test a new variant within 3–5 days.';
+  return 'Healthy — performing well. No action needed.';
+}
+
+async function runFatigueAnalysis() {
+  const btn = document.getElementById('btn-fatigue-refresh');
+  const body = document.getElementById('fatigue-body');
+  const badge = document.getElementById('fatigue-alert-badge');
+  if (!body) return;
+  body.innerHTML = `<div class="fatigue-grid">${Array.from({length:4},()=>`<div class="fatigue-item">${skelBlock('60%',13,'margin-bottom:6px')}${skelBlock('100%',6,'border-radius:3px;margin-bottom:8px')}${skelBlock('80%',10,'border-radius:4px')}</div>`).join('')}</div>`;
+  if (btn) { btn.disabled=true; btn.textContent='Analysing…'; }
+  let creatives = [];
+  try {
+    const r = await authFetch('/creatives?status=launched');
+    if (r && r.ok) { const d = await r.json(); creatives = Array.isArray(d)?d:(d.creatives||d.data||[]); }
+  } catch(e) {}
+  if (btn) { btn.disabled=false; btn.textContent='Analyse ↺'; }
+  if (!creatives.length) {
+    body.innerHTML=`<div class="empty-state" style="padding:24px"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No launched creatives to analyse</p></div>`;
+    if(badge) badge.style.display='none'; return;
+  }
+  const scored = creatives.map(c=>{const{score,signals}=computeFatigueScore(c);return{...c,_f:score,_s:signals,_l:fatigueLevel(score)};}).sort((a,b)=>b._f-a._f);
+  const nc=scored.filter(c=>c._l==='critical').length, nw=scored.filter(c=>c._l==='warn').length;
+  if(badge){if(nc>0){badge.textContent=`${nc} critical`;badge.style.cssText='display:inline-block;background:rgba(248,113,113,.15);color:var(--danger);font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;border:1px solid rgba(248,113,113,.25)';}else if(nw>0){badge.textContent=`${nw} at risk`;badge.style.cssText='display:inline-block;background:rgba(251,191,36,.12);color:var(--warning);font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;border:1px solid rgba(251,191,36,.2)';}else{badge.style.display='none';}}
+  const col={critical:'var(--danger)',warn:'var(--warning)',ok:'var(--success)'};
+  body.innerHTML=`<div class="fatigue-grid">${scored.map(c=>{
+    const n=escHtml(c.headline||c.name||`Creative ${escHtml(String(c.id))}`);
+    const lbl=c._l==='critical'?`Fatigued ${c._f}`:c._l==='warn'?`At risk ${c._f}`:`Healthy ${c._f}`;
+    return `<div class="fatigue-item">
+      <div class="fatigue-item-top"><div class="fatigue-item-name" title="${n}">${n}</div><span class="fatigue-score-badge ${c._l}">${lbl}</span></div>
+      <div class="fatigue-bar-track"><div class="fatigue-bar-fill" style="width:0%;background:${col[c._l]}" data-w="${c._f}"></div></div>
+      ${c._s.length?`<div class="fatigue-signals">${c._s.map(s=>`<span class="fatigue-signal">${escHtml(s)}</span>`).join('')}</div>`:''}
+      <div class="fatigue-rec ${c._l}">${escHtml(fatigueRec(c._f))}</div>
+    </div>`;
+  }).join('')}</div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{body.querySelectorAll('.fatigue-bar-fill').forEach(b=>{b.style.width=(b.dataset.w||0)+'%';});}));
 }
 
 // ── UGC MODAL ─────────────────────────────────────────────────────────────────
@@ -1903,21 +2766,37 @@ function dashStartShopifyOAuth() {
   const userId = window.__clerk?.user?.id || '';
   if (!userId) { showToast('Not signed in — please refresh', 'error'); return; }
   const inputEl = document.getElementById('dash-shopify-url-input');
+  const errEl   = document.getElementById('dash-shopify-url-err');
   const raw = (inputEl ? inputEl.value.trim() : '') || localStorage.getItem('shopify_domain') || '';
-  const errEl = document.getElementById('dash-shopify-url-err');
   if (errEl) errEl.textContent = '';
-  if (!raw) { if (errEl) errEl.textContent = 'Enter your store URL first'; return; }
+  // ── Validate URL ─────────────────────────────────────────────────────────
+  function shakeInput() {
+    if (!inputEl) return;
+    inputEl.style.borderColor = '#f87171';
+    inputEl.style.animation = 'none';
+    requestAnimationFrame(() => { inputEl.style.animation = 'shake .35s ease'; });
+    setTimeout(() => { inputEl.style.borderColor = 'var(--border)'; inputEl.style.animation = ''; }, 800);
+  }
+  if (!raw) {
+    if (errEl) errEl.textContent = 'Enter your Myshopify store URL above first';
+    shakeInput();
+    if (inputEl) inputEl.focus();
+    return;
+  }
   let shop = raw.replace(/https?:\/\//,'').replace(/\/.*$/,'').toLowerCase().trim();
   if (!shop.includes('.')) shop += '.myshopify.com';
   if (!/^[a-z0-9-]+\.myshopify\.com$/.test(shop)) {
-    if (errEl) errEl.textContent = 'Enter a valid .myshopify.com URL'; return;
+    if (errEl) errEl.textContent = 'Must be a valid .myshopify.com URL';
+    shakeInput();
+    if (inputEl) inputEl.focus();
+    return;
   }
   const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
   const state = `${userId}~dashboard~${nonce}`;
   localStorage.setItem('shopify_oauth_nonce', nonce);
   localStorage.setItem('shopify_oauth_shop', shop);
   const btn = document.getElementById('dash-shopify-oauth-btn');
-  if (btn) { btn.disabled = true; btn.style.opacity = '0.6'; btn.textContent = 'Redirecting…'; }
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:15px;height:15px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting to Shopify…'; }
   const params = new URLSearchParams({ client_id: window.SHOPIFY_APP_KEY, scope: 'read_products,read_orders,read_analytics,read_customers', redirect_uri: window.SHOPIFY_CALLBACK_URL, state });
   window.location.href = `https://${shop}/admin/oauth/authorize?${params}`;
 }
@@ -2133,13 +3012,21 @@ function buildDonut(segments, total) {
 }
 
 function renderCharts() {
-  renderROASChart(allCampaigns);
+  // If campaigns still loading, show phantom donuts (roas-chart already handled in navigate)
   const sdEl=document.getElementById('spend-donut'), stEl=document.getElementById('status-donut');
   if (!allCampaigns.length) {
-    if(sdEl) sdEl.innerHTML='<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data</p></div></div>';
-    if(stEl) stEl.innerHTML='<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No data</p></div></div>';
+    const donutSkel = `<div class="donut-wrap" style="display:flex;align-items:center;gap:20px;padding:20px">
+      <div class="skel skel-circle" style="width:140px;height:140px;flex-shrink:0;border-radius:50%"></div>
+      <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+        ${[1,2,3].map(()=>`<div style="display:flex;align-items:center;gap:8px">${skelBlock('10px',10,'border-radius:50%;flex-shrink:0')}${skelBlock('80%',11,'border-radius:4px')}</div>`).join('')}
+      </div>
+    </div>`;
+    if(sdEl) sdEl.innerHTML=donutSkel;
+    if(stEl) stEl.innerHTML=donutSkel;
+    // Leave roas-chart showing its skeleton (set in navigate) — don't overwrite with empty state
     return;
   }
+  renderROASChart(allCampaigns);
   const metaSpend=allCampaigns.reduce((a,c)=>a+(c.total_spend||0),0);
   const fbSpend=allCampaigns.filter(c=>c.placement==='facebook').reduce((a,c)=>a+(c.total_spend||0),0);
   const igSpend=allCampaigns.filter(c=>c.placement==='instagram').reduce((a,c)=>a+(c.total_spend||0),0);
@@ -2210,14 +3097,22 @@ async function sendAIMessage() {
   const btn = document.getElementById('ai-send-btn');
   btn.disabled = true;
   try {
+    const userId = window.Clerk?.user?.id || '';
+    const plan = getUserPlan();
     const r = await authFetch('/ai', {
       method: 'POST',
-      body: JSON.stringify({ action: 'chat', message: msg, context: aiGetContext() })
+      body: JSON.stringify({ action: 'chat', message: msg, context: aiGetContext(), user_id: userId, plan })
     });
     typingEl.remove();
     if (r && r.ok) {
       const d = await r.json();
-      aiAppendMsg(d.reply || d.message || 'Done!', 'bot');
+      if (d.error === 'AI_LIMIT_REACHED') {
+        aiAppendMsg(`You've used all your AI messages this month (${d.limit} on ${plan} plan). Top up to keep going.`, 'bot');
+        aiShowTopupBanner(d.limit, plan);
+      } else {
+        aiAppendMsg(d.reply || d.message || 'Done!', 'bot');
+        await recordAIMessage();
+      }
     } else {
       aiAppendMsg("I'm having trouble connecting right now. Try again shortly.", 'bot');
     }
@@ -2225,6 +3120,20 @@ async function sendAIMessage() {
     typingEl.remove();
     aiAppendMsg("Request failed — please try again.", 'bot');
   } finally { btn.disabled = false; }
+}
+
+function aiShowTopupBanner(limit, plan) {
+  const box = document.getElementById('ai-messages');
+  const existing = document.getElementById('ai-topup-banner');
+  if (existing) return;
+  const div = document.createElement('div');
+  div.id = 'ai-topup-banner';
+  div.style.cssText = 'margin:8px 0;padding:14px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:12px;text-align:center;font-size:13px;color:var(--warning)';
+  div.innerHTML = `<strong style="display:block;margin-bottom:6px">Monthly limit reached (${limit} messages)</strong>
+    <span style="color:var(--muted);font-size:12px">Top up for $5 = 200 extra messages this month</span><br>
+    <button onclick="startCheckout(window.STRIPE_PRICES?.topup_5||'price_REPLACE_TOPUP5')" style="display:inline-block;margin-top:10px;padding:8px 20px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Get 50 more messages →</button>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
 }
 
 function aiQuickAsk(question) {
@@ -2241,14 +3150,21 @@ async function aiGenerateDescription() {
   try {
     let brandIdentity = null;
     try { brandIdentity = JSON.parse(localStorage.getItem('store_brand_identity') || 'null'); } catch(e) {}
+    const userId = window.Clerk?.user?.id || '';
+    const plan = getUserPlan();
     const r = await authFetch('/ai', {
       method: 'POST',
-      body: JSON.stringify({ action: 'describe', store_url: storeUrl, context: aiGetContext(), brand_identity: brandIdentity })
+      body: JSON.stringify({ action: 'describe', store_url: storeUrl, context: aiGetContext(), brand_identity: brandIdentity, user_id: userId, plan })
     });
     if (r && r.ok) {
       const d = await r.json();
-      ta.value = d.description || d.text || '';
-      ta.dispatchEvent(new Event('input'));
+      if (d.error === 'AI_LIMIT_REACHED') {
+        showToast(`AI message limit reached — top up to continue`, 'warn');
+      } else {
+        ta.value = d.description || d.text || '';
+        ta.dispatchEvent(new Event('input'));
+        await recordAIMessage();
+      }
     } else {
       showToast('AI generation failed — try writing manually', 'warn');
     }
@@ -2273,41 +3189,72 @@ async function loadPixelStatus() {
   if (!el) return;
   try {
     const r = await authFetch('/meta/read?action=pixel');
-    if (!r || !r.ok) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">Could not load pixel data — check Meta credentials.</p>'; return; }
+    if (!r || !r.ok) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">Could not load pixel data — check Meta credentials.</p>'; return; }
     const d = await r.json();
     const pixels = d.pixels || d.data || [];
-    if (!pixels.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px">No Meta Pixel found on your ad account.</p>'; return; }
+    if (!pixels.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">No Meta Pixel found on your ad account.</p>'; return; }
+    const firstPixel = pixels[0];
+    const firstOk = !!firstPixel.last_fired_time;
+    // Update stat card
+    const statPixel = document.getElementById('aud-stat-pixel');
+    const statSub = document.getElementById('aud-stat-pixel-sub');
+    const dot = document.getElementById('aud-pixel-dot');
+    if (statPixel) statPixel.textContent = firstOk ? 'Active' : 'Inactive';
+    if (statPixel) statPixel.style.color = firstOk ? 'var(--success)' : 'var(--warning)';
+    if (statSub) statSub.textContent = firstOk ? `Last fired ${timeSince(firstPixel.last_fired_time)}` : 'No recent activity';
+    if (dot) { dot.style.background = firstOk ? 'var(--success)' : 'var(--warning)'; dot.style.boxShadow = firstOk ? '0 0 6px var(--success)' : 'none'; }
     el.innerHTML = pixels.map(p => {
       const fired = p.last_fired_time ? `Last fired: ${timeSince(p.last_fired_time)}` : 'Never fired';
       const ok = !!p.last_fired_time;
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:10px;margin-bottom:6px">
-        <div><div style="font-size:13px;font-weight:600">${escHtml(p.name||'Pixel')}</div><div style="font-size:12px;color:var(--muted)">ID: ${escHtml(p.id)} · ${fired}</div></div>
-        <span class="conn-status${ok?' ok':''}" style="font-size:11px">● ${ok?'Active':'Inactive'}</span>
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;background:${ok?'rgba(52,211,153,0.1)':'rgba(251,191,36,0.1)'};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${ok?'var(--success)':'var(--warning)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          </div>
+          <div><div style="font-size:13px;font-weight:700">${escHtml(p.name||'Meta Pixel')}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">ID: ${escHtml(p.id)} · ${fired}</div></div>
+        </div>
+        <span class="status-pill ${ok?'live':'paused'}">${ok?'Active':'Inactive'}</span>
       </div>`;
     }).join('');
-  } catch(e) { if(el) el.innerHTML = '<p style="color:var(--muted);font-size:13px">Failed to load pixel status.</p>'; }
+  } catch(e) { if(el) el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">Failed to load pixel status.</p>'; }
 }
 
 async function loadAudiences() {
   if (!canAccess('audience')) return;
   const el = document.getElementById('audience-list-content');
   if (!el) return;
-  el.innerHTML = '<div class="skeleton" style="height:180px;border-radius:10px"></div>';
+  el.innerHTML = `<div style="padding:0 0 4px">${SKELETONS.audienceList(3)}</div>`;
   try {
     const r = await authFetch('/meta/read?action=audiences');
-    if (!r || !r.ok) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:12px 0">Could not load audiences — check Meta credentials.</p>'; return; }
+    if (!r || !r.ok) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:16px 22px">Could not load audiences — check Meta credentials.</p>'; return; }
     const d = await r.json();
     const audiences = d.audiences || d.data || [];
+    // Update stat cards
+    const lookalikes = audiences.filter(a => a.subtype === 'LOOKALIKE').length;
+    const largest = audiences.reduce((max, a) => Math.max(max, a.approximate_count||0), 0);
+    const setEl = (id, v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+    setEl('aud-stat-count', audiences.length || '0');
+    setEl('aud-stat-largest', largest > 0 ? fmt(largest) : '0');
+    setEl('aud-stat-lookalikes', lookalikes || '0');
     if (!audiences.length) { el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No custom audiences yet — create one below</p></div>'; return; }
-    el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px">${audiences.map(a => {
+    el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px 12px">${audiences.map(a => {
       const count = a.approximate_count > 0 ? fmt(a.approximate_count) + ' people' : 'Calculating…';
       const ok = a.delivery_status?.code === 200;
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);border-radius:10px">
-        <div><div style="font-size:13px;font-weight:600">${escHtml(a.name)}</div><div style="font-size:12px;color:var(--muted)">${escHtml(a.subtype||'CUSTOM')} · ${count}</div></div>
-        <span class="conn-status${ok?' ok':''}" style="font-size:11px">● ${ok?'Ready':'Processing'}</span>
+      const isLookalike = a.subtype === 'LOOKALIKE';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:11px">
+        <div style="display:flex;align-items:center;gap:11px">
+          <div style="width:34px;height:34px;background:${isLookalike?'rgba(139,92,246,0.1)':'rgba(99,102,241,0.1)'};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="${isLookalike?'var(--secondary)':'var(--primary)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700">${escHtml(a.name)}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">${escHtml(a.subtype||'CUSTOM')} · ${count}</div>
+          </div>
+        </div>
+        <span class="status-pill ${ok?'live':'pending'}">${ok?'Ready':'Processing'}</span>
       </div>`;
     }).join('')}</div>`;
-  } catch(e) { if(el) el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:12px 0">Failed to load audiences.</p>'; }
+  } catch(e) { if(el) el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:16px 22px">Failed to load audiences.</p>'; }
 }
 
 async function createAudience() {
@@ -2322,6 +3269,7 @@ async function createAudience() {
     const r = await authFetch('/meta/write', {method:'POST', body:JSON.stringify({action:'create_audience', name, type, description:desc})});
     if (r && r.ok) {
       showToast('Audience created — refreshing list');
+      invalidateCache('audiences');
       if(document.getElementById('aud-name')) document.getElementById('aud-name').value='';
       if(document.getElementById('aud-desc')) document.getElementById('aud-desc').value='';
       await loadAudiences();
@@ -2343,6 +3291,7 @@ async function createLookalike() {
     const r = await authFetch('/meta/write', {method:'POST', body:JSON.stringify({action:'create_lookalike', source_audience_id:source, country, ratio})});
     if (r && r.ok) {
       showToast('Lookalike audience created — may take a few minutes to populate');
+      invalidateCache('audiences');
       if(document.getElementById('look-source')) document.getElementById('look-source').value='';
       await loadAudiences();
     } else { const d=r?await r.json().catch(()=>({})):({}); showToast(d.message||'Failed to create lookalike','error'); }
@@ -2357,31 +3306,49 @@ function loadBulkCampaigns() {
   if (!canAccess('bulk')) return;
   const el = document.getElementById('bulk-campaigns-list');
   if (!el) return;
-  if (!allCampaigns.length) { el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/></svg><p>No campaigns loaded — visit Campaigns first to load data</p></div>'; return; }
+  // Update stat cards
+  const setEl = (id, v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+  setEl('bulk-stat-total', allCampaigns.length || '0');
+  setEl('bulk-stat-live', allCampaigns.filter(c => c.status === 'live').length || '0');
+  setEl('bulk-stat-paused', allCampaigns.filter(c => c.status === 'paused').length || '0');
+  if (!allCampaigns.length) { el.innerHTML = SKELETONS.bulkList(4) + '<div style="text-align:center;padding:12px;font-size:12px;color:var(--muted)">Visit Campaigns first to load data, then return here</div>'; return; }
   bulkSelected.clear();
-  const cnt = document.getElementById('bulk-selected-count'); if(cnt) cnt.textContent='';
+  const cnt = document.getElementById('bulk-selected-count');
+  if(cnt) { cnt.textContent=''; cnt.style.display='none'; }
   const chk = document.getElementById('bulk-select-all'); if(chk) chk.checked=false;
-  el.innerHTML = allCampaigns.map(c => {
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px 12px">${allCampaigns.map(c => {
     const sc = ['live','paused','failed'].includes(c.status)?c.status:'draft';
-    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface2);border-radius:10px">
-      <input type="checkbox" value="${escHtml(String(c.id))}" onchange="toggleBulkItem(this)" style="width:16px;height:16px;cursor:pointer;flex-shrink:0">
-      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.name)}</div><div style="font-size:12px;color:var(--muted)">${escHtml((c.platform||'meta').charAt(0).toUpperCase()+(c.platform||'meta').slice(1))}${c.total_spend>0?' · $'+fmt(c.total_spend)+' spend':''}</div></div>
+    const platform = (c.platform||'meta').charAt(0).toUpperCase()+(c.platform||'meta').slice(1);
+    const spendStr = c.total_spend > 0 ? ` · $${fmt(c.total_spend)} spend` : '';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(99,102,241,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
+      <input type="checkbox" value="${escHtml(String(c.id))}" onchange="toggleBulkItem(this)" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:var(--primary)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${sc==='live'?'var(--success)':sc==='paused'?'var(--warning)':'var(--muted)'};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(c.name)}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${escHtml(platform)}${spendStr}</div>
+      </div>
       <span class="status-pill ${sc}">${escHtml(c.status||'draft')}</span>
     </div>`;
-  }).join('');
+  }).join('')}</div>`;
 }
 
 function toggleBulkItem(checkbox) {
   if (checkbox.checked) bulkSelected.add(checkbox.value); else bulkSelected.delete(checkbox.value);
   const cnt = document.getElementById('bulk-selected-count');
-  if (cnt) cnt.textContent = bulkSelected.size > 0 ? `${bulkSelected.size} selected` : '';
+  if (cnt) {
+    if (bulkSelected.size > 0) { cnt.textContent = `${bulkSelected.size} selected`; cnt.style.display='inline'; }
+    else { cnt.textContent=''; cnt.style.display='none'; }
+  }
 }
 
 function toggleBulkAll(masterCheck) {
   bulkSelected.clear();
   document.querySelectorAll('#bulk-campaigns-list input[type=checkbox]').forEach(cb => { cb.checked=masterCheck.checked; if(masterCheck.checked) bulkSelected.add(cb.value); });
   const cnt = document.getElementById('bulk-selected-count');
-  if (cnt) cnt.textContent = bulkSelected.size > 0 ? `${bulkSelected.size} selected` : '';
+  if (cnt) {
+    if (bulkSelected.size > 0) { cnt.textContent = `${bulkSelected.size} selected`; cnt.style.display='inline'; }
+    else { cnt.textContent=''; cnt.style.display='none'; }
+  }
 }
 
 async function bulkAction(action) {
@@ -2394,6 +3361,7 @@ async function bulkAction(action) {
     if (r && r.ok) {
       const d = await r.json();
       showToast(d.message || `Bulk ${action} completed`);
+      invalidateCache('campaigns');
       await loadCampaigns();
       loadBulkCampaigns();
     } else { showToast('Bulk action failed — check credentials', 'error'); }
@@ -2489,8 +3457,8 @@ function showSubModal() {
   if (grid && grid.children.length === 0) {
     const plans = [
       { id:'starter', name:'Starter', price:'$89',  ugc:'15',  desc:'15 UGC credits · 1 store',       highlight: false },
-      { id:'growth',  name:'Growth',  price:'$149', ugc:'75',  desc:'75 UGC credits · 3 stores',       highlight: true  },
-      { id:'scale',   name:'Scale',   price:'$299', ugc:'350', desc:'350 UGC credits · Unlimited',      highlight: false },
+      { id:'growth',  name:'Growth',  price:'$199', ugc:'75',  desc:'75 UGC credits · 3 stores',       highlight: true  },
+      { id:'scale',   name:'Scale',   price:'$349', ugc:'350', desc:'350 UGC credits · Unlimited',      highlight: false },
     ];
     grid.innerHTML = plans.map(p => `
       <div style="border:1px solid ${p.highlight?'#6366f1':'var(--border)'};border-radius:14px;padding:18px;text-align:center;${p.highlight?'background:rgba(99,102,241,0.08);':''}transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
@@ -2498,7 +3466,7 @@ function showSubModal() {
         <div style="font-size:15px;font-weight:800;margin-bottom:6px">${p.name}</div>
         <div style="font-size:28px;font-weight:900;letter-spacing:-.5px">${p.price}<span style="font-size:12px;font-weight:400;color:var(--muted)">/mo</span></div>
         <div style="font-size:11px;color:var(--muted);margin:8px 0 16px;line-height:1.4">${p.desc}</div>
-        <a href="${window.STRIPE_LINKS?.[p.id]||'#'}" target="_blank" style="display:block;padding:10px;background:${p.highlight?'linear-gradient(135deg,#6366f1,#8b5cf6)':'transparent'};border:1px solid ${p.highlight?'transparent':'var(--border)'};border-radius:9px;color:${p.highlight?'#fff':'var(--muted)'};text-decoration:none;font-size:13px;font-weight:700;font-family:'Inter',sans-serif;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Get ${p.name} →</a>
+        <button onclick="closeSubModal();startCheckout(window.STRIPE_PRICES?.['${p.id}']||'price_REPLACE_${p.id.toUpperCase()}')" style="display:block;width:100%;padding:10px;background:${p.highlight?'linear-gradient(135deg,#6366f1,#8b5cf6)':'transparent'};border:1px solid ${p.highlight?'transparent':'var(--border)'};border-radius:9px;color:${p.highlight?'#fff':'var(--muted)'};font-size:13px;font-weight:700;font-family:'Inter',sans-serif;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Get ${p.name} →</button>
       </div>`).join('');
   }
   modal.classList.add('open');
@@ -2531,7 +3499,10 @@ async function syncProducts() {
   const btn = document.getElementById('btn-sync-products');
   const status = document.getElementById('products-sync-status');
   const syncSVG = '<svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
-  if (btn) { btn.disabled=true; btn.innerHTML='<svg class="spin" viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Syncing…'; }
+  // Show phantom product cards during sync
+  const grid = document.getElementById('products-grid');
+  if (grid) grid.innerHTML = `<div style="display:contents">${SKELETONS.products(6)}</div>`;
+  if (btn) { btn.disabled=true; btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0;animation:none"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Syncing…'; }
   if (status) status.textContent = 'Syncing…';
   try {
     const data = await authFetch('/ephermal/shopify/products');
@@ -2641,6 +3612,21 @@ async function createUGCForNewProduct() {
   }
   await checkMetaOAuthReturn();   // Handle redirect back from Meta OAuth
   await checkShopifyReturn();     // Handle redirect back from Shopify OAuth
+  // Handle Stripe Checkout redirect back
+  const _qs = new URLSearchParams(window.location.search);
+  if (_qs.get('checkout') === 'success') {
+    history.replaceState({}, '', window.location.pathname);
+    // Reload plan from Supabase — webhook may have updated it
+    setTimeout(async () => {
+      await loadPlanFromSupabase();
+      renderPlanUI();
+      renderBillingPage();
+      showToast('Payment successful — your plan is now active!', 'success');
+    }, 2000);
+  } else if (_qs.get('checkout') === 'cancelled') {
+    history.replaceState({}, '', window.location.pathname);
+    showToast('Checkout cancelled — your plan was not changed.', 'info');
+  }
   refreshMetaStatus();
   refreshGoogleStatus();
   updatePlatformBanner();

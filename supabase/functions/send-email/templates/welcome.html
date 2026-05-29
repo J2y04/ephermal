@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
+  <title>Welcome to Ephermal</title>
+  <style>
+    /* ── Reset ── */
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+    body { margin: 0 !important; padding: 0 !important; background-color: #04050f; width: 100% !important; }
+
+    /* ── Dark mode overrides ── */
+    @media (prefers-color-scheme: dark) {
+      .email-bg       { background-color: #04050f !important; }
+      .card-bg        { background-color: #0a0d1f !important; }
+      .inner-card     { background-color: #111530 !important; }
+      .text-main      { color: #f0f2ff !important; }
+      .text-muted     { color: #8892b0 !important; }
+      .border-line    { border-color: rgba(99,102,241,0.18) !important; }
+    }
+
+    /* ── Responsive ── */
+    @media screen and (max-width: 600px) {
+      .email-container { width: 100% !important; }
+      .card-pad        { padding: 32px 24px !important; }
+      .stat-cell       { display: block !important; width: 100% !important; text-align: center !important; padding: 12px 0 !important; }
+      .btn-cta         { width: 100% !important; display: block !important; }
+      .logo-text       { font-size: 22px !important; }
+      .headline        { font-size: 26px !important; }
+    }
+  </style>
+</head>
+
+<body style="margin:0;padding:0;background-color:#04050f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',Helvetica,Arial,sans-serif;">
+
+  <!-- ── Preheader (hidden preview text) ── -->
+  <div style="display:none;font-size:1px;color:#04050f;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">
+    Your AI ad team is ready. Here's how to get your first win in the next 48 hours.
+  </div>
+
+  <!-- ── Outer wrapper ── -->
+  <table class="email-bg" role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color:#04050f;">
+    <tr>
+      <td align="center" style="padding:40px 16px 60px;">
+
+        <!-- ── Email container ── -->
+        <table class="email-container" role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width:600px;">
+
+          <!-- ── Logo header ── -->
+          <tr>
+            <td align="center" style="padding-bottom:32px;">
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <img src="https://ephermal.app/ephermal.png"
+                         alt="Ephermal"
+                         width="40" height="40"
+                         style="display:block;width:40px;height:40px;border-radius:10px;object-fit:cover;border:0;outline:none;text-decoration:none;">
+                  </td>
+                  <td style="padding-left:10px;vertical-align:middle;">
+                    <span class="logo-text" style="font-size:24px;font-weight:800;color:#f0f2ff;letter-spacing:-0.5px;">Ephermal</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── Main card ── -->
+          <tr>
+            <td class="card-bg" style="background-color:#0a0d1f;border-radius:24px;border:1px solid rgba(99,102,241,0.18);overflow:hidden;">
+
+              <!-- ── Purple glow accent bar ── -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="height:3px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#06d6c7);"></td>
+                </tr>
+              </table>
+
+              <!-- ── Card content ── -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td class="card-pad" style="padding:48px 48px 40px;">
+
+                    <!-- ── Greeting ── -->
+                    <p style="margin:0 0 6px;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#6366f1;">
+                      You're in.
+                    </p>
+                    <h1 class="headline text-main" style="margin:0 0 24px;font-size:32px;font-weight:900;color:#f0f2ff;letter-spacing:-0.8px;line-height:1.2;">
+                      Welcome to the team,<br>{{name}} 👋
+                    </h1>
+
+                    <!-- ── Divider ── -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:28px;">
+                      <tr><td style="height:1px;background:rgba(99,102,241,0.15);"></td></tr>
+                    </table>
+
+                    <!-- ── Main copy ── -->
+                    <p class="text-main" style="margin:0 0 18px;font-size:16px;color:#f0f2ff;line-height:1.75;font-weight:400;">
+                      You just made the same move that the fastest-growing Shopify brands are making right now — putting AI between your store and your ad spend, so <em>every dollar works harder</em>.
+                    </p>
+                    <p class="text-muted" style="margin:0 0 18px;font-size:15px;color:#8892b0;line-height:1.75;">
+                      Most founders are still doing it the hard way: bouncing between Meta Ads Manager, Canva, some UGC tool, and three spreadsheets — losing hours and leaving money on the table every single week.
+                    </p>
+                    <p class="text-main" style="margin:0 0 28px;font-size:15px;color:#f0f2ff;line-height:1.75;">
+                      Ephermal closes that loop. Your store's brand identity, your UGC, your campaigns, your ROAS — all in one place, optimized automatically. Brands on Growth typically see meaningful ROAS improvements within their first 30 days. That story can start for you today.
+                    </p>
+
+                    <!-- ── Insight callout box ── -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:32px;">
+                      <tr>
+                        <td class="inner-card" style="background-color:#111530;border-radius:14px;border-left:3px solid #6366f1;padding:20px 24px;">
+                          <p style="margin:0 0 6px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6366f1;">
+                            Your first win
+                          </p>
+                          <p class="text-main" style="margin:0;font-size:14px;color:#f0f2ff;line-height:1.65;">
+                            Connect your Shopify store in the next <strong style="color:#06d6c7;">10 minutes</strong> and let Ephermal analyse your brand — it'll extract your color palette, tone, and UGC style automatically. That analysis powers every ad creative you generate from here on out.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- ── Stats row ── -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin-bottom:36px;">
+                      <tr>
+                        <td class="stat-cell" align="center" width="33%" style="padding:16px;border-right:1px solid rgba(99,102,241,0.12);">
+                          <p style="margin:0 0 4px;font-size:26px;font-weight:900;color:#6366f1;letter-spacing:-1px;">2.4×</p>
+                          <p class="text-muted" style="margin:0;font-size:11px;color:#8892b0;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">Avg ROAS lift</p>
+                        </td>
+                        <td class="stat-cell" align="center" width="33%" style="padding:16px;border-right:1px solid rgba(99,102,241,0.12);">
+                          <p style="margin:0 0 4px;font-size:26px;font-weight:900;color:#8b5cf6;letter-spacing:-1px;">5hrs</p>
+                          <p class="text-muted" style="margin:0;font-size:11px;color:#8892b0;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">Saved per week</p>
+                        </td>
+                        <td class="stat-cell" align="center" width="33%" style="padding:16px;">
+                          <p style="margin:0 0 4px;font-size:26px;font-weight:900;color:#06d6c7;letter-spacing:-1px;">&lt;48h</p>
+                          <p class="text-muted" style="margin:0;font-size:11px;color:#8892b0;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;">To first creative</p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <!-- ── CTA button ── -->
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin-bottom:12px;">
+                      <tr>
+                        <td style="border-radius:12px;background:linear-gradient(135deg,#6366f1,#8b5cf6);">
+                          <a href="https://ephermal.app/setup.html" class="btn-cta" target="_blank"
+                             style="display:inline-block;padding:16px 36px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:-0.1px;border-radius:12px;mso-padding-alt:0;">
+                            Set up your store →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                    <p class="text-muted" style="margin:0 0 0;font-size:12px;color:#8892b0;text-align:center;">
+                      Takes under 10 minutes. No card required for setup.
+                    </p>
+
+                  </td>
+                </tr>
+              </table>
+
+              <!-- ── Steps strip ── -->
+              <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                <tr>
+                  <td style="background-color:#070a1a;border-top:1px solid rgba(99,102,241,0.12);padding:28px 48px;">
+                    <p style="margin:0 0 16px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#6366f1;">
+                      What to do first
+                    </p>
+                    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                      <tr>
+                        <td width="28" valign="top" style="padding-right:14px;padding-top:1px;">
+                          <div style="width:24px;height:24px;border-radius:50%;background:rgba(99,102,241,0.15);border:1px solid rgba(99,102,241,0.35);text-align:center;line-height:22px;font-size:12px;font-weight:700;color:#6366f1;">1</div>
+                        </td>
+                        <td style="padding-bottom:14px;">
+                          <p class="text-main" style="margin:0 0 2px;font-size:14px;font-weight:600;color:#f0f2ff;">Connect your Shopify store</p>
+                          <p class="text-muted" style="margin:0;font-size:13px;color:#8892b0;line-height:1.5;">Ephermal syncs your products and analyses your brand identity in seconds.</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td width="28" valign="top" style="padding-right:14px;padding-top:1px;">
+                          <div style="width:24px;height:24px;border-radius:50%;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.35);text-align:center;line-height:22px;font-size:12px;font-weight:700;color:#8b5cf6;">2</div>
+                        </td>
+                        <td style="padding-bottom:14px;">
+                          <p class="text-main" style="margin:0 0 2px;font-size:14px;font-weight:600;color:#f0f2ff;">Link your Meta Ads account</p>
+                          <p class="text-muted" style="margin:0;font-size:13px;color:#8892b0;line-height:1.5;">Your live ROAS, spend, and campaigns appear in the dashboard instantly.</p>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td width="28" valign="top" style="padding-right:14px;padding-top:1px;">
+                          <div style="width:24px;height:24px;border-radius:50%;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);text-align:center;line-height:22px;font-size:12px;font-weight:700;color:#06d6c7;">3</div>
+                        </td>
+                        <td>
+                          <p class="text-main" style="margin:0 0 2px;font-size:14px;font-weight:600;color:#f0f2ff;">Generate your first UGC creative</p>
+                          <p class="text-muted" style="margin:0;font-size:13px;color:#8892b0;line-height:1.5;">Hit Generate — your brand-aligned UGC script is written and queued for production.</p>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
+            </td>
+          </tr>
+
+          <!-- ── Footer ── -->
+          <tr>
+            <td align="center" style="padding:32px 0 0;">
+              <p class="text-muted" style="margin:0 0 8px;font-size:12px;color:#8892b0;line-height:1.6;">
+                You're receiving this because you signed up at <a href="https://ephermal.app" style="color:#6366f1;text-decoration:none;">ephermal.app</a>
+              </p>
+              <p class="text-muted" style="margin:0;font-size:12px;color:#8892b0;line-height:1.6;">
+                <a href="https://ephermal.app/privacy.html" style="color:#8892b0;text-decoration:none;">Privacy Policy</a>
+                &nbsp;·&nbsp;
+                <a href="https://ephermal.app/terms.html" style="color:#8892b0;text-decoration:none;">Terms</a>
+                &nbsp;·&nbsp;
+                <a href="{{unsubscribe_url}}" style="color:#8892b0;text-decoration:none;">Unsubscribe</a>
+              </p>
+              <p class="text-muted" style="margin:8px 0 0;font-size:11px;color:rgba(136,146,176,0.45);">
+                © 2026 Ephermal. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /email container -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
