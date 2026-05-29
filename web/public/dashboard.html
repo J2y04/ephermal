@@ -3594,11 +3594,41 @@ async function createUGCForNewProduct() {
 
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 (async function() {
-  // Require Clerk — no dev fallback that could bypass auth in production
+  // ── Redirect loop guard ───────────────────────────────────────────────────
+  // Clerk v5 restores sessions asynchronously via addListener. If we redirect
+  // to login before the session hydrates, login sends us right back → loop.
+  // Guard: if we've bounced here from login more than once, stop redirecting
+  // and let the user see the page (they can sign in from the UI if needed).
+  const _bounceCount = parseInt(sessionStorage.getItem('_dash_bounce') || '0', 10);
+  const _fromLogin   = document.referrer.includes('/auth/') || _bounceCount > 0;
+
   await window.__clerkPending;
   if (!window.Clerk) { window.location.href = 'auth/login.html'; return; }
   await window.Clerk.load();
-  if (!window.Clerk.user) { window.location.href = 'auth/login.html'; return; }
+
+  // If user not immediately available, wait up to 3s for session to hydrate
+  let _clerkUser = window.Clerk.user;
+  if (!_clerkUser) {
+    _clerkUser = await new Promise(res => {
+      const _t = setTimeout(() => { _unsub(); res(null); }, 3000);
+      const _unsub = window.Clerk.addListener(({ user }) => {
+        if (user) { clearTimeout(_t); _unsub(); res(user); }
+      });
+    });
+  }
+
+  if (!_clerkUser) {
+    if (_bounceCount >= 2) {
+      // Prevent infinite loop — clear guard and show login cleanly
+      sessionStorage.removeItem('_dash_bounce');
+      window.location.replace('auth/login.html');
+      return;
+    }
+    sessionStorage.setItem('_dash_bounce', String(_bounceCount + 1));
+    window.location.href = 'auth/login.html';
+    return;
+  }
+  sessionStorage.removeItem('_dash_bounce');
   window.__clerk = window.Clerk;
   // Load server-side data from Supabase (plan, credits, integrations)
   await Promise.all([loadPlanFromSupabase(), loadCreditsFromSupabase(), loadIntegrationsFromSupabase()]);

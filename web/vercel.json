@@ -16,9 +16,6 @@
       ]
     }
   ],
-  "rewrites": [
-    { "source": "/auth/:path*", "destination": "/auth/:path*" }
-  ],
   "redirects": [
     { "source": "/404", "destination": "/404.html", "statusCode": 404 }
   ]
