@@ -20,6 +20,15 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
+// AI top-up credit amounts by price ID
+// Keys: Stripe Price IDs for one-time top-up products
+// Values: number of AI messages to credit
+const TOPUP_CREDITS: Record<string, number> = {
+  [Deno.env.get('STRIPE_PRICE_TOPUP_5')  ?? 'price_REPLACE_TOPUP5']:  50,
+  [Deno.env.get('STRIPE_PRICE_TOPUP_10') ?? 'price_REPLACE_TOPUP10']: 120,
+  [Deno.env.get('STRIPE_PRICE_TOPUP_20') ?? 'price_REPLACE_TOPUP20']: 280,
+};
+
 // Fill in your actual Stripe Price IDs from Stripe Dashboard → Products
 const PRICE_TO_PLAN: Record<string, string> = {
   'price_REPLACE_STARTER': 'starter',
@@ -66,7 +75,94 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   }, { onConflict: 'user_id' });
 
   await updateClerkMetadata(clerkUserId, plan);
+
+  // Fire plan-activated email (best-effort — don't fail the webhook if email fails)
+  try {
+    const userEmail = session.customer_details?.email ?? session.customer_email;
+    const userName  = session.customer_details?.name?.split(' ')[0] ?? 'there';
+    if (userEmail) {
+      const templateMap: Record<string, string> = {
+        starter: 'plan_activated_starter',
+        growth:  'plan_activated_growth',
+        scale:   'plan_activated_scale',
+      };
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({
+          template: templateMap[plan] ?? 'plan_activated_starter',
+          to: userEmail,
+          vars: { name: userName },
+        }),
+      });
+    }
+  } catch (e) {
+    console.warn('Email send failed (non-fatal):', e);
+  }
+
   console.log(`✓ Activated ${plan} for ${clerkUserId}`);
+}
+
+async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  // Only handle AI top-up payments — identified by type: 'ai_topup' in metadata
+  if (paymentIntent.metadata?.type !== 'ai_topup') return;
+
+  const clerkUserId = paymentIntent.metadata?.clerk_user_id;
+  if (!clerkUserId) throw new Error('Missing clerk_user_id in payment_intent metadata');
+
+  // Find the price ID from the payment intent's line items (via the charges)
+  // For top-ups we stored the price in metadata at checkout creation
+  const priceId = paymentIntent.metadata?.price_id;
+
+  // Resolve credit amount — default to 50 if price not found (failsafe)
+  const credits = (priceId && TOPUP_CREDITS[priceId]) ? TOPUP_CREDITS[priceId] : 50;
+
+  // Current month key YYYY-MM (UTC)
+  const month = new Date().toISOString().slice(0, 7);
+
+  // Upsert into ai_topups table — idempotent by payment_intent_id
+  const { error: insertErr } = await supabase.from('ai_topups').upsert({
+    payment_intent_id: paymentIntent.id,
+    user_id:   clerkUserId,
+    month,
+    credits,
+    amount_paid: paymentIntent.amount,
+    currency:    paymentIntent.currency,
+  }, { onConflict: 'payment_intent_id' });
+
+  if (insertErr) {
+    console.error('Failed to insert ai_topup:', insertErr);
+    throw new Error('ai_topup insert failed');
+  }
+
+  // Fire top-up confirmation email (best-effort)
+  try {
+    const charge = paymentIntent.latest_charge
+      ? await stripe.charges.retrieve(paymentIntent.latest_charge as string)
+      : null;
+    const userEmail = charge?.billing_details?.email;
+    if (userEmail) {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({
+          template: 'ai_limit_hit',
+          to: userEmail,
+          vars: { name: 'there', credits: String(credits) },
+        }),
+      });
+    }
+  } catch (e) {
+    console.warn('Top-up email failed (non-fatal):', e);
+  }
+
+  console.log(`✓ AI top-up: ${credits} credits → ${clerkUserId} (payment: ${paymentIntent.id})`);
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
@@ -130,6 +226,9 @@ Deno.serve(async (req) => {
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted':
         await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        break;
+      case 'payment_intent.succeeded':
+        await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
         break;
       default:
         // Acknowledge but ignore unhandled event types
