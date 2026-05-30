@@ -1647,11 +1647,11 @@ async function loadCreditsFromSupabase() {
     // Load AI top-up pool for this month
     const { data: topupData } = await sb
       .from('ai_topups')
-      .select('credits')
+      .select('messages')
       .eq('user_id', clerkUserId)
       .eq('month', month);
     if (topupData) {
-      const totalTopup = topupData.reduce((sum, r) => sum + (r.credits || 0), 0);
+      const totalTopup = topupData.reduce((sum, r) => sum + (r.messages || 0), 0);
       localStorage.setItem('ai_topup_' + month, String(totalTopup));
     }
   } catch(e) {}
