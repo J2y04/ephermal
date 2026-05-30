@@ -3600,40 +3600,58 @@ async function createUGCForNewProduct() {
 // ── BOOT ─────────────────────────────────────────────────────────────────────
 (async function() {
   await window.__clerkPending;
-  if (!window.Clerk) { window.location.href = 'auth/login.html'; return; }
-  await window.Clerk.load();
 
-  // Wait up to 6s for Clerk session to hydrate (handles slow connections)
-  let _clerkUser = window.Clerk.user;
-  if (!_clerkUser) {
-    _clerkUser = await new Promise(res => {
-      const _t = setTimeout(() => { _unsub(); res(null); }, 6000);
-      const _unsub = window.Clerk.addListener(({ user }) => {
-        if (user) { clearTimeout(_t); _unsub(); res(user); }
-      });
-    });
+  // ── Auth: no redirects from the dashboard — show inline prompt instead ────
+  // Redirecting creates loops. We wait for Clerk, then show the UI regardless.
+  let _clerkUser = null;
+  if (window.Clerk) {
+    try {
+      await window.Clerk.load();
+      _clerkUser = window.Clerk.user;
+      if (!_clerkUser) {
+        _clerkUser = await new Promise(res => {
+          const _t = setTimeout(() => { _unsub(); res(null); }, 8000);
+          const _unsub = window.Clerk.addListener(({ user }) => {
+            if (user) { clearTimeout(_t); _unsub(); res(user); }
+          });
+        });
+      }
+    } catch(e) { console.warn('[dash] Clerk.load() error:', e); }
   }
 
   if (!_clerkUser) {
-    window.location.replace('auth/login.html');
+    // Show sign-in prompt inline — never redirect (avoids all loop scenarios)
+    document.body.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#04050f;font-family:'Inter',sans-serif">
+      <div style="text-align:center;padding:48px 32px;background:#0a0d1f;border:1px solid rgba(99,102,241,0.2);border-radius:20px;max-width:380px;width:90%">
+        <img src="/ephermal.png" style="width:48px;height:48px;border-radius:12px;margin-bottom:20px">
+        <div style="font-size:20px;font-weight:700;color:#f0f2ff;margin-bottom:8px">Sign in to continue</div>
+        <div style="font-size:14px;color:#8892b0;margin-bottom:28px">Your session has expired or you are not signed in.</div>
+        <a href="/auth/login.html" style="display:inline-block;padding:12px 32px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none">Sign in →</a>
+      </div>
+    </div>`;
     return;
   }
+
   window.__clerk = window.Clerk;
   // Load server-side data from Supabase (plan, credits, integrations)
   await Promise.all([loadPlanFromSupabase(), loadCreditsFromSupabase(), loadIntegrationsFromSupabase()]);
-  // ── Connection check: only redirect to setup if the user has never finished it
-  // Never redirect if returning from OAuth — claim must be exchanged first
+
+  // ── Setup check: only redirect new users who have never connected anything ─
   const _oauthReturn = new URLSearchParams(window.location.search).get('meta_connected')
     || new URLSearchParams(window.location.search).get('shopify_connected')
     || new URLSearchParams(window.location.search).get('google_connected')
     || new URLSearchParams(window.location.search).get('meta_error')
     || new URLSearchParams(window.location.search).get('shopify_error')
     || new URLSearchParams(window.location.search).get('google_error');
-  const _setupDone = localStorage.getItem('setup_complete');
-  const _hasShopify = localStorage.getItem('shopify_token');
-  const _hasMeta = localStorage.getItem('meta_token');
-  const _hasGoogle = localStorage.getItem('google_account');
-  if (!_oauthReturn && !_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle) {
+  const _setupDone   = localStorage.getItem('setup_complete');
+  const _hasShopify  = localStorage.getItem('shopify_token');
+  const _hasMeta     = localStorage.getItem('meta_token');
+  const _hasGoogle   = localStorage.getItem('google_account');
+  // Only redirect if this is a brand-new user with nothing set up AND we haven't
+  // been to setup before (sessionStorage prevents setup↔dashboard loops).
+  const _setupSeen = sessionStorage.getItem('_setup_seen');
+  if (!_oauthReturn && !_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle && !_setupSeen) {
+    sessionStorage.setItem('_setup_seen', '1');
     window.location.href = '/setup.html'; return;
   }
   await checkMetaOAuthReturn();   // Handle redirect back from Meta OAuth
