@@ -194,6 +194,11 @@ select.form-input{cursor:pointer}
 .font-chip{background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);color:var(--primary);border-radius:8px;padding:4px 10px;font-size:12px;font-weight:600}
 .vibe-badge{display:inline-block;background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(139,92,246,0.15));border:1px solid rgba(139,92,246,0.3);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--text)}
 .tag{padding:4px 12px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:20px;font-size:12px;font-weight:500;color:var(--primary)}
+/* ── Welcome phrase banner ── */
+.welcome-banner{margin-bottom:28px;padding:0 2px}
+.welcome-date{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.welcome-phrase{font-size:28px;font-weight:800;letter-spacing:-.6px;line-height:1.15;background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 45%,#06d6c7 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+@media(max-width:768px){.welcome-phrase{font-size:20px}}
 /* RESPONSIVE */
 @media(max-width:1200px){.stat-row{grid-template-columns:repeat(2,1fr)}.grid-2,.charts-grid{grid-template-columns:1fr}.creatives-grid{grid-template-columns:repeat(2,1fr)}}
 
@@ -605,6 +610,11 @@ select.form-input{cursor:pointer}
           </button>
         </div>
       </div>
+      <div class="welcome-banner" id="welcome-banner">
+        <div class="welcome-date" id="welcome-date"></div>
+        <div class="welcome-phrase" id="welcome-phrase"></div>
+      </div>
+
       <div class="stat-row">
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(99,102,241,0.12)"><svg viewBox="0 0 24 24" style="stroke:#6366f1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div>
@@ -2165,9 +2175,81 @@ function isAdmin() {
 }
 
 // ── LOAD USER (from Clerk session) ────────────────────────────────────────────
+function renderWelcomeBanner() {
+  const u = window.__clerk?.user;
+  const first = u?.firstName || (u?.fullName ? u.fullName.split(' ')[0] : null);
+  const h = new Date().getHours();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now = new Date();
+  const dateStr = `${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}`;
+
+  const p = {
+    lateNight: [
+      `Burning the midnight oil${first ? ', ' + first : ''}.`,
+      `Late night grind. Let's make it count.`,
+      `The best operators never sleep.`,
+      `Midnight mode activated${first ? ', ' + first : ''}.`,
+      `Your competitors are asleep. You're not.`,
+    ],
+    earlyMorning: [
+      `Early bird gets the ROAS${first ? ', ' + first : ''}.`,
+      `Rise and scale${first ? ', ' + first : ''}.`,
+      `First one in. Let's go.`,
+      `The day is yours${first ? ', ' + first : ''}.`,
+      `Up early, ahead always.`,
+    ],
+    morning: [
+      `Good morning${first ? ', ' + first : ''}.`,
+      `Fresh start. Let's build something.`,
+      `New day, new conversions${first ? ', ' + first : ''}.`,
+      `Morning${first ? ', ' + first : ''}. Your store is waiting.`,
+      `Coffee's hot. Let's scale.`,
+    ],
+    afternoon: [
+      `Good afternoon${first ? ', ' + first : ''}.`,
+      `Mid-day momentum${first ? ', ' + first : ''}.`,
+      `Afternoon hustle. Keep pushing.`,
+      `The algorithm doesn't take lunch breaks.`,
+      `Every click is a conversion waiting to happen.`,
+    ],
+    evening: [
+      `Good evening${first ? ', ' + first : ''}.`,
+      `Evening grind${first ? ', ' + first : ''}.`,
+      `End of day push. Make it happen.`,
+      `The store runs 24/7. So do you.`,
+      `Prime time for conversions${first ? ', ' + first : ''}.`,
+    ],
+    night: [
+      `Night owl mode${first ? ', ' + first : ''}.`,
+      `While others sleep, you scale.`,
+      `Late night, eyes on the metrics${first ? ', ' + first : ''}.`,
+      `Late night grind. The best time to ship.`,
+      `Dark outside. ROI is bright.`,
+    ],
+  };
+
+  let bucket;
+  if (h >= 0 && h < 5) bucket = 'lateNight';
+  else if (h >= 5 && h < 9) bucket = 'earlyMorning';
+  else if (h >= 9 && h < 12) bucket = 'morning';
+  else if (h >= 12 && h < 17) bucket = 'afternoon';
+  else if (h >= 17 && h < 21) bucket = 'evening';
+  else bucket = 'night';
+
+  const list = p[bucket];
+  const phrase = list[Math.floor(Math.random() * list.length)];
+
+  const dateEl = document.getElementById('welcome-date');
+  const phraseEl = document.getElementById('welcome-phrase');
+  if (dateEl) dateEl.textContent = dateStr;
+  if (phraseEl) phraseEl.textContent = phrase;
+}
+
 function loadUser() {
   const u = window.__clerk?.user;
   if (!u) return;
+  renderWelcomeBanner();
   const name = u.fullName || u.firstName || u.primaryEmailAddress?.emailAddress || 'User';
   const email = u.primaryEmailAddress?.emailAddress || '';
   const initials = name.charAt(0).toUpperCase();
