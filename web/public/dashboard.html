@@ -2018,7 +2018,11 @@ async function authFetch(path, opts = {}) {
       }
       const r = await fetch(proxyUrl, {
         method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${window.SUPABASE_ANON}`,
+          'X-Clerk-Token': token,
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ path, method, body: reqBody, headers: extraHeaders }),
       });
       if (r.status === 401) { console.warn('[authFetch] 401 on', path); return null; }

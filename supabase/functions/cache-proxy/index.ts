@@ -123,7 +123,7 @@ function buildFunctionUrl(fnName: string, path: string): string {
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  APP_URL,
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Clerk-Token',
   'Access-Control-Max-Age': '86400',
 };
 
@@ -159,12 +159,16 @@ Deno.serve(async (req) => {
   }
 
   // ── Auth: require Clerk JWT ───────────────────────────────────────────────
-  const authHeader = req.headers.get('Authorization') ?? '';
-  if (!authHeader.startsWith('Bearer ') || authHeader.length < 20) {
+  // Prefer X-Clerk-Token (sent with anon key in Authorization to satisfy Supabase
+  // Edge Runtime's asymmetric-JWT rejection). Fall back to Authorization for
+  // backwards compatibility.
+  const clerkHeader = req.headers.get('X-Clerk-Token') ?? '';
+  const authHeader  = req.headers.get('Authorization') ?? '';
+  const rawToken = clerkHeader || (authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '');
+  if (!rawToken || rawToken.length < 20) {
     return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
   }
-  const token = authHeader.slice(7);
-  const userId = extractUserIdFromJWT(token);
+  const userId = extractUserIdFromJWT(rawToken);
   if (!userId) {
     return new Response('Invalid token', { status: 401, headers: CORS_HEADERS });
   }
