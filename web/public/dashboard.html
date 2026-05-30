@@ -1967,7 +1967,7 @@ async function authFetch(path, opts = {}) {
     token = await window.__clerk.session.getToken();
   } else {
     token = localStorage.getItem('access_token');
-    if (!token) { window.location.href = 'auth/login.html'; return null; }
+    if (!token) return null; // Boot IIFE handles auth — never redirect from API calls
   }
 
   // Build integration headers (passed to n8n / cache-proxy)
@@ -2011,7 +2011,7 @@ async function authFetch(path, opts = {}) {
         headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ path, method, body: reqBody, headers: extraHeaders }),
       });
-      if (r.status === 401) { window.location.href = 'auth/login.html'; return null; }
+      if (r.status === 401) { console.warn('[authFetch] 401 on', path); return null; }
       if (r.status === 429) { showToast('Too many requests — slow down', 'error'); return null; }
       if (r.ok) {
         const data = await r.json();
@@ -2036,7 +2036,7 @@ async function authFetch(path, opts = {}) {
     ...(opts.headers || {}),
   };
   const r = await fetch((window.SUPABASE_FN || window.API_BASE || '') + path, { ...opts, headers: directHeaders });
-  if (r.status === 401) { window.location.href = 'auth/login.html'; return null; }
+  if (r.status === 401) { console.warn('[authFetch] 401 on', path); return null; }
   if (r.status === 429) { showToast('Too many requests — slow down', 'error'); return null; }
   return r;
 }
