@@ -123,7 +123,7 @@ function buildFunctionUrl(fnName: string, path: string): string {
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  APP_URL,
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Clerk-Token',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   'Access-Control-Max-Age': '86400',
 };
 
@@ -159,25 +159,17 @@ Deno.serve(async (req) => {
   }
 
   // ── Auth: require Clerk JWT ───────────────────────────────────────────────
-  // Prefer X-Clerk-Token (sent with anon key in Authorization to satisfy Supabase
-  // Edge Runtime's asymmetric-JWT rejection). Fall back to Authorization for
-  // backwards compatibility.
-  const clerkHeader = req.headers.get('X-Clerk-Token') ?? '';
-  const authHeader  = req.headers.get('Authorization') ?? '';
-  const rawToken = clerkHeader || (authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '');
-  if (!rawToken || rawToken.length < 20) {
-    return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
-  }
-  const userId = extractUserIdFromJWT(rawToken);
-  if (!userId) {
-    return new Response('Invalid token', { status: 401, headers: CORS_HEADERS });
-  }
+  // Supabase Edge Runtime rejects RS256 (Clerk) JWTs with UNAUTHORIZED_ASYMMETRIC_JWT
+  // even when verify_jwt=false. Client sends anon key in Authorization (accepted by
+  // runtime) and passes Clerk JWT in the JSON body as `clerkToken`.
+  const authHeader = req.headers.get('Authorization') ?? '';
 
   let body: {
-    path:    string;
-    method?: string;
-    body?:   Record<string, unknown>;
-    headers?: Record<string, string>;
+    path:       string;
+    method?:    string;
+    body?:      Record<string, unknown>;
+    headers?:   Record<string, string>;
+    clerkToken?: string;
   };
   try {
     body = await req.json();
@@ -185,7 +177,17 @@ Deno.serve(async (req) => {
     return new Response('Invalid JSON', { status: 400, headers: CORS_HEADERS });
   }
 
-  const { path, method = 'GET', body: reqBody, headers: extraHeaders = {} } = body;
+  const { path, method = 'GET', body: reqBody, headers: extraHeaders = {}, clerkToken } = body;
+
+  // Validate Clerk JWT: prefer body `clerkToken`, fall back to Authorization header
+  const rawToken = clerkToken || (authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '');
+  if (!rawToken || rawToken.length < 20) {
+    return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
+  }
+  const userId = extractUserIdFromJWT(rawToken);
+  if (!userId) {
+    return new Response('Invalid token', { status: 401, headers: CORS_HEADERS });
+  }
 
   if (!path || typeof path !== 'string' || !path.startsWith('/')) {
     return new Response('Invalid path', { status: 400, headers: CORS_HEADERS });
@@ -222,7 +224,7 @@ Deno.serve(async (req) => {
   const targetUrl = buildFunctionUrl(fnName, path);
 
   const forwardHeaders: Record<string, string> = {
-    'Authorization':  `Bearer ${token}`,
+    'Authorization':  `Bearer ${rawToken}`,
     'Content-Type':   'application/json',
     'apikey':         SUPABASE_KEY,
     ...extraHeaders,
