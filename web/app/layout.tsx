@@ -143,7 +143,7 @@ const jsonLd = {
         {
           '@type': 'Offer',
           name: 'Growth',
-          price: '159',
+          price: '199',
           priceCurrency: 'USD',
           billingPeriod: 'P1M',
         },

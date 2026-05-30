@@ -74,6 +74,7 @@ function resolveFunctionName(path: string): string | null {
   if (/^\/(meta|campaigns|creatives|audiences|pixel)/.test(path)) return 'meta-api';
   if (/^\/(ephermal\/shopify|shopify)/.test(path)) return 'shopify-api';
   if (/^\/(ephermal\/ugc|ugc)/.test(path))         return 'ugc-generate';
+  if (/^\/(ephermal\/google|google)/.test(path))   return 'google-api';
   if (path.startsWith('/ai'))                       return 'ai-assistant';
   if (path.startsWith('/fatigue'))                  return 'creative-fatigue';
   if (/^\/(optimize|roas)/.test(path))              return 'roas-optimizer';
@@ -88,6 +89,7 @@ const PATH_TO_ACTION: Record<string, string> = {
   'pixel':              'pixel',
   'meta':               'overview',
   'shopify':            'products',
+  'google':             'campaigns',
   'ugc':                'script',
   'ai':                 'chat',
   'fatigue':            'analyze',

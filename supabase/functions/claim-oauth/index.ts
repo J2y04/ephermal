@@ -84,7 +84,7 @@ Deno.serve(async (req: Request) => {
   if (
     typeof claim    !== 'string' || !UUID_RE.test(claim)    ||
     typeof user_id  !== 'string' || !user_id.trim()         ||
-    typeof platform !== 'string' || !['meta', 'shopify'].includes(platform)
+    typeof platform !== 'string' || !['meta', 'shopify', 'google'].includes(platform)
   ) {
     return json({ error: 'invalid_request' }, 400, origin)
   }

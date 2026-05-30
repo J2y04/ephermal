@@ -18,8 +18,11 @@
   window.META_CALLBACK_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback';
 
   // Google OAuth Client ID — create at console.cloud.google.com → APIs & Services → Credentials
-  // Add https://ephermal.app and https://ephermal.app/setup.html to "Authorized JavaScript origins"
-  window.GOOGLE_OAUTH_CLIENT_ID = '678288442294-2jush076ag5ltauja1aq6njdp96tvtm3.apps.googleusercontent.com';
+  window.GOOGLE_OAUTH_CLIENT_ID = '1590993825-ucshnlj9hvj6f5tf2kscfj0n5iqb6j1l.apps.googleusercontent.com';
+
+  // Google OAuth callback — Supabase Edge Function that receives the code from Google and exchanges it for tokens
+  // Add this URL to Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client → Authorized Redirect URIs
+  window.GOOGLE_CALLBACK_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/google-oauth-callback';
 
   // Supabase — replace with your project values (safe to expose — RLS protects data)
   window.SUPABASE_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co';

@@ -3635,17 +3635,20 @@ async function createUGCForNewProduct() {
   // Never redirect if returning from OAuth — claim must be exchanged first
   const _oauthReturn = new URLSearchParams(window.location.search).get('meta_connected')
     || new URLSearchParams(window.location.search).get('shopify_connected')
+    || new URLSearchParams(window.location.search).get('google_connected')
     || new URLSearchParams(window.location.search).get('meta_error')
-    || new URLSearchParams(window.location.search).get('shopify_error');
+    || new URLSearchParams(window.location.search).get('shopify_error')
+    || new URLSearchParams(window.location.search).get('google_error');
   const _setupDone = localStorage.getItem('setup_complete');
   const _hasShopify = localStorage.getItem('shopify_token');
   const _hasMeta = localStorage.getItem('meta_token');
-  const _hasGoogle = localStorage.getItem('google_token');
+  const _hasGoogle = localStorage.getItem('google_account');
   if (!_oauthReturn && !_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle) {
     window.location.href = '/setup.html'; return;
   }
   await checkMetaOAuthReturn();   // Handle redirect back from Meta OAuth
   await checkShopifyReturn();     // Handle redirect back from Shopify OAuth
+  await checkGoogleOAuthReturn(); // Handle redirect back from Google OAuth
   // Handle Stripe Checkout redirect back
   const _qs = new URLSearchParams(window.location.search);
   if (_qs.get('checkout') === 'success') {
@@ -3790,21 +3793,67 @@ function dashDisconnectMeta() {
 
 // ── DASHBOARD GOOGLE OAUTH ────────────────────────────────────────────────────
 function dashStartGoogleOAuth() {
-  const clientId = window.GOOGLE_OAUTH_CLIENT_ID;
-  if (!clientId || clientId.includes('YOUR_GOOGLE')) { showToast('Google Client ID not configured in config.js', 'error'); return; }
-  if (!window.google?.accounts?.oauth2) { showToast('Loading Google SDK — please try again in a moment', 'warn'); return; }
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: clientId,
-    scope: 'https://www.googleapis.com/auth/adwords',
-    callback: (resp) => {
-      if (resp.error) { showToast('Google auth failed: ' + resp.error, 'error'); return; }
-      localStorage.setItem('google_token', resp.access_token);
-      const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display='none';
-      const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display='';
-      showToast('Google authorised — enter your Customer ID below');
-    }
+  const callbackUrl = window.GOOGLE_CALLBACK_URL;
+  const clientId    = window.GOOGLE_OAUTH_CLIENT_ID;
+  if (!callbackUrl || !clientId || clientId.includes('YOUR_GOOGLE')) {
+    showToast('Google OAuth not configured in config.js', 'error'); return;
+  }
+  const userId = window.__clerk?.user?.id;
+  if (!userId) { showToast('Not signed in — please refresh', 'error'); return; }
+
+  // Build state: userId~sourcePage~nonce (same pattern as Meta)
+  const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+  const state = `${userId}~dashboard~${nonce}`;
+  localStorage.setItem('google_oauth_nonce', nonce);
+
+  // Authorization code flow — redirect to Google (gets refresh token server-side)
+  const params = new URLSearchParams({
+    client_id:     clientId,
+    redirect_uri:  callbackUrl,
+    response_type: 'code',
+    scope:         'https://www.googleapis.com/auth/adwords',
+    access_type:   'offline',
+    prompt:        'consent',
+    state,
   });
-  client.requestAccessToken();
+  window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+}
+
+async function checkGoogleOAuthReturn() {
+  const p           = new URLSearchParams(window.location.search);
+  const connected   = p.get('google_connected');
+  const googleError = p.get('google_error');
+  if (!connected && !googleError) return;
+  window.history.replaceState({}, document.title, window.location.pathname);
+  if (googleError) { showToast('Google Ads connection failed — please try again', 'error'); return; }
+
+  const claimCode = p.get('claim');
+  const state     = p.get('state') || '';
+  if (connected !== '1' || !claimCode) return;
+
+  // CSRF nonce check
+  const savedNonce = localStorage.getItem('google_oauth_nonce');
+  const stateParts = state.split('~');
+  const stateNonce = stateParts[2];
+  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+    showToast('Security check failed — please try again', 'error'); return;
+  }
+  localStorage.removeItem('google_oauth_nonce');
+
+  const userId = stateParts[0];
+  const data   = await claimOAuth(claimCode, userId, 'google');
+  if (!data) { showToast('Google claim expired — please reconnect', 'error'); return; }
+
+  // If we got a customer ID from the API, store and show badge
+  if (data.customer_id) {
+    localStorage.setItem('google_account', data.customer_id);
+    dashShowGoogleBadge(data.customer_id);
+  } else {
+    // Developer token not set yet — show CID entry so user can enter manually
+    const btn  = document.getElementById('dash-google-oauth-btn');  if (btn)  btn.style.display='none';
+    const area = document.getElementById('dash-google-cid-area');   if (area) area.style.display='';
+    showToast('Google connected — enter your Customer ID to finish', 'success');
+  }
 }
 
 function dashSaveGoogleAccount() {
@@ -3836,7 +3885,6 @@ function dashDisconnectGoogle() {
 <!-- fbAsyncInit must be defined BEFORE the SDK script executes -->
 <script>
 </script>
-<!-- Google Identity Services — for Google Ads OAuth -->
-<script async defer src="https://accounts.google.com/gsi/client"></script>
+<!-- Google Identity Services script removed — using server-side authorization code flow instead -->
 </body>
 </html>

@@ -26,7 +26,7 @@ export function corsHeaders(origin?: string | null): Record<string, string> {
   return {
     'Access-Control-Allow-Origin':  origin === appUrl ? appUrl : appUrl,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Meta-Token, X-Meta-Account, X-Shopify-Token, X-Shopify-Store',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Meta-Token, X-Meta-Account, X-Shopify-Token, X-Shopify-Store, X-Google-Token, X-Google-Account',
     'Access-Control-Max-Age':       '86400',
   };
 }

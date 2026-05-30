@@ -554,8 +554,8 @@ export default function Home() {
             </div>
             <div className="price-card featured" data-reveal="pop" data-delay="2" data-spotlight>
               <div className="price-badge">Growth</div>
-              <div className="price-amount"><sup>$</sup>159</div>
-              <div className="price-per">/ month — save $2,841 vs an agency</div>
+              <div className="price-amount"><sup>$</sup>199</div>
+              <div className="price-per">/ month — save $2,801 vs an agency</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 75 UGC credits / month
