@@ -152,9 +152,33 @@ Deno.serve(async (req) => {
       const data  = (event as ClerkUserCreatedEvent).data;
       const email = getPrimaryEmail(data);
       const name  = getFirstName(data);
+      const userId = data.id;
+
+      // Seed default database rows so dashboard loads without 406s
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const serviceKey  = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${serviceKey}`,
+        'apikey': serviceKey,
+        'Prefer': 'resolution=ignore-duplicates',
+      };
+
+      await Promise.allSettled([
+        // Default starter plan (no subscription yet)
+        fetch(`${supabaseUrl}/rest/v1/user_plans`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ user_id: userId, plan: 'starter', period_end: null }),
+        }),
+        // Empty integrations row
+        fetch(`${supabaseUrl}/rest/v1/user_integrations`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ user_id: userId }),
+        }),
+      ]);
 
       if (!email) {
-        console.warn('user.created event has no email — skipping welcome email', data.id);
+        console.warn('user.created event has no email — skipping welcome email', userId);
         return new Response(JSON.stringify({ received: true, skipped: 'no_email' }), {
           headers: { 'Content-Type': 'application/json' },
         });
