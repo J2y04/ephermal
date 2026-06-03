@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Impressum — Ephermal</title>
+<link rel="icon" type="image/x-icon" href="/ephermal_transparent.ico">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="/config.js" defer></script>
+<style>
+:root{--bg:#04050f;--surface:#0a0d1f;--surface2:#111530;--border:rgba(99,102,241,0.15);--primary:#6366f1;--secondary:#8b5cf6;--accent:#06d6c7;--text:#f0f2ff;--muted:#8892b0}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-size:16px;line-height:1.7;overflow-x:hidden}
+a{color:var(--primary);text-decoration:none}
+a:hover{opacity:.8}
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:var(--primary);border-radius:2px}
+
+nav{position:fixed;top:20px;left:50%;transform:translateX(-50%);z-index:100;width:calc(100% - 40px);max-width:1100px;display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:rgba(4,5,15,0.7);backdrop-filter:blur(20px);border-radius:16px;border:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;letter-spacing:-.3px;cursor:pointer;color:var(--text);text-decoration:none}
+.nav-logo img{width:28px;height:28px;border-radius:7px;object-fit:cover}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:14px;color:var(--muted);transition:color .2s}
+.nav-links a:hover{color:var(--text);opacity:1}
+.nav-cta{background:var(--primary);color:#fff;padding:9px 20px;border-radius:10px;font-size:14px;font-weight:600;transition:all .2s;opacity:1!important}
+.nav-cta:hover{background:#5254cc;transform:translateY(-1px)}
+
+.page{max-width:760px;margin:0 auto;padding:140px 24px 80px}
+.page-label{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:16px}
+.page-title{font-size:40px;font-weight:800;letter-spacing:-.8px;margin-bottom:8px}
+.page-date{font-size:13px;color:var(--muted);margin-bottom:48px;padding-bottom:32px;border-bottom:1px solid var(--border)}
+
+.notice-box{background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:18px 22px;margin-bottom:40px;display:flex;gap:14px;align-items:flex-start}
+.notice-box .icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.notice-box p{font-size:14px;color:rgba(251,191,36,0.85);margin:0;line-height:1.6}
+
+.section{margin-bottom:44px}
+h2{font-size:18px;font-weight:700;color:var(--text);margin-bottom:12px;padding-top:4px}
+p{color:rgba(240,242,255,0.75);margin-bottom:12px;font-size:15px}
+a.ext{color:var(--primary)}
+
+.ph{background:rgba(251,191,36,0.15);color:#fbbf24;padding:2px 8px;border-radius:4px;font-weight:600;font-size:14px;font-style:normal}
+
+.info-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:16px}
+.info-block p{margin:0;font-size:15px;line-height:1.8}
+
+footer{border-top:1px solid var(--border);padding:40px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;margin-top:40px}
+.footer-logo{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:700}
+.footer-logo img{width:24px;height:24px;border-radius:5px}
+.footer-links{display:flex;gap:24px;flex-wrap:wrap;justify-content:center}
+.footer-links a{font-size:13px;color:var(--muted);transition:color .2s}
+.footer-links a:hover{color:var(--text)}
+.footer-copy{font-size:12px;color:rgba(136,146,176,0.5)}
+
+@media(max-width:600px){.nav-links{display:none}}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/"><img src="/ephermal.png" alt="Ephermal"> Ephermal</a>
+  <div class="nav-links">
+    <a href="/#features">Features</a>
+    <a href="/">Pricing</a>
+    <a href="/blog">Blog</a>
+  </div>
+  <a href="/auth/register.html" class="nav-cta">Get Started</a>
+</nav>
+
+<div class="page">
+  <div class="page-label">Legal</div>
+  <h1 class="page-title">Impressum</h1>
+  <div class="page-date">Angaben gemäß § 5 TMG</div>
+
+  <div class="notice-box">
+    <div class="icon">⚠️</div>
+    <p>Die mit gelbem Hintergrund markierten Felder sind Platzhalter und müssen vor Veröffentlichung mit den korrekten Angaben gefüllt werden.</p>
+  </div>
+
+  <div class="section">
+    <h2>Verantwortlicher</h2>
+    <div class="info-block">
+      <p>
+        <span class="ph">[YOUR NAME]</span><br>
+        <span class="ph">[STREET ADDRESS]</span><br>
+        <span class="ph">[PLZ CITY]</span><br>
+        Deutschland
+      </p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Kontakt</h2>
+    <div class="info-block">
+      <p>E-Mail: <a href="mailto:hello@ephermal.app">hello@ephermal.app</a></p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Umsatzsteuer-Identifikationsnummer</h2>
+    <div class="info-block">
+      <p>Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:<br>
+      <span class="ph">[UST-ID — PENDING REGISTRATION]</span></p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Handelsregister</h2>
+    <div class="info-block">
+      <p><span class="ph">[IF APPLICABLE — e.g. Registergericht: Amtsgericht [Stadt], HRB [Nummer]]</span></p>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>EU-Streitschlichtung</h2>
+    <p>Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:</p>
+    <p><a href="https://ec.europa.eu/consumers/odr/" target="_blank" rel="noopener noreferrer" class="ext">https://ec.europa.eu/consumers/odr/</a></p>
+    <p>Unsere E-Mail-Adresse finden Sie oben im Impressum.</p>
+  </div>
+
+  <div class="section">
+    <h2>Verbraucherstreitbeilegung / Universalschlichtungsstelle</h2>
+    <p>Wir sind nicht bereit oder verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+    <p>Hinweis: Ephermal richtet sich ausschließlich an gewerbliche Nutzer (B2B). Verbraucherrechtliche Schutzvorschriften finden keine Anwendung.</p>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo"><img src="/ephermal.png" alt="Ephermal"> Ephermal</div>
+  <div class="footer-links">
+    <a href="/impressum.html">Impressum</a>
+    <a href="/privacy.html">Privacy Policy</a>
+    <a href="/terms.html">Terms of Service</a>
+    <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>
+  </div>
+  <div class="footer-copy">&copy; 2026 Ephermal. All rights reserved.</div>
+</footer>
+
+</body>
+</html>

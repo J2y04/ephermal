@@ -474,10 +474,51 @@ select.form-input{cursor:pointer}
 .ai-gen-btn { display:inline-flex; align-items:center; gap:5px; padding:5px 11px; background:rgba(99,102,241,0.1); border:1px solid rgba(99,102,241,0.25); border-radius:7px; font-size:11px; font-weight:600; color:var(--primary); cursor:pointer; font-family:'Inter',sans-serif; transition:all .2s; white-space:nowrap; }
 .ai-gen-btn:hover { background:rgba(99,102,241,0.2); border-color:rgba(99,102,241,0.45); }
 .ai-gen-btn svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; }
+/* ── Budget AI ── */
+.budget-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;transition:border-color .25s}
+.budget-card:hover{border-color:rgba(99,102,241,.3)}
+.budget-input-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.budget-ai-rec{background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(139,92,246,0.06));border:1px solid rgba(99,102,241,0.22);border-radius:14px;padding:20px 24px;margin-bottom:20px}
+.budget-ai-rec h4{font-size:13px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+.budget-split-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+.budget-platform-card{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.budget-platform-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:4px}
+.budget-platform-amount{font-size:22px;font-weight:800;letter-spacing:-.5px}
+.budget-alloc-bar{height:8px;border-radius:4px;overflow:hidden;background:rgba(255,255,255,.07);margin-top:8px}
+.budget-alloc-fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.22,1,.36,1)}
+.forecast-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.forecast-cell{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center}
+.forecast-cell .val{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.forecast-cell .lbl{font-size:11px;color:var(--muted);margin-top:3px}
+/* ── Campaign Launcher ── */
+.launch-step{display:flex;align-items:flex-start;gap:16px;padding:20px 0;border-bottom:1px solid var(--border)}
+.launch-step:last-child{border-bottom:none}
+.launch-step-num{width:32px;height:32px;border-radius:50%;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--primary);flex-shrink:0;margin-top:2px}
+.launch-step-num.active{background:linear-gradient(135deg,var(--primary),var(--secondary));border:none;color:#fff}
+.launch-step-num.done{background:rgba(52,211,153,.15);border-color:rgba(52,211,153,.3);color:var(--success)}
+.launch-step-body{flex:1}
+.launch-step-title{font-size:14px;font-weight:700;margin-bottom:6px}
+.launch-step-sub{font-size:13px;color:var(--muted);line-height:1.55}
+.launched-campaign-row{display:grid;grid-template-columns:2fr 1fr 1fr 100px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--border);font-size:13px}
+.launched-campaign-row:last-child{border-bottom:none}
+.launched-campaign-row.header{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:8px 20px}
+/* ── Cookie Consent Banner ── */
+.cookie-banner{position:fixed;bottom:0;left:0;right:0;background:rgba(4,5,15,.97);border-top:1px solid var(--border);backdrop-filter:blur(12px);padding:14px 28px;display:flex;align-items:center;gap:16px;z-index:9999;transform:translateY(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);flex-wrap:wrap}
+.cookie-banner.show{transform:translateY(0)}
+.cookie-banner p{font-size:13px;color:var(--muted);flex:1;min-width:200px;line-height:1.5}
+.cookie-banner a{color:var(--primary)}
+.cookie-banner .btn-cookie-accept{padding:8px 20px;background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
+.cookie-banner .btn-cookie-decline{padding:8px 16px;background:none;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;white-space:nowrap}
 </style>
 </head>
 <body>
 
+<!-- Cookie Consent Banner (GDPR) -->
+<div class="cookie-banner" id="cookie-banner">
+  <p>We use essential cookies for authentication (Clerk) and session management. No tracking cookies without your consent. <a href="/privacy.html" target="_blank">Privacy Policy</a> · <a href="/impressum.html" target="_blank">Impressum</a></p>
+  <button class="btn-cookie-decline" onclick="cookieDecline()">Decline non-essential</button>
+  <button class="btn-cookie-accept" onclick="cookieAccept()">Accept & Continue</button>
+</div>
 <!-- Mobile sidebar backdrop -->
 <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="closeSidebar()"></div>
 
@@ -514,6 +555,14 @@ select.form-input{cursor:pointer}
     <div class="nav-item" data-page="bulk" id="nav-bulk" onclick="handleNavClick('bulk')">
       <svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>Bulk Manager
       <svg class="lock-icon" id="lock-bulk" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="nav-item" data-page="budget" id="nav-budget" onclick="handleNavClick('budget')">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Budget AI
+      <svg class="lock-icon" id="lock-budget" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <div class="nav-item" data-page="launch" id="nav-launch" onclick="handleNavClick('launch')">
+      <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>Launch Campaign
+      <svg class="lock-icon" id="lock-launch" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </div>
   </div>
   <div class="nav-section" style="display:none"><!-- AI Tools hidden until re-enabled -->
@@ -1085,6 +1134,192 @@ select.form-input{cursor:pointer}
       </div>
     </div>
 
+    <!-- BUDGET AI -->
+    <div class="page" id="page-budget">
+      <div class="paywall-wrap" id="budget-paywall-wrap">
+        <div class="fade-in" style="display:flex;align-items:center;gap:14px;margin-bottom:28px">
+          <div style="width:44px;height:44px;background:linear-gradient(135deg,rgba(6,214,199,0.18),rgba(99,102,241,0.18));border:1px solid rgba(6,214,199,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div>
+            <div style="font-size:18px;font-weight:800;letter-spacing:-.3px">Budget AI</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px">AI-powered budget recommendations. Set a revenue goal — get the optimal daily spend across Meta and Google.</div>
+          </div>
+        </div>
+
+        <!-- Calculator Input -->
+        <div class="budget-card fade-in" style="margin-bottom:20px">
+          <div style="font-size:14px;font-weight:700;margin-bottom:16px">Calculate Your Optimal Budget</div>
+          <div class="budget-input-row">
+            <div class="form-group"><label class="form-label">Monthly Revenue Goal ($)</label><input class="form-input" id="budget-revenue-goal" type="number" placeholder="e.g. 10000" min="100"></div>
+            <div class="form-group"><label class="form-label">Average Order Value ($)</label><input class="form-input" id="budget-aov" type="number" placeholder="e.g. 65" min="1"></div>
+            <div class="form-group"><label class="form-label">Current ROAS (if known)</label><input class="form-input" id="budget-roas" type="number" placeholder="e.g. 2.5" step="0.1" min="0.5"></div>
+            <div class="form-group"><label class="form-label">Campaign Period (days)</label><input class="form-input" id="budget-days" type="number" placeholder="30" min="7" max="90"></div>
+          </div>
+          <button class="btn-save" onclick="calculateBudget()" id="budget-calc-btn" style="display:inline-flex;align-items:center;gap:8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Calculate with AI
+          </button>
+        </div>
+
+        <!-- AI Recommendation (hidden until calculated) -->
+        <div id="budget-rec-wrap" style="display:none">
+          <div class="budget-ai-rec fade-in">
+            <h4>AI Budget Recommendation</h4>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Daily Total</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--accent)" id="bud-daily-total">—</div></div>
+              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Expected ROAS</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--success)" id="bud-roas">—</div></div>
+              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Projected Revenue</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary)" id="bud-revenue">—</div></div>
+            </div>
+            <div class="budget-split-row">
+              <div class="budget-platform-card">
+                <div class="budget-platform-label" style="color:#1877F2">Meta Ads</div>
+                <div class="budget-platform-amount" id="bud-meta-daily">—</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">Prospecting + Retargeting + Brand</div>
+                <div class="budget-alloc-bar"><div class="budget-alloc-fill" id="bud-meta-bar" style="background:#1877F2;width:65%"></div></div>
+              </div>
+              <div class="budget-platform-card">
+                <div class="budget-platform-label" style="color:#4285F4">Google Ads</div>
+                <div class="budget-platform-amount" id="bud-google-daily">—</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">Search + Performance Max + Display</div>
+                <div class="budget-alloc-bar"><div class="budget-alloc-fill" id="bud-google-bar" style="background:#4285F4;width:35%"></div></div>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:8px;border-left:2px solid var(--primary)">
+              <div style="font-size:12px;color:var(--muted);line-height:1.6" id="bud-reasoning">—</div>
+            </div>
+            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+              <button class="btn-save" onclick="applyBudgetRec()" id="bud-apply-btn" style="padding:9px 20px;font-size:13px;display:none">Apply to Campaigns</button>
+              <button class="btn-secondary" onclick="loadBudgetForecast()" id="bud-forecast-btn" style="padding:9px 20px;font-size:13px">View 30-day Forecast</button>
+            </div>
+          </div>
+
+          <!-- Forecast Section -->
+          <div id="budget-forecast-wrap" style="display:none" class="fade-in">
+            <div class="budget-card" style="margin-bottom:20px">
+              <div style="font-size:14px;font-weight:700;margin-bottom:16px">30-Day Forecast</div>
+              <div class="forecast-row" id="forecast-cells"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Budget History -->
+        <div class="panel fade-in" id="budget-history-wrap" style="display:none">
+          <div class="panel-head"><div class="panel-title">Recommendation History</div><button class="panel-action" onclick="loadBudgetHistory()">Refresh</button></div>
+          <div id="budget-history-content" style="padding:16px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CAMPAIGN LAUNCHER -->
+    <div class="page" id="page-launch">
+      <div class="paywall-wrap" id="launch-paywall-wrap">
+        <div class="fade-in" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px">
+          <div style="display:flex;align-items:center;gap:14px">
+            <div style="width:44px;height:44px;background:linear-gradient(135deg,rgba(139,92,246,0.18),rgba(99,102,241,0.18));border:1px solid rgba(139,92,246,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg>
+            </div>
+            <div>
+              <div style="font-size:18px;font-weight:800;letter-spacing:-.3px">Launch Campaign</div>
+              <div style="font-size:13px;color:var(--muted);margin-top:2px">AI writes the copy, picks the audience, and launches to Meta — zero ad manager.</div>
+            </div>
+          </div>
+          <button class="btn-save" onclick="openLaunchWizard()" style="display:inline-flex;align-items:center;gap:8px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Campaign
+          </button>
+        </div>
+
+        <!-- Launch Wizard -->
+        <div id="launch-wizard" style="display:none">
+          <div class="panel fade-in" style="margin-bottom:20px">
+            <div class="panel-head"><div class="panel-title">Campaign Builder</div></div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+              <div class="launch-step">
+                <div class="launch-step-num active" id="lstep-1">1</div>
+                <div class="launch-step-body">
+                  <div class="launch-step-title">Product</div>
+                  <div class="launch-step-sub">Select or describe the product you want to advertise.</div>
+                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                    <input class="form-input" id="launch-product-name" placeholder="Product name (e.g. Blue Wireless Earbuds)">
+                    <input class="form-input" id="launch-product-desc" placeholder="What problem does it solve? What's the key benefit?">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                      <input class="form-input" id="launch-product-price" type="number" placeholder="Price ($)" min="1">
+                      <select class="form-input" id="launch-objective">
+                        <option value="OUTCOME_SALES">Sales / Conversions</option>
+                        <option value="OUTCOME_TRAFFIC">Traffic</option>
+                        <option value="OUTCOME_AWARENESS">Brand Awareness</option>
+                        <option value="OUTCOME_LEADS">Lead Generation</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="launch-step">
+                <div class="launch-step-num" id="lstep-2">2</div>
+                <div class="launch-step-body">
+                  <div class="launch-step-title">Target Audience</div>
+                  <div class="launch-step-sub">AI suggests targeting based on your product — or customise below.</div>
+                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                    <input class="form-input" id="launch-audience-desc" placeholder="Describe your target audience (e.g. women 25-45 interested in fitness)">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                      <input class="form-input" id="launch-age-min" type="number" placeholder="Min age (e.g. 18)" min="13" max="65">
+                      <input class="form-input" id="launch-age-max" type="number" placeholder="Max age (e.g. 55)" min="18" max="65">
+                    </div>
+                    <input class="form-input" id="launch-countries" placeholder="Target countries (e.g. US, CA, UK) — comma separated">
+                  </div>
+                </div>
+              </div>
+              <div class="launch-step">
+                <div class="launch-step-num" id="lstep-3">3</div>
+                <div class="launch-step-body">
+                  <div class="launch-step-title">Budget & Platform</div>
+                  <div class="launch-step-sub">Daily budget and where to run the ads.</div>
+                  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                    <input class="form-input" id="launch-budget" type="number" placeholder="Daily budget ($)" min="5">
+                    <select class="form-input" id="launch-platforms">
+                      <option value="meta">Meta Only (Facebook + Instagram)</option>
+                      <option value="google">Google Only</option>
+                      <option value="both">Meta + Google</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-end">
+                <button class="btn-save" onclick="generateCampaignCopy()" id="launch-gen-btn" style="display:inline-flex;align-items:center;gap:8px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate AI Copy
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generated Copy Preview -->
+          <div id="launch-copy-preview" style="display:none" class="fade-in">
+            <div class="panel" style="margin-bottom:20px">
+              <div class="panel-head"><div class="panel-title">AI-Generated Ad Copy</div><button class="panel-action" onclick="generateCampaignCopy()">Regenerate</button></div>
+              <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+                <div class="form-group"><label class="form-label">Meta Headline</label><input class="form-input" id="lcp-headline"></div>
+                <div class="form-group"><label class="form-label">Meta Primary Text</label><textarea class="form-input" id="lcp-primary" style="height:80px;resize:vertical"></textarea></div>
+                <div class="form-group"><label class="form-label">UGC Hook</label><input class="form-input" id="lcp-hook"></div>
+              </div>
+              <div style="padding:0 20px 20px;display:flex;gap:10px;justify-content:flex-end">
+                <button class="btn-secondary" onclick="closeLaunchWizard()">Cancel</button>
+                <button class="btn-save" onclick="doLaunchCampaign()" id="launch-exec-btn" style="display:inline-flex;align-items:center;gap:8px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Launch to Meta
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launched Campaigns Table -->
+        <div class="panel fade-in">
+          <div class="panel-head"><div class="panel-title">Launched Campaigns</div><button class="panel-action" onclick="loadLaunchedCampaigns()">Refresh ↺</button></div>
+          <div id="launched-campaigns-content">
+            <div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg><p>No campaigns launched yet. Click "New Campaign" to start.</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="panel fade-in">
@@ -1524,7 +1759,7 @@ select.form-input{cursor:pointer}
 
 <script>
 let allCampaigns = [];
-const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'⚡ Dev Tools'};
+const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'⚡ Dev Tools'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
@@ -1534,7 +1769,7 @@ const PLANS = {
   growth:  { name: 'Growth',  color: '#6366f1', ugc: 75,  stores: 3,        badge: 'GROWTH'  },
   scale:   { name: 'Scale',   color: '#06d6c7', ugc: 350, stores: Infinity,  badge: 'SCALE'   },
 };
-const GATED = { analytics: 'growth', ai: 'growth', analysis: 'growth', googleads: 'growth', audience: 'growth', abtest: 'scale', bulk: 'scale', multistore: 'scale', whitelabel: 'scale' };
+const GATED = { analytics: 'growth', ai: 'growth', analysis: 'growth', googleads: 'growth', audience: 'growth', budget: 'growth', launch: 'growth', abtest: 'scale', bulk: 'scale', multistore: 'scale', whitelabel: 'scale' };
 const PLAN_RANK = { starter: 0, growth: 1, scale: 2 };
 function getUserPlan() {
   // Clerk publicMetadata is the authoritative source (set server-side by Stripe webhook).
@@ -1942,6 +2177,8 @@ function navigate(page) {
     }
     if (page === 'billing') renderBillingPage();
     if (page === 'creatives') { loadAllCreatives(); runFatigueAnalysis(); }
+    if (page === 'launch')  { loadLaunchedCampaigns(); }
+    if (page === 'budget')  { /* ready to use on load */ }
     if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } }
     if (page === 'settings') loadSettingsFields();
     if (page === 'audience') { loadPixelStatus(); loadAudiences(); }
@@ -2020,10 +2257,9 @@ async function authFetch(path, opts = {}) {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${window.SUPABASE_ANON}`,
-          'X-Clerk-Token': token,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ path, method, body: reqBody, headers: extraHeaders }),
+        body: JSON.stringify({ path, method, body: reqBody, headers: extraHeaders, clerkToken: token }),
       });
       if (r.status === 401) { console.warn('[authFetch] 401 on', path); return null; }
       if (r.status === 429) { showToast('Too many requests — slow down', 'error'); return null; }
@@ -3974,6 +4210,239 @@ function dashDisconnectGoogle() {
   const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display='none';
   refreshGoogleStatus(); updatePlatformBanner();
   showToast('Google Ads disconnected', 'warn');
+}
+
+// ── COOKIE CONSENT ────────────────────────────────────────────────────────────
+(function() {
+  const consent = localStorage.getItem('cookie_consent');
+  if (!consent) setTimeout(() => { const b = document.getElementById('cookie-banner'); if (b) b.classList.add('show'); }, 1200);
+})();
+function cookieAccept() {
+  localStorage.setItem('cookie_consent', 'accepted');
+  const b = document.getElementById('cookie-banner'); if (b) b.classList.remove('show');
+}
+function cookieDecline() {
+  localStorage.setItem('cookie_consent', 'essential');
+  const b = document.getElementById('cookie-banner'); if (b) b.classList.remove('show');
+}
+
+// ── BUDGET AI ─────────────────────────────────────────────────────────────────
+let _budgetRecId = null;
+let _budgetDailyBudget = 0;
+
+async function calculateBudget() {
+  const goal = parseFloat(document.getElementById('budget-revenue-goal')?.value || '0');
+  const aov  = parseFloat(document.getElementById('budget-aov')?.value || '50');
+  const roas = parseFloat(document.getElementById('budget-roas')?.value || '2.5');
+  const days = parseInt(document.getElementById('budget-days')?.value || '30', 10);
+
+  if (!goal || goal < 1) { showToast('Enter a revenue goal', 'warn'); return; }
+
+  const btn = document.getElementById('budget-calc-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Calculating…'; }
+
+  try {
+    const plan = localStorage.getItem('ephermal_plan') || 'starter';
+    const data = await authFetch('/budget', 'POST', { action: 'calculate', revenue_goal: goal, aov, current_roas: roas, days, platforms: ['meta','google'] });
+    if (!data) { showToast('Budget AI not available — check GROQ_API_KEY', 'error'); return; }
+
+    _budgetRecId = data.recommendation_id;
+    _budgetDailyBudget = data.daily_budget_total || (goal / days / (data.expected_roas || 2.5));
+
+    document.getElementById('bud-daily-total').textContent = '$' + Math.round(_budgetDailyBudget);
+    document.getElementById('bud-roas').textContent = (data.expected_roas || 2.5).toFixed(1) + '×';
+    document.getElementById('bud-revenue').textContent = '$' + Math.round(data.expected_revenue || goal).toLocaleString();
+    document.getElementById('bud-meta-daily').textContent = '$' + Math.round(data.daily_budget_meta || _budgetDailyBudget * 0.65) + '/day';
+    document.getElementById('bud-google-daily').textContent = '$' + Math.round(data.daily_budget_google || _budgetDailyBudget * 0.35) + '/day';
+
+    const metaPct = data.meta_allocation_pct || 65;
+    const gPct    = data.google_allocation_pct || 35;
+    const metaBar = document.getElementById('bud-meta-bar');
+    const gBar    = document.getElementById('bud-google-bar');
+    if (metaBar) metaBar.style.width = metaPct + '%';
+    if (gBar)    gBar.style.width   = gPct + '%';
+
+    document.getElementById('bud-reasoning').textContent = data.reasoning || 'Budget calculated using ROAS-based CPA model with platform benchmarks.';
+
+    const applyBtn = document.getElementById('bud-apply-btn');
+    if (applyBtn && plan === 'scale') applyBtn.style.display = '';
+
+    document.getElementById('budget-rec-wrap').style.display = '';
+    document.getElementById('budget-history-wrap').style.display = '';
+    loadBudgetHistory();
+  } catch(e) {
+    showToast('Budget calculation failed — ' + (e.message || 'try again'), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Calculate with AI'; }
+  }
+}
+
+async function loadBudgetForecast() {
+  const plan = localStorage.getItem('ephermal_plan') || 'starter';
+  if (plan === 'starter') { showToast('Upgrade to Growth for forecasting', 'warn'); return; }
+  if (!_budgetDailyBudget) { showToast('Calculate a budget first', 'warn'); return; }
+
+  const roas = parseFloat(document.getElementById('budget-roas')?.value || '2.5');
+  const data = await authFetch('/budget', 'POST', { action: 'forecast', daily_budget: _budgetDailyBudget, current_roas: roas, days: 30 });
+  if (!data) return;
+
+  const cells = document.getElementById('forecast-cells');
+  if (!cells) return;
+  const pts = data.projections || [];
+  cells.innerHTML = pts.map(p => `
+    <div class="forecast-cell">
+      <div class="val">$${Math.round(p.cumulative_revenue).toLocaleString()}</div>
+      <div class="lbl">Day ${p.day} Revenue</div>
+    </div>
+  `).join('');
+
+  document.getElementById('budget-forecast-wrap').style.display = '';
+}
+
+async function applyBudgetRec() {
+  if (!_budgetRecId) return;
+  const data = await authFetch('/budget', 'POST', { action: 'apply', recommendation_id: _budgetRecId });
+  if (data) showToast('Budget recommendation applied', 'success');
+}
+
+async function loadBudgetHistory() {
+  const plan = localStorage.getItem('ephermal_plan') || 'starter';
+  if (plan === 'starter') return;
+  const data = await authFetch('/budget', 'POST', { action: 'history' });
+  if (!data) return;
+  const el = document.getElementById('budget-history-content');
+  if (!el) return;
+  const recs = data.recommendations || [];
+  if (!recs.length) { el.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:13px">No recommendations yet.</div>'; return; }
+  el.innerHTML = recs.slice(0, 5).map(r => {
+    const rec = r.recommendation || {};
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">
+      <div>
+        <span style="font-weight:600">$${Math.round(rec.daily_budget_total || 0)}/day</span>
+        <span style="color:var(--muted);margin-left:8px">Goal: $${(rec.revenue_goal || 0).toLocaleString()}</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="status-pill ${r.applied ? 'live' : 'draft'}">${r.applied ? 'Applied' : 'Draft'}</span>
+        <span style="color:var(--muted);font-size:11px">${new Date(r.created_at).toLocaleDateString()}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── CAMPAIGN LAUNCHER ─────────────────────────────────────────────────────────
+let _launchCampaignId = null;
+
+function openLaunchWizard() {
+  document.getElementById('launch-wizard').style.display = '';
+  document.getElementById('launch-copy-preview').style.display = 'none';
+  _launchCampaignId = null;
+}
+
+function closeLaunchWizard() {
+  document.getElementById('launch-wizard').style.display = 'none';
+  document.getElementById('launch-copy-preview').style.display = 'none';
+}
+
+async function generateCampaignCopy() {
+  const productName = (document.getElementById('launch-product-name')?.value || '').trim();
+  const productDesc = (document.getElementById('launch-product-desc')?.value || '').trim();
+  const productPrice = parseFloat(document.getElementById('launch-product-price')?.value || '0');
+  const objective    = document.getElementById('launch-objective')?.value || 'OUTCOME_SALES';
+  const audDesc      = (document.getElementById('launch-audience-desc')?.value || '').trim();
+  const ageMin       = parseInt(document.getElementById('launch-age-min')?.value || '18', 10);
+  const ageMax       = parseInt(document.getElementById('launch-age-max')?.value || '55', 10);
+  const countries    = (document.getElementById('launch-countries')?.value || 'US').split(',').map(c => c.trim().toUpperCase()).filter(Boolean);
+  const budget       = parseFloat(document.getElementById('launch-budget')?.value || '20');
+
+  if (!productName) { showToast('Enter a product name', 'warn'); return; }
+
+  const btn = document.getElementById('launch-gen-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+
+  try {
+    const product  = { name: productName, description: productDesc, price: productPrice };
+    const audience = { description: audDesc, age_min: ageMin, age_max: ageMax, countries, geo_locations: { countries } };
+
+    const data = await authFetch('/launch', 'POST', { action: 'prepare', product, audience, budget, objective });
+    if (!data) { showToast('Campaign generation failed', 'error'); return; }
+
+    _launchCampaignId = data.campaign_id;
+    const copy = data.copy || {};
+    const meta = copy.meta || {};
+
+    document.getElementById('lcp-headline').value  = meta.headline || '';
+    document.getElementById('lcp-primary').value   = meta.primary_text || '';
+    document.getElementById('lcp-hook').value      = copy.ugc_hook || '';
+
+    // Update launch button based on platforms
+    const platforms = document.getElementById('launch-platforms')?.value || 'meta';
+    const launchBtn = document.getElementById('launch-exec-btn');
+    if (launchBtn) {
+      if (platforms === 'google') launchBtn.textContent = 'Launch to Google';
+      else if (platforms === 'both') launchBtn.textContent = 'Launch to Meta + Google';
+      else launchBtn.textContent = 'Launch to Meta';
+    }
+
+    document.getElementById('launch-copy-preview').style.display = '';
+    ['lstep-1','lstep-2','lstep-3'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.classList.remove('active'); el.classList.add('done'); el.innerHTML = '✓'; }
+    });
+  } catch(e) {
+    showToast('Generation failed — ' + (e.message || 'try again'), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Regenerate'; }
+  }
+}
+
+async function doLaunchCampaign() {
+  if (!_launchCampaignId) { showToast('Generate copy first', 'warn'); return; }
+  const plan = localStorage.getItem('ephermal_plan') || 'starter';
+  if (plan === 'starter') { showToast('Upgrade to Growth to launch campaigns', 'warn'); navigate('billing'); return; }
+
+  const btn = document.getElementById('launch-exec-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Launching…'; }
+
+  try {
+    const platforms = document.getElementById('launch-platforms')?.value || 'meta';
+    const action = platforms === 'meta' ? 'launch_meta' : 'launch';
+    const body = { action, campaign_id: _launchCampaignId };
+    if (platforms !== 'meta') body.platforms = platforms.split('+').map(s => s.trim());
+
+    const data = await authFetch('/launch', 'POST', body);
+    if (!data) { showToast('Launch failed', 'error'); return; }
+
+    showToast('Campaign launched! Created as PAUSED — enable in Campaigns tab.', 'success');
+    closeLaunchWizard();
+    loadLaunchedCampaigns();
+  } catch(e) {
+    showToast('Launch failed — ' + (e.message || 'check Meta connection'), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; }
+  }
+}
+
+async function loadLaunchedCampaigns() {
+  const data = await authFetch('/launch', 'POST', { action: 'list' });
+  const el = document.getElementById('launched-campaigns-content');
+  if (!el) return;
+
+  const campaigns = data?.campaigns || [];
+  if (!campaigns.length) {
+    el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg><p>No campaigns launched yet. Click "New Campaign" to start.</p></div>';
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="launched-campaign-row header"><span>Campaign</span><span>Platform</span><span>Budget</span><span>Status</span></div>
+    ${campaigns.map(c => `
+    <div class="launched-campaign-row">
+      <span style="font-weight:600">${c.name}</span>
+      <span style="text-transform:capitalize;color:var(--muted)">${c.platform}</span>
+      <span>$${c.budget_daily || '—'}/day</span>
+      <span class="status-pill ${c.status === 'active' ? 'live' : c.status}">${c.status}</span>
+    </div>`).join('')}
+  `;
 }
 </script>
 <!-- fbAsyncInit must be defined BEFORE the SDK script executes -->

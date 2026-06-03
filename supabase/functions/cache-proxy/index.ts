@@ -89,6 +89,8 @@ function resolveFunctionName(path: string): string | null {
   if (path.startsWith('/ai'))                       return 'ai-assistant';
   if (path.startsWith('/fatigue'))                  return 'creative-fatigue';
   if (/^\/(optimize|roas)/.test(path))              return 'roas-optimizer';
+  if (/^\/(budget)/.test(path))                     return 'budget-ai';
+  if (/^\/(launch)/.test(path))                     return 'campaign-launcher';
   return null;
 }
 
@@ -106,6 +108,8 @@ const PATH_TO_ACTION: Record<string, string> = {
   'fatigue':            'analyze',
   'optimize':           'analyze',
   'roas':               'analyze',
+  'budget':             'calculate',
+  'launch':             'prepare',
 };
 
 /** Build the target Supabase function URL, preserving query params and injecting action */

@@ -1,17 +1,21 @@
 /**
- * Ephermal — UGC Generator Edge Function
+ * Ephermal — UGC + AI Content Generator (Supabase Edge Function)
  *
- * Generates UGC-style ad scripts and briefs using Claude.
- * Does NOT generate actual video — it produces the script, hook,
- * talking points, and CTA that a creator would record.
+ * Groq-powered agent pipeline using llama-3.3-70b-versatile.
+ * Falls back to Anthropic claude-sonnet-4-5 if GROQ_API_KEY is not set.
  *
- * POST { action: 'script',     product, tone?, audience? }  — full video script
- * POST { action: 'hooks',      product, count? }             — 5–10 hook variations
- * POST { action: 'brief',      product, creator_type? }      — creator brief PDF-ready
- * POST { action: 'variations', script, count? }              — A/B variation rewrites
+ * POST { action: 'script',          product, tone?, audience? }
+ * POST { action: 'hooks',           product, count? }
+ * POST { action: 'brief',           product, creator_type? }
+ * POST { action: 'variations',      script, count? }
+ * POST { action: 'analyze_store',   store_url?, products?, store_name? }
+ * POST { action: 'profile_audience', store_analysis?, products?, niche? }
+ * POST { action: 'copywrite',        product, audience?, platform? }
+ * POST { action: 'full_pipeline',    product, store_analysis?, audience?, budget?, tone? }
  *
  * Required env vars:
- *   ANTHROPIC_API_KEY
+ *   GROQ_API_KEY         — primary (llama-3.3-70b-versatile)
+ *   ANTHROPIC_API_KEY    — fallback if Groq not set
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
  */
@@ -24,43 +28,50 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
-const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL         = 'claude-sonnet-4-5';
+const GROQ_KEY       = Deno.env.get('GROQ_API_KEY') ?? '';
+const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL     = 'llama-3.3-70b-versatile';
+const ANTHROPIC_KEY  = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
+const ANTHROPIC_URL  = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
 
-// Plan → monthly AI message limits (shared with ai-assistant)
-const PLAN_LIMITS: Record<string, number> = {
-  starter: 50,
-  growth:  200,
-  scale:   500,
-};
+const PLAN_LIMITS: Record<string, number> = { starter: 50, growth: 200, scale: 500 };
 
-async function callClaude(system: string, user: string, maxTokens = 1500): Promise<string> {
+async function callAI(system: string, user: string, maxTokens = 1500): Promise<string> {
+  if (GROQ_KEY) {
+    const res = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        max_tokens: maxTokens,
+        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error((err as { error?: { message: string } }).error?.message ?? `Groq error ${res.status}`);
+    }
+    const data = await res.json() as { choices: { message: { content: string } }[] };
+    return data.choices[0]?.message?.content ?? '';
+  }
+
+  // Fallback: Anthropic
+  if (!ANTHROPIC_KEY) throw new Error('No AI provider configured — set GROQ_API_KEY or ANTHROPIC_API_KEY');
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
-    headers: {
-      'Content-Type':      'application/json',
-      'x-api-key':         ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model:      MODEL,
-      max_tokens: maxTokens,
-      system,
-      messages: [{ role: 'user', content: user }],
-    }),
+    headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
+    body: JSON.stringify({ model: ANTHROPIC_MODEL, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] }),
   });
-
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { error?: { message: string } }).error?.message ?? `Claude error ${res.status}`);
   }
-
   const data = await res.json() as { content: { type: string; text: string }[] };
   return data.content.find(b => b.type === 'text')?.text ?? '';
 }
 
-async function getUsage(userId: string): Promise<{ used: number; limit: number }> {
+async function getUsage(userId: string) {
   const month = new Date().toISOString().slice(0, 7);
   const [planRes, creditsRes] = await Promise.all([
     supabase.from('user_plans').select('plan').eq('user_id', userId).single(),
@@ -69,10 +80,10 @@ async function getUsage(userId: string): Promise<{ used: number; limit: number }
   const plan  = planRes.data?.plan ?? 'starter';
   const used  = creditsRes.data?.used ?? 0;
   const limit = PLAN_LIMITS[plan] ?? 50;
-  return { used, limit };
+  return { plan, used, limit };
 }
 
-async function incrementUsage(userId: string, currentUsed: number): Promise<void> {
+async function incrementUsage(userId: string, currentUsed: number) {
   const month = new Date().toISOString().slice(0, 7);
   await supabase.from('ai_credits').upsert(
     { user_id: userId, month, used: currentUsed + 1 },
@@ -82,58 +93,40 @@ async function incrementUsage(userId: string, currentUsed: number): Promise<void
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
-
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: corsHeaders(origin) });
-  }
-
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(origin) });
   if (req.method !== 'POST') return errResponse('Method not allowed', 405, origin);
 
   const userId = extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
-  if (!ANTHROPIC_KEY) return errResponse('AI not configured', 503, origin);
+  if (!GROQ_KEY && !ANTHROPIC_KEY) return errResponse('AI not configured', 503, origin);
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
 
   const action = String(body.action ?? 'script');
-
-  // Usage gate
   const { used, limit } = await getUsage(userId);
   if (used >= limit) {
-    return errResponse(`AI message limit reached (${limit}/month). Upgrade in billing.`, 429, origin);
+    return errResponse(`AI message limit reached (${limit}/month). Top up in billing.`, 429, origin);
   }
 
   try {
     let result: unknown;
 
     switch (action) {
+      // ── EXISTING ACTIONS ────────────────────────────────────────────────────
+
       case 'script': {
-        const product  = body.product  as Record<string, unknown> ?? {};
+        const product  = body.product as Record<string, unknown> ?? {};
         const tone     = String(body.tone ?? 'authentic and relatable');
         const audience = String(body.audience ?? 'general consumers');
-
-        const system = `You are an expert UGC (User-Generated Content) scriptwriter for Meta and TikTok ads.
+        const system = `You are an expert UGC scriptwriter for Meta and TikTok ads.
 Write scripts that feel like genuine customer reviews — not polished commercials.
-Structure: Hook (3–5 sec) → Problem → Solution/Product → Proof → CTA.
-Keep total script under 60 seconds when read at normal pace (~130 words/min).
-Return JSON with:
-- hook: (string) opening line — attention-grabbing, pattern-interrupt
-- problem: (string) relatable pain point
-- solution: (string) how the product solves it
-- proof: (string) result or transformation
-- cta: (string) clear call to action
-- full_script: (string) complete script with natural transitions
-- estimated_duration_seconds: (number)
+Structure: Hook (3-5 sec) → Problem → Solution/Product → Proof → CTA.
+Keep total script under 60 seconds (~130 words/min).
+Return JSON: { hook, problem, solution, proof, cta, full_script, estimated_duration_seconds }
 Return ONLY valid JSON.`;
-
-        const userMsg = `Product: ${JSON.stringify(product)}
-Tone: ${tone}
-Target audience: ${audience}
-Write a UGC-style ad script.`;
-
-        const reply = await callClaude(system, userMsg, 1200);
+        const reply = await callAI(system, `Product: ${JSON.stringify(product)}\nTone: ${tone}\nAudience: ${audience}\nWrite a UGC-style ad script.`, 1200);
         await incrementUsage(userId, used);
         try { result = JSON.parse(reply); } catch { result = { full_script: reply }; }
         break;
@@ -142,38 +135,25 @@ Write a UGC-style ad script.`;
       case 'hooks': {
         const product = body.product as Record<string, unknown> ?? {};
         const count   = Math.min(Number(body.count ?? 5), 10);
-
-        const system = `You are a viral hook writer for UGC ads on Meta and TikTok.
-Write ${count} different hook variations for the same product.
-Each hook must be 1–2 sentences, under 10 seconds when spoken.
+        const system = `You are a viral hook writer for UGC ads.
+Write ${count} hook variations. Each 1-2 sentences, under 10 seconds when spoken.
 Use diverse angles: problem-first, curiosity, controversy, social proof, transformation.
-Return a JSON array of objects: [{ "hook": "...", "angle": "problem|curiosity|controversy|social_proof|transformation" }]
+Return a JSON array: [{ "hook": "...", "angle": "problem|curiosity|controversy|social_proof|transformation" }]
 Return ONLY valid JSON.`;
-
-        const reply = await callClaude(system, `Product: ${JSON.stringify(product)}`, 800);
+        const reply = await callAI(system, `Product: ${JSON.stringify(product)}`, 800);
         await incrementUsage(userId, used);
         try { result = JSON.parse(reply); } catch { result = [{ hook: reply, angle: 'general' }]; }
         break;
       }
 
       case 'brief': {
-        const product      = body.product as Record<string, unknown> ?? {};
-        const creatorType  = String(body.creator_type ?? 'lifestyle creator');
-
+        const product     = body.product as Record<string, unknown> ?? {};
+        const creatorType = String(body.creator_type ?? 'lifestyle creator');
         const system = `You are a UGC creative director writing a creator brief.
-Write a clear, friendly brief that a ${creatorType} can follow to film a 30–60 second ad.
-Return JSON with:
-- overview: (string) 2-3 sentences about the brand and product
-- target_audience: (string) who to speak to and how
-- key_messages: (string[]) 3–5 bullet points to communicate
-- hooks_to_try: (string[]) 3 opening lines they can choose from
-- do_list: (string[]) 5 things to DO in the video
-- dont_list: (string[]) 5 things to AVOID
-- cta: (string) exact words to say at the end
-- filming_tips: (string) lighting, setting, style guidance
+Write a clear brief for a ${creatorType} to film a 30-60 second ad.
+Return JSON: { overview, target_audience, key_messages: string[], hooks_to_try: string[], do_list: string[], dont_list: string[], cta, filming_tips }
 Return ONLY valid JSON.`;
-
-        const reply = await callClaude(system, `Product: ${JSON.stringify(product)}`, 1500);
+        const reply = await callAI(system, `Product: ${JSON.stringify(product)}`, 1500);
         await incrementUsage(userId, used);
         try { result = JSON.parse(reply); } catch { result = { overview: reply }; }
         break;
@@ -183,16 +163,155 @@ Return ONLY valid JSON.`;
         const script = String(body.script ?? '').trim();
         if (!script) return errResponse('script is required', 400, origin);
         const count = Math.min(Number(body.count ?? 3), 5);
-
         const system = `You are a UGC ad scriptwriter creating A/B test variations.
-Rewrite the given script ${count} times, each with a different angle or tone.
-Keep the core message and CTA but vary: the hook, pacing, emotional tone, or specific proof points.
-Return a JSON array: [{ "variation": 1, "label": "...", "script": "..." }]
+Rewrite the given script ${count} times with different angle or tone.
+Keep the core message and CTA. Return a JSON array: [{ "variation": 1, "label": "...", "script": "..." }]
 Return ONLY valid JSON.`;
-
-        const reply = await callClaude(system, `Original script:\n${script}`, 1800);
+        const reply = await callAI(system, `Original script:\n${script}`, 1800);
         await incrementUsage(userId, used);
         try { result = JSON.parse(reply); } catch { result = [{ variation: 1, label: 'Variation A', script: reply }]; }
+        break;
+      }
+
+      // ── NEW GROQ-POWERED ACTIONS ────────────────────────────────────────────
+
+      case 'analyze_store': {
+        const storeUrl   = String(body.store_url ?? '');
+        const products   = body.products as unknown[] ?? [];
+        const storeName  = String(body.store_name ?? '');
+        const system = `You are an expert Shopify store analyst and Meta/Google Ads strategist.
+Analyze the provided store information and return structured insights.
+Return JSON: {
+  summary: string,
+  niche: string,
+  price_tier: "budget|mid|premium|luxury",
+  brand_voice: string,
+  target_audience: string,
+  top_products: string[],
+  key_differentiators: string[],
+  ad_opportunities: string[],
+  meta_strategy: string,
+  google_strategy: string,
+  estimated_cpa: number,
+  roas_target_90d: number,
+  ugc_themes: string[]
+}
+Return ONLY valid JSON.`;
+        const userMsg = `Store: ${storeName || storeUrl || 'Unknown store'}
+Products sample: ${JSON.stringify(products.slice(0, 10))}
+Analyze and provide marketing insights.`;
+        const reply = await callAI(system, userMsg, 1500);
+        await incrementUsage(userId, used);
+        try { result = JSON.parse(reply); } catch { result = { summary: reply }; }
+        break;
+      }
+
+      case 'profile_audience': {
+        const storeAnalysis = body.store_analysis as Record<string, unknown> ?? {};
+        const niche         = String(body.niche ?? storeAnalysis.niche ?? 'e-commerce');
+        const system = `You are an expert media buyer and audience strategist.
+Create detailed audience segments for Meta Ads and Google Ads targeting.
+Return JSON array of 3-5 segments:
+[{
+  name: string,
+  description: string,
+  age_range: { min: number, max: number },
+  gender: "all|male|female",
+  interests: string[],
+  pain_points: string[],
+  buying_triggers: string[],
+  meta_interests: { id: string, name: string }[],
+  google_in_market: string[],
+  estimated_size: "small(<100k)|medium(100k-1m)|large(>1m)",
+  recommended_budget_pct: number
+}]
+Return ONLY valid JSON.`;
+        const userMsg = `Niche: ${niche}
+Store analysis: ${JSON.stringify(storeAnalysis)}
+Create audience segments for paid ads.`;
+        const reply = await callAI(system, userMsg, 1500);
+        await incrementUsage(userId, used);
+        try { result = JSON.parse(reply); } catch { result = []; }
+        break;
+      }
+
+      case 'copywrite': {
+        const product  = body.product as Record<string, unknown> ?? {};
+        const audience = body.audience as Record<string, unknown> ?? {};
+        const platform = String(body.platform ?? 'both');
+        const system = `You are an elite ad copywriter. Write high-converting ad copy.
+Return JSON:
+{
+  "meta": {
+    "primary_text": string (max 125 chars),
+    "headline": string (max 40 chars),
+    "description": string (max 30 chars),
+    "cta": "SHOP_NOW|LEARN_MORE|SIGN_UP|GET_OFFER",
+    "variations": [{ primary_text, headline }]
+  },
+  "google": {
+    "headlines": string[] (15 items, max 30 chars each),
+    "descriptions": string[] (4 items, max 90 chars each),
+    "callouts": string[] (8 items, max 25 chars each),
+    "sitelinks": [{ title: string, description: string, url_suffix: string }]
+  }
+}
+Return ONLY valid JSON.`;
+        const userMsg = `Product: ${JSON.stringify(product)}
+Target audience: ${JSON.stringify(audience)}
+Platform: ${platform}
+Write launch-ready ad copy.`;
+        const reply = await callAI(system, userMsg, 1200);
+        await incrementUsage(userId, used);
+        try { result = JSON.parse(reply); } catch { result = {}; }
+        break;
+      }
+
+      case 'full_pipeline': {
+        const product  = body.product as Record<string, unknown> ?? {};
+        const tone     = String(body.tone ?? 'authentic and benefit-focused');
+        const budget   = Number(body.budget ?? 20);
+
+        // Step 1: store analysis (if not provided)
+        let storeAnalysis = body.store_analysis as Record<string, unknown> ?? null;
+        if (!storeAnalysis) {
+          const analysisReply = await callAI(
+            `Analyze this product for Meta/Google advertising. Return JSON: { niche, target_audience, key_differentiators: string[], ad_opportunities: string[], meta_strategy, ugc_themes: string[] }. ONLY JSON.`,
+            `Product: ${JSON.stringify(product)}`,
+            800,
+          );
+          try { storeAnalysis = JSON.parse(analysisReply); } catch { storeAnalysis = {}; }
+        }
+
+        // Step 2: audience segments
+        const audienceReply = await callAI(
+          `Create 2 audience segments for this product. Return JSON array: [{ name, description, age_range: {min,max}, interests: string[], pain_points: string[] }]. ONLY JSON.`,
+          `Product: ${JSON.stringify(product)}\nNiche: ${storeAnalysis?.niche ?? 'e-commerce'}`,
+          600,
+        );
+        let audiences: unknown[];
+        try { audiences = JSON.parse(audienceReply); } catch { audiences = []; }
+
+        // Step 3: UGC script
+        const scriptReply = await callAI(
+          `Write a UGC ad script. Return JSON: { hook, problem, solution, proof, cta, full_script, estimated_duration_seconds }. ONLY JSON.`,
+          `Product: ${JSON.stringify(product)}\nTone: ${tone}\nAudience: ${JSON.stringify((audiences as Record<string, unknown>[])[0] ?? {})}`,
+          900,
+        );
+        let script: Record<string, unknown>;
+        try { script = JSON.parse(scriptReply); } catch { script = { full_script: scriptReply }; }
+
+        // Step 4: ad copy
+        const copyReply = await callAI(
+          `Write Meta and Google ad copy. Return JSON: { meta: { primary_text, headline, description, cta }, google: { headlines: string[], descriptions: string[] } }. ONLY JSON.`,
+          `Product: ${JSON.stringify(product)}\nAudience: ${JSON.stringify((audiences as Record<string, unknown>[])[0] ?? {})}`,
+          800,
+        );
+        let copy: Record<string, unknown>;
+        try { copy = JSON.parse(copyReply); } catch { copy = {}; }
+
+        await incrementUsage(userId, used);
+        result = { store_analysis: storeAnalysis, audiences, script, copy, budget_suggestion: { daily: budget, meta_pct: 65, google_pct: 35 } };
         break;
       }
 
@@ -201,10 +320,8 @@ Return ONLY valid JSON.`;
     }
 
     return okResponse({ result, used: used + 1, limit }, origin);
-
   } catch (err) {
     console.error('ugc-generate error:', err);
-    const msg = err instanceof Error ? err.message : 'UGC generation error';
-    return errResponse(msg, 500, origin);
+    return errResponse(err instanceof Error ? err.message : 'Generation error', 500, origin);
   }
 });
