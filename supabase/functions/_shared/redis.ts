@@ -86,6 +86,16 @@ export const redis = {
     const r = await command<number>(['EXISTS', key]);
     return r === 1;
   },
+
+  /** Atomic increment. On first call (result === 1) sets TTL in seconds. Returns new value. */
+  async incr(key: string, ttlSeconds?: number): Promise<number> {
+    const result = await command<number>(['INCR', key]);
+    const val = result ?? 0;
+    if (val === 1 && ttlSeconds) {
+      await command(['EXPIRE', key, ttlSeconds]);
+    }
+    return val;
+  },
 };
 
 /** Build a cache key for user-scoped API responses */

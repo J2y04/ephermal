@@ -263,6 +263,9 @@ Deno.serve(async (req: Request) => {
         if (!campaignId || !['PAUSED', 'ENABLED'].includes(newStatus)) {
           return errResponse('campaign_id and status (PAUSED|ENABLED) are required', 400, origin)
         }
+        if (!/^\d+$/.test(campaignId)) {
+          return errResponse('campaign_id must be numeric', 400, origin)
+        }
 
         await gadsPost(customerId, accessToken, devToken, 'campaigns:mutate', {
           operations: [{
@@ -285,6 +288,11 @@ Deno.serve(async (req: Request) => {
 
         if (!campaignId || budgetUsd < 1) {
           return errResponse('campaign_id and budget_usd (minimum 1) are required', 400, origin)
+        }
+
+        // Validate campaignId is numeric before interpolating into GAQL
+        if (!/^\d+$/.test(campaignId)) {
+          return errResponse('campaign_id must be numeric', 400, origin)
         }
 
         // First get the campaign's budget resource name

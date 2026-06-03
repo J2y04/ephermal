@@ -235,10 +235,12 @@ Deno.serve(async (req) => {
             try {
               if (a.action === 'pause') {
                 await metaPost(`/${a.campaign_id}`, { status: 'PAUSED' }, token);
-                await supabase.from('campaigns').update({ status: 'PAUSED' }).eq('id', a.campaign_id);
+                await supabase.from('campaigns').update({ status: 'PAUSED' })
+                  .eq('id', a.campaign_id).eq('user_id', userId);
               } else if (a.action === 'scale' && a.new_budget) {
                 await metaPost(`/${a.campaign_id}`, { daily_budget: String(a.new_budget) }, token);
-                await supabase.from('campaigns').update({ daily_budget: a.new_budget }).eq('id', a.campaign_id);
+                await supabase.from('campaigns').update({ daily_budget: a.new_budget })
+                  .eq('id', a.campaign_id).eq('user_id', userId);
               }
               results.push({ id: a.campaign_id, action: a.action, success: true });
             } catch (e) {

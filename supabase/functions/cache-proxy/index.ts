@@ -45,6 +45,17 @@
 
 import { redis, cacheKey, redisAvailable } from '../_shared/redis.ts';
 
+// Per-user rate limit: 60 requests/minute
+const RATE_LIMIT = 60;
+const RATE_WINDOW = 60; // seconds
+
+async function isRateLimited(userId: string): Promise<boolean> {
+  if (!redisAvailable()) return false; // degrade gracefully if Redis is down
+  const key = `rl:proxy:${userId}`;
+  const count = await redis.incr(key, RATE_WINDOW);
+  return count > RATE_LIMIT;
+}
+
 // TTL map by action type (0 = never cache)
 const CACHE_TTL: Record<string, number> = {
   overview:   60,
@@ -187,6 +198,11 @@ Deno.serve(async (req) => {
   const userId = extractUserIdFromJWT(rawToken);
   if (!userId) {
     return new Response('Invalid token', { status: 401, headers: CORS_HEADERS });
+  }
+
+  // Server-side rate limit: 60 req/min per user
+  if (await isRateLimited(userId)) {
+    return new Response('Too Many Requests', { status: 429, headers: CORS_HEADERS });
   }
 
   if (!path || typeof path !== 'string' || !path.startsWith('/')) {

@@ -24,7 +24,7 @@ export function extractUserId(authHeader: string | null): string | null {
 export function corsHeaders(origin?: string | null): Record<string, string> {
   const appUrl = Deno.env.get('APP_URL') ?? 'https://ephermal.app';
   return {
-    'Access-Control-Allow-Origin':  origin === appUrl ? appUrl : appUrl,
+    'Access-Control-Allow-Origin':  origin === appUrl ? origin : appUrl,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Meta-Token, X-Meta-Account, X-Shopify-Token, X-Shopify-Store, X-Google-Token, X-Google-Account',
     'Access-Control-Max-Age':       '86400',

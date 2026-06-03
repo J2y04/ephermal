@@ -58,15 +58,19 @@ Deno.serve(async (req) => {
     return new Response('Method not allowed', { status: 405, headers: CORS_HEADERS });
   }
 
-  // ── Auth: require valid Clerk JWT or service role ────────────────────────
-  // The frontend passes the Clerk session token; the Edge Function only
-  // needs to confirm it's present. The clerk_user_id in the body is the
-  // authoritative user identifier embedded in Stripe metadata — it MUST
-  // match what the frontend sends via Clerk.getToken().
+  // ── Auth: verify JWT and extract userId ──────────────────────────────────
   const authHeader = req.headers.get('Authorization') ?? '';
   if (!authHeader.startsWith('Bearer ') || authHeader.length < 20) {
     return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
   }
+  // Decode JWT sub without full sig verification (Clerk RS256 JWTs)
+  let jwtUserId: string | null = null;
+  try {
+    const token = authHeader.slice(7);
+    const [, payload] = token.split('.');
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    jwtUserId = decoded.sub ?? null;
+  } catch { /* invalid JWT — caught below */ }
 
   let body: { price_id: string; clerk_user_id: string; email?: string };
   try {
@@ -96,6 +100,11 @@ Deno.serve(async (req) => {
   // ── Sanitise clerk_user_id — Clerk IDs match user_[a-zA-Z0-9]+ ─────────
   if (!/^user_[a-zA-Z0-9_]+$/.test(clerk_user_id) || clerk_user_id.length > 64) {
     return new Response('Invalid user ID', { status: 400, headers: CORS_HEADERS });
+  }
+
+  // ── Verify clerk_user_id matches the authenticated JWT ───────────────────
+  if (!jwtUserId || jwtUserId !== clerk_user_id) {
+    return new Response('Unauthorized — user ID mismatch', { status: 403, headers: CORS_HEADERS });
   }
 
   const appUrl   = Deno.env.get('APP_URL') ?? 'https://ephermal.app';

@@ -73,17 +73,33 @@ async function fetchAllProducts(
   let hasMore = true;
 
   while (hasMore) {
-    const params: Record<string, string> = { limit: '250', fields: 'id,title,handle,vendor,product_type,status,images,variants,created_at,updated_at' };
+    const params: Record<string, string> = {
+      limit: '250',
+      fields: 'id,title,handle,vendor,product_type,status,images,variants,created_at,updated_at',
+    };
     if (pageInfo) params.page_info = pageInfo;
 
-    const res = await shopifyGet<{ products: Record<string, unknown>[] }>(
-      shop, token, 'products.json', params,
-    );
-    all.push(...(res.products ?? []));
+    const url = new URL(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/products.json`);
+    for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-    // Check link header for next page (Shopify cursor-based pagination)
-    hasMore = false;
-    pageInfo = null;
+    const res = await fetch(url.toString(), {
+      headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) break;
+
+    const data = await res.json() as { products: Record<string, unknown>[] };
+    const page = data.products ?? [];
+    all.push(...page);
+
+    // Parse Link header for cursor-based next page
+    const linkHeader = res.headers.get('link') ?? '';
+    const nextMatch  = linkHeader.match(/<[^>]*[?&]page_info=([^&>]+)[^>]*>;\s*rel="next"/);
+    if (nextMatch) {
+      pageInfo = decodeURIComponent(nextMatch[1]);
+      hasMore  = true;
+    } else {
+      hasMore = false;
+    }
   }
 
   return all;
