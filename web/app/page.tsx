@@ -19,6 +19,7 @@ export default function Home() {
         <div className="nav-links">
           <a href="#how-it-works">How it works</a>
           <a href="#services">Features</a>
+          <a href="/advertising.html" style={{ color: 'var(--accent)', fontWeight: 600 }}>Budget AI ✦</a>
           <a href="#pricing">Pricing</a>
           <a href="#about">Results</a>
         </div>
@@ -270,6 +271,61 @@ export default function Home() {
                 <span className="service-tag">{s.tag}</span>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Budget AI Feature Spotlight ── */}
+      <section className="section" style={{ background: 'linear-gradient(180deg, var(--bg) 0%, rgba(99,102,241,0.04) 50%, var(--bg) 100%)' }}>
+        <div className="container">
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', alignItems: 'center' }} data-reveal>
+            <div>
+              <div className="section-label" style={{ textAlign: 'left' }}>New Feature</div>
+              <h2 className="section-title" style={{ textAlign: 'left', fontSize: 'clamp(28px,3.5vw,40px)' }}>
+                Your AI Ad CFO.<br />
+                <span style={{ background: 'linear-gradient(90deg,var(--primary),var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
+                  Budget on autopilot.
+                </span>
+              </h2>
+              <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '28px' }}>
+                Set a monthly revenue goal. Ephermal&apos;s AI reverse-engineers the exact daily budget you need, splits it optimally across Meta and Google, and auto-scales when ROAS beats your target.
+              </p>
+              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '36px' }}>
+                {['AI calculates exact budget from your revenue goal', 'Smart Meta / Google allocation based on ROAS data', 'Auto-scales spend when campaigns win', 'Pauses and reallocates from fatigued ads'].map((item, i) => (
+                  <li key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '14px', color: 'rgba(240,242,255,0.85)' }}>
+                    <span style={{ color: 'var(--accent)', fontWeight: 800, flexShrink: 0 }}>✓</span>{item}
+                  </li>
+                ))}
+              </ul>
+              <a href="/advertising.html" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,var(--primary),var(--secondary))', color: '#fff', padding: '13px 28px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 20px rgba(99,102,241,0.4)', transition: 'all .25s' }}>
+                Learn About Budget AI →
+              </a>
+            </div>
+            <div data-reveal="right" data-delay="1" style={{ background: 'var(--surface)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '20px', padding: '28px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '150px', height: '150px', background: 'radial-gradient(circle,rgba(99,102,241,0.12),transparent 60%)', pointerEvents: 'none' }} />
+              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Monthly Revenue Goal</div>
+              <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1.5px', background: 'linear-gradient(90deg,var(--text),var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', marginBottom: '4px' }}>$15,000</div>
+              <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '20px' }}>/ month target</div>
+              {[{ label: 'Meta Ads', pct: '65%', color: 'linear-gradient(90deg,var(--primary),var(--secondary))' }, { label: 'Google', pct: '35%', color: 'linear-gradient(90deg,#4285F4,var(--accent))' }].map((b, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--muted)', width: '72px', flexShrink: 0 }}>{b.label}</span>
+                  <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ width: b.pct, height: '100%', background: b.color, borderRadius: '4px', transition: 'width 1.5s ease' }} />
+                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: 700, width: '32px', textAlign: 'right' }}>{b.pct}</span>
+                </div>
+              ))}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
+                <div style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>DAILY BUDGET</div>
+                  <div style={{ fontSize: '22px', fontWeight: 800 }}>$200</div>
+                </div>
+                <div style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '12px 14px' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>EST. ROAS</div>
+                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--accent)' }}>2.5×</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
