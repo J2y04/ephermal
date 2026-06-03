@@ -2,14 +2,14 @@
  * Ephermal — AI Assistant Edge Function
  *
  * Powers the in-dashboard AI chat and store analysis.
- * Uses Claude claude-sonnet-4-5 via the Anthropic API.
+ * Uses llama-3.3-70b-versatile via Groq API.
  *
  * POST /ai-assistant  { action: 'chat', message: string, context?: object }
  * POST /ai-assistant  { action: 'analyze', url: string }
  * POST /ai-assistant  { action: 'generate_description', product: object }
  *
  * Required env vars:
- *   ANTHROPIC_API_KEY
+ *   GROQ_API_KEY
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
  */
@@ -22,9 +22,9 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY')!;
-const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL         = 'claude-sonnet-4-5';
+const GROQ_KEY  = Deno.env.get('GROQ_API_KEY') ?? '';
+const GROQ_URL  = 'https://api.groq.com/openai/v1/chat/completions';
+const MODEL     = 'llama-3.3-70b-versatile';
 
 // Plan → monthly AI message limits
 const PLAN_LIMITS: Record<string, number> = {
@@ -33,36 +33,35 @@ const PLAN_LIMITS: Record<string, number> = {
   scale:   500,
 };
 
-/** Call Claude API */
-async function callClaude(
+/** Call Groq API (OpenAI-compatible) */
+async function callGroq(
   systemPrompt: string,
   userMessage: string,
   maxTokens = 1024,
 ): Promise<string> {
-  const res = await fetch(ANTHROPIC_URL, {
+  const res = await fetch(GROQ_URL, {
     method: 'POST',
     headers: {
-      'Content-Type':      'application/json',
-      'x-api-key':         ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${GROQ_KEY}`,
     },
     body: JSON.stringify({
       model:      MODEL,
       max_tokens: maxTokens,
-      system:     systemPrompt,
-      messages:   [{ role: 'user', content: userMessage }],
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userMessage },
+      ],
     }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: { message: string } }).error?.message ?? `Claude error ${res.status}`);
+    throw new Error((err as { error?: { message: string } }).error?.message ?? `Groq error ${res.status}`);
   }
 
-  const data = await res.json() as {
-    content: { type: string; text: string }[];
-  };
-  return data.content.find(b => b.type === 'text')?.text ?? '';
+  const data = await res.json() as { choices: { message: { content: string } }[] };
+  return data.choices[0]?.message?.content ?? '';
 }
 
 /** Get user's plan and current AI usage */
@@ -102,7 +101,7 @@ Deno.serve(async (req) => {
   const userId = extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
-  if (!ANTHROPIC_KEY) return errResponse('AI not configured', 503, origin);
+  if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
@@ -132,7 +131,7 @@ You help Shopify store owners maximize ROAS, reduce wasted ad spend, and scale w
 Be concise, data-driven, and actionable. When asked about performance, give specific recommendations.
 Never make up data — if context data is provided, reference it; otherwise, give best-practice advice.${contextStr}`;
 
-        const reply = await callClaude(system, message, 1024);
+        const reply = await callGroq(system, message, 1024);
         await incrementUsage(userId, used);
         result = { reply, used: used + 1, limit };
         break;
@@ -153,7 +152,7 @@ Analyze the provided store URL and return a structured JSON object with these ex
 - roas_target: realistic ROAS target for first 90 days
 Return ONLY valid JSON, no markdown.`;
 
-        const reply = await callClaude(system, `Analyze this Shopify store: ${url}`, 1500);
+        const reply = await callGroq(system, `Analyze this Shopify store: ${url}`, 1500);
         await incrementUsage(userId, used);
         try {
           result = JSON.parse(reply);
@@ -169,7 +168,7 @@ Return ONLY valid JSON, no markdown.`;
 Return a JSON object with: headline (max 40 chars), primary_text (max 125 chars), description (max 30 chars).
 Make it punchy, benefit-focused, and scroll-stopping. Return ONLY valid JSON.`;
 
-        const reply = await callClaude(
+        const reply = await callGroq(
           system,
           `Write Meta ad copy for this product: ${JSON.stringify(product)}`,
           512,

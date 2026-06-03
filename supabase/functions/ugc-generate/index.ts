@@ -14,8 +14,7 @@
  * POST { action: 'full_pipeline',    product, store_analysis?, audience?, budget?, tone? }
  *
  * Required env vars:
- *   GROQ_API_KEY         — primary (llama-3.3-70b-versatile)
- *   ANTHROPIC_API_KEY    — fallback if Groq not set
+ *   GROQ_API_KEY         — llama-3.3-70b-versatile
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
  */
@@ -28,47 +27,29 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const GROQ_KEY       = Deno.env.get('GROQ_API_KEY') ?? '';
-const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL     = 'llama-3.3-70b-versatile';
-const ANTHROPIC_KEY  = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
-const ANTHROPIC_URL  = 'https://api.anthropic.com/v1/messages';
-const ANTHROPIC_MODEL = 'claude-sonnet-4-5';
+const GROQ_KEY   = Deno.env.get('GROQ_API_KEY') ?? '';
+const GROQ_URL   = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 const PLAN_LIMITS: Record<string, number> = { starter: 50, growth: 200, scale: 500 };
 
 async function callAI(system: string, user: string, maxTokens = 1500): Promise<string> {
-  if (GROQ_KEY) {
-    const res = await fetch(GROQ_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        max_tokens: maxTokens,
-        messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
-      }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error((err as { error?: { message: string } }).error?.message ?? `Groq error ${res.status}`);
-    }
-    const data = await res.json() as { choices: { message: { content: string } }[] };
-    return data.choices[0]?.message?.content ?? '';
-  }
-
-  // Fallback: Anthropic
-  if (!ANTHROPIC_KEY) throw new Error('No AI provider configured — set GROQ_API_KEY or ANTHROPIC_API_KEY');
-  const res = await fetch(ANTHROPIC_URL, {
+  if (!GROQ_KEY) throw new Error('AI not configured — set GROQ_API_KEY');
+  const res = await fetch(GROQ_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: ANTHROPIC_MODEL, max_tokens: maxTokens, system, messages: [{ role: 'user', content: user }] }),
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      max_tokens: maxTokens,
+      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: { message: string } }).error?.message ?? `Claude error ${res.status}`);
+    throw new Error((err as { error?: { message: string } }).error?.message ?? `Groq error ${res.status}`);
   }
-  const data = await res.json() as { content: { type: string; text: string }[] };
-  return data.content.find(b => b.type === 'text')?.text ?? '';
+  const data = await res.json() as { choices: { message: { content: string } }[] };
+  return data.choices[0]?.message?.content ?? '';
 }
 
 async function getUsage(userId: string) {
@@ -99,7 +80,7 @@ Deno.serve(async (req) => {
   const userId = extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
-  if (!GROQ_KEY && !ANTHROPIC_KEY) return errResponse('AI not configured', 503, origin);
+  if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
