@@ -129,47 +129,100 @@ The dashboard has had a persistent redirect loop that was fixed across multiple 
 
 ## Pending Tasks
 
-### Task 1 — Fix Google OAuth (in-progress)
-**Error**: "hasn't completed the verification process"
-**Cause**: OAuth consent screen is in Testing mode
-**Fix**:
-1. Go to console.cloud.google.com → APIs & Services → OAuth consent screen
-2. Add your Google account email under "Test users"
-3. Long-term: publish the app → submit for verification
+---
+### 🔴 LAUNCH BLOCKERS
 
-### Task 2 — Fix Shopify OAuth (in-progress)
-**Error**: "Oops something went wrong"
-**Needs**: A real `.myshopify.com` URL — create a development store at partners.shopify.com → Stores → Add store → Development store
-**Also check**: `SHOPIFY_APP_KEY` and `SHOPIFY_APP_SECRET` set as Supabase secrets
-
-### Task 3 — Stripe setup (HIGH PRIORITY — blocks billing)
-Price IDs in `config.js` and `stripe-webhook` are all placeholders (`price_REPLACE_*`).
-Steps:
-1. Go to Stripe Dashboard → Products → Create each plan product
-2. Copy Price IDs → set as Supabase secrets: `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_GROWTH`, `STRIPE_PRICE_SCALE`, `STRIPE_PRICE_TOPUP_5`, `STRIPE_PRICE_TOPUP_10`, `STRIPE_PRICE_TOPUP_20`
-3. Update `config.js` `window.STRIPE_PRICES` with real IDs
-4. Set `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` as Supabase secrets
-5. Register Stripe webhook pointing to `https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/stripe-webhook`
-
-### Task 4 — Set Supabase secrets for AI (HIGH PRIORITY — blocks Budget AI + Campaign Launcher)
+### Task 1 — Set GROQ_API_KEY (unlocks all AI features)
 ```bash
-supabase secrets set GROQ_API_KEY=gsk_...            # Budget AI (qwen-qwq-32b) + UGC/Launch (llama-3.3-70b)
-supabase secrets set ANTHROPIC_API_KEY=sk-ant-...    # ai-assistant fallback
-supabase secrets set HIGGSFIELD_API_KEY=...          # video generation (future)
-supabase secrets set RESEND_API_KEY=re_...           # transactional email
-supabase secrets set CLERK_WEBHOOK_SECRET=whsec_... # clerk webhook signing
+supabase secrets set GROQ_API_KEY=gsk_... --project-ref twfgnqddoqeqrjhgioxd
 ```
+Get key at console.groq.com → API Keys. Free to sign up.
 
-### Task 5 — Install CodeRabbit for automated PR review
-1. Go to https://coderabbit.ai
-2. Sign in with GitHub → authorize J2y04/ephermal repository
-3. CodeRabbit will auto-comment on every PR with code review
+### Task 2 — Stripe setup (billing is 100% broken without this)
+1. Stripe Dashboard → Products → create Starter ($89), Growth ($199), Scale ($349) + 3 topup products
+2. Set secrets: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER/GROWTH/SCALE/TOPUP_5/10/20`
+3. Update `window.STRIPE_PRICES` in `web/public/config.js` with real price IDs
+4. Register Stripe webhook at: `https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/stripe-webhook`
+   Events: `checkout.session.completed`, `customer.subscription.updated`, `payment_intent.succeeded`
 
-### Task 6 — Meta business verification (deferred)
-Register as sole proprietor on Meta Business → complete App Review for Advanced Access (`ads_management`, `ads_read`, `business_management`)
+### Task 3 — Register Clerk webhook in Clerk Dashboard
+Even though CLERK_WEBHOOK_SECRET is set as Supabase secret, the endpoint must also be registered:
+Clerk Dashboard → Webhooks → Add Endpoint → URL: `https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/clerk-webhook`
+Subscribe to: `user.created`
+Without this, new signups don't get default DB rows → 406 errors on first login.
 
-### Task 7 — Google Ads developer token (deferred)
-Apply at ads.google.com/aw/apicenter
+### Task 4 — Resend setup (no emails sending without this)
+```bash
+supabase secrets set RESEND_API_KEY=re_...
+```
+Sign up at resend.com → verify domain `ephermal.app` → create API key.
+
+### Task 5 — Set META_CALLBACK_URL as Supabase secret
+```bash
+supabase secrets set META_CALLBACK_URL=https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback
+```
+Also add this URL to Meta App → Facebook Login → Valid OAuth Redirect URIs.
+
+### Task 6 — Fill in legal placeholder fields (required in Germany)
+Open these files, fill in the amber `[YOUR NAME]` / `[ADDRESS]` fields:
+- `web/public/impressum.html` — your full name, street address, PLZ + city
+- `web/public/privacy.html` — your name as Data Controller, address
+- `web/public/terms.html` — your name as contracting party
+Commit and push after editing.
+
+### Task 7 — Add subscription cancellation UI
+EU law requires users can cancel. Add a Stripe Customer Portal link to the billing page:
+Stripe Dashboard → Settings → Customer Portal → enable it → get link
+Add to `web/public/dashboard.html` billing section.
+
+### Task 8 — Remove false social proof from landing page
+`web/app/page.tsx` line ~63 shows "Trusted by 240+ Shopify brands" — remove or replace with honest copy before launch.
+
+### Task 9 — Clerk 2FA email template (visual branding)
+The OTP/verification code emails sent by Clerk are plain white. Styled template is at:
+`supabase/functions/send-email/templates/clerk_otp.html`
+Steps to apply:
+1. Go to Clerk Dashboard → Customization → Emails
+2. Click "Sign-in code" template → Edit
+3. Switch to "Custom" mode → paste the HTML from `clerk_otp.html`
+4. Replace `{{code}}` — Clerk uses this exact variable name
+5. Repeat for "Email verification code" and "Magic link" templates
+
+---
+### 🟡 INTEGRATION FIXES
+
+### Task 10 — Fix Google OAuth
+Add your email as test user: console.cloud.google.com → OAuth consent screen → Test users
+Also add callback URL: Google Cloud → Credentials → OAuth 2.0 Client → Authorized Redirect URIs:
+`https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/google-oauth-callback`
+
+### Task 11 — Fix Shopify OAuth
+Create dev store at partners.shopify.com → Stores → Development store
+Confirm `SHOPIFY_APP_KEY` + `SHOPIFY_API_SECRET` are set as Supabase secrets
+
+---
+### 🟢 DEFERRED (don't block launch)
+
+### Task 12 — Meta App Review (REQUIRED for real users to connect Meta Ads)
+Without this, only manually-added test accounts can connect. Takes 1–4 weeks.
+Meta Developer Dashboard → App Review → Request advanced access: `ads_management`, `ads_read`, `business_management`
+
+### Task 13 — German VAT registration
+- Gewerbeanmeldung at local Gewerbeamt (if not done)
+- USt-ID via Finanzamt / elster.de
+- Enable Stripe Tax: Stripe Dashboard → Settings → Tax
+
+### Task 14 — Google Ads developer token
+Apply at ads.google.com/aw/apicenter — needed before Google campaign launch works
+
+### Task 15 — CodeRabbit automated PR review
+coderabbit.ai → Sign in with GitHub → authorize J2y04/ephermal
+
+### Task 16 — Error monitoring (Sentry)
+Add Sentry free tier to dashboard.html — one script tag. Catches production errors before users report them.
+
+### Task 17 — Build Ephermal Core AI pipeline
+Full 7-agent video ad system (needs GROQ_API_KEY + HIGGSFIELD_API_KEY first)
 
 ### Task 8 — Build Ephermal Core AI pipeline (when API keys ready)
 7-agent orchestrator: Orchestrator (claude-haiku-4-5) → Store Analyzer (llama-3.3-70b/Groq) → Audience Profiler (llama-3.3-70b/Groq) → Script Writer (claude-sonnet-4-6) → Creative Director (claude-haiku-4-5) → Video Generator (Higgsfield AI) → Performance Predictor (llama-3.1-8b-instant/Groq)
