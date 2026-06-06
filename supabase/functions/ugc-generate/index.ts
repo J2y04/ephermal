@@ -31,7 +31,8 @@ const GROQ_KEY   = Deno.env.get('GROQ_API_KEY') ?? '';
 const GROQ_URL   = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
-const PLAN_LIMITS: Record<string, number> = { starter: 50, growth: 200, scale: 500 };
+// UGC generation credits per plan (separate from AI chat message credits in ai_credits table)
+const PLAN_LIMITS: Record<string, number> = { starter: 15, growth: 75, scale: 350 };
 
 async function callAI(system: string, user: string, maxTokens = 1500): Promise<string> {
   if (!GROQ_KEY) throw new Error('AI not configured — set GROQ_API_KEY');
@@ -56,17 +57,17 @@ async function getUsage(userId: string) {
   const month = new Date().toISOString().slice(0, 7);
   const [planRes, creditsRes] = await Promise.all([
     supabase.from('user_plans').select('plan').eq('user_id', userId).single(),
-    supabase.from('ai_credits').select('used').eq('user_id', userId).eq('month', month).single(),
+    supabase.from('ugc_credits').select('used').eq('user_id', userId).eq('month', month).single(),
   ]);
   const plan  = planRes.data?.plan ?? 'starter';
   const used  = creditsRes.data?.used ?? 0;
-  const limit = PLAN_LIMITS[plan] ?? 50;
+  const limit = PLAN_LIMITS[plan] ?? 15;
   return { plan, used, limit };
 }
 
 async function incrementUsage(userId: string, currentUsed: number) {
   const month = new Date().toISOString().slice(0, 7);
-  await supabase.from('ai_credits').upsert(
+  await supabase.from('ugc_credits').upsert(
     { user_id: userId, month, used: currentUsed + 1 },
     { onConflict: 'user_id,month' },
   );
