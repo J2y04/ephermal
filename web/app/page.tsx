@@ -61,11 +61,11 @@ export default function Home() {
           <a href="#how-it-works" className="btn-secondary">See how it works</a>
         </div>
         <p className="hero-proof" data-reveal data-delay="3">
-          <span>Trusted by 240+ Shopify brands</span>
-          <span className="dot" />
           <span>Meta &amp; Google Ads automated</span>
           <span className="dot" />
           <span>Setup in 3 minutes</span>
+          <span className="dot" />
+          <span>No agency needed</span>
         </p>
 
         {/* Hero visual */}
@@ -156,7 +156,7 @@ export default function Home() {
 
       {/* ── Social Proof Strip ── */}
       <div className="social-proof" data-reveal>
-        <p className="sp-label">Trusted by fast-growing Shopify brands across every niche</p>
+        <p className="sp-label">Built for Shopify brands across every niche</p>
         <div className="brands-row" data-stagger>
           <div className="brand-pill">Fashion &amp; Apparel</div>
           <div className="brand-pill">Beauty &amp; Skincare</div>
@@ -689,7 +689,7 @@ export default function Home() {
         <div className="blob blob-3" />
         <div className="cta-wrap" data-reveal>
           <p style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '20px' }}>
-            Join 240+ stores already running on autopilot
+            Launch your first AI-powered ad today
           </p>
           <h2>Your next customer<br />is one ad away.</h2>
           <p>Install Ephermal. Connect your store. Let the AI do the rest — forever.</p>

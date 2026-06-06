@@ -1508,7 +1508,10 @@ select.form-input{cursor:pointer}
             <div class="camp-stat-box"><div class="label">Credits Remaining</div><div class="val" id="b-credits-left">15</div></div>
             <div class="camp-stat-box"><div class="label">Resets</div><div class="val" style="font-size:14px;font-weight:700" id="b-resets">1st of month</div></div>
           </div>
-          <div style="font-size:13px;color:var(--muted)">To change your plan, cancel, or get an invoice — email <a href="mailto:billing@ephermal.app" style="color:var(--primary)">billing@ephermal.app</a></div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <a href="mailto:billing@ephermal.app?subject=Cancel%20my%20Ephermal%20subscription&body=Hi%2C%20I%20would%20like%20to%20cancel%20my%20Ephermal%20subscription." style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;background:var(--surface2)" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Cancel subscription</a>
+            <span style="font-size:13px;color:var(--muted)">Invoices &amp; billing questions → <a href="mailto:billing@ephermal.app" style="color:var(--primary)">billing@ephermal.app</a></span>
+          </div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px" id="billing-plans-grid">
