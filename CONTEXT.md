@@ -132,11 +132,8 @@ The dashboard has had a persistent redirect loop that was fixed across multiple 
 ---
 ### 🔴 LAUNCH BLOCKERS
 
-### Task 1 — Set GROQ_API_KEY (unlocks all AI features)
-```bash
-supabase secrets set GROQ_API_KEY=gsk_... --project-ref twfgnqddoqeqrjhgioxd
-```
-Get key at console.groq.com → API Keys. Free to sign up.
+### Task 1 — ✅ GROQ_API_KEY — DONE
+Set by user. All AI features (UGC generate, AI assistant, budget AI) are live.
 
 ### Task 2 — Stripe setup (billing is 100% broken without this)
 1. Stripe Dashboard → Products → create Starter ($89), Growth ($199), Scale ($349) + 3 topup products
@@ -170,13 +167,12 @@ Open these files, fill in the amber `[YOUR NAME]` / `[ADDRESS]` fields:
 - `web/public/terms.html` — your name as contracting party
 Commit and push after editing.
 
-### Task 7 — Add subscription cancellation UI
-EU law requires users can cancel. Add a Stripe Customer Portal link to the billing page:
-Stripe Dashboard → Settings → Customer Portal → enable it → get link
-Add to `web/public/dashboard.html` billing section.
+### Task 7 — ✅ Cancellation UI — DONE
+Cancel button added to billing section. Prefilled mailto link. EU compliant.
 
-### Task 8 — Remove false social proof from landing page
-`web/app/page.tsx` line ~63 shows "Trusted by 240+ Shopify brands" — remove or replace with honest copy before launch.
+### Task 8 — ✅ Honest marketing copy — DONE (Jun 8 2026)
+All fabricated stats, fake testimonials, and unbuilt feature claims removed from `web/app/page.tsx`.
+Pushed to production as commit 65c4bb3.
 
 ### Task 9 — Clerk 2FA email template (visual branding)
 The OTP/verification code emails sent by Clerk are plain white. Styled template is at:
@@ -221,13 +217,17 @@ coderabbit.ai → Sign in with GitHub → authorize J2y04/ephermal
 ### Task 16 — Error monitoring (Sentry)
 Add Sentry free tier to dashboard.html — one script tag. Catches production errors before users report them.
 
-### Task 17 — Build Ephermal Core AI pipeline
-Full 7-agent video ad system (needs GROQ_API_KEY + HIGGSFIELD_API_KEY first)
+### Task 17 — ✅ UGC text pipeline — DONE (Jun 8 2026)
+Both dashboard UGC buttons now work end-to-end:
+- `submitUGC()` modal → POST `{ action: 'generate', description, preset, aspect_ratio }` → 4-step Groq pipeline → saved to creatives table as pending_review
+- `createUGCForNewProduct()` → POST `{ action: 'create', product_title, product_id, product_image }` → same pipeline
+- Creatives tab fixed: no longer blocked when Meta is not connected
+Video generation NOT yet built — needs HIGGSFIELD_API_KEY
 
-### Task 8 — Build Ephermal Core AI pipeline (when API keys ready)
-7-agent orchestrator: Orchestrator (claude-haiku-4-5) → Store Analyzer (llama-3.3-70b/Groq) → Audience Profiler (llama-3.3-70b/Groq) → Script Writer (claude-sonnet-4-6) → Creative Director (claude-haiku-4-5) → Video Generator (Higgsfield AI) → Performance Predictor (llama-3.1-8b-instant/Groq)
-New tables needed: `ugc_jobs`, `ugc_scripts`, `ugc_predictions`
-Entry point: update `ugc-generate` Edge Function as orchestrator
+### Task 18 — Higgsfield video generation (upgrade UGC from scripts to real videos)
+Text pipeline works (scripts, copy, hooks generated). Need to add video render step.
+Requires: `HIGGSFIELD_API_KEY` set as Supabase secret.
+Entry point: `supabase/functions/ugc-generate/index.ts` — add step after copy generation.
 
 ### Task 9 — JWT signature verification (security hardening — deferred)
 Currently Edge Functions decode JWT payload without verifying RS256 signature.
@@ -255,12 +255,12 @@ Fix: Store generated nonce in a `oauth_nonces` table on initiation, delete on us
 ## Recent Commits (latest first)
 
 ```
-6f0f4da fix: security hardening + bug fixes across 7 edge functions
-32a0748 fix: seed user_plans and user_integrations rows on signup via clerk-webhook
-90411bf fix: pass Clerk JWT via body clerkToken, fix undefined token ref in forwardHeaders
-3a53d8c fix: route Clerk JWT via X-Clerk-Token to bypass UNAUTHORIZED_ASYMMETRIC_JWT
-06e5096 fix: grant anon table access, fix ai_topups column, add worker-src CSP
-6f77adb feat: add time-aware welcome phrase banner to dashboard
+65c4bb3 fix: honest marketing copy — remove fabricated stats, fake testimonials, unbuilt feature claims
+243766a fix: UGC pipeline — wire generate+create actions, fix Creatives tab without Meta
+a63fd7c fix: grant DML to service_role on all tables + fix ugc_credits tracking
+4926c37 fix: grant service_role DML on core tables + fix clerk-webhook verify_jwt
+9280824 fix: remove false social proof + add cancellation UI for EU compliance
+522e796 feat: complete email template suite — all Ephermal-branded dark theme
 ```
 
 ---
