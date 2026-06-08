@@ -21,6 +21,18 @@ const VALID_PLATFORMS = new Set(['meta', 'shopify', 'google']);
 const VALID_PAGES     = new Set(['setup', 'dashboard']);
 const HEX_NONCE_RE    = /^[0-9a-f]{32}$/i;
 
+// Per-user in-process rate limit: 10 state inits per minute
+// Resets on cold start — Redis-backed would be stronger but this is sufficient
+// given the function already requires a valid Clerk JWT.
+const _rlMap = new Map<string, { count: number; resetAt: number }>();
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();
+  const e = _rlMap.get(userId);
+  if (!e || now > e.resetAt) { _rlMap.set(userId, { count: 1, resetAt: now + 60_000 }); return false; }
+  e.count++;
+  return e.count > 10;
+}
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin':  Deno.env.get('APP_URL') ?? 'https://ephermal.app',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -38,6 +50,10 @@ Deno.serve(async (req) => {
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) {
     return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
+  }
+
+  if (isRateLimited(userId)) {
+    return new Response('Too Many Requests', { status: 429, headers: CORS_HEADERS });
   }
 
   const stateSecret = Deno.env.get('OAUTH_STATE_SECRET');

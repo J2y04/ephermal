@@ -25,6 +25,15 @@
 
 const RESEND_API = 'https://api.resend.com/emails';
 
+function timingSafeEqual(a: string, b: string): boolean {
+  const ae = new TextEncoder().encode(a);
+  const be = new TextEncoder().encode(b);
+  if (ae.length !== be.length) return false;
+  let diff = 0;
+  for (let i = 0; i < ae.length; i++) diff |= ae[i] ^ be[i];
+  return diff === 0;
+}
+
 // Template registry — maps template name → subject default
 const TEMPLATES: Record<string, { subject: string }> = {
   welcome:                   { subject: 'Welcome to Ephermal 🚀' },
@@ -54,7 +63,7 @@ Deno.serve(async (req) => {
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
   const authHeader     = req.headers.get('Authorization') ?? '';
   const callerToken    = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-  if (!serviceRoleKey || callerToken !== serviceRoleKey) {
+  if (!serviceRoleKey || !timingSafeEqual(callerToken, serviceRoleKey)) {
     // Generic 401 — don't reveal whether the key exists
     return new Response('Unauthorized', { status: 401 });
   }
