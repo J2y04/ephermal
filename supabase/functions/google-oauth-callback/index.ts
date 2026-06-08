@@ -25,6 +25,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { signOAuthState, timingSafeEqualHex } from '../_shared/auth.ts'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -62,18 +63,31 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, 'setup.html', { google_error: 'missing_params' })
   }
 
-  // ── Parse & validate state: format is userId~sourcePage~nonce ─────────────
+  // ── Parse & validate state: format is userId~page~nonce~hmac ─────────────
   const parts      = state.split('~')
   const userId     = parts[0] ?? ''
   const sourcePage = parts[1] ?? ''
   const nonce      = parts[2] ?? ''
+  const hmac       = parts[3] ?? ''
 
-  if (!userId || !nonce || !['setup', 'dashboard'].includes(sourcePage)) {
+  if (!userId || !nonce || !hmac || !['setup', 'dashboard'].includes(sourcePage)) {
     return redirectTo(APP_URL, 'setup.html', { google_error: 'invalid_state' })
   }
 
   const returnPage: 'setup.html' | 'dashboard.html' =
     sourcePage === 'dashboard' ? 'dashboard.html' : 'setup.html'
+
+  // ── Verify HMAC — ensures userId was set by an authenticated server call ─
+  const stateSecret = Deno.env.get('OAUTH_STATE_SECRET') ?? ''
+  if (!stateSecret) {
+    console.error('[google-oauth] OAUTH_STATE_SECRET not configured')
+    return redirectTo(APP_URL, returnPage, { google_error: 'server_config_error' })
+  }
+  const expectedHmac = await signOAuthState(stateSecret, userId, 'google', sourcePage, nonce)
+  if (!timingSafeEqualHex(expectedHmac, hmac)) {
+    console.error('[google-oauth] State HMAC verification failed')
+    return redirectTo(APP_URL, 'setup.html', { google_error: 'invalid_state' })
+  }
 
   // ── Read secrets ──────────────────────────────────────────────────────────
   const GOOGLE_CLIENT_ID     = Deno.env.get('GOOGLE_CLIENT_ID')
@@ -192,10 +206,10 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, returnPage, { google_error: 'internal_error' })
   }
 
-  // ── Redirect back with claim code (not the tokens) ────────────────────────
+  // ── Redirect back with claim code and nonce only ─────────────────────────
   return redirectTo(APP_URL, returnPage, {
     google_connected: '1',
     claim:            claim.id as string,
-    state,
+    nonce,
   })
 })

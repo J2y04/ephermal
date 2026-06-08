@@ -18,6 +18,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { signOAuthState, timingSafeEqualHex } from '../_shared/auth.ts'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -107,18 +108,31 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, 'setup.html', { shopify_error: 'invalid_shop' })
   }
 
-  // ── Parse & validate state: format is userId~sourcePage~nonce ────────────
+  // ── Parse & validate state: format is userId~page~nonce~stateHmac ───────
   const parts      = state.split('~')
   const userId     = parts[0] ?? ''
   const sourcePage = parts[1] ?? ''
   const nonce      = parts[2] ?? ''
+  const stateHmac  = parts[3] ?? ''
 
-  if (!userId || !nonce || !['setup', 'dashboard'].includes(sourcePage)) {
+  if (!userId || !nonce || !stateHmac || !['setup', 'dashboard'].includes(sourcePage)) {
     return redirectTo(APP_URL, 'setup.html', { shopify_error: 'invalid_state' })
   }
 
   const returnPage: 'setup.html' | 'dashboard.html' =
     sourcePage === 'dashboard' ? 'dashboard.html' : 'setup.html'
+
+  // ── Verify state HMAC — ensures userId was set by an authenticated server call ─
+  const stateSecret = Deno.env.get('OAUTH_STATE_SECRET') ?? ''
+  if (!stateSecret) {
+    console.error('[shopify-oauth] OAUTH_STATE_SECRET not configured')
+    return redirectTo(APP_URL, returnPage, { shopify_error: 'server_config_error' })
+  }
+  const expectedStateHmac = await signOAuthState(stateSecret, userId, 'shopify', sourcePage, nonce)
+  if (!timingSafeEqualHex(expectedStateHmac, stateHmac)) {
+    console.error('[shopify-oauth] State HMAC verification failed')
+    return redirectTo(APP_URL, 'setup.html', { shopify_error: 'invalid_state' })
+  }
 
   // ── Read secrets ─────────────────────────────────────────────────────────
   const SHOPIFY_APP_KEY    = Deno.env.get('SHOPIFY_APP_KEY')
@@ -215,10 +229,10 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, returnPage, { shopify_error: 'internal_error' })
   }
 
-  // ── Redirect back to the app with claim code (not the token) ─────────────
+  // ── Redirect back to the app with claim code and nonce only ─────────────
   return redirectTo(APP_URL, returnPage, {
     shopify_connected: '1',
     claim:             claim.id as string,
-    state,             // frontend uses this to validate the CSRF nonce
+    nonce,
   })
 })

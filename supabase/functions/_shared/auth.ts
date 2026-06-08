@@ -108,6 +108,32 @@ export function errResponse(message: string, status: number, origin?: string | n
   });
 }
 
+/** Sign OAuth state with HMAC-SHA256. Message: userId:platform:page:nonce */
+export async function signOAuthState(
+  secret: string,
+  userId: string,
+  platform: string,
+  page: string,
+  nonce: string,
+): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+  );
+  const sig = await crypto.subtle.sign(
+    'HMAC', key, new TextEncoder().encode(`${userId}:${platform}:${page}:${nonce}`),
+  );
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Constant-time comparison of two hex strings */
+export function timingSafeEqualHex(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 /** Return a JSON success response */
 export function okResponse(data: unknown, origin?: string | null, extra?: Record<string, string>): Response {
   return new Response(JSON.stringify(data), {

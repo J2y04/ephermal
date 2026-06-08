@@ -275,7 +275,7 @@ async function claimOAuth(claimCode, userId, platform) {
 }
 
 // ── Shopify OAuth ─────────────────────────────────────────────────────────────
-function startShopifyOAuth() {
+async function startShopifyOAuth() {
   const raw = document.getElementById('shopify-url').value.trim();
   const errEl = document.getElementById('err-1');
   errEl.textContent = '';
@@ -292,9 +292,16 @@ function startShopifyOAuth() {
     errEl.textContent = 'Enter a valid Shopify store URL (e.g. mystore.myshopify.com)';
     return;
   }
-  // State format: userId~sourcePage~nonce  (nonce stored in localStorage for CSRF check)
+  // Get HMAC-signed state from server (binds userId to authenticated session)
   const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
-  const state = `${userId}~setup~${nonce}`;
+  const clerkToken = await window.Clerk?.session?.getToken();
+  const stateRes = await fetch(`${window.SUPABASE_FN}/oauth-state-init`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clerkToken}`, 'apikey': window.SUPABASE_ANON },
+    body: JSON.stringify({ platform: 'shopify', page: 'setup', nonce })
+  });
+  if (!stateRes.ok) { errEl.textContent = 'Failed to initialize OAuth — please try again.'; btn.disabled = false; return; }
+  const { state } = await stateRes.json();
   localStorage.setItem('shopify_oauth_nonce', nonce);
   localStorage.setItem('shopify_oauth_shop', shop);
   const btn = document.getElementById('btn-shopify');
@@ -323,29 +330,23 @@ async function handleShopifyReturn() {
     return;
   }
 
-  const claimCode = p.get('claim');
-  const state     = p.get('state') || '';
+  const claimCode   = p.get('claim');
+  const returnNonce = p.get('nonce') || '';
   if (connected !== '1' || !claimCode) {
     document.getElementById('err-1').textContent = 'Invalid OAuth return — please try again.';
     return;
   }
 
-  // CSRF: validate nonce from localStorage against state URL param
-  const savedNonce  = localStorage.getItem('shopify_oauth_nonce');
-  const stateParts  = state.split('~');
-  const stateNonce  = stateParts[2];
-  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+  // CSRF: validate nonce from localStorage against nonce URL param
+  const savedNonce = localStorage.getItem('shopify_oauth_nonce');
+  if (!savedNonce || !returnNonce || savedNonce !== returnNonce) {
     document.getElementById('err-1').textContent = 'Security check failed — please try again.';
     return;
   }
   localStorage.removeItem('shopify_oauth_nonce');
   localStorage.removeItem('shopify_oauth_shop');
 
-  const userId     = stateParts[0];
-  const sourcePage = stateParts[1];
-
-  // If initiated from dashboard settings, go back there
-  if (sourcePage === 'dashboard') { window.location.href = '/dashboard.html'; return; }
+  const userId = window.Clerk?.user?.id || '';
 
   // Exchange one-time claim for token
   const btn = document.getElementById('btn-shopify');
@@ -376,7 +377,7 @@ async function handleShopifyReturn() {
 }
 
 // ── Meta OAuth (server-side redirect via Supabase Edge Function) ──────────────
-function startMetaOAuth() {
+async function startMetaOAuth() {
   const err = document.getElementById('err-2');
   err.textContent = '';
   const appId = window.META_APP_ID;
@@ -390,9 +391,16 @@ function startMetaOAuth() {
   const btn = document.getElementById('btn-meta');
   btn.disabled = true;
   btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting…';
-  // State: userId~sourcePage~nonce — nonce stored for CSRF check on return
+  // Get HMAC-signed state from server (binds userId to authenticated session)
   const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
-  const state = `${userId}~setup~${nonce}`;
+  const clerkToken = await window.Clerk?.session?.getToken();
+  const stateRes = await fetch(`${window.SUPABASE_FN}/oauth-state-init`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clerkToken}`, 'apikey': window.SUPABASE_ANON },
+    body: JSON.stringify({ platform: 'meta', page: 'setup', nonce })
+  });
+  if (!stateRes.ok) { err.textContent = 'Failed to initialize OAuth — please try again.'; btn.disabled = false; btn.innerHTML = 'Continue with Facebook'; return; }
+  const { state } = await stateRes.json();
   localStorage.setItem('meta_oauth_nonce', nonce);
   const scope = 'ads_read,ads_management,business_management';
   window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${scope}&state=${encodeURIComponent(state)}`;
@@ -421,8 +429,8 @@ async function checkMetaOAuthReturn() {
     return;
   }
 
-  const claimCode = p.get('claim');
-  const state     = p.get('state') || '';
+  const claimCode  = p.get('claim');
+  const returnNonce = p.get('nonce') || '';
   if (connected !== '1' || !claimCode) {
     if (errEl) errEl.textContent = 'Invalid OAuth return — please try again.';
     return;
@@ -430,15 +438,13 @@ async function checkMetaOAuthReturn() {
 
   // CSRF nonce check
   const savedNonce = localStorage.getItem('meta_oauth_nonce');
-  const stateParts = state.split('~');
-  const stateNonce = stateParts[2];
-  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+  if (!savedNonce || !returnNonce || savedNonce !== returnNonce) {
     if (errEl) errEl.textContent = 'Security check failed — please try again.';
     return;
   }
   localStorage.removeItem('meta_oauth_nonce');
 
-  const userId = stateParts[0];
+  const userId = window.Clerk?.user?.id || '';
 
   // Exchange one-time claim for token + account list
   const btn = document.getElementById('btn-meta');
@@ -490,41 +496,78 @@ function showMetaConnected(name, id) {
 function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── Google OAuth ──────────────────────────────────────────────────────────────
-function _googleBtnHTML() {
-  return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Continue with Google';
-}
-
-function startGoogleOAuth() {
+async function startGoogleOAuth() {
   const err = document.getElementById('err-3');
   err.textContent = '';
   if (!window.GOOGLE_OAUTH_CLIENT_ID || window.GOOGLE_OAUTH_CLIENT_ID.includes('YOUR_GOOGLE')) {
     err.textContent = 'Google OAuth not configured — contact support@ephermal.app';
     return;
   }
-  if (!window.google?.accounts?.oauth2) {
-    err.textContent = 'Loading Google SDK — please wait a moment and try again.';
-    return;
-  }
   const btn = document.getElementById('btn-google');
   btn.disabled = true; btn.textContent = 'Connecting…';
-  const client = google.accounts.oauth2.initTokenClient({
-    client_id: window.GOOGLE_OAUTH_CLIENT_ID,
-    scope: 'https://www.googleapis.com/auth/adwords',
-    callback: (response) => {
-      if (response.error) {
-        err.textContent = response.error_description || 'Google sign-in failed — please try again.';
-        btn.disabled = false; btn.innerHTML = _googleBtnHTML();
-        return;
-      }
-      if (response.access_token) {
-        localStorage.setItem('google_token', response.access_token);
-        btn.style.display = 'none';
-        document.querySelector('#card-3 .oauth-info').style.display = 'none';
-        document.getElementById('google-account-area').style.display = 'block';
-      }
-    }
+  try {
+    const token = await window.Clerk?.session?.getToken();
+    if (!token) { err.textContent = 'Not signed in — please refresh.'; btn.disabled = false; btn.innerHTML = _googleBtnHTML(); return; }
+    const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
+    const stateRes = await fetch(`${window.SUPABASE_URL}/functions/v1/oauth-state-init`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ platform: 'google', page: 'setup', nonce }),
+    });
+    if (!stateRes.ok) { err.textContent = 'Failed to initialize OAuth — please try again.'; btn.disabled = false; btn.innerHTML = _googleBtnHTML(); return; }
+    const { state } = await stateRes.json();
+    localStorage.setItem('google_oauth_nonce', nonce);
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    authUrl.searchParams.set('client_id', window.GOOGLE_OAUTH_CLIENT_ID);
+    authUrl.searchParams.set('redirect_uri', window.GOOGLE_CALLBACK_URL);
+    authUrl.searchParams.set('response_type', 'code');
+    authUrl.searchParams.set('scope', 'https://www.googleapis.com/auth/adwords');
+    authUrl.searchParams.set('state', state);
+    authUrl.searchParams.set('access_type', 'offline');
+    authUrl.searchParams.set('prompt', 'consent');
+    window.location.href = authUrl.toString();
+  } catch(e) {
+    err.textContent = 'Failed to start OAuth — please try again.';
+    btn.disabled = false; btn.innerHTML = _googleBtnHTML();
+  }
+}
+
+async function checkGoogleOAuthReturn() {
+  const p = new URLSearchParams(window.location.search);
+  if (!p.get('google_connected') && !p.get('google_error')) return;
+  history.replaceState({}, '', window.location.pathname);
+  if (p.get('google_error')) {
+    document.getElementById('err-3').textContent = 'Google connection failed: ' + p.get('google_error');
+    return;
+  }
+  const claim = p.get('claim') || '';
+  const returnNonce = p.get('nonce') || '';
+  const savedNonce = localStorage.getItem('google_oauth_nonce');
+  if (!claim || !returnNonce || returnNonce !== savedNonce) {
+    document.getElementById('err-3').textContent = 'Google connection failed: security check failed.';
+    return;
+  }
+  localStorage.removeItem('google_oauth_nonce');
+  const userId = window.Clerk?.user?.id || '';
+  if (!userId) { document.getElementById('err-3').textContent = 'Not signed in.'; return; }
+  const res = await fetch(`${window.SUPABASE_URL}/functions/v1/claim-oauth`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON },
+    body: JSON.stringify({ claim, user_id: userId, platform: 'google' }),
   });
-  client.requestAccessToken();
+  if (!res.ok) { document.getElementById('err-3').textContent = 'Google connection failed — please try again.'; return; }
+  const payload = await res.json();
+  if (payload.customer_id) localStorage.setItem('google_account', payload.customer_id);
+  document.getElementById('btn-google').style.display = 'none';
+  document.querySelector('#card-3 .oauth-info').style.display = 'none';
+  document.getElementById('google-connected-badge').style.display = 'flex';
+  if (payload.customer_id) document.getElementById('google-badge-account').textContent = payload.customer_id;
+  setNodeDone(3);
+  setTimeout(finishSetup, 700);
+}
+
+function _googleBtnHTML() {
+  return '<svg viewBox="0 0 24 24" width="20" height="20" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg> Continue with Google';
 }
 
 function saveGoogleAccount() {
@@ -569,11 +612,10 @@ async function boot() {
   // Handle OAuth redirects after Clerk is loaded (user ID needed for claim exchange)
   await checkMetaOAuthReturn();
   await handleShopifyReturn();
+  await checkGoogleOAuthReturn();
 }
 boot();
 </script>
-<!-- Google Identity Services — for Google Ads OAuth -->
-<script async defer src="https://accounts.google.com/gsi/client"></script>
 <script
   async crossorigin="anonymous"
   data-clerk-publishable-key="pk_live_Y2xlcmsuZXBoZXJtYWwuYXBwJA"

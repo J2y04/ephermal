@@ -2527,7 +2527,7 @@ function loadDevTools() {
       ['Session ID', window.__clerk?.session?.id || '—'],
     ];
     infoEl.innerHTML = rows.map(([k,v]) =>
-      `<div style="display:flex;gap:12px"><span style="color:var(--muted);min-width:130px">${k}</span><span style="color:#34d399;word-break:break-all">${v}</span></div>`
+      `<div style="display:flex;gap:12px"><span style="color:var(--muted);min-width:130px">${escHtml(String(k||''))}</span><span style="color:#34d399;word-break:break-all">${escHtml(String(v||''))}</span></div>`
     ).join('');
   }
   devRefreshStorage();
@@ -3089,7 +3089,7 @@ function refreshDashShopifyState() {
     if (inputWrap) inputWrap.style.display = 'block';
   }
 }
-function dashStartShopifyOAuth() {
+async function dashStartShopifyOAuth() {
   if (!window.SHOPIFY_APP_KEY || window.SHOPIFY_APP_KEY === 'YOUR_SHOPIFY_APP_CLIENT_ID') {
     showToast('Shopify not configured — contact support', 'error'); return;
   }
@@ -3122,7 +3122,14 @@ function dashStartShopifyOAuth() {
     return;
   }
   const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
-  const state = `${userId}~dashboard~${nonce}`;
+  const clerkToken = await window.__clerk?.session?.getToken();
+  const stateRes = await fetch(`${window.SUPABASE_FN}/oauth-state-init`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clerkToken}`, 'apikey': window.SUPABASE_ANON },
+    body: JSON.stringify({ platform: 'shopify', page: 'dashboard', nonce })
+  });
+  if (!stateRes.ok) { showToast('Failed to initialize OAuth — please try again', 'error'); return; }
+  const { state } = await stateRes.json();
   localStorage.setItem('shopify_oauth_nonce', nonce);
   localStorage.setItem('shopify_oauth_shop', shop);
   const btn = document.getElementById('dash-shopify-oauth-btn');
@@ -3139,21 +3146,20 @@ async function checkShopifyReturn() {
   if (shopifyError) { showToast('Shopify connection failed — please try again', 'error'); return; }
   if (connected !== '1') return;
 
-  const claimCode = p.get('claim');
-  const state     = p.get('state') || '';
+  const claimCode   = p.get('claim');
+  const returnNonce = p.get('nonce') || '';
   if (!claimCode) { showToast('Invalid OAuth return — please try again', 'error'); return; }
 
   // CSRF nonce check
   const savedNonce = localStorage.getItem('shopify_oauth_nonce');
-  const stateParts = state.split('~');
-  const stateNonce = stateParts[2];
+  const stateNonce = returnNonce;
   if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
     showToast('Security check failed — please try again', 'error'); return;
   }
   localStorage.removeItem('shopify_oauth_nonce');
   localStorage.removeItem('shopify_oauth_shop');
 
-  const userId = stateParts[0];
+  const userId = window.__clerk?.user?.id || '';
   const data   = await claimOAuth(claimCode, userId, 'shopify');
   if (!data || !data.access_token) {
     showToast('Shopify claim expired — please reconnect', 'error'); return;
@@ -3866,16 +3872,22 @@ function renderProducts(products) {
   }
   grid.innerHTML = products.map(p => {
     const img = p.image?.src || p.images?.[0]?.src || '';
-    const title = (p.title || p.name || 'Product').replace(/'/g,"&#39;");
-    const price = p.variants?.[0]?.price ? `$${p.variants[0].price}` : (p.price ? `$${p.price}` : '');
-    const id = String(p.id || p.title || '').replace(/'/g,"&#39;");
-    const imgEsc = img.replace(/'/g,"&#39;");
+    const rawTitle = p.title || p.name || 'Product';
+    const rawPrice = p.variants?.[0]?.price ? `$${p.variants[0].price}` : (p.price ? `$${p.price}` : '');
+    const rawId = String(p.id || p.title || '');
+    const title  = escHtml(rawTitle);
+    const price  = escHtml(rawPrice);
+    const imgEsc = escHtml(img);
+    const a1 = JSON.stringify(rawId).replace(/"/g,'&quot;');
+    const a2 = JSON.stringify(rawTitle).replace(/"/g,'&quot;');
+    const a3 = JSON.stringify(img).replace(/"/g,'&quot;');
+    const a4 = JSON.stringify(rawPrice).replace(/"/g,'&quot;');
     return `<div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color .2s,transform .2s,box-shadow .2s" onmouseover="this.style.borderColor='rgba(99,102,241,0.4)';this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.25)'" onmouseout="this.style.borderColor='var(--border)';this.style.transform='none';this.style.boxShadow='none'">
-      ${img?`<img src="${img}" alt="${title}" style="width:100%;height:140px;object-fit:cover">`:`<div style="width:100%;height:140px;background:var(--surface);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" style="width:32px;height:32px;stroke:var(--muted);stroke-width:1.5;opacity:.4"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>`}
+      ${img?`<img src="${imgEsc}" alt="${title}" style="width:100%;height:140px;object-fit:cover">`:`<div style="width:100%;height:140px;background:var(--surface);display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" style="width:32px;height:32px;stroke:var(--muted);stroke-width:1.5;opacity:.4"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>`}
       <div style="padding:12px 14px">
         <div style="font-size:13px;font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${title}</div>
         <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${price||'&nbsp;'}</div>
-        <button onclick="promptUGCForProduct('${id}','${title}','${imgEsc}','${price}')" style="width:100%;padding:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:8px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Create UGC Ad</button>
+        <button onclick="promptUGCForProduct(${a1},${a2},${a3},${a4})" style="width:100%;padding:8px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:8px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;cursor:pointer;transition:opacity .15s" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">Create UGC Ad</button>
       </div>
     </div>`;
   }).join('');
@@ -4038,14 +4050,21 @@ async function claimOAuth(claimCode, userId, platform) {
 }
 
 // ── DASHBOARD META OAUTH (Supabase Edge Function) ─────────────────────────────
-function dashStartMetaOAuth() {
+async function dashStartMetaOAuth() {
   const appId = window.META_APP_ID;
   const callbackUrl = window.META_CALLBACK_URL;
   if (!appId || appId === 'YOUR_META_APP_ID' || !callbackUrl) { showToast('Meta not configured', 'error'); return; }
   const userId = window.__clerk?.user?.id || '';
   if (!userId) { showToast('Not signed in — please refresh', 'error'); return; }
   const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
-  const state = `${userId}~dashboard~${nonce}`;
+  const clerkToken = await window.__clerk?.session?.getToken();
+  const stateRes = await fetch(`${window.SUPABASE_FN}/oauth-state-init`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clerkToken}`, 'apikey': window.SUPABASE_ANON },
+    body: JSON.stringify({ platform: 'meta', page: 'dashboard', nonce })
+  });
+  if (!stateRes.ok) { showToast('Failed to initialize OAuth — please try again', 'error'); return; }
+  const { state } = await stateRes.json();
   localStorage.setItem('meta_oauth_nonce', nonce);
   const scope = 'ads_read,ads_management,business_management';
   window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${scope}&state=${encodeURIComponent(state)}`;
@@ -4059,20 +4078,18 @@ async function checkMetaOAuthReturn() {
   window.history.replaceState({}, document.title, window.location.pathname);
   if (metaError) { showToast('Meta connection failed — please try again', 'error'); return; }
 
-  const claimCode = p.get('claim');
-  const state     = p.get('state') || '';
+  const claimCode   = p.get('claim');
+  const returnNonce = p.get('nonce') || '';
   if (connected !== '1' || !claimCode) return;
 
   // CSRF nonce check
   const savedNonce = localStorage.getItem('meta_oauth_nonce');
-  const stateParts = state.split('~');
-  const stateNonce = stateParts[2];
-  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+  if (!savedNonce || !returnNonce || savedNonce !== returnNonce) {
     showToast('Security check failed — please try again', 'error'); return;
   }
   localStorage.removeItem('meta_oauth_nonce');
 
-  const userId = stateParts[0];
+  const userId = window.__clerk?.user?.id || '';
   const data   = await claimOAuth(claimCode, userId, 'meta');
   if (!data || !data.access_token) {
     showToast('Meta claim expired — please reconnect', 'error'); return;
@@ -4125,7 +4142,7 @@ function dashDisconnectMeta() {
 }
 
 // ── DASHBOARD GOOGLE OAUTH ────────────────────────────────────────────────────
-function dashStartGoogleOAuth() {
+async function dashStartGoogleOAuth() {
   const callbackUrl = window.GOOGLE_CALLBACK_URL;
   const clientId    = window.GOOGLE_OAUTH_CLIENT_ID;
   if (!callbackUrl || !clientId || clientId.includes('YOUR_GOOGLE')) {
@@ -4134,9 +4151,16 @@ function dashStartGoogleOAuth() {
   const userId = window.__clerk?.user?.id;
   if (!userId) { showToast('Not signed in — please refresh', 'error'); return; }
 
-  // Build state: userId~sourcePage~nonce (same pattern as Meta)
+  // Get HMAC-signed state from server (binds userId to authenticated session)
   const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
-  const state = `${userId}~dashboard~${nonce}`;
+  const clerkToken = await window.__clerk?.session?.getToken();
+  const stateRes = await fetch(`${window.SUPABASE_FN}/oauth-state-init`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clerkToken}`, 'apikey': window.SUPABASE_ANON },
+    body: JSON.stringify({ platform: 'google', page: 'dashboard', nonce })
+  });
+  if (!stateRes.ok) { showToast('Failed to initialize OAuth — please try again', 'error'); return; }
+  const { state } = await stateRes.json();
   localStorage.setItem('google_oauth_nonce', nonce);
 
   // Authorization code flow — redirect to Google (gets refresh token server-side)
@@ -4160,20 +4184,18 @@ async function checkGoogleOAuthReturn() {
   window.history.replaceState({}, document.title, window.location.pathname);
   if (googleError) { showToast('Google Ads connection failed — please try again', 'error'); return; }
 
-  const claimCode = p.get('claim');
-  const state     = p.get('state') || '';
+  const claimCode   = p.get('claim');
+  const returnNonce = p.get('nonce') || '';
   if (connected !== '1' || !claimCode) return;
 
   // CSRF nonce check
   const savedNonce = localStorage.getItem('google_oauth_nonce');
-  const stateParts = state.split('~');
-  const stateNonce = stateParts[2];
-  if (!savedNonce || !stateNonce || savedNonce !== stateNonce) {
+  if (!savedNonce || !returnNonce || savedNonce !== returnNonce) {
     showToast('Security check failed — please try again', 'error'); return;
   }
   localStorage.removeItem('google_oauth_nonce');
 
-  const userId = stateParts[0];
+  const userId = window.__clerk?.user?.id || '';
   const data   = await claimOAuth(claimCode, userId, 'google');
   if (!data) { showToast('Google claim expired — please reconnect', 'error'); return; }
 

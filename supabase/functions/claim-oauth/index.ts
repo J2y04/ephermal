@@ -118,7 +118,7 @@ Deno.serve(async (req: Request) => {
   if (error || !data) {
     // Claim not found, already used, expired, or user/platform mismatch.
     // Return a generic 404 — don't leak which condition failed.
-    console.warn('[claim-oauth] Claim not found or already used:', claim, user_id, platform)
+    console.warn('[claim-oauth] Claim exchange failed — invalid, expired, or already used')
     return json({ error: 'claim_invalid_or_expired' }, 404, origin)
   }
 

@@ -19,10 +19,9 @@ export async function metaGet<T = unknown>(
   token: string,
 ): Promise<T> {
   const url = new URL(`${GRAPH_BASE}${path}`);
-  url.searchParams.set('access_token', token);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-  const res = await fetch(url.toString());
+  const res = await fetch(url.toString(), { headers: { 'Authorization': `Bearer ${token}` } });
   const data = await res.json() as T | MetaError;
   if (!res.ok || 'error' in (data as object)) {
     const msg = (data as MetaError).error?.message ?? `Meta API error ${res.status}`;
@@ -38,11 +37,10 @@ export async function metaPost<T = unknown>(
   token: string,
 ): Promise<T> {
   const url = new URL(`${GRAPH_BASE}${path}`);
-  url.searchParams.set('access_token', token);
 
   const res = await fetch(url.toString(), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
     body: JSON.stringify(body),
   });
   const data = await res.json() as T | MetaError;
@@ -59,9 +57,11 @@ export async function metaDelete<T = unknown>(
   token: string,
 ): Promise<T> {
   const url = new URL(`${GRAPH_BASE}${path}`);
-  url.searchParams.set('access_token', token);
 
-  const res = await fetch(url.toString(), { method: 'DELETE' });
+  const res = await fetch(url.toString(), {
+    method: 'DELETE',
+    headers: { 'Authorization': `Bearer ${token}` },
+  });
   const data = await res.json() as T | MetaError;
   if (!res.ok || 'error' in (data as object)) {
     const msg = (data as MetaError).error?.message ?? `Meta API error ${res.status}`;

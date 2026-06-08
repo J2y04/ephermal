@@ -29,12 +29,13 @@ const TOPUP_CREDITS: Record<string, number> = {
   [Deno.env.get('STRIPE_PRICE_TOPUP_20') ?? 'price_REPLACE_TOPUP20']: 280,
 };
 
-// Fill in your actual Stripe Price IDs from Stripe Dashboard → Products
-const PRICE_TO_PLAN: Record<string, string> = {
-  'price_REPLACE_STARTER': 'starter',
-  'price_REPLACE_GROWTH':  'growth',
-  'price_REPLACE_SCALE':   'scale',
-};
+const PRICE_TO_PLAN: Record<string, string> = {};
+const _pStarter = Deno.env.get('STRIPE_PRICE_STARTER');
+const _pGrowth  = Deno.env.get('STRIPE_PRICE_GROWTH');
+const _pScale   = Deno.env.get('STRIPE_PRICE_SCALE');
+if (_pStarter) PRICE_TO_PLAN[_pStarter] = 'starter';
+if (_pGrowth)  PRICE_TO_PLAN[_pGrowth]  = 'growth';
+if (_pScale)   PRICE_TO_PLAN[_pScale]   = 'scale';
 
 const VALID_PLANS = new Set(['starter', 'growth', 'scale']);
 
