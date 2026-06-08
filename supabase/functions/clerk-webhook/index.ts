@@ -131,6 +131,12 @@ Deno.serve(async (req) => {
     return new Response('Missing svix headers', { status: 400 });
   }
 
+  // Reject replays older than 5 minutes
+  const tsSeconds = parseInt(svixTimestamp, 10);
+  if (isNaN(tsSeconds) || Math.abs(Date.now() / 1000 - tsSeconds) > 300) {
+    return new Response('Webhook timestamp expired', { status: 400 });
+  }
+
   const body = await req.text();
 
   const valid = await verifyClerkSignature(body, svixId, svixTimestamp, svixSignature, secret);

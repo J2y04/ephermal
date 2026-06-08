@@ -19,6 +19,7 @@
  */
 
 import Stripe from 'https://esm.sh/stripe@14';
+import { extractUserId } from '../_shared/auth.ts';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2024-04-10' });
 
@@ -60,17 +61,7 @@ Deno.serve(async (req) => {
 
   // ── Auth: verify JWT and extract userId ──────────────────────────────────
   const authHeader = req.headers.get('Authorization') ?? '';
-  if (!authHeader.startsWith('Bearer ') || authHeader.length < 20) {
-    return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
-  }
-  // Decode JWT sub without full sig verification (Clerk RS256 JWTs)
-  let jwtUserId: string | null = null;
-  try {
-    const token = authHeader.slice(7);
-    const [, payload] = token.split('.');
-    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-    jwtUserId = decoded.sub ?? null;
-  } catch { /* invalid JWT — caught below */ }
+  const jwtUserId = await extractUserId(authHeader);
 
   let body: { price_id: string; clerk_user_id: string; email?: string };
   try {
@@ -145,7 +136,7 @@ Deno.serve(async (req) => {
       sessionParams.subscription_data = { metadata: { clerk_user_id } };
     } else {
       // For top-up: add payment intent metadata
-      sessionParams.payment_intent_data = { metadata: { clerk_user_id, type: 'ai_topup' } };
+      sessionParams.payment_intent_data = { metadata: { clerk_user_id, type: 'ai_topup', price_id } };
     }
 
     const session = await stripe.checkout.sessions.create(sessionParams);

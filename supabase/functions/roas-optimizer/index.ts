@@ -196,7 +196,7 @@ Deno.serve(async (req) => {
 
   if (req.method !== 'POST') return errResponse('Method not allowed', 405, origin);
 
-  const userId = extractUserId(req.headers.get('Authorization'));
+  const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
   let body: Record<string, unknown> = {};

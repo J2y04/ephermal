@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(origin) });
   if (req.method !== 'POST') return errResponse('Method not allowed', 405, origin);
 
-  const userId = extractUserId(req.headers.get('Authorization'));
+  const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
   if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);

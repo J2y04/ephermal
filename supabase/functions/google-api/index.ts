@@ -140,7 +140,7 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { status: 204, headers: corsHeaders(origin) })
   }
 
-  const userId = extractUserId(req.headers.get('Authorization'))
+  const userId = await extractUserId(req.headers.get('Authorization'))
   if (!userId) return errResponse('Unauthorized', 401, origin)
 
   const devToken = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN')

@@ -44,6 +44,7 @@
  */
 
 import { redis, cacheKey, redisAvailable } from '../_shared/redis.ts';
+import { extractUserId } from '../_shared/auth.ts';
 
 // Per-user rate limit: 60 requests/minute
 const RATE_LIMIT = 60;
@@ -142,16 +143,6 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 };
 
-/** Extract Clerk user ID from JWT claims (sub field) without full verification */
-function extractUserIdFromJWT(token: string): string | null {
-  try {
-    const [, payload] = token.split('.');
-    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-    return decoded.sub ?? null;
-  } catch {
-    return null;
-  }
-}
 
 /** Extract the action name from a URL path/query */
 function extractAction(path: string, body: Record<string, unknown>): string {
@@ -199,7 +190,7 @@ Deno.serve(async (req) => {
   if (!rawToken || rawToken.length < 20) {
     return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
   }
-  const userId = extractUserIdFromJWT(rawToken);
+  const userId = await extractUserId(`Bearer ${rawToken}`);
   if (!userId) {
     return new Response('Invalid token', { status: 401, headers: CORS_HEADERS });
   }
