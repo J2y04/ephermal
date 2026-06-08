@@ -12,6 +12,8 @@
  * POST { action: 'profile_audience', store_analysis?, products?, niche? }
  * POST { action: 'copywrite',        product, audience?, platform? }
  * POST { action: 'full_pipeline',    product, store_analysis?, audience?, budget?, tone? }
+ * POST { action: 'generate',         description, preset?, aspect_ratio? }
+ * POST { action: 'create',           product_title, product_id?, product_image? }
  *
  * Required env vars:
  *   GROQ_API_KEY         — llama-3.3-70b-versatile
@@ -294,6 +296,105 @@ Write launch-ready ad copy.`;
 
         await incrementUsage(userId, used);
         result = { store_analysis: storeAnalysis, audiences, script, copy, budget_suggestion: { daily: budget, meta_pct: 65, google_pct: 35 } };
+        break;
+      }
+
+      // ── DASHBOARD ACTIONS ───────────────────────────────────────────────────
+      // Called by the UGC modal (submitUGC) and new-product prompt (createUGCForNewProduct)
+
+      case 'generate': {
+        const desc        = String(body.description ?? '').trim();
+        const preset      = String(body.preset ?? 'authentic');
+        const aspectRatio = String(body.aspect_ratio ?? '9:16');
+        if (!desc) return errResponse('description is required', 400, origin);
+
+        const analysisReply = await callAI(
+          `Analyze this product for Meta/Google advertising. Return JSON: { niche, target_audience, key_differentiators: string[], ad_opportunities: string[], meta_strategy, ugc_themes: string[] }. ONLY JSON.`,
+          `Product: ${desc}`, 600,
+        );
+        let storeAnalysis: Record<string, unknown>;
+        try { storeAnalysis = JSON.parse(analysisReply); } catch { storeAnalysis = {}; }
+
+        const audienceReply = await callAI(
+          `Create 2 audience segments. Return JSON array: [{ name, description, age_range: {min,max}, interests: string[], pain_points: string[] }]. ONLY JSON.`,
+          `Product: ${desc}\nNiche: ${storeAnalysis.niche ?? 'e-commerce'}`, 500,
+        );
+        let audiences: unknown[];
+        try { audiences = JSON.parse(audienceReply); } catch { audiences = []; }
+
+        const scriptReply = await callAI(
+          `Write a UGC ad script. Return JSON: { hook, problem, solution, proof, cta, full_script, estimated_duration_seconds }. ONLY JSON.`,
+          `Product: ${desc}\nTone: authentic and benefit-focused\nAudience: ${JSON.stringify((audiences as Record<string, unknown>[])[0] ?? {})}`, 800,
+        );
+        let script: Record<string, unknown>;
+        try { script = JSON.parse(scriptReply); } catch { script = { full_script: scriptReply }; }
+
+        const copyReply = await callAI(
+          `Write Meta and Google ad copy. Return JSON: { meta: { primary_text, headline, description, cta }, google: { headlines: string[], descriptions: string[] } }. ONLY JSON.`,
+          `Product: ${desc}\nAudience: ${JSON.stringify((audiences as Record<string, unknown>[])[0] ?? {})}`, 700,
+        );
+        let copy: Record<string, unknown>;
+        try { copy = JSON.parse(copyReply); } catch { copy = {}; }
+
+        const { data: creative } = await supabase.from('creatives').insert({
+          user_id:   userId,
+          headline:  String(script.hook ?? '').slice(0, 255) || desc.slice(0, 100),
+          body:      String((copy.meta as Record<string, unknown>)?.primary_text ?? '').slice(0, 500),
+          type:      'ugc',
+          status:    'pending_review',
+          meta_data: { script, copy, audiences, preset, aspect_ratio: aspectRatio, product_description: desc },
+        }).select('id').single();
+
+        await incrementUsage(userId, used);
+        result = { creative_id: creative?.id, script, copy, audiences, status: 'pending_review' };
+        break;
+      }
+
+      case 'create': {
+        const productTitle = String(body.product_title ?? '').trim();
+        const productImage = String(body.product_image ?? '');
+        const productId    = String(body.product_id ?? '');
+        if (!productTitle) return errResponse('product_title is required', 400, origin);
+
+        const analysisReply = await callAI(
+          `Analyze this product for Meta/Google advertising. Return JSON: { niche, target_audience, key_differentiators: string[], ad_opportunities: string[], meta_strategy, ugc_themes: string[] }. ONLY JSON.`,
+          `Product title: ${productTitle}`, 600,
+        );
+        let storeAnalysis: Record<string, unknown>;
+        try { storeAnalysis = JSON.parse(analysisReply); } catch { storeAnalysis = {}; }
+
+        const audienceReply = await callAI(
+          `Create 2 audience segments. Return JSON array: [{ name, description, age_range: {min,max}, interests: string[], pain_points: string[] }]. ONLY JSON.`,
+          `Product: ${productTitle}\nNiche: ${storeAnalysis.niche ?? 'e-commerce'}`, 500,
+        );
+        let audiences: unknown[];
+        try { audiences = JSON.parse(audienceReply); } catch { audiences = []; }
+
+        const scriptReply = await callAI(
+          `Write a UGC ad script. Return JSON: { hook, problem, solution, proof, cta, full_script, estimated_duration_seconds }. ONLY JSON.`,
+          `Product: ${productTitle}\nTone: authentic and benefit-focused\nAudience: ${JSON.stringify((audiences as Record<string, unknown>[])[0] ?? {})}`, 800,
+        );
+        let script: Record<string, unknown>;
+        try { script = JSON.parse(scriptReply); } catch { script = { full_script: scriptReply }; }
+
+        const copyReply = await callAI(
+          `Write Meta and Google ad copy. Return JSON: { meta: { primary_text, headline, description, cta }, google: { headlines: string[], descriptions: string[] } }. ONLY JSON.`,
+          `Product: ${productTitle}\nAudience: ${JSON.stringify((audiences as Record<string, unknown>[])[0] ?? {})}`, 700,
+        );
+        let copy: Record<string, unknown>;
+        try { copy = JSON.parse(copyReply); } catch { copy = {}; }
+
+        const { data: creative } = await supabase.from('creatives').insert({
+          user_id:   userId,
+          headline:  String(script.hook ?? '').slice(0, 255) || productTitle.slice(0, 100),
+          body:      String((copy.meta as Record<string, unknown>)?.primary_text ?? '').slice(0, 500),
+          type:      'ugc',
+          status:    'pending_review',
+          meta_data: { script, copy, audiences, product_id: productId, product_title: productTitle, product_image: productImage },
+        }).select('id').single();
+
+        await incrementUsage(userId, used);
+        result = { creative_id: creative?.id, script, copy, audiences, status: 'pending_review' };
         break;
       }
 

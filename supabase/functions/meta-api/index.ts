@@ -484,11 +484,16 @@ Deno.serve(async (req) => {
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
   const creds = await resolveCredentials(req, userId);
-  if (!creds) return errResponse('Meta account not connected — add your token in Settings', 400, origin);
-  const { token, accountId } = creds;
+  const { token, accountId } = creds ?? { token: '', accountId: '' };
 
   const url    = new URL(req.url);
   const action = url.searchParams.get('action') ?? '';
+
+  // Allow status-filtered creatives reads without Meta credentials (DB-only path)
+  const isDbOnlyRead = req.method === 'GET' && action === 'creatives' && url.searchParams.has('status');
+  if (!creds && !isDbOnlyRead) {
+    return errResponse('Meta account not connected — add your token in Settings', 400, origin);
+  }
 
   try {
     // ── GET requests ────────────────────────────────────────────────────────

@@ -2965,12 +2965,10 @@ async function submitUGC() {
   btn.disabled=true; btn.textContent='Generating…';
   try {
     const r = await authFetch('/ugc/generate', {method:'POST', body:JSON.stringify({
+      action: 'generate',
       description: desc,
       preset,
       aspect_ratio: ratio,
-      model: 'marketing_studio_video',
-      meta_token: localStorage.getItem('meta_token'),
-      meta_account_id: localStorage.getItem('meta_account')
     })});
     if (r && r.ok) {
       consumeUGCCredit();
@@ -3928,7 +3926,7 @@ async function createUGCForNewProduct() {
   setTimeout(showNextNewProduct, 500);
   showToast(`Queuing UGC ad for "${productData.title || 'product'}"…`, 'info');
   try {
-    await authFetch('/ephermal/ugc/create', { method:'POST', body: JSON.stringify({ product_id: productData.id, product_title: productData.title, product_image: productData.image }) });
+    await authFetch('/ugc/generate', { method:'POST', body: JSON.stringify({ action: 'create', product_id: productData.id, product_title: productData.title, product_image: productData.image }) });
     showToast('UGC ad queued! Check the Creatives tab shortly.', 'success');
     consumeUGCCredit();
   } catch(e) { showToast('UGC queued — check back in the Creatives tab.', 'info'); }
