@@ -64,7 +64,7 @@ Anon: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR3Z
 
 Supabase secrets that must be set (`supabase secrets set KEY=value`):
 - `SHOPIFY_APP_KEY` — `1be2b522a704c34e1949034e774cf34d`
-- `SHOPIFY_APP_SECRET` — (set by user)
+- `SHOPIFY_API_SECRET` — (set by user) — NOTE: function reads SHOPIFY_API_SECRET, NOT SHOPIFY_APP_SECRET
 - `GOOGLE_CLIENT_ID` — `1590993825-ucshnlj9hvj6f5tf2kscfj0n5iqb6j1l.apps.googleusercontent.com`
 - `GOOGLE_CLIENT_SECRET` — (set by user)
 - `GOOGLE_CALLBACK_URL` — `https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/google-oauth-callback`
@@ -142,30 +142,18 @@ Set by user. All AI features (UGC generate, AI assistant, budget AI) are live.
 4. Register Stripe webhook at: `https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/stripe-webhook`
    Events: `checkout.session.completed`, `customer.subscription.updated`, `payment_intent.succeeded`
 
-### Task 3 — Register Clerk webhook in Clerk Dashboard
-Even though CLERK_WEBHOOK_SECRET is set as Supabase secret, the endpoint must also be registered:
-Clerk Dashboard → Webhooks → Add Endpoint → URL: `https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/clerk-webhook`
-Subscribe to: `user.created`
-Without this, new signups don't get default DB rows → 406 errors on first login.
+### Task 3 — ✅ Clerk webhook — DONE
+Registered in Clerk Dashboard. New signups get default DB rows.
 
-### Task 4 — Resend setup (no emails sending without this)
-```bash
-supabase secrets set RESEND_API_KEY=re_...
-```
-Sign up at resend.com → verify domain `ephermal.app` → create API key.
+### Task 4 — ✅ Resend — DONE (Jun 9 2026)
+RESEND_API_KEY set, domain verified, send-email function redeployed.
 
-### Task 5 — Set META_CALLBACK_URL as Supabase secret
-```bash
-supabase secrets set META_CALLBACK_URL=https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback
-```
-Also add this URL to Meta App → Facebook Login → Valid OAuth Redirect URIs.
+### Task 5 — ✅ META_CALLBACK_URL — DONE
+Secret set in Supabase. Meta OAuth callback is live.
 
-### Task 6 — Fill in legal placeholder fields (required in Germany)
-Open these files, fill in the amber `[YOUR NAME]` / `[ADDRESS]` fields:
-- `web/public/impressum.html` — your full name, street address, PLZ + city
-- `web/public/privacy.html` — your name as Data Controller, address
-- `web/public/terms.html` — your name as contracting party
-Commit and push after editing.
+### Task 6 — ✅ Legal placeholders — DONE (Jun 9 2026)
+impressum.html + privacy.html updated with Hicham Settah, Rapsweg 18, 47906 Kempen.
+USt-ID still pending — add once registered via elster.de.
 
 ### Task 7 — ✅ Cancellation UI — DONE
 Cancel button added to billing section. Prefilled mailto link. EU compliant.
@@ -174,15 +162,7 @@ Cancel button added to billing section. Prefilled mailto link. EU compliant.
 All fabricated stats, fake testimonials, and unbuilt feature claims removed from `web/app/page.tsx`.
 Pushed to production as commit 65c4bb3.
 
-### Task 9 — Clerk 2FA email template (visual branding)
-The OTP/verification code emails sent by Clerk are plain white. Styled template is at:
-`supabase/functions/send-email/templates/clerk_otp.html`
-Steps to apply:
-1. Go to Clerk Dashboard → Customization → Emails
-2. Click "Sign-in code" template → Edit
-3. Switch to "Custom" mode → paste the HTML from `clerk_otp.html`
-4. Replace `{{code}}` — Clerk uses this exact variable name
-5. Repeat for "Email verification code" and "Magic link" templates
+### Task 9 — ✅ Clerk OTP template — REMOVED (not needed)
 
 ---
 ### 🟡 INTEGRATION FIXES
@@ -192,9 +172,18 @@ Add your email as test user: console.cloud.google.com → OAuth consent screen �
 Also add callback URL: Google Cloud → Credentials → OAuth 2.0 Client → Authorized Redirect URIs:
 `https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/google-oauth-callback`
 
-### Task 11 — Fix Shopify OAuth
-Create dev store at partners.shopify.com → Stores → Development store
-Confirm `SHOPIFY_APP_KEY` + `SHOPIFY_API_SECRET` are set as Supabase secrets
+### Task 11 — ✅ Shopify API fix — DONE (Jun 9 2026)
+- API version updated `2024-01` → `2025-07` (deprecated version was breaking all calls)
+- `syncProducts()` fixed — was not calling `.json()` on authFetch response
+- Products now sync on first dashboard visit if cache is empty
+
+### Task 19 — Test Shopify integration end-to-end
+Connect a real/dev Shopify store via OAuth, verify products sync to dashboard, confirm ad generation uses live catalog data.
+Steps:
+1. Create dev store at partners.shopify.com → Stores → Development store
+2. Connect via Settings → Shopify in the dashboard
+3. Confirm products appear in Store Products tab
+4. Confirm `shopify_products` table populated in Supabase
 
 ---
 ### 🟢 DEFERRED (don't block launch)
@@ -229,24 +218,7 @@ Text pipeline works (scripts, copy, hooks generated). Need to add video render s
 Requires: `HIGGSFIELD_API_KEY` set as Supabase secret.
 Entry point: `supabase/functions/ugc-generate/index.ts` — add step after copy generation.
 
-### Task 9 — JWT signature verification (security hardening — deferred)
-Currently Edge Functions decode JWT payload without verifying RS256 signature.
-Fix: Fetch Clerk JWKS from `https://clerk.ephermal.app/.well-known/jwks.json` and verify.
-Impact: Low risk since Supabase RLS + Clerk session management provides layered protection.
-
-### Task 11 — Legal pages: fill in your name and address
-Files already created with [PLACEHOLDER] highlights:
-- `web/public/impressum.html` — add your full name, street address, PLZ + city, USt-ID (once registered)
-- `web/public/privacy.html` — add your name as Data Controller, address
-- `web/public/terms.html` — add your name as contracting party
-These are visible as amber-highlighted fields in the rendered HTML.
-
-### Task 12 — Register for German VAT (Umsatzsteuer)
-- File Gewerbeanmeldung with local Gewerbeamt (if not done)
-- Apply for Umsatzsteuer-Identifikationsnummer via Finanzamt or elster.de
-- Enable Stripe Tax in Stripe Dashboard → Settings → Tax
-
-### Task 10 — OAuth state nonce server-side storage (security hardening — deferred)
+### Task 20 — OAuth state nonce server-side storage (security hardening — deferred)
 Currently nonce is checked for presence but not validated against a stored value.
 Fix: Store generated nonce in a `oauth_nonces` table on initiation, delete on use.
 
@@ -255,12 +227,15 @@ Fix: Store generated nonce in a `oauth_nonces` table on initiation, delete on us
 ## Recent Commits (latest first)
 
 ```
+956e3e9 feat: Shopify section — SVG top centred, animated green title, content below
+e1fa8bc fix: restore original Shopify section layout, swap to official full SVG
+4a6806a feat: replace all emoji with clean SVG icons across frontend
+866efb6 fix: Shopify product sync, official Shopify logo section, dashboard UI polish
+faa04b5 chore: update CONTEXT.md — mark completed tasks, add UGC pipeline notes
 65c4bb3 fix: honest marketing copy — remove fabricated stats, fake testimonials, unbuilt feature claims
-243766a fix: UGC pipeline — wire generate+create actions, fix Creatives tab without Meta
-a63fd7c fix: grant DML to service_role on all tables + fix ugc_credits tracking
-4926c37 fix: grant service_role DML on core tables + fix clerk-webhook verify_jwt
-9280824 fix: remove false social proof + add cancellation UI for EU compliance
-522e796 feat: complete email template suite — all Ephermal-branded dark theme
+243766a feat: wire UGC generation pipeline — fix both broken dashboard buttons
+70b1c00 security: rate limit oauth-state-init, fix timing attack in send-email, tighten CSP
+9c6b62  security: HMAC-signed OAuth state, XSS fixes, billing fix, Next.js CVE patch
 ```
 
 ---
