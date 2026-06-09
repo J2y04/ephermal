@@ -631,4 +631,6 @@ footer {
 /* ── Shopify section animations ── */
 @keyframes shopifyPulse { 0%,100% { opacity:.45; transform:scale(1); } 50% { opacity:.9; transform:scale(1.14); } }
 @keyframes shopifyFloat { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+@keyframes shopifyGreenShift { 0%,100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+.shopify-green-title { background: linear-gradient(135deg, #96BF48 0%, #4a7c1f 45%, #5E8E3E 65%, #96BF48 100%); background-size: 250% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: shopifyGreenShift 5s ease infinite; }
 @media (max-width: 600px) { .legal-title { font-size: 28px; } .legal-page { padding-top: 110px; } }
