@@ -275,58 +275,44 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Budget AI Feature Spotlight ── */}
-      <section className="section" style={{ background: 'linear-gradient(180deg, var(--bg) 0%, rgba(99,102,241,0.04) 50%, var(--bg) 100%)' }}>
-        <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', alignItems: 'center' }} data-reveal>
-            <div>
-              <div className="section-label" style={{ textAlign: 'left' }}>New Feature</div>
-              <h2 className="section-title" style={{ textAlign: 'left', fontSize: 'clamp(28px,3.5vw,40px)' }}>
-                Your AI Ad CFO.<br />
-                <span style={{ background: 'linear-gradient(90deg,var(--primary),var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-                  Budget on autopilot.
-                </span>
-              </h2>
-              <p style={{ fontSize: '16px', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '28px' }}>
-                Set a monthly revenue goal. Ephermal&apos;s AI reverse-engineers the exact daily budget you need, splits it optimally across Meta and Google, and auto-scales when ROAS beats your target.
-              </p>
-              <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '36px' }}>
-                {['AI calculates exact budget from your revenue goal', 'Smart Meta / Google allocation based on ROAS data', 'Auto-scales spend when campaigns win', 'Pauses and reallocates from fatigued ads'].map((item, i) => (
-                  <li key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', fontSize: '14px', color: 'rgba(240,242,255,0.85)' }}>
-                    <span style={{ color: 'var(--accent)', fontWeight: 800, flexShrink: 0 }}>✓</span>{item}
-                  </li>
-                ))}
-              </ul>
-              <a href="/advertising.html" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'linear-gradient(135deg,var(--primary),var(--secondary))', color: '#fff', padding: '13px 28px', borderRadius: '12px', fontSize: '15px', fontWeight: 700, boxShadow: '0 4px 20px rgba(99,102,241,0.4)', transition: 'all .25s' }}>
-                Learn About Budget AI →
-              </a>
-            </div>
-            <div data-reveal="right" data-delay="1" style={{ background: 'var(--surface)', border: '1px solid rgba(99,102,241,0.2)', borderRadius: '20px', padding: '28px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: '-40px', right: '-40px', width: '150px', height: '150px', background: 'radial-gradient(circle,rgba(99,102,241,0.12),transparent 60%)', pointerEvents: 'none' }} />
-              <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Monthly Revenue Goal</div>
-              <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1.5px', background: 'linear-gradient(90deg,var(--text),var(--accent))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', marginBottom: '4px' }}>$15,000</div>
-              <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '20px' }}>/ month target</div>
-              {[{ label: 'Meta Ads', pct: '65%', color: 'linear-gradient(90deg,var(--primary),var(--secondary))' }, { label: 'Google', pct: '35%', color: 'linear-gradient(90deg,#4285F4,var(--accent))' }].map((b, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-                  <span style={{ fontSize: '12px', color: 'var(--muted)', width: '72px', flexShrink: 0 }}>{b.label}</span>
-                  <div style={{ flex: 1, height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ width: b.pct, height: '100%', background: b.color, borderRadius: '4px', transition: 'width 1.5s ease' }} />
-                  </div>
-                  <span style={{ fontSize: '12px', fontWeight: 700, width: '32px', textAlign: 'right' }}>{b.pct}</span>
-                </div>
-              ))}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border)' }}>
-                <div style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>DAILY BUDGET</div>
-                  <div style={{ fontSize: '22px', fontWeight: 800 }}>$200</div>
-                </div>
-                <div style={{ background: 'var(--surface2)', borderRadius: '10px', padding: '12px 14px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>EST. ROAS</div>
-                  <div style={{ fontSize: '22px', fontWeight: 800, color: 'var(--accent)' }}>2.5×</div>
-                </div>
+      {/* ── Shopify Integration Section ── */}
+      <section className="section" style={{ background: 'linear-gradient(180deg, var(--bg) 0%, rgba(0,128,96,0.05) 50%, var(--bg) 100%)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 700px 500px at 50% 55%, rgba(0,128,96,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
+          <div className="section-label" data-reveal>Official Integration</div>
+
+          {/* Center-stage Shopify logo reveal */}
+          <div data-reveal="scale" style={{ margin: '28px auto 44px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '22px' }}>
+            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '170px', height: '170px' }}>
+              <div style={{ position: 'absolute', inset: '-16px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,128,96,0.2) 0%, transparent 70%)', animation: 'shopifyPulse 3s ease-in-out infinite' }} />
+              <div style={{ position: 'absolute', inset: '-48px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,128,96,0.08) 0%, transparent 70%)', animation: 'shopifyPulse 3s ease-in-out infinite', animationDelay: '0.7s' }} />
+              <div style={{ position: 'relative', animation: 'shopifyFloat 4s ease-in-out infinite' }}>
+                <svg viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg" width="128" height="149">
+                  <path d="M8 24L5 64H55L52 24H8Z" fill="#008060" />
+                  <path d="M18 24C18 14.1 21.8 8 30 8C38.2 8 42 14.1 42 24" stroke="#008060" strokeWidth="5.5" strokeLinecap="round" />
+                  <path d="M8 24L52 24L50.5 32H9.5L8 24Z" fill="rgba(255,255,255,0.12)" />
+                  <text x="30" y="51" textAnchor="middle" fill="white" fontSize="26" fontWeight="900" fontFamily="Arial, sans-serif">S</text>
+                </svg>
               </div>
             </div>
+            <div style={{ fontSize: '56px', fontWeight: 900, letterSpacing: '-2.5px', color: '#008060', lineHeight: 1 }}>Shopify</div>
           </div>
+
+          <h2 className="section-title" data-reveal data-delay="1">
+            Your catalog. In every ad.<br />
+            <span style={{ background: 'linear-gradient(90deg, #008060, #96bf48)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Live. Automatic. Yours.</span>
+          </h2>
+          <p className="section-sub" data-reveal data-delay="2" style={{ maxWidth: '600px', margin: '0 auto 36px' }}>
+            Ephermal connects directly to the official Shopify Admin API — reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
+          </p>
+          <div data-reveal data-delay="3" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', marginBottom: '32px' }}>
+            {['Live product sync', 'Real-time pricing', 'Bestseller detection', 'OAuth 2.0 secured', 'Admin API access', 'Instant catalog reads'].map((chip, i) => (
+              <span key={i} style={{ padding: '8px 18px', background: 'rgba(0,128,96,0.1)', border: '1px solid rgba(0,128,96,0.22)', borderRadius: '100px', fontSize: '13px', color: '#34c989', fontWeight: 600 }}>{chip}</span>
+            ))}
+          </div>
+          <p data-reveal data-delay="4" style={{ fontSize: '14px', color: 'var(--muted)', maxWidth: '500px', margin: '0 auto', lineHeight: 1.75 }}>
+            Official Shopify Partner app — not a scrape, not a workaround. Your store data stays under your control. Your ads stay accurate, on every product, at every price point.
+          </p>
         </div>
       </section>
 
