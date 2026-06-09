@@ -275,44 +275,67 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Shopify Integration Section ── */}
-      <section className="section" style={{ background: 'linear-gradient(180deg, var(--bg) 0%, rgba(0,128,96,0.05) 50%, var(--bg) 100%)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 700px 500px at 50% 55%, rgba(0,128,96,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="section-label" data-reveal>Official Integration</div>
-
-          {/* Center-stage Shopify logo reveal */}
-          <div data-reveal="scale" style={{ margin: '28px auto 44px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '22px' }}>
-            <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '170px', height: '170px' }}>
-              <div style={{ position: 'absolute', inset: '-16px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,128,96,0.2) 0%, transparent 70%)', animation: 'shopifyPulse 3s ease-in-out infinite' }} />
-              <div style={{ position: 'absolute', inset: '-48px', borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,128,96,0.08) 0%, transparent 70%)', animation: 'shopifyPulse 3s ease-in-out infinite', animationDelay: '0.7s' }} />
-              <div style={{ position: 'relative', animation: 'shopifyFloat 4s ease-in-out infinite' }}>
-                <svg viewBox="0 0 60 70" fill="none" xmlns="http://www.w3.org/2000/svg" width="128" height="149">
-                  <path d="M8 24L5 64H55L52 24H8Z" fill="#008060" />
-                  <path d="M18 24C18 14.1 21.8 8 30 8C38.2 8 42 14.1 42 24" stroke="#008060" strokeWidth="5.5" strokeLinecap="round" />
-                  <path d="M8 24L52 24L50.5 32H9.5L8 24Z" fill="rgba(255,255,255,0.12)" />
-                  <text x="30" y="51" textAnchor="middle" fill="white" fontSize="26" fontWeight="900" fontFamily="Arial, sans-serif">S</text>
+      {/* ── Shopify Section ── */}
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(0,128,96,0.06) 0%, rgba(150,191,72,0.04) 100%)' }}>
+        <div className="container">
+          <div className="meta-inner">
+            <div className="meta-logo-block" data-reveal="left">
+              <h2>Powered by</h2>
+              {/* Official Shopify bag mark — 3-path brand icon from Shopify press kit */}
+              <div style={{ animation: 'shopifyFloat 4s ease-in-out infinite', display: 'inline-block' }}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109.5 124.5" width="180" height="205" aria-label="Shopify">
+                  <path fill="#96BF48" d="M74.7 14.8c-.1-.7-.7-1.1-1.2-1.1-.5 0-10.5-.3-10.5-.3S55.3 5.8 54.5 5c-.8-.8-2.2-.6-2.8-.4l-1.6.5C49 4.1 48 3.8 46.8 3.8c-7.3-.2-10.8 9.1-11.9 13.7l-9.5 3-.1.1c-1.5.5-1.6.5-1.7 1.9L19.1 65l44.5 7.8 24-5.2L74.7 14.8z"/>
+                  <path fill="#5E8E3E" d="M73.5 13.7c-.5 0-10.5-.3-10.5-.3s-7.7-7.6-8.5-8.4l.8 67.8 23.2-5.2-5-53.9z"/>
+                  <path fill="#fff" d="M46.8 26.9l-3.1 9.3s-2.8-1.3-6.1-1.1c-4.8.3-4.9 3.3-4.8 4.1.4 6.6 17.8 8.1 18.8 23.7.7 12.3-6.5 20.7-17 21.4-12.6.8-19.5-6.6-19.5-6.6l2.7-11.4s6.9 5.2 12.5 4.8c3.6-.2 4.9-3.2 4.8-5.3-.6-8.6-14.7-8.1-15.6-22.4C19.9 30.6 27.7 17 46 16c7.6-.5 11.3 1.4 11.3 1.4l-10.5 9.5z"/>
                 </svg>
               </div>
+              <div style={{ fontSize: '32px', fontWeight: 900, letterSpacing: '-1px', color: '#96BF48', marginTop: '12px' }}>Shopify</div>
             </div>
-            <div style={{ fontSize: '56px', fontWeight: 900, letterSpacing: '-2.5px', color: '#008060', lineHeight: 1 }}>Shopify</div>
+            <div className="meta-content" data-reveal="right" data-delay="1">
+              <div className="section-label">Powered by Shopify</div>
+              <h2 className="section-title">Your catalog.<br />In every ad, live.</h2>
+              <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
+                Ephermal connects directly to the official Shopify Admin API — reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
+              </p>
+              <div className="meta-platforms">
+                <div className="meta-platform-card">
+                  <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 01-8 0" strokeLinecap="round"/>
+                  </svg>
+                  <div>
+                    <div className="meta-platform-name">Product Catalog</div>
+                    <div className="meta-platform-sub">Live sync · Pricing · Inventory</div>
+                  </div>
+                </div>
+                <div className="meta-platform-card">
+                  <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <div>
+                    <div className="meta-platform-name">Admin API</div>
+                    <div className="meta-platform-sub">OAuth 2.0 · Secure · Official</div>
+                  </div>
+                </div>
+              </div>
+              <div className="meta-features">
+                {[
+                  'Official Shopify Admin API — no scraping or middleware',
+                  'Real-time product, pricing and inventory sync',
+                  'Bestseller and collection detection for smarter ads',
+                  'Secure OAuth 2.0 — your store token never leaves Supabase',
+                ].map((f, i) => (
+                  <div key={i} className="meta-feat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {f}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <h2 className="section-title" data-reveal data-delay="1">
-            Your catalog. In every ad.<br />
-            <span style={{ background: 'linear-gradient(90deg, #008060, #96bf48)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Live. Automatic. Yours.</span>
-          </h2>
-          <p className="section-sub" data-reveal data-delay="2" style={{ maxWidth: '600px', margin: '0 auto 36px' }}>
-            Ephermal connects directly to the official Shopify Admin API — reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
-          </p>
-          <div data-reveal data-delay="3" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', justifyContent: 'center', marginBottom: '32px' }}>
-            {['Live product sync', 'Real-time pricing', 'Bestseller detection', 'OAuth 2.0 secured', 'Admin API access', 'Instant catalog reads'].map((chip, i) => (
-              <span key={i} style={{ padding: '8px 18px', background: 'rgba(0,128,96,0.1)', border: '1px solid rgba(0,128,96,0.22)', borderRadius: '100px', fontSize: '13px', color: '#34c989', fontWeight: 600 }}>{chip}</span>
-            ))}
-          </div>
-          <p data-reveal data-delay="4" style={{ fontSize: '14px', color: 'var(--muted)', maxWidth: '500px', margin: '0 auto', lineHeight: 1.75 }}>
-            Official Shopify Partner app — not a scrape, not a workaround. Your store data stays under your control. Your ads stay accurate, on every product, at every price point.
-          </p>
         </div>
       </section>
 
