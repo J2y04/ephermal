@@ -19,7 +19,7 @@ export default function Home() {
         <div className="nav-links">
           <a href="#how-it-works">How it works</a>
           <a href="#services">Features</a>
-          <a href="/advertising.html" style={{ color: 'var(--accent)', fontWeight: 600 }}>Budget AI ✦</a>
+          <a href="/advertising.html" style={{ color: 'var(--accent)', fontWeight: 600 }}>Budget AI</a>
           <a href="#pricing">Pricing</a>
           <a href="#about">Results</a>
         </div>
@@ -134,21 +134,21 @@ export default function Home() {
           <div className="compare-card bad" data-reveal="left">
             <div className="compare-label">The Old Way</div>
             <ul className="compare-list">
-              <li><span className="xi">✕</span>$3,000–$8,000/month agency retainer</li>
-              <li><span className="xi">✕</span>2–4 weeks to launch a campaign</li>
-              <li><span className="xi">✕</span>Generic creatives from a template library</li>
-              <li><span className="xi">✕</span>Weekly reports, no real-time visibility</li>
-              <li><span className="xi">✕</span>You explain your store to a stranger, again</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>$3,000–$8,000/month agency retainer</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>2–4 weeks to launch a campaign</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Generic creatives from a template library</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Weekly reports, no real-time visibility</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>You explain your store to a stranger, again</li>
             </ul>
           </div>
           <div className="compare-card good" data-reveal="right">
             <div className="compare-label">The Ephermal Way</div>
             <ul className="compare-list">
-              <li><span className="ck">✓</span>From $89/month — less than one bad ad</li>
-              <li><span className="ck">✓</span>Live campaigns in under 60 seconds</li>
-              <li><span className="ck">✓</span>Real UGC-style ads built from your products</li>
-              <li><span className="ck">✓</span>Live ROAS dashboard, 24/7</li>
-              <li><span className="ck">✓</span>AI reads your store — you explain nothing</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>From $89/month — less than one bad ad</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Live campaigns in under 60 seconds</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Real UGC-style ads built from your products</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Live ROAS dashboard, 24/7</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>AI reads your store — you explain nothing</li>
             </ul>
           </div>
         </div>

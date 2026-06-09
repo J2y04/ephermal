@@ -615,7 +615,7 @@ select.form-input{cursor:pointer}
       <div class="user-avatar" id="avatar-btn">?</div>
       <div class="user-info">
         <div class="name" id="sidebar-name">Loading…</div>
-        <div id="role-badge-wrap" style="display:none"><span class="role-badge">👑 CEO</span></div>
+        <div id="role-badge-wrap" style="display:none"><span class="role-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="vertical-align:-1px;flex-shrink:0"><path d="M2 20h20M5 20l-1-8 5 4.5 3-7.5 3 7.5 5-4.5-1 8"/></svg> CEO</span></div>
         <div class="email" id="sidebar-email"></div>
       </div>
       <span class="plan-badge" id="plan-badge" style="background:rgba(136,146,176,.15);color:var(--muted)">—</span>
@@ -748,7 +748,7 @@ select.form-input{cursor:pointer}
     <!-- CAMPAIGNS -->
     <div class="page" id="page-campaigns">
       <div class="panel fade-in">
-        <div class="panel-head"><div class="panel-title">All Campaigns</div><div style="display:flex;gap:8px;align-items:center"><button class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:#06d6c7;font-weight:700" onclick="openLaunchModal()">+ Launch Campaign</button><button id="btn-roas-optimize" class="panel-action" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);color:var(--primary);font-weight:700" onclick="runROASOptimizer()">⚡ Optimize ROAS</button><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div></div>
+        <div class="panel-head"><div class="panel-title">All Campaigns</div><div style="display:flex;gap:8px;align-items:center"><button class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:#06d6c7;font-weight:700" onclick="openLaunchModal()">+ Launch Campaign</button><button id="btn-roas-optimize" class="panel-action" style="background:rgba(99,102,241,0.12);border:1px solid rgba(99,102,241,0.25);color:var(--primary);font-weight:700" onclick="runROASOptimizer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="vertical-align:-1px;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS</button><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div></div>
         <div class="campaign-table">
           <div class="campaign-row header"><span>Campaign</span><span>ROAS</span><span>Spend</span><span>CTR</span><span>Status</span><span>On/Off</span></div>
           <div id="campaigns-body-full"><div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div></div>
@@ -826,7 +826,7 @@ select.form-input{cursor:pointer}
               <span class="vibe-badge" id="ar-vibe">—</span>
             </div>
             <div style="font-size:11px;color:var(--muted);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:5px 11px;font-weight:600">
-              ✦ Brand identity saved for UGC generation
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="vertical-align:-1px;margin-right:5px"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6l-5 3.6 1.9-5.8L4 8.8h6.1z"/></svg>Brand identity saved for UGC generation
             </div>
           </div>
         </div>
@@ -849,7 +849,7 @@ select.form-input{cursor:pointer}
 
         <!-- UGC Creative Direction -->
         <div style="background:linear-gradient(135deg,rgba(99,102,241,0.07),rgba(139,92,246,0.07));border:1px solid rgba(99,102,241,0.18);border-radius:12px;padding:16px 20px;margin-bottom:20px">
-          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">🎬 UGC Creative Direction</div>
+          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="vertical-align:-1px;margin-right:5px"><path d="M15 10l4.553-2.069A1 1 0 0 1 21 8.845v6.31a1 1 0 0 1-1.447.914L15 14M3 8a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>UGC Creative Direction</div>
           <div class="analysis-grid" style="gap:20px">
             <div>
               <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Visual Style</div>
@@ -1427,7 +1427,7 @@ select.form-input{cursor:pointer}
     <div class="page" id="page-devtools">
       <div class="panel fade-in">
         <div class="panel-head">
-          <div class="panel-title" style="color:#f59e0b">⚡ Dev Tools <span style="font-size:11px;font-weight:600;padding:2px 8px;background:rgba(251,191,36,0.15);border-radius:8px;color:#f59e0b;margin-left:8px">ADMIN</span></div>
+          <div class="panel-title" style="color:#f59e0b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="vertical-align:-2px;margin-right:6px"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Dev Tools <span style="font-size:11px;font-weight:600;padding:2px 8px;background:rgba(251,191,36,0.15);border-radius:8px;color:#f59e0b;margin-left:8px">ADMIN</span></div>
         </div>
         <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
 
@@ -1573,7 +1573,7 @@ select.form-input{cursor:pointer}
     <div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:18px">
       <img id="new-product-img" src="" alt="" style="width:72px;height:72px;border-radius:12px;object-fit:cover;background:var(--surface2);border:1px solid var(--border);flex-shrink:0">
       <div style="flex:1;min-width:0">
-        <div style="font-size:10px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.9px;margin-bottom:4px">✦ New Product Detected</div>
+        <div style="font-size:10px;font-weight:700;color:var(--success);text-transform:uppercase;letter-spacing:.9px;margin-bottom:4px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="10" height="10" style="vertical-align:-1px;margin-right:4px"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6l-5 3.6 1.9-5.8L4 8.8h6.1z"/></svg>New Product Detected</div>
         <div style="font-size:17px;font-weight:700;letter-spacing:-.3px;margin-bottom:4px" id="new-product-title">Product Name</div>
         <div style="font-size:13px;color:var(--muted)" id="new-product-price"></div>
       </div>
@@ -1762,7 +1762,7 @@ select.form-input{cursor:pointer}
 
 <script>
 let allCampaigns = [];
-const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'⚡ Dev Tools'};
+const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'Dev Tools'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
@@ -2099,7 +2099,7 @@ function renderBillingPage() {
     const isCurrent = plan === p.id;
     const border = isCurrent ? `border-color:${PLANS[p.id].color};` : '';
     const btnStyle = isCurrent ? 'background:rgba(52,211,153,.12);color:var(--success);border:1px solid rgba(52,211,153,.3);cursor:default' : 'background:linear-gradient(135deg,var(--primary),var(--secondary));color:#fff;border:none;cursor:pointer';
-    const btnTxt = isCurrent ? '✓ Current plan' : 'Upgrade';
+    const btnTxt = isCurrent ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:5px"><polyline points="20 6 9 17 4 12"/></svg>Current plan' : 'Upgrade';
     const featHtml = p.features.map(item => {
       const isObj = typeof item === 'object' && item !== null;
       const label = isObj ? item.f : item;
@@ -2771,7 +2771,7 @@ async function launchCampaign() {
     const d = await r.json();
     if (d.success) {
       invalidateCache('campaigns');
-      showToast(`✓ "${name}" created — activate it from the campaigns list`, 'success');
+      showToast(`"${name}" created — activate it from the campaigns list`, 'success');
       closeLaunchModal();
       document.getElementById('lc-name').value = '';
       await loadCampaigns();
@@ -2802,7 +2802,7 @@ async function runROASOptimizer() {
   } catch(e) {
     showToast('Optimizer error', 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '⚡ Optimize ROAS'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:5px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS'; }
   }
 }
 
@@ -2853,7 +2853,7 @@ async function approveCreative(id, btn) {
     if (r && r.ok) {
       invalidateCache('creatives');
       const card=document.getElementById(`card-${id}`); if(card)card.style.cssText+='border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.05)';
-      btn.closest('.creative-actions').innerHTML='<span style="font-size:12px;color:var(--success);font-weight:600;width:100%;display:block;text-align:center">✓ Approved</span>';
+      btn.closest('.creative-actions').innerHTML='<span style="font-size:12px;color:var(--success);font-weight:600;width:100%;display:block;text-align:center;display:flex;align-items:center;justify-content:center;gap:5px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><polyline points="20 6 9 17 4 12"/></svg>Approved</span>';
     } else { btn.disabled=false; btn.textContent='Approve'; }
   } catch(e){ btn.disabled=false; btn.textContent='Approve'; }
 }
@@ -4415,7 +4415,7 @@ async function generateCampaignCopy() {
     document.getElementById('launch-copy-preview').style.display = '';
     ['lstep-1','lstep-2','lstep-3'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) { el.classList.remove('active'); el.classList.add('done'); el.innerHTML = '✓'; }
+      if (el) { el.classList.remove('active'); el.classList.add('done'); el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>'; }
     });
   } catch(e) {
     showToast('Generation failed — ' + (e.message || 'try again'), 'error');

@@ -527,8 +527,8 @@ footer {
 .compare-card.good .compare-label { color: var(--primary); }
 .compare-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 .compare-list li { font-size: 14px; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
-.compare-list .xi { color: var(--danger); font-size: 16px; flex-shrink: 0; margin-top: -1px; }
-.compare-list .ck { color: var(--success); font-size: 16px; flex-shrink: 0; margin-top: -1px; }
+.compare-list .xi { color: var(--danger); display: flex; align-items: center; flex-shrink: 0; margin-top: 2px; }
+.compare-list .ck { color: var(--success); display: flex; align-items: center; flex-shrink: 0; margin-top: 2px; }
 @media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
 
 /* ── Risk reversal badge ── */
