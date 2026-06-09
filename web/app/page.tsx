@@ -276,63 +276,36 @@ export default function Home() {
       </section>
 
       {/* ── Shopify Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(0,128,96,0.06) 0%, rgba(150,191,72,0.04) 100%)' }}>
-        <div className="container">
-          <div className="meta-inner">
-            <div className="meta-logo-block" data-reveal="left">
-              <h2>Powered by</h2>
-              <div style={{ animation: 'shopifyFloat 4s ease-in-out infinite', display: 'inline-block' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="-91.815 -43.65 795.73 261.9" width="320" height="105" aria-label="Shopify" fill="#96BF48">
-                  <path d="M131.6 33.2c-.1-.9-.9-1.3-1.5-1.3s-13.7-1-13.7-1-9.1-9.1-10.2-10c-1-1-2.9-.7-3.7-.5-.1 0-2 .6-5.1 1.6C94.3 13.1 89 5 79.5 5h-.9c-2.6-3.4-6-5-8.8-5-22 0-32.6 27.5-35.9 41.5-8.6 2.7-14.7 4.5-15.4 4.8-4.8 1.5-4.9 1.6-5.5 6.1-.5 3.4-13 100.1-13 100.1l97.3 18.2 52.8-11.4c.1-.2-18.4-125.2-18.5-126.1zM92 23.4c-2.4.7-5.3 1.6-8.2 2.6v-1.8c0-5.4-.7-9.8-2-13.3 5 .6 8.1 6.1 10.2 12.5zM75.7 12c1.3 3.4 2.2 8.2 2.2 14.8v1c-5.4 1.7-11.1 3.4-17 5.3 3.3-12.6 9.6-18.8 14.8-21.1zm-6.4-6.2c1 0 2 .4 2.8 1-7.1 3.3-14.6 11.6-17.7 28.4-4.7 1.5-9.2 2.8-13.5 4.2C44.5 26.6 53.5 5.8 69.3 5.8z" fill="#95BF47"/>
-                  <path d="M130.1 31.7c-.6 0-13.7-1-13.7-1s-9.1-9.1-10.2-10c-.4-.4-.9-.6-1.3-.6l-7.3 150.6 52.8-11.4S131.9 34.1 131.8 33.2c-.4-.9-1.1-1.3-1.7-1.5z" fill="#5E8E3E"/>
-                  <path d="M79.5 60.9l-6.4 19.3s-5.8-3.1-12.7-3.1c-10.3 0-10.8 6.5-10.8 8.1 0 8.8 23 12.2 23 32.9 0 16.3-10.3 26.8-24.2 26.8-16.8 0-25.2-10.4-25.2-10.4l4.5-14.8s8.8 7.6 16.2 7.6c4.9 0 6.9-3.8 6.9-6.6 0-11.5-18.8-12-18.8-31 0-15.9 11.4-31.3 34.5-31.3 8.6-.1 13 2.5 13 2.5z" fill="#FFF"/>
-                  <path d="M211.7 97.2c-5.3-2.8-8-5.3-8-8.6 0-4.2 3.8-6.9 9.7-6.9 6.9 0 13 2.8 13 2.8l4.8-14.7s-4.4-3.4-17.4-3.4c-18.1 0-30.7 10.4-30.7 25 0 8.3 5.9 14.6 13.7 19.1 6.4 3.5 8.6 6.1 8.6 9.9 0 3.9-3.2 7.1-9.1 7.1-8.7 0-17-4.5-17-4.5l-5.1 14.7s7.6 5.1 20.4 5.1c18.6 0 32.1-9.2 32.1-25.7-.2-9-6.9-15.2-15-19.9zm74.2-31c-9.2 0-16.4 4.4-21.9 11l-.2-.1 8-41.6h-20.7l-20.2 106h20.7l6.9-36.2c2.7-13.7 9.8-22.2 16.4-22.2 4.7 0 6.5 3.2 6.5 7.7 0 2.8-.2 6.4-.9 9.2l-7.8 41.5h20.7l8.1-42.8c.9-4.5 1.5-9.9 1.5-13.6-.1-11.9-6.2-18.9-17.1-18.9zm63.9 0c-25 0-41.5 22.5-41.5 47.6 0 16 9.9 29 28.5 29 24.5 0 41-21.9 41-47.6.1-14.9-8.5-29-28-29zM339.6 127c-7.1 0-10-6-10-13.6 0-11.9 6.1-31.2 17.4-31.2 7.3 0 9.8 6.4 9.8 12.5 0 12.7-6.3 32.3-17.2 32.3zm91.3-60.8c-14 0-21.9 12.4-21.9 12.4h-.2l1.2-11.1h-18.4c-.9 7.5-2.6 19-4.2 27.5l-14.3 75.9h20.7l5.8-30.7h.5s4.3 2.7 12.1 2.7c24.4 0 40.3-25 40.3-50.2-.1-14-6.4-26.5-21.6-26.5zm-19.8 61c-5.4 0-8.6-3.1-8.6-3.1l3.4-19.3c2.4-13 9.2-21.5 16.4-21.5 6.4 0 8.3 5.9 8.3 11.4.1 13.4-7.9 32.5-19.5 32.5zM482 36.5c-6.6 0-11.9 5.3-11.9 12 0 6.1 3.9 10.4 9.8 10.4h.2c6.5 0 12-4.4 12.1-12 .1-6.1-4-10.4-10.2-10.4zm-29 104.9h20.7l14-73.6h-20.8m73.6-.1h-14.4l.7-3.4c1.2-7.1 5.4-13.3 12.4-13.3 3.7 0 6.6 1.1 6.6 1.1l4-16.3s-3.5-1.8-11.3-1.8c-7.3 0-14.7 2.1-20.3 6.9-7.1 6-10.4 14.7-12 23.5l-.6 3.4h-9.7l-3.1 15.7h9.7l-11 58h20.7l11-58h14.3zm49.9.1s-13 32.7-18.7 50.6h-.2c-.4-5.8-5.1-50.6-5.1-50.6h-21.8l12.5 67.4c.2 1.5.1 2.4-.5 3.4-2.4 4.7-6.5 9.2-11.3 12.5-3.9 2.8-8.3 4.7-11.8 5.9l5.8 17.6c4.2-.9 13-4.4 20.3-11.3 9.4-8.8 18.2-22.5 27.2-41.1l25.3-54.5h-21.7z"/>
-                </svg>
-              </div>
+      <section className="section" style={{ background: 'linear-gradient(135deg, rgba(0,128,96,0.06) 0%, rgba(150,191,72,0.04) 100%)' }}>
+        <div className="container" style={{ textAlign: 'center' }}>
+          <div data-reveal="scale" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0' }}>
+            <div className="section-label" style={{ marginBottom: '24px' }}>Powered by Shopify</div>
+            <div style={{ animation: 'shopifyFloat 4s ease-in-out infinite', display: 'inline-block' }}>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 109.5 124.5" width="120" height="136" aria-label="Shopify bag mark">
+                <path fill="#95BF47" d="M74.7 14.8c-.1-.7-.7-1.1-1.2-1.1-.5 0-10.5-.3-10.5-.3S55.3 5.8 54.5 5c-.8-.8-2.2-.6-2.8-.4l-1.6.5C49 4.1 48 3.8 46.8 3.8c-7.3-.2-10.8 9.1-11.9 13.7l-9.5 3-.1.1c-1.5.5-1.6.5-1.7 1.9L19.1 65l44.5 7.8 24-5.2L74.7 14.8z"/>
+                <path fill="#5E8E3E" d="M73.5 13.7c-.5 0-10.5-.3-10.5-.3s-7.7-7.6-8.5-8.4l.8 67.8 23.2-5.2-5-53.9z"/>
+                <path fill="#fff" d="M46.8 26.9l-3.1 9.3s-2.8-1.3-6.1-1.1c-4.8.3-4.9 3.3-4.8 4.1.4 6.6 17.8 8.1 18.8 23.7.7 12.3-6.5 20.7-17 21.4-12.6.8-19.5-6.6-19.5-6.6l2.7-11.4s6.9 5.2 12.5 4.8c3.6-.2 4.9-3.2 4.8-5.3-.6-8.6-14.7-8.1-15.6-22.4C19.9 30.6 27.7 17 46 16c7.6-.5 11.3 1.4 11.3 1.4l-10.5 9.5z"/>
+              </svg>
             </div>
-            <div className="meta-content" data-reveal="right" data-delay="1">
-              <div className="section-label">Powered by Shopify</div>
-              <h2 className="section-title">Your catalog.<br />In every ad, live.</h2>
-              <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                Ephermal connects directly to the official Shopify Admin API — reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
-              </p>
-              <div className="meta-platforms">
-                <div className="meta-platform-card">
-                  <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
-                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" strokeLinecap="round" strokeLinejoin="round"/>
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <path d="M16 10a4 4 0 01-8 0" strokeLinecap="round"/>
+            <div style={{ fontSize: '36px', fontWeight: 900, letterSpacing: '-1px', color: '#96BF48', marginTop: '14px', marginBottom: '16px' }}>Shopify</div>
+            <h2 className="section-title" style={{ margin: '0 0 16px' }}>Your catalog. In every ad, live.</h2>
+            <p className="section-sub" style={{ maxWidth: '560px', margin: '0 auto 40px' }}>
+              Ephermal connects directly to the official Shopify Admin API — reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '12px', maxWidth: '640px', margin: '0 auto' }}>
+              {[
+                'Official Admin API — no scraping',
+                'Real-time product & pricing sync',
+                'Bestseller detection for smarter ads',
+                'Secure OAuth 2.0 — token never leaves Supabase',
+              ].map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--muted)', background: 'rgba(150,191,72,0.07)', border: '1px solid rgba(150,191,72,0.18)', borderRadius: '20px', padding: '7px 14px' }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#96BF48" strokeWidth="2.5" width="13" height="13">
+                    <polyline points="20 6 9 17 4 12" />
                   </svg>
-                  <div>
-                    <div className="meta-platform-name">Product Catalog</div>
-                    <div className="meta-platform-sub">Live sync · Pricing · Inventory</div>
-                  </div>
+                  {f}
                 </div>
-                <div className="meta-platform-card">
-                  <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
-                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  <div>
-                    <div className="meta-platform-name">Admin API</div>
-                    <div className="meta-platform-sub">OAuth 2.0 · Secure · Official</div>
-                  </div>
-                </div>
-              </div>
-              <div className="meta-features">
-                {[
-                  'Official Shopify Admin API — no scraping or middleware',
-                  'Real-time product, pricing and inventory sync',
-                  'Bestseller and collection detection for smarter ads',
-                  'Secure OAuth 2.0 — your store token never leaves Supabase',
-                ].map((f, i) => (
-                  <div key={i} className="meta-feat">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    {f}
-                  </div>
-                ))}
-              </div>
+              ))}
             </div>
           </div>
         </div>
