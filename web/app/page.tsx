@@ -2,6 +2,7 @@ import FAQ from '../components/FAQ';
 import ScrollReveal from '../components/ScrollReveal';
 import NavScrolled from '../components/NavScrolled';
 import NavAuth from '../components/NavAuth';
+import AgentNetwork from '../components/AgentNetwork';
 
 export default function Home() {
   return (
@@ -449,25 +450,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <div className="agent-grid" data-reveal="right" data-delay="2">
-              {[
-                { num: '01', name: 'Store Analyzer', desc: 'Reads your live catalog, pricing, and bestsellers in real time.' },
-                { num: '02', name: 'Copy Agent', desc: 'Writes headlines, hooks, and ad copy for each product.' },
-                { num: '03', name: 'UGC Agent', desc: 'Generates creator-style scripts from your product data.' },
-                { num: '04', name: 'Meta Agent', desc: 'Creates and manages Facebook and Instagram campaigns.' },
-                { num: '05', name: 'Google Agent', desc: 'Handles Search, Shopping, and Performance Max.' },
-                { num: '06', name: 'Audience Agent', desc: 'Builds custom and lookalike audiences from store data.' },
-                { num: '07', name: 'Analytics Agent', desc: 'Tracks ROAS and surfaces performance signals.' },
-              ].map((a) => (
-                <div key={a.num} className="agent-item">
-                  <div className="agent-num">{a.num}</div>
-                  <div>
-                    <div className="agent-name">{a.name}</div>
-                    <div className="agent-desc">{a.desc}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <AgentNetwork />
           </div>
         </div>
       </section>
