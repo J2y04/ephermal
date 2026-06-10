@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service — Ephermal',
+  title: 'Terms of Service - Ephermal',
   description: 'Terms and conditions for using the Ephermal platform.',
 };
 
@@ -47,10 +47,10 @@ export default function TermsPage() {
           <h2>3. Subscriptions &amp; Billing</h2>
           <p>Ephermal operates on a monthly subscription model billed in advance. Prices are displayed on our pricing page in USD and are subject to change with 30 days&apos; notice. For EU/EEA merchants, currency conversion rates may affect the local-currency equivalent cost.</p>
           <ul>
-            <li><strong>No free trial</strong> — all plans require payment upfront. Subscriptions begin immediately upon checkout completion.</li>
-            <li><strong>Renewals</strong> — subscriptions renew automatically each billing period. You may cancel at any time; cancellation takes effect at the end of the current billing period with no pro-rata refund.</li>
-            <li><strong>UGC credit packs</strong> — supplementary credit packs are a one-time purchase and are non-refundable once any credits have been consumed.</li>
-            <li><strong>Refunds</strong> — subscription payments are non-refundable except where required by applicable law.</li>
+            <li><strong>No free trial</strong>: all plans require payment upfront. Subscriptions begin immediately upon checkout completion.</li>
+            <li><strong>Renewals</strong>: subscriptions renew automatically each billing period. You may cancel at any time; cancellation takes effect at the end of the current billing period with no pro-rata refund.</li>
+            <li><strong>UGC credit packs</strong>: supplementary credit packs are a one-time purchase and are non-refundable once any credits have been consumed.</li>
+            <li><strong>Refunds</strong>: subscription payments are non-refundable except where required by applicable law.</li>
           </ul>
           <p>All payments are processed by Stripe. By providing payment information, you also agree to <a href="https://stripe.com/legal/ssa" target="_blank" rel="noopener noreferrer">Stripe&apos;s terms</a>.</p>
           <p>From February 2027, in accordance with Meta Developer Policy Section 10.6a, you have the right to request a statement of the exact amount spent on Meta ads on your behalf through our platform, separate from Ephermal subscription fees. Contact <a href="mailto:hello@ephermal.app">hello@ephermal.app</a> to request this at any time.</p>

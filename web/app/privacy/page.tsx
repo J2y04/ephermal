@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Ephermal',
+  title: 'Privacy Policy - Ephermal',
   description: 'How Ephermal collects, uses, and protects your data.',
 };
 
@@ -38,11 +38,11 @@ export default function PrivacyPage() {
           <h2>2. Data We Collect</h2>
           <p>We collect only what is necessary to operate the service:</p>
           <ul>
-            <li><strong>Account data</strong> — name, email address, password (hashed with bcrypt), and optionally a Google account ID when using Google Sign-In.</li>
-            <li><strong>Shopify store data</strong> — store domain, products, orders, and customer analytics accessed via the Shopify Admin API under your authorised OAuth permissions.</li>
-            <li><strong>Ad account data</strong> — Meta Ads and Google Ads access tokens (encrypted at rest using AES-256 Fernet), ad account IDs, campaign performance metrics.</li>
-            <li><strong>Billing data</strong> — payment is processed entirely by Stripe. We store only a Stripe customer ID and subscription status — we never see or store your card details.</li>
-            <li><strong>Usage data</strong> — pages visited, features used, and session metadata for platform improvement.</li>
+            <li><strong>Account data</strong>: name, email address, password (hashed with bcrypt), and optionally a Google account ID when using Google Sign-In.</li>
+            <li><strong>Shopify store data</strong>: store domain, products, orders, and customer analytics accessed via the Shopify Admin API under your authorised OAuth permissions.</li>
+            <li><strong>Ad account data</strong>: Meta Ads and Google Ads access tokens (encrypted at rest using AES-256 Fernet), ad account IDs, campaign performance metrics.</li>
+            <li><strong>Billing data</strong>: payment is processed entirely by Stripe. We store only a Stripe customer ID and subscription status; we never see or store your card details.</li>
+            <li><strong>Usage data</strong>: pages visited, features used, and session metadata for platform improvement.</li>
           </ul>
         </div>
 
@@ -50,10 +50,10 @@ export default function PrivacyPage() {
           <h2>3. Legal Basis for Processing (GDPR Art. 6)</h2>
           <p>Under the General Data Protection Regulation (GDPR) and UK GDPR, we rely on the following lawful bases for processing your personal data:</p>
           <ul>
-            <li><strong>Performance of contract (Art. 6(1)(b))</strong> — Core service delivery: generating ad creatives, launching campaigns, managing integrations with Shopify/Meta/Google, sending transactional emails, and processing payments via Stripe.</li>
-            <li><strong>Legal obligation (Art. 6(1)(c))</strong> — Retaining billing records for tax and accounting purposes as required by applicable law.</li>
-            <li><strong>Legitimate interests (Art. 6(1)(f))</strong> — Analysing platform usage data to improve reliability and performance. You may object to this processing at any time by contacting us.</li>
-            <li><strong>Consent (Art. 6(1)(a))</strong> — Where you choose to use Google Sign-In, we process your Google account ID on the basis of your consent. You may withdraw this consent at any time by contacting <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>; withdrawal does not affect the lawfulness of prior processing.</li>
+            <li><strong>Performance of contract (Art. 6(1)(b))</strong>: Core service delivery: generating ad creatives, launching campaigns, managing integrations with Shopify/Meta/Google, sending transactional emails, and processing payments via Stripe.</li>
+            <li><strong>Legal obligation (Art. 6(1)(c))</strong>: Retaining billing records for tax and accounting purposes as required by applicable law.</li>
+            <li><strong>Legitimate interests (Art. 6(1)(f))</strong>: Analysing platform usage data to improve reliability and performance. You may object to this processing at any time by contacting us.</li>
+            <li><strong>Consent (Art. 6(1)(a))</strong>: Where you choose to use Google Sign-In, we process your Google account ID on the basis of your consent. You may withdraw this consent at any time by contacting <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>; withdrawal does not affect the lawfulness of prior processing.</li>
           </ul>
         </div>
 
@@ -66,19 +66,19 @@ export default function PrivacyPage() {
             <li>To improve platform reliability and performance.</li>
           </ul>
           <p>We do not sell, rent, or share your personal data with third parties for their own marketing purposes. We do not share personal information for cross-context behavioural advertising.</p>
-          <p>We do not use your store data, customer data, or advertising performance data to train, fine-tune, or improve any AI or machine learning model — data is used solely to generate creatives and manage campaigns on your behalf as part of the Service.</p>
+          <p>We do not use your store data, customer data, or advertising performance data to train, fine-tune, or improve any AI or machine learning model. Data is used solely to generate creatives and manage campaigns on your behalf as part of the Service.</p>
         </div>
 
         <div className="legal-section">
           <h2>5. Third-Party Services &amp; Sub-Processors</h2>
           <p>The following third-party processors handle data on our behalf under appropriate Data Processing Agreements, identifying their role, data received, and transfer safeguard:</p>
           <ul>
-            <li><strong>Stripe, Inc.</strong> (US) — payment processing; billing information. Safeguard: EU–US Data Privacy Framework (DPF). <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe Privacy Policy</a></li>
-            <li><strong>Shopify Inc.</strong> (Canada) — store data via OAuth; store domain, products, orders, customer analytics. Safeguard: EU adequacy decision for Canada. <a href="https://www.shopify.com/legal/privacy" target="_blank" rel="noopener noreferrer">Shopify Privacy Policy</a></li>
-            <li><strong>Meta Platforms Ireland Ltd</strong> (EU entity) — ad account management; ad account IDs and campaign data. Safeguard: Standard Contractual Clauses (SCCs) for onward transfers. <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener noreferrer">Meta Privacy Policy</a></li>
-            <li><strong>Google Ireland Ltd</strong> (EU entity) — Google Ads management and optional Sign-In; ad account data and Google account ID. Safeguard: SCCs for onward transfers. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a></li>
-            <li><strong>Clerk.com, Inc.</strong> (US) — authentication and user account management; name, email, session data. Safeguard: Standard Contractual Clauses. <a href="https://clerk.com/privacy" target="_blank" rel="noopener noreferrer">Clerk Privacy Policy</a></li>
-            <li><strong>Supabase, Inc.</strong> (US; EU-region data hosting) — database infrastructure; all account and operational data. Safeguard: Standard Contractual Clauses. <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a></li>
+            <li><strong>Stripe, Inc.</strong> (US): payment processing; billing information. Safeguard: EU–US Data Privacy Framework (DPF). <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe Privacy Policy</a></li>
+            <li><strong>Shopify Inc.</strong> (Canada): store data via OAuth; store domain, products, orders, customer analytics. Safeguard: EU adequacy decision for Canada. <a href="https://www.shopify.com/legal/privacy" target="_blank" rel="noopener noreferrer">Shopify Privacy Policy</a></li>
+            <li><strong>Meta Platforms Ireland Ltd</strong> (EU entity): ad account management; ad account IDs and campaign data. Safeguard: Standard Contractual Clauses (SCCs) for onward transfers. <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener noreferrer">Meta Privacy Policy</a></li>
+            <li><strong>Google Ireland Ltd</strong> (EU entity): Google Ads management and optional Sign-In; ad account data and Google account ID. Safeguard: SCCs for onward transfers. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a></li>
+            <li><strong>Clerk.com, Inc.</strong> (US): authentication and user account management; name, email, session data. Safeguard: Standard Contractual Clauses. <a href="https://clerk.com/privacy" target="_blank" rel="noopener noreferrer">Clerk Privacy Policy</a></li>
+            <li><strong>Supabase, Inc.</strong> (US; EU-region data hosting): database infrastructure; all account and operational data. Safeguard: Standard Contractual Clauses. <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a></li>
           </ul>
         </div>
 
@@ -94,17 +94,17 @@ export default function PrivacyPage() {
           <p>All data is stored on EU-hosted infrastructure (Supabase EU region). OAuth tokens are encrypted at rest using AES-256 (Fernet). Passwords are hashed using bcrypt. All data in transit is protected by TLS 1.3.</p>
           <p>Retention periods by data category:</p>
           <ul>
-            <li><strong>Account data</strong> (name, email, password hash) — retained for the duration of your account; deleted within 30 days of account closure.</li>
-            <li><strong>Shopify store data</strong> (products, orders, customer analytics) — retained for the duration of your Shopify integration; deleted within 30 days of disconnection or account closure.</li>
-            <li><strong>Ad account tokens &amp; campaign data</strong> — tokens deleted immediately on disconnection; campaign metrics retained for the duration of your account, deleted within 30 days of closure. Google Ads data is subject to Google&apos;s 37-month retention limit.</li>
-            <li><strong>Usage data</strong> (session metadata, feature usage) — retained on a rolling 12-month basis.</li>
-            <li><strong>Billing data</strong> (Stripe customer ID, subscription status) — retained for 7 years as required by applicable tax law.</li>
+            <li><strong>Account data</strong> (name, email, password hash): retained for the duration of your account; deleted within 30 days of account closure.</li>
+            <li><strong>Shopify store data</strong> (products, orders, customer analytics): retained for the duration of your Shopify integration; deleted within 30 days of disconnection or account closure.</li>
+            <li><strong>Ad account tokens &amp; campaign data</strong>: tokens deleted immediately on disconnection; campaign metrics retained for the duration of your account, deleted within 30 days of closure. Google Ads data is subject to Google&apos;s 37-month retention limit.</li>
+            <li><strong>Usage data</strong> (session metadata, feature usage): retained on a rolling 12-month basis.</li>
+            <li><strong>Billing data</strong> (Stripe customer ID, subscription status): retained for 7 years as required by applicable tax law.</li>
           </ul>
         </div>
 
         <div className="legal-section">
           <h2>8. Automated Processing &amp; Decision-Making</h2>
-          <p>Ephermal uses automated processing — including analysis of your Shopify store data, product catalogue, and advertising performance metrics — to autonomously generate ad creatives and optimise campaign targeting. This constitutes automated decision-making within the meaning of GDPR Article 22.</p>
+          <p>Ephermal uses automated processing, including analysis of your Shopify store data, product catalogue, and advertising performance metrics, to autonomously generate ad creatives and optimise campaign targeting. This constitutes automated decision-making within the meaning of GDPR Article 22.</p>
           <p>The logic analyses product attributes, historical performance, and audience signals to select creative formats, copy, and targeting parameters. The envisaged consequences are adjustments to how your advertising budget is deployed across Meta and Google.</p>
           <p>You retain the right to review and approve all AI-generated creatives before publication, reject any automated output, and request human review of any decision by contacting <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>.</p>
         </div>
@@ -113,12 +113,12 @@ export default function PrivacyPage() {
           <h2>9. Your Rights (GDPR &amp; UK GDPR)</h2>
           <p>Under GDPR and UK GDPR, you have the right to:</p>
           <ul>
-            <li><strong>Access</strong> — request a copy of the personal data we hold about you.</li>
-            <li><strong>Rectification</strong> — correct inaccurate data.</li>
-            <li><strong>Erasure (&quot;Right to be forgotten&quot;)</strong> — request deletion of your data.</li>
-            <li><strong>Portability</strong> — receive your data in a machine-readable format.</li>
-            <li><strong>Objection / Restriction</strong> — object to or restrict certain processing, including processing based on legitimate interests.</li>
-            <li><strong>Withdraw consent</strong> — at any time where processing is based on consent (e.g. Google Sign-In), without affecting the lawfulness of prior processing.</li>
+            <li><strong>Access</strong>: request a copy of the personal data we hold about you.</li>
+            <li><strong>Rectification</strong>: correct inaccurate data.</li>
+            <li><strong>Erasure (&quot;Right to be forgotten&quot;)</strong>: request deletion of your data.</li>
+            <li><strong>Portability</strong>: receive your data in a machine-readable format.</li>
+            <li><strong>Objection / Restriction</strong>: object to or restrict certain processing, including processing based on legitimate interests.</li>
+            <li><strong>Withdraw consent</strong>: at any time where processing is based on consent (e.g. Google Sign-In), without affecting the lawfulness of prior processing.</li>
           </ul>
           <p>To exercise any of these rights, email <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>. We will respond within one month (extendable by a further two months for complex requests, with notice within the first month).</p>
         </div>
@@ -127,13 +127,13 @@ export default function PrivacyPage() {
           <h2>10. Additional Rights for California Residents (CCPA/CPRA)</h2>
           <p>If you are a California resident, the CCPA and CPRA grant you the following additional rights:</p>
           <ul>
-            <li><strong>Right to Know</strong> — request the categories and specific pieces of personal information collected, used, or disclosed about you in the preceding 12 months.</li>
-            <li><strong>Right to Delete</strong> — request deletion of your personal information, subject to certain exceptions.</li>
-            <li><strong>Right to Correct</strong> — request correction of inaccurate personal information.</li>
-            <li><strong>Right to Opt-Out of Sale or Sharing</strong> — We do not sell personal information. We do not share personal information for cross-context behavioural advertising. No opt-out action is required, but you may contact us to confirm at any time.</li>
-            <li><strong>Right to Limit Sensitive Personal Information</strong> — We do not process sensitive personal information beyond what is necessary to provide the Service.</li>
-            <li><strong>Right to Non-Discrimination</strong> — We will not discriminate against you for exercising any CCPA/CPRA right.</li>
-            <li><strong>Right to Use an Authorised Agent</strong> — You may designate an authorised agent to submit requests on your behalf.</li>
+            <li><strong>Right to Know</strong>: request the categories and specific pieces of personal information collected, used, or disclosed about you in the preceding 12 months.</li>
+            <li><strong>Right to Delete</strong>: request deletion of your personal information, subject to certain exceptions.</li>
+            <li><strong>Right to Correct</strong>: request correction of inaccurate personal information.</li>
+            <li><strong>Right to Opt-Out of Sale or Sharing</strong>: We do not sell personal information. We do not share personal information for cross-context behavioural advertising. No opt-out action is required, but you may contact us to confirm at any time.</li>
+            <li><strong>Right to Limit Sensitive Personal Information</strong>: We do not process sensitive personal information beyond what is necessary to provide the Service.</li>
+            <li><strong>Right to Non-Discrimination</strong>: We will not discriminate against you for exercising any CCPA/CPRA right.</li>
+            <li><strong>Right to Use an Authorised Agent</strong>: You may designate an authorised agent to submit requests on your behalf.</li>
           </ul>
           <p>To submit a CCPA/CPRA request, email <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>. We will respond within 45 days, with a possible 45-day extension for complex requests.</p>
         </div>
@@ -161,7 +161,7 @@ export default function PrivacyPage() {
           <p>Questions about this policy: <a href="mailto:hello@ephermal.app">hello@ephermal.app</a></p>
           <p>If you believe we have not handled your data appropriately, you have the right to lodge a complaint:</p>
           <ul>
-            <li><strong>EU data subjects:</strong> Contact our lead supervisory authority (to be confirmed upon company incorporation) — or the DPA in your own EU member state of residence.</li>
+            <li><strong>EU data subjects:</strong> Contact our lead supervisory authority (to be confirmed upon company incorporation), or the DPA in your own EU member state of residence.</li>
             <li><strong>UK data subjects:</strong> Contact the Information Commissioner&apos;s Office (ICO) at <a href="https://ico.org.uk" target="_blank" rel="noopener noreferrer">ico.org.uk</a>.</li>
           </ul>
         </div>

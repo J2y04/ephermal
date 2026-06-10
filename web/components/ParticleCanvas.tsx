@@ -30,7 +30,7 @@ export default function ParticleCanvas() {
       vy = (Math.random() - 0.5) * 0.3;
       r = Math.random() * 1.5 + 0.3;
       alpha = Math.random() * 0.5 + 0.1;
-      color = Math.random() > 0.5 ? '99,102,241' : '139,92,246';
+      color = Math.random() > 0.5 ? '85,88,232' : '139,92,246';
 
       update() {
         this.x += this.vx;
@@ -62,7 +62,7 @@ export default function ParticleCanvas() {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(99,102,241,${0.12 * (1 - d / 120)})`;
+            ctx.strokeStyle = `rgba(85,88,232,${0.12 * (1 - d / 120)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }

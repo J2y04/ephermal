@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ephermal — Account Setup</title>
+<title>Ephermal - Account Setup</title>
 <link rel="icon" type="image/x-icon" href="/ephermal_transparent.ico">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="/config.js"></script>
@@ -13,7 +13,7 @@ html,body{height:100%;overflow-x:hidden}
 body{background:#04050f;font-family:'Inter',sans-serif;display:flex;align-items:flex-start;justify-content:center;min-height:100vh;padding:32px 20px 60px}
 canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 .blob{position:fixed;border-radius:50%;filter:blur(120px);pointer-events:none;z-index:0;transition:transform 1.2s cubic-bezier(0.22,1,0.36,1)}
-.blob-1{width:600px;height:600px;background:rgba(99,102,241,0.13);top:-200px;left:-200px}
+.blob-1{width:600px;height:600px;background:rgba(85,88,232,0.13);top:-200px;left:-200px}
 .blob-2{width:500px;height:500px;background:rgba(139,92,246,0.09);bottom:-150px;right:-150px}
 .page{position:relative;z-index:1;width:100%;max-width:520px;padding-top:16px}
 .logo-wrap{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:32px;opacity:0;transform:translateY(16px);animation:up .6s cubic-bezier(0.22,1,0.36,1) .05s both}
@@ -24,21 +24,21 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-even
 .welcome p{font-size:15px;color:#8892b0;line-height:1.5}
 /* Step progress */
 .progress-row{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:8px;opacity:0;animation:up .6s cubic-bezier(0.22,1,0.36,1) .2s both}
-.s-node{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid rgba(99,102,241,0.25);color:#8892b0;background:#0a0d1f;transition:all .4s;flex-shrink:0}
-.s-node.active{border-color:#6366f1;color:#6366f1;background:rgba(99,102,241,0.1);box-shadow:0 0 16px rgba(99,102,241,0.25)}
+.s-node{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;border:2px solid rgba(85,88,232,0.25);color:#8892b0;background:#0a0d1f;transition:all .4s;flex-shrink:0}
+.s-node.active{border-color:#5558e8;color:#5558e8;background:rgba(85,88,232,0.1);box-shadow:0 0 16px rgba(85,88,232,0.25)}
 .s-node.done{border-color:#34d399;background:rgba(52,211,153,0.1);color:#34d399}
 .s-node.done span::before{content:'✓'}
 .s-node.done span{font-size:0}
 .s-node.done span::before{font-size:14px}
-.s-line{flex:1;height:2px;background:rgba(99,102,241,0.15);max-width:60px;transition:background .4s}
+.s-line{flex:1;height:2px;background:rgba(85,88,232,0.15);max-width:60px;transition:background .4s}
 .s-line.done{background:rgba(52,211,153,0.4)}
 .step-lbls{display:flex;justify-content:space-between;margin-bottom:28px;padding:0 2px;opacity:0;animation:up .6s cubic-bezier(0.22,1,0.36,1) .26s both}
 .step-lbls span{font-size:11px;font-weight:600;color:#8892b0;text-transform:uppercase;letter-spacing:.5px;text-align:center;flex:1}
 /* Cards */
-.step-card{background:rgba(10,13,31,0.88);border:1px solid rgba(99,102,241,0.15);border-radius:24px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 32px 80px rgba(0,0,0,0.4);padding:36px;opacity:0;transform:translateY(20px);animation:up .7s cubic-bezier(0.22,1,0.36,1) .32s both;transition:border-color .3s}
+.step-card{background:rgba(10,13,31,0.88);border:1px solid rgba(85,88,232,0.15);border-radius:24px;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 32px 80px rgba(0,0,0,0.4);padding:36px;opacity:0;transform:translateY(20px);animation:up .7s cubic-bezier(0.22,1,0.36,1) .32s both;transition:border-color .3s}
 .step-card.hidden{display:none}
 .step-card.slide-in{animation:up .55s cubic-bezier(0.22,1,0.36,1) both}
-.platform-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2)}
+.platform-icon{width:64px;height:64px;border-radius:18px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;background:rgba(85,88,232,0.1);border:1px solid rgba(85,88,232,0.2)}
 .platform-icon.shopify{background:rgba(149,191,71,0.1);border-color:rgba(149,191,71,0.25)}
 .platform-icon.meta{background:rgba(24,119,242,0.1);border-color:rgba(24,119,242,0.25)}
 .platform-icon.google{background:rgba(234,67,53,0.08);border-color:rgba(234,67,53,0.2)}
@@ -47,13 +47,13 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-even
 .step-card>p{font-size:14px;color:#8892b0;text-align:center;line-height:1.6;margin-bottom:24px}
 label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
 .field{position:relative;margin-bottom:14px}
-.field input{width:100%;background:#111530;border:1px solid rgba(99,102,241,0.18);border-radius:12px;color:#f0f2ff;font-family:'Inter',sans-serif;font-size:15px;padding:13px 16px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input{width:100%;background:#111530;border:1px solid rgba(85,88,232,0.18);border-radius:12px;color:#f0f2ff;font-family:'Inter',sans-serif;font-size:15px;padding:13px 16px;outline:none;transition:border-color .2s,box-shadow .2s}
 .field input::placeholder{color:#3a4060}
-.field input:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
+.field input:focus{border-color:#5558e8;box-shadow:0 0 0 3px rgba(85,88,232,0.15)}
 .field-hint{font-size:12px;color:#3a4060;margin-top:5px;padding-left:2px}
 .err{font-size:13px;color:#f87171;min-height:20px;margin-bottom:10px;text-align:center}
-.btn-primary{width:100%;padding:14px 24px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.1px;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(99,102,241,0.45)}
+.btn-primary{width:100%;padding:14px 24px;background:linear-gradient(135deg,#5558e8,#8b5cf6);border:none;border-radius:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.1px;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(85,88,232,0.45)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-primary svg{width:18px;height:18px;flex-shrink:0}
 .btn-shopify-connect{width:100%;padding:14px 24px;background:#95BF47;border:none;border-radius:13px;color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.1px;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
@@ -65,8 +65,8 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
 .btn-google-oauth{width:100%;padding:13px 24px;background:#fff;border:1px solid rgba(0,0,0,0.18);border-radius:13px;color:#3c4043;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:all .25s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:14px}
 .btn-google-oauth:hover{background:#f6f6f6;transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.18)}
 .btn-google-oauth:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.account-picker{width:100%;background:#111530;border:1px solid rgba(99,102,241,0.25);border-radius:12px;color:#f0f2ff;font-family:'Inter',sans-serif;font-size:14px;padding:12px 16px;margin-bottom:14px;outline:none;appearance:none;cursor:pointer}
-.account-picker:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,0.15)}
+.account-picker{width:100%;background:#111530;border:1px solid rgba(85,88,232,0.25);border-radius:12px;color:#f0f2ff;font-family:'Inter',sans-serif;font-size:14px;padding:12px 16px;margin-bottom:14px;outline:none;appearance:none;cursor:pointer}
+.account-picker:focus{border-color:#5558e8;box-shadow:0 0 0 3px rgba(85,88,232,0.15)}
 .oauth-info{font-size:12px;color:#3a4060;text-align:center;margin-bottom:14px;line-height:1.6}
 .skip-link{display:block;text-align:center;font-size:13px;color:#4a5280;text-decoration:none;transition:color .2s;padding:4px}
 .skip-link:hover{color:#8892b0}
@@ -75,7 +75,7 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
 .connected-badge span{font-size:14px;color:#34d399;font-weight:600}
 .connected-badge small{font-size:12px;color:#8892b0;display:block;font-weight:400;margin-top:2px}
 .divider{display:flex;align-items:center;gap:12px;margin:20px 0}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(99,102,241,0.12)}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(85,88,232,0.12)}
 .divider span{font-size:12px;color:#3a4060}
 @keyframes up{to{opacity:1;transform:none;filter:blur(0)}}
 .spin{animation:rotate .8s linear infinite}
@@ -143,7 +143,7 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
       <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
     </div>
     <h2>Connect Meta Ads</h2>
-    <p>Log in with Facebook to link your Meta Business ad account — no API keys needed</p>
+    <p>Log in with Facebook to link your Meta Business ad account - no API keys needed</p>
     <!-- Connected badge -->
     <div id="meta-connected-badge" class="connected-badge" style="display:none">
       <div class="dot"></div>
@@ -172,7 +172,7 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
       <svg viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
     </div>
     <h2>Connect Google Ads</h2>
-    <p>Sign in with Google to link your Google Ads account — no API keys needed</p>
+    <p>Sign in with Google to link your Google Ads account - no API keys needed</p>
     <!-- Connected badge -->
     <div id="google-connected-badge" class="connected-badge" style="display:none">
       <div class="dot"></div>
@@ -183,7 +183,7 @@ label{display:block;font-size:12px;font-weight:600;color:#8892b0;text-transform:
       <div class="field">
         <label>Google Ads Customer ID</label>
         <input type="text" id="google-account" placeholder="123-456-7890" autocomplete="off" inputmode="numeric">
-        <div class="field-hint">Visible at the top of your Google Ads account · <a href="https://ads.google.com" target="_blank" rel="noopener noreferrer" style="color:#6366f1">Open Google Ads →</a></div>
+        <div class="field-hint">Visible at the top of your Google Ads account · <a href="https://ads.google.com" target="_blank" rel="noopener noreferrer" style="color:#5558e8">Open Google Ads →</a></div>
       </div>
       <div class="err" id="err-3b"></div>
       <button class="btn-primary" id="btn-google-save" onclick="saveGoogleAccount()">Connect Google Ads →</button>
@@ -215,7 +215,7 @@ for(let i=0;i<90;i++) pts.push(new P());
 function drawLines() {
   for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++) {
     const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y, d=Math.sqrt(dx*dx+dy*dy);
-    if(d<110){ ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.strokeStyle=`rgba(99,102,241,${.08*(1-d/110)})`; ctx.lineWidth=.5; ctx.stroke(); }
+    if(d<110){ ctx.beginPath(); ctx.moveTo(pts[i].x,pts[i].y); ctx.lineTo(pts[j].x,pts[j].y); ctx.strokeStyle=`rgba(85,88,232,${.08*(1-d/110)})`; ctx.lineWidth=.5; ctx.stroke(); }
   }
 }
 (function anim(){ ctx.clearRect(0,0,W,H); pts.forEach(p=>{p.update();p.draw();}); drawLines(); requestAnimationFrame(anim); })();
@@ -281,11 +281,11 @@ async function startShopifyOAuth() {
   errEl.textContent = '';
   if (!raw) { errEl.textContent = 'Please enter your store URL'; return; }
   if (!window.SHOPIFY_APP_KEY || window.SHOPIFY_APP_KEY === 'YOUR_SHOPIFY_APP_CLIENT_ID') {
-    errEl.textContent = 'Shopify app not configured — contact support';
+    errEl.textContent = 'Shopify app not configured - contact support';
     return;
   }
   const userId = window.Clerk?.user?.id || '';
-  if (!userId) { errEl.textContent = 'Not signed in — please refresh and try again'; return; }
+  if (!userId) { errEl.textContent = 'Not signed in - please refresh and try again'; return; }
   let shop = raw.replace(/https?:\/\//,'').replace(/\/.*$/,'').toLowerCase().trim();
   if (!shop.includes('.')) shop = shop + '.myshopify.com';
   if (!/^[a-z0-9-]+\.myshopify\.com$/.test(shop)) {
@@ -300,7 +300,7 @@ async function startShopifyOAuth() {
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clerkToken}`, 'apikey': window.SUPABASE_ANON },
     body: JSON.stringify({ platform: 'shopify', page: 'setup', nonce })
   });
-  if (!stateRes.ok) { errEl.textContent = 'Failed to initialize OAuth — please try again.'; btn.disabled = false; return; }
+  if (!stateRes.ok) { errEl.textContent = 'Failed to initialize OAuth - please try again.'; btn.disabled = false; return; }
   const { state } = await stateRes.json();
   localStorage.setItem('shopify_oauth_nonce', nonce);
   localStorage.setItem('shopify_oauth_shop', shop);
@@ -326,21 +326,21 @@ async function handleShopifyReturn() {
   window.history.replaceState({}, document.title, '/setup.html');
 
   if (shopifyError) {
-    document.getElementById('err-1').textContent = 'Shopify connection failed — please try again.';
+    document.getElementById('err-1').textContent = 'Shopify connection failed - please try again.';
     return;
   }
 
   const claimCode   = p.get('claim');
   const returnNonce = p.get('nonce') || '';
   if (connected !== '1' || !claimCode) {
-    document.getElementById('err-1').textContent = 'Invalid OAuth return — please try again.';
+    document.getElementById('err-1').textContent = 'Invalid OAuth return - please try again.';
     return;
   }
 
   // CSRF: validate nonce from localStorage against nonce URL param
   const savedNonce = localStorage.getItem('shopify_oauth_nonce');
   if (!savedNonce || !returnNonce || savedNonce !== returnNonce) {
-    document.getElementById('err-1').textContent = 'Security check failed — please try again.';
+    document.getElementById('err-1').textContent = 'Security check failed - please try again.';
     return;
   }
   localStorage.removeItem('shopify_oauth_nonce');
@@ -354,7 +354,7 @@ async function handleShopifyReturn() {
 
   const data = await claimOAuth(claimCode, userId, 'shopify');
   if (!data || !data.access_token) {
-    document.getElementById('err-1').textContent = 'Connection timed out — please try again.';
+    document.getElementById('err-1').textContent = 'Connection timed out - please try again.';
     if (btn) { btn.disabled = false; btn.textContent = 'Connect with Shopify'; }
     return;
   }
@@ -383,11 +383,11 @@ async function startMetaOAuth() {
   const appId = window.META_APP_ID;
   const callbackUrl = window.META_CALLBACK_URL;
   if (!appId || appId === 'YOUR_META_APP_ID' || !callbackUrl) {
-    err.textContent = 'Meta app not configured — contact support@ephermal.app';
+    err.textContent = 'Meta app not configured - contact support@ephermal.app';
     return;
   }
   const userId = window.Clerk?.user?.id || '';
-  if (!userId) { err.textContent = 'Not signed in — please refresh and try again'; return; }
+  if (!userId) { err.textContent = 'Not signed in - please refresh and try again'; return; }
   const btn = document.getElementById('btn-meta');
   btn.disabled = true;
   btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:18px;height:18px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting…';
@@ -399,7 +399,7 @@ async function startMetaOAuth() {
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clerkToken}`, 'apikey': window.SUPABASE_ANON },
     body: JSON.stringify({ platform: 'meta', page: 'setup', nonce })
   });
-  if (!stateRes.ok) { err.textContent = 'Failed to initialize OAuth — please try again.'; btn.disabled = false; btn.innerHTML = 'Continue with Facebook'; return; }
+  if (!stateRes.ok) { err.textContent = 'Failed to initialize OAuth - please try again.'; btn.disabled = false; btn.innerHTML = 'Continue with Facebook'; return; }
   const { state } = await stateRes.json();
   localStorage.setItem('meta_oauth_nonce', nonce);
   const scope = 'ads_read,ads_management,business_management';
@@ -425,21 +425,21 @@ async function checkMetaOAuthReturn() {
 
   const errEl = document.getElementById('err-2');
   if (metaError) {
-    if (errEl) errEl.textContent = 'Meta connection failed — please try again.';
+    if (errEl) errEl.textContent = 'Meta connection failed - please try again.';
     return;
   }
 
   const claimCode  = p.get('claim');
   const returnNonce = p.get('nonce') || '';
   if (connected !== '1' || !claimCode) {
-    if (errEl) errEl.textContent = 'Invalid OAuth return — please try again.';
+    if (errEl) errEl.textContent = 'Invalid OAuth return - please try again.';
     return;
   }
 
   // CSRF nonce check
   const savedNonce = localStorage.getItem('meta_oauth_nonce');
   if (!savedNonce || !returnNonce || savedNonce !== returnNonce) {
-    if (errEl) errEl.textContent = 'Security check failed — please try again.';
+    if (errEl) errEl.textContent = 'Security check failed - please try again.';
     return;
   }
   localStorage.removeItem('meta_oauth_nonce');
@@ -452,7 +452,7 @@ async function checkMetaOAuthReturn() {
 
   const data = await claimOAuth(claimCode, userId, 'meta');
   if (!data || !data.access_token) {
-    if (errEl) errEl.textContent = 'Connection timed out — please try again.';
+    if (errEl) errEl.textContent = 'Connection timed out - please try again.';
     if (btn) { btn.disabled = false; btn.textContent = 'Connect Meta Ads'; }
     return;
   }
@@ -500,21 +500,21 @@ async function startGoogleOAuth() {
   const err = document.getElementById('err-3');
   err.textContent = '';
   if (!window.GOOGLE_OAUTH_CLIENT_ID || window.GOOGLE_OAUTH_CLIENT_ID.includes('YOUR_GOOGLE')) {
-    err.textContent = 'Google OAuth not configured — contact support@ephermal.app';
+    err.textContent = 'Google OAuth not configured - contact support@ephermal.app';
     return;
   }
   const btn = document.getElementById('btn-google');
   btn.disabled = true; btn.textContent = 'Connecting…';
   try {
     const token = await window.Clerk?.session?.getToken();
-    if (!token) { err.textContent = 'Not signed in — please refresh.'; btn.disabled = false; btn.innerHTML = _googleBtnHTML(); return; }
+    if (!token) { err.textContent = 'Not signed in - please refresh.'; btn.disabled = false; btn.innerHTML = _googleBtnHTML(); return; }
     const nonce = [...crypto.getRandomValues(new Uint8Array(16))].map(b=>b.toString(16).padStart(2,'0')).join('');
     const stateRes = await fetch(`${window.SUPABASE_URL}/functions/v1/oauth-state-init`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ platform: 'google', page: 'setup', nonce }),
     });
-    if (!stateRes.ok) { err.textContent = 'Failed to initialize OAuth — please try again.'; btn.disabled = false; btn.innerHTML = _googleBtnHTML(); return; }
+    if (!stateRes.ok) { err.textContent = 'Failed to initialize OAuth - please try again.'; btn.disabled = false; btn.innerHTML = _googleBtnHTML(); return; }
     const { state } = await stateRes.json();
     localStorage.setItem('google_oauth_nonce', nonce);
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
@@ -527,7 +527,7 @@ async function startGoogleOAuth() {
     authUrl.searchParams.set('prompt', 'consent');
     window.location.href = authUrl.toString();
   } catch(e) {
-    err.textContent = 'Failed to start OAuth — please try again.';
+    err.textContent = 'Failed to start OAuth - please try again.';
     btn.disabled = false; btn.innerHTML = _googleBtnHTML();
   }
 }
@@ -555,7 +555,7 @@ async function checkGoogleOAuthReturn() {
     headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON },
     body: JSON.stringify({ claim, user_id: userId, platform: 'google' }),
   });
-  if (!res.ok) { document.getElementById('err-3').textContent = 'Google connection failed — please try again.'; return; }
+  if (!res.ok) { document.getElementById('err-3').textContent = 'Google connection failed - please try again.'; return; }
   const payload = await res.json();
   if (payload.customer_id) localStorage.setItem('google_account', payload.customer_id);
   document.getElementById('btn-google').style.display = 'none';
@@ -606,7 +606,7 @@ async function boot() {
       await window.Clerk.load();
       if (!window.Clerk.user) { window.location.replace('/auth/register.html'); return; }
       const name = window.Clerk.user.firstName || window.Clerk.user.username || '';
-      if (name) document.getElementById('welcome-heading').textContent = `Welcome, ${name} — let's set up your account`;
+      if (name) document.getElementById('welcome-heading').textContent = `Welcome, ${name} - let's set up your account`;
     } catch(e) {}
   }
   // Handle OAuth redirects after Clerk is loaded (user ID needed for claim exchange)

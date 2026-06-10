@@ -2,7 +2,6 @@ import FAQ from '../components/FAQ';
 import ScrollReveal from '../components/ScrollReveal';
 import NavScrolled from '../components/NavScrolled';
 import NavAuth from '../components/NavAuth';
-import AIOrb from '../components/AIOrb';
 
 export default function Home() {
   return (
@@ -30,8 +29,6 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="hero">
-        <div className="blob blob-1" />
-        <div className="blob blob-2" />
         <div className="hero-badge" data-reveal="blur">
           <span className="badge-dot" />
           AI-Powered Advertising for Shopify
@@ -54,10 +51,10 @@ export default function Home() {
         <p className="hero-sub" data-reveal data-delay="1">
           Stop paying $3,000/month for an agency that doesn&apos;t understand your store.
           Ephermal reads your Shopify catalog, writes AI-powered ads, and launches
-          across Meta and Google — set up in minutes, not months.
+          across Meta and Google, set up in minutes, not months.
         </p>
         <div className="hero-actions" data-reveal data-delay="2">
-          <a href="/auth/register.html" className="btn-primary">Get Started →</a>
+          <a href="/auth/register.html" className="btn-primary">Get Started</a>
           <a href="#how-it-works" className="btn-secondary">See how it works</a>
         </div>
         <p className="hero-proof" data-reveal data-delay="3">
@@ -144,28 +141,16 @@ export default function Home() {
           <div className="compare-card good" data-reveal="right">
             <div className="compare-label">The Ephermal Way</div>
             <ul className="compare-list">
-              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>From $89/month — less than one bad ad</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>From $89/month, less than one bad ad</li>
               <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Live campaigns in under 60 seconds</li>
               <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Real UGC-style ads built from your products</li>
               <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Live ROAS dashboard, 24/7</li>
-              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>AI reads your store — you explain nothing</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>AI reads your store. You explain nothing.</li>
             </ul>
           </div>
         </div>
       </div>
 
-      {/* ── Social Proof Strip ── */}
-      <div className="social-proof" data-reveal>
-        <p className="sp-label">Built for Shopify brands across every niche</p>
-        <div className="brands-row" data-stagger>
-          <div className="brand-pill">Fashion &amp; Apparel</div>
-          <div className="brand-pill">Beauty &amp; Skincare</div>
-          <div className="brand-pill">Home &amp; Living</div>
-          <div className="brand-pill">Sports &amp; Fitness</div>
-          <div className="brand-pill">Food &amp; Wellness</div>
-          <div className="brand-pill">Tech Accessories</div>
-        </div>
-      </div>
 
       {/* ── How It Works ── */}
       <section className="section" id="how-it-works">
@@ -184,12 +169,12 @@ export default function Home() {
             <div className="step" data-reveal data-delay="2">
               <div className="step-num">02</div>
               <h3>AI Reads Everything</h3>
-              <p>Ephermal scans your products, pricing, bestsellers and brand voice — building a complete advertising strategy, automatically.</p>
+              <p>Ephermal scans your products, pricing, bestsellers and brand voice, building a complete advertising strategy automatically.</p>
             </div>
             <div className="step" data-reveal data-delay="3">
               <div className="step-num">03</div>
               <h3>AI Ad Content Built</h3>
-              <p>Creator-style scripts, hooks, headlines, and copy — generated from your actual products. Not a template library. Every creative is specific to your store and audience.</p>
+              <p>Creator-style scripts, hooks, headlines, and copy generated from your actual products. Not a template library. Every creative is specific to your store and audience.</p>
             </div>
             <div className="step" data-reveal data-delay="4">
               <div className="step-num">04</div>
@@ -197,17 +182,9 @@ export default function Home() {
               <p>Campaigns go live across Meta and Google Ads. The AI monitors ROAS across placements, surfaces what&apos;s working, and tells you exactly where to scale.</p>
             </div>
           </div>
-          {/* Agent cores row */}
+          {/* Agent summary */}
           <div className="hiw-agents" data-reveal data-delay="1">
-            <p className="hiw-agents-label">Powered by 7 AI agents working in concert</p>
-            <div className="hiw-agent-row">
-              {['Store Analyzer', 'Copy Agent', 'UGC Agent', 'Meta Agent', 'Google Agent', 'Audience Agent', 'Analytics Agent'].map((name, i) => (
-                <div key={i} className="hiw-agent-pill">
-                  <span className="hiw-agent-dot" />
-                  {name}
-                </div>
-              ))}
-            </div>
+            <p className="hiw-agents-label">7 specialized agents running on your store around the clock</p>
           </div>
         </div>
       </section>
@@ -224,31 +201,31 @@ export default function Home() {
               {
                 icon: <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
                 title: 'Live Store Intelligence',
-                desc: 'Ephermal reads your Shopify store in real-time — inventory, pricing, bestsellers — and reflects it live in every ad. When your price changes, your ad updates.',
+                desc: 'Ephermal reads your Shopify store in real time: inventory, pricing, bestsellers. Reflected live in every ad. When your price changes, your ad updates.',
                 tag: 'Real-time sync', delay: '1',
               },
               {
                 icon: <><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8M12 17v4" /></>,
                 title: 'AI Content Engine',
-                desc: 'Creator-style scripts, hooks, headlines, and ad copy — generated from your actual product catalog. Every brief is unique to your store, not pulled from a template library.',
+                desc: 'Creator-style scripts, hooks, headlines, and ad copy generated from your actual product catalog. Every brief is unique to your store, not pulled from a template library.',
                 tag: 'Script & Copy Engine', delay: '2',
               },
               {
                 icon: <path d="M18 20V10M12 20V4M6 20v-6" />,
                 title: 'Meta Ads Automation',
-                desc: 'Full campaign creation on your Facebook & Instagram accounts. Copy, audiences, budgets, launch — all autonomous. You just watch the ROAS climb.',
+                desc: 'Full campaign creation on your Facebook & Instagram accounts. Copy, audiences, budgets, launch: all autonomous. You just watch the ROAS.',
                 tag: 'Powered by Meta Ads API', delay: '3',
               },
               {
                 icon: <><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></>,
                 title: 'Google Ads Automation',
-                desc: 'Launch and scale Search, Shopping and Performance Max campaigns on Google — automatically. Ephermal handles keyword selection, bidding, creative and budget allocation. Growth+ only.',
+                desc: 'Launch and scale Search, Shopping and Performance Max campaigns on Google. Ephermal handles keyword selection, bidding, creative and budget allocation. Growth+ only.',
                 tag: 'Powered by Google Ads API', delay: '4',
               },
               {
                 icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
                 title: 'Audience Intelligence',
-                desc: 'Ephermal builds custom audiences from your store data, then finds similar buyers across Meta and Google. Lookalike audiences, retargeting, and Pixel + CAPI — all automated.',
+                desc: 'Ephermal builds custom audiences from your store data, then finds similar buyers across Meta and Google. Lookalike audiences, retargeting, and Pixel + CAPI, all automated.',
                 tag: 'Meta Pixel + CAPI · Google Signals', delay: '1',
               },
               {
@@ -289,7 +266,7 @@ export default function Home() {
             </div>
             <h2 className="section-title shopify-green-title" style={{ margin: '0 0 20px' }}>Your catalog.<br />In every ad, live.</h2>
             <p className="section-sub" style={{ maxWidth: '560px', margin: '0 auto 32px' }}>
-              Ephermal connects directly to the official Shopify Admin API — reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
+              Ephermal connects directly to the official Shopify Admin API, reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
             </p>
             <div className="meta-platforms" style={{ justifyContent: 'center' }}>
               <div className="meta-platform-card">
@@ -315,10 +292,10 @@ export default function Home() {
             </div>
             <div className="meta-features" style={{ maxWidth: '520px', margin: '0 auto' }}>
               {[
-                'Official Shopify Admin API — no scraping or middleware',
+                'Official Shopify Admin API: no scraping or middleware',
                 'Real-time product, pricing and inventory sync',
                 'Bestseller and collection detection for smarter ads',
-                'Secure OAuth 2.0 — your store token never leaves Supabase',
+                'Secure OAuth 2.0: your store token never leaves Supabase',
               ].map((f, i) => (
                 <div key={i} className="meta-feat">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
@@ -344,7 +321,7 @@ export default function Home() {
               <div className="section-label">Powered by Meta</div>
               <h2 className="section-title">Facebook &amp; Instagram,<br />natively integrated.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                Ephermal connects directly to Meta&apos;s official Ads API — the same infrastructure used by the world&apos;s largest advertisers. We don&apos;t scrape, simulate, or use third-party middleware. Your campaigns run natively inside Meta&apos;s ad platform.
+                Ephermal connects directly to Meta&apos;s official Ads API, the same infrastructure used by the world&apos;s largest advertisers. No scraping, no third-party middleware. Your campaigns run natively inside Meta&apos;s ad platform.
               </p>
               <div className="meta-platforms">
                 <div className="meta-platform-card">
@@ -368,7 +345,7 @@ export default function Home() {
               </div>
               <div className="meta-features">
                 {[
-                  'Native Meta Ads API — no third-party middleware',
+                  'Native Meta Ads API: no third-party middleware',
                   'Automated campaign creation & budget management',
                   'Pixel + Conversions API for precise attribution',
                   'Dynamic creative testing across all placements',
@@ -422,7 +399,7 @@ export default function Home() {
               </div>
               <div className="meta-features">
                 {[
-                  'Google Ads API — native campaign creation',
+                  'Google Ads API: native campaign creation',
                   'AI keyword research from your product catalog',
                   'Performance Max with your UGC creatives',
                   'Smart bidding: Target ROAS & Target CPA',
@@ -435,7 +412,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)', borderRadius: '10px', fontSize: '13px', color: 'var(--primary, #6366f1)', fontWeight: 600 }}>
+              <div style={{ marginTop: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(85,88,232,0.1)', border: '1px solid rgba(85,88,232,0.25)', borderRadius: '10px', fontSize: '13px', color: 'var(--primary, #5558e8)', fontWeight: 600 }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 Available on Growth &amp; Scale plans
               </div>
@@ -460,18 +437,14 @@ export default function Home() {
         <div className="container">
           <div className="agent-wrap">
             <div className="agent-text" data-reveal="left">
-              <div className="section-label">The Intelligence Core</div>
+              <div className="section-label">Under the hood</div>
               <h2 className="section-title">One brain.<br />Seven specialists.</h2>
-              <p className="section-sub">The Ephermal Orchestrator coordinates a team of specialized AI agents — each one an expert in its domain, all working together on your store around the clock.</p>
-              <p style={{ marginTop: '16px', fontSize: '13px', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)', flexShrink: 0 }} />
-                The same agent infrastructure used by the world&apos;s leading AI companies — running silently in the background, 24/7.
-              </p>
+              <p className="section-sub">The Ephermal Orchestrator coordinates a team of specialized AI agents, each one built for a specific part of running your ad operation.</p>
               <div className="feature-list">
                 {[
                   { title: 'Orchestrator Agent', body: 'The core intelligence. Analyzes your store, plans strategy and coordinates every specialist agent in sequence.' },
-                  { title: 'Performance Signals', body: 'Ephermal tracks results across your campaigns and continuously refines its strategy — informed by what actually converts in your category, not guesswork.' },
-                  { title: 'Full Transparency', body: 'See exactly what the AI decided and why. Approve creatives before launch. You\'re always in control.' },
+                  { title: 'Performance Signals', body: 'Ephermal tracks results across your campaigns and refines its strategy based on what actually converts in your category.' },
+                  { title: 'Full Transparency', body: 'See exactly what the AI decided and why. Approve creatives before launch. You are always in control.' },
                 ].map((f, i) => (
                   <div key={i} className="feat-item" data-reveal data-delay={String(i + 1)}>
                     <div className="feat-dot" />
@@ -480,8 +453,24 @@ export default function Home() {
                 ))}
               </div>
             </div>
-            <div className="agent-orb-wrap" data-reveal="right" data-delay="2">
-              <AIOrb />
+            <div className="agent-grid" data-reveal="right" data-delay="2">
+              {[
+                { num: '01', name: 'Store Analyzer', desc: 'Reads your live catalog, pricing, and bestsellers in real time.' },
+                { num: '02', name: 'Copy Agent', desc: 'Writes headlines, hooks, and ad copy for each product.' },
+                { num: '03', name: 'UGC Agent', desc: 'Generates creator-style scripts from your product data.' },
+                { num: '04', name: 'Meta Agent', desc: 'Creates and manages Facebook and Instagram campaigns.' },
+                { num: '05', name: 'Google Agent', desc: 'Handles Search, Shopping, and Performance Max.' },
+                { num: '06', name: 'Audience Agent', desc: 'Builds custom and lookalike audiences from store data.' },
+                { num: '07', name: 'Analytics Agent', desc: 'Tracks ROAS and surfaces performance signals.' },
+              ].map((a) => (
+                <div key={a.num} className="agent-item">
+                  <div className="agent-num">{a.num}</div>
+                  <div>
+                    <div className="agent-name">{a.name}</div>
+                    <div className="agent-desc">{a.desc}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -491,24 +480,23 @@ export default function Home() {
       <section className="section stats-section" id="about">
         <div className="container">
           <div data-reveal>
-            <div className="section-label">By the numbers</div>
-            <h2 className="section-title">Results that compound.</h2>
+            <h2 className="section-title">What you actually get.</h2>
           </div>
           <div className="stats-grid" data-stagger>
             <div className="stat-block">
-              <div className="stat-num" data-count="3" data-count-suffix="min">3 min</div>
+              <div className="stat-num">3 min</div>
               <div className="stat-label">From Shopify install to first campaign live</div>
             </div>
             <div className="stat-block">
-              <div className="stat-num" data-count="89" data-count-suffix="">$89</div>
-              <div className="stat-label">Per month — a fraction of any agency retainer</div>
+              <div className="stat-num">$89</div>
+              <div className="stat-label">Per month, a fraction of any agency retainer</div>
             </div>
             <div className="stat-block">
-              <div className="stat-num" data-count="2" data-count-suffix="">2</div>
-              <div className="stat-label">Ad platforms automated — Meta and Google Ads</div>
+              <div className="stat-num">2</div>
+              <div className="stat-label">Ad platforms automated: Meta and Google Ads</div>
             </div>
             <div className="stat-block">
-              <div className="stat-num" data-count="0" data-count-suffix="">$0</div>
+              <div className="stat-num">$0</div>
               <div className="stat-label">Hidden fees, long contracts, or agency markups</div>
             </div>
           </div>
@@ -522,7 +510,7 @@ export default function Home() {
             <div className="big-quote">
               &ldquo;The store doesn&apos;t sleep.<br />Neither should <span>your ads.</span>&rdquo;
             </div>
-            <p className="quote-attr">— The Ephermal Principle</p>
+            <p className="quote-attr">Ephermal</p>
           </div>
           <div data-reveal style={{ maxWidth: '680px', margin: '0 auto 40px', textAlign: 'center' }}>
             <div className="section-label" style={{ marginBottom: '16px' }}>Early access</div>
@@ -530,7 +518,7 @@ export default function Home() {
               We just launched.<br />We want to work with you directly.
             </h3>
             <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.75 }}>
-              Ephermal is new. We don&apos;t have hundreds of success stories — we have a product
+              Ephermal is new. We don&apos;t have hundreds of success stories. We have a product
               we believe in and a small group of Shopify brands testing it in real stores.
               If your store does $5k–$80k/month and you&apos;re tired of agency fees, we&apos;ll
               onboard you personally.
@@ -538,8 +526,8 @@ export default function Home() {
           </div>
           <div className="quotes-grid" data-stagger>
             {[
-              { title: 'Locked-in pricing', body: 'Early subscribers get today\'s prices locked — no increases when we scale up.', delay: '1' },
-              { title: 'Direct founder access', body: 'Questions, setup, feature requests — you reach us directly. Not a support ticket queue.', delay: '2' },
+              { title: 'Locked-in pricing', body: 'Early subscribers get today\'s prices locked. No increases when we scale up.', delay: '1' },
+              { title: 'Direct founder access', body: 'Questions, setup, feature requests: you reach us directly. Not a support ticket queue.', delay: '2' },
               { title: 'Shape the roadmap', body: 'Your feedback drives what we build next. Early users have real influence on the product.', delay: '3' },
             ].map((p, i) => (
               <div key={i} className="quote-card" data-reveal="pop" data-delay={p.delay} style={{ textAlign: 'left' }}>
@@ -550,10 +538,10 @@ export default function Home() {
           </div>
           <div data-reveal style={{ textAlign: 'center', marginTop: '36px' }}>
             <a href="/auth/register.html" className="btn-primary" style={{ fontSize: '16px', padding: '16px 40px' }}>
-              Get Early Access →
+              Get Early Access
             </a>
             <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)' }}>
-              No commitment · Setup in 3 minutes · Founder onboarding included
+              Setup in 3 minutes · Founder onboarding included
             </p>
           </div>
         </div>
@@ -565,13 +553,13 @@ export default function Home() {
           <div data-reveal>
             <div className="section-label">Pricing</div>
             <h2 className="section-title">Less than one bad ad.</h2>
-            <p className="section-sub" style={{ margin: '0 auto' }}>No agency fees. No hidden costs. Cancel any time.</p>
+            <p className="section-sub" style={{ margin: '0 auto' }}>Flat monthly rate. No long-term contracts. Cancel from your dashboard.</p>
           </div>
           <div className="pricing-grid">
             <div className="price-card" data-reveal="pop" data-delay="1" data-spotlight>
               <div className="price-badge">Starter</div>
               <div className="price-amount"><sup>$</sup>89</div>
-              <div className="price-per">/ month — save $2,911 vs an agency</div>
+              <div className="price-per">/ month, saves $2,911 vs an agency</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 15 UGC credits / month
@@ -599,7 +587,7 @@ export default function Home() {
                       ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{flexShrink:0,marginTop:'1px'}}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                       : <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                     }
-                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:badge==='Scale'?'#06d6c7':'#6366f1',fontWeight:700}}>{badge}</span>}
+                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:badge==='Scale'?'#06d6c7':'#5558e8',fontWeight:700}}>{badge}</span>}
                   </li>
                 ))}
               </ul>
@@ -608,7 +596,7 @@ export default function Home() {
             <div className="price-card featured" data-reveal="pop" data-delay="2" data-spotlight>
               <div className="price-badge">Growth</div>
               <div className="price-amount"><sup>$</sup>199</div>
-              <div className="price-per">/ month — save $2,801 vs an agency</div>
+              <div className="price-per">/ month, saves $2,801 vs an agency</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 75 UGC credits / month
@@ -647,7 +635,7 @@ export default function Home() {
             <div className="price-card" data-reveal="pop" data-delay="3" data-spotlight>
               <div className="price-badge">Scale</div>
               <div className="price-amount"><sup>$</sup>349</div>
-              <div className="price-per">/ month — white-label available</div>
+              <div className="price-per">/ month, white-label available</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 350 UGC credits / month
@@ -683,17 +671,13 @@ export default function Home() {
 
       {/* ── Final CTA ── */}
       <section className="cta-section">
-        <div className="blob blob-3" />
         <div className="cta-wrap" data-reveal>
-          <p style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: 600, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '20px' }}>
-            Launch your first AI-powered ad today
-          </p>
           <h2>Your next customer<br />is one ad away.</h2>
-          <p>Install Ephermal. Connect your store. Let the AI do the rest — forever.</p>
+          <p>Install once. Your campaigns run 24/7.</p>
           <a href="/auth/register.html" className="btn-primary" style={{ fontSize: '18px', padding: '20px 48px' }}>
-            Get Started →
+            Get Started
           </a>
-          <p className="cta-note">Setup in 3 minutes · Cancel any time</p>
+          <p className="cta-note">Shopify OAuth takes 90 seconds. Cancel from settings.</p>
         </div>
       </section>
 

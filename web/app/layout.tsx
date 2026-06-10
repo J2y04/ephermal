@@ -5,11 +5,11 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ephermal — AI Advertising Agent for Shopify',
+    default: 'Ephermal: AI Advertising Agent for Shopify',
     template: '%s | Ephermal',
   },
   description:
-    'Ephermal is the AI advertising agent for Shopify stores. Automate Meta Ads and Google Ads, generate real UGC videos, and compound ROAS — all from one dashboard. Setup in under 3 minutes.',
+    'Ephermal is the AI advertising agent for Shopify stores. Automate Meta Ads and Google Ads, generate real UGC videos, and compound ROAS, all from one dashboard. Setup in under 3 minutes.',
   keywords: [
     'Ephermal',
     'Ephermal app',
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     canonical: 'https://ephermal.app/',
   },
   openGraph: {
-    title: 'Ephermal — AI Advertising Agent for Shopify',
+    title: 'Ephermal: AI Advertising Agent for Shopify',
     description:
       'Automate Meta Ads, Google Ads and UGC creation for your Shopify store with AI. From install to live campaigns in under 60 seconds.',
     url: 'https://ephermal.app',
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
         url: 'https://ephermal.app/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Ephermal — AI Advertising Agent for Shopify',
+        alt: 'Ephermal: AI Advertising Agent for Shopify',
       },
     ],
   },
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@ephermal',
     creator: '@ephermal',
-    title: 'Ephermal — AI Advertising Agent for Shopify',
+    title: 'Ephermal: AI Advertising Agent for Shopify',
     description:
       'Automate Meta Ads, Google Ads and UGC creation for your Shopify store with AI.',
     images: ['https://ephermal.app/og-image.png'],
@@ -131,7 +131,7 @@ const jsonLd = {
       operatingSystem: 'Web',
       url: 'https://ephermal.app',
       description:
-        'Ephermal automates your Shopify advertising. Connect Meta Ads and Google Ads — the AI creates real UGC video ads, launches campaigns, and optimises ROAS around the clock.',
+        'Ephermal automates your Shopify advertising. Connect Meta Ads and Google Ads. The AI creates real UGC video ads, launches campaigns, and optimises ROAS around the clock.',
       offers: [
         {
           '@type': 'Offer',
