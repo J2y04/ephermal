@@ -29,10 +29,6 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="hero">
-        <div className="hero-badge" data-reveal="blur">
-          <span className="badge-dot" />
-          AI-Powered Advertising for Shopify
-        </div>
         <h1 data-split>
           {['You', 'Build', 'It.'].map((w, i) => (
             <span key={i} className="split-word">

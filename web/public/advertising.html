@@ -50,9 +50,6 @@ nav:hover{border-color:rgba(85,88,232,0.3)}
 .orb2{width:200px;height:200px;background:rgba(6,214,199,.08);top:20%;right:8%;animation-delay:-3s}
 .orb3{width:250px;height:250px;background:rgba(139,92,246,.1);bottom:15%;left:10%;animation-delay:-5s}
 @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(20px,-30px) scale(1.05)}66%{transform:translate(-15px,20px) scale(.95)}}
-.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(6,214,199,0.1);border:1px solid rgba(6,214,199,0.3);color:var(--accent);font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;padding:7px 16px;border-radius:20px;margin-bottom:28px;animation:fadeUp .6s ease both}
-.badge-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(1.6)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
 h1{font-size:clamp(44px,7.5vw,88px);font-weight:900;letter-spacing:-3px;line-height:1.02;margin-bottom:24px;animation:fadeUp .7s .1s ease both}
 .h1-gradient{background:linear-gradient(135deg,var(--text) 30%,var(--primary) 60%,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
@@ -208,7 +205,6 @@ footer{border-top:1px solid var(--border);padding:48px 24px;display:flex;flex-di
   <div class="hero-glow2"></div>
   <div class="hero-orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
 
-  <div class="badge"><span class="badge-dot"></span>Now Live</div>
   <h1><span class="h1-gradient">Your AI Ad CFO.</span></h1>
   <p class="hero-sub">Set a revenue goal. Ephermal reverse-engineers the budget, allocates across Meta and Google, and auto-scales winning campaigns, without you touching a single ad manager.</p>
   <div class="hero-actions">

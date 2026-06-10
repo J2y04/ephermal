@@ -166,14 +166,6 @@ a { text-decoration: none; color: inherit; }
   0%   { transform: translate(0px, 0px) scale(1); }
   100% { transform: translate(24px, 16px) scale(1.06); }
 }
-.hero-badge {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(85,88,232,0.12); border: 1px solid rgba(85,88,232,0.3);
-  padding: 6px 16px; border-radius: 100px;
-  font-size: 13px; color: #a5b4fc;
-  margin-bottom: 32px;
-}
-.badge-dot { width: 6px; height: 6px; background: var(--accent); border-radius: 50%; }
 .hero h1 {
   font-size: clamp(42px, 7vw, 88px);
   font-weight: 900; line-height: 1.05;
