@@ -711,6 +711,9 @@ export default function Home() {
                   {f:'AI UGC script writer',locked:true,badge:'Growth+'},
                   {f:'Store intelligence & audiences',locked:true,badge:'Growth+'},
                   {f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},
+                  {f:'Competitor Radar (ad spy)',locked:true,badge:'Growth+'},
+                  {f:'Creative Brief AI',locked:true,badge:'Growth+'},
+                  {f:'Profit Tracker',locked:true,badge:'Growth+'},
                   {f:'Bulk campaign management',locked:true,badge:'Scale'},
                   {f:'Multi-store consolidated view',locked:true,badge:'Scale'},
                   {f:'White-label option',locked:true,badge:'Scale'},
@@ -748,6 +751,9 @@ export default function Home() {
                   {f:'Store intelligence & audiences'},
                   {f:'Full campaign analytics'},
                   {f:'Closed-loop ROAS optimization'},
+                  {f:'Competitor Radar (ad spy)'},
+                  {f:'Creative Brief AI'},
+                  {f:'Profit Tracker'},
                   {f:'Priority AI agents'},
                   {f:'Bulk campaign management', locked:true, badge:'Scale'},
                   {f:'Multi-store consolidated view', locked:true, badge:'Scale'},
@@ -774,7 +780,7 @@ export default function Home() {
                 350 UGC credits / month
               </div>
               <ul className="price-features">
-                {['Unlimited stores','350 UGC creatives / month','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','White-label option','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
+                {['Unlimited stores','350 UGC creatives / month','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Priority AI agents','Bulk campaign management','Multi-store consolidated view','White-label option','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
                   <li key={f}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>{f}</li>
                 ))}
               </ul>
