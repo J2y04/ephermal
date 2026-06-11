@@ -1,9 +1,10 @@
 'use client';
-import { motion, type Transition } from 'framer-motion';
+import { motion } from 'framer-motion';
 
-const BASE: Transition = { type: 'spring', stiffness: 55, damping: 13 };
+/* Apple / Linear-style ease-out-expo — fast start, long smooth tail */
+const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
-const GRADIENT_STYLE: React.CSSProperties = {
+const GRADIENT: React.CSSProperties = {
   background: 'linear-gradient(135deg, #5558e8 0%, #8b5cf6 45%, #06d6c7 100%)',
   backgroundSize: '200% 200%',
   WebkitBackgroundClip: 'text',
@@ -12,45 +13,33 @@ const GRADIENT_STYLE: React.CSSProperties = {
   animation: 'gradientDrift 7s ease-in-out infinite alternate',
 };
 
-/** Mask wrapper — clips the word so it slides up from below */
-function MaskWord({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return (
-    <span style={{
-      display: 'inline-block',
-      overflow: 'hidden',
-      verticalAlign: 'bottom',
-      paddingBottom: '0.06em',
-      marginRight: '0.22em',
-    }}>
-      <span style={{ display: 'inline-block', ...style }}>
-        {children}
-      </span>
-    </span>
-  );
-}
-
-function Word({
-  word, index, gradient,
-}: { word: string; index: number; gradient?: boolean }) {
-  return (
-    <MaskWord style={gradient ? GRADIENT_STYLE : undefined}>
-      <motion.span
-        initial={{ y: '108%', opacity: gradient ? 1 : 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ ...BASE, delay: index * 0.1 } as Transition}
-        style={{ display: 'inline-block' }}
-      >
-        {word}
-      </motion.span>
-    </MaskWord>
-  );
-}
-
 interface HeroMotionProps {
   line1: string[];
   line2: string[];
   sub: React.ReactNode;
   cta: React.ReactNode;
+}
+
+function Word({ word, index, gradient }: { word: string; index: number; gradient?: boolean }) {
+  return (
+    /* Mask: clips word so it slides up from below without layout shift */
+    <span style={{ display: 'inline-block', overflow: 'hidden', verticalAlign: 'bottom', paddingBottom: '0.06em', marginRight: '0.22em' }}>
+      <motion.span
+        initial={gradient
+          ? { y: '100%' }
+          : { y: '100%', opacity: 0, filter: 'blur(8px)' }
+        }
+        animate={gradient
+          ? { y: 0 }
+          : { y: 0, opacity: 1, filter: 'blur(0px)' }
+        }
+        transition={{ duration: 0.82, ease: EASE, delay: index * 0.055 }}
+        style={{ display: 'inline-block', ...(gradient ? GRADIENT : {}) }}
+      >
+        {word}
+      </motion.span>
+    </span>
+  );
 }
 
 export default function HeroMotion({ line1, line2, sub, cta }: HeroMotionProps) {
@@ -67,18 +56,18 @@ export default function HeroMotion({ line1, line2, sub, cta }: HeroMotionProps) 
 
       <motion.p
         className="hero-sub"
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ ...BASE, delay: 0.6 } as Transition}
+        initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
+        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+        transition={{ duration: 0.9, ease: EASE, delay: 0.48 }}
       >
         {sub}
       </motion.p>
 
       <motion.div
         className="hero-actions"
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ ...BASE, delay: 0.75 } as Transition}
+        transition={{ duration: 0.75, ease: EASE, delay: 0.62 }}
       >
         {cta}
       </motion.div>
