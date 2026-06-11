@@ -221,7 +221,7 @@ export default function Home() {
               {
                 icon: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
                 title: 'ROAS Optimisation',
-                desc: 'Ephermal monitors performance across your campaigns and flags what&apos;s draining budget. Clear signals so you&apos;re always allocating spend where it actually converts.',
+                desc: "Ephermal monitors performance across your campaigns and flags what's draining budget. Clear signals so you're always allocating spend where it actually converts.",
                 tag: 'Performance-driven', delay: '3',
               },
             ].map((s: { icon: React.ReactNode; title: string; desc: string; tag: string; delay: string; cite?: { label: string; href: string } }, i) => (
