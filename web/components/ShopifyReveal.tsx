@@ -1,21 +1,6 @@
 'use client';
-import { useRef } from 'react';
-import { motion, useScroll, useTransform, type MotionValue } from 'framer-motion';
-
-/* ─────────────────────────────────────────
-   Smooth ease-out-expo — cinematic, not robotic
-───────────────────────────────────────── */
-const EASE = [0.16, 1, 0.3, 1] as const;
-
-function useFade(p: MotionValue<number>, enter: [number, number], exitAt?: [number, number]) {
-  const range = exitAt ? [enter[0], enter[1], exitAt[0], exitAt[1]] : [enter[0], enter[1]];
-  const output = exitAt ? [0, 1, 1, 0] : [0, 1];
-  return useTransform(p, range, output);
-}
-
-function useSlide(p: MotionValue<number>, enter: [number, number], distance = 28) {
-  return useTransform(p, enter, [distance, 0]);
-}
+import { useRef, useEffect, useState } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 const FEATURES = [
   'Official Shopify Admin API: no scraping or middleware',
@@ -26,42 +11,76 @@ const FEATURES = [
 
 export default function ShopifyReveal() {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ['start start', 'end end'],
-  });
 
-  /* Each element enters at its own scroll band */
-  const logoOpacity = useFade(scrollYProgress, [0.0, 0.12]);
-  const logoScale   = useTransform(scrollYProgress, [0.0, 0.12], [0.78, 1]);
-  const logoY       = useSlide(scrollYProgress, [0.0, 0.12], 20);
+  /* Raw window scrollY — guaranteed to update on every scroll event */
+  const { scrollY } = useScroll();
 
-  const titleOpacity = useFade(scrollYProgress, [0.15, 0.28]);
-  const titleY       = useSlide(scrollYProgress, [0.15, 0.28]);
+  const [sectionTop, setSectionTop] = useState(99999);
+  const [sectionH,   setSectionH]   = useState(4800);
+  const [vh,         setVh]         = useState(900);
 
-  const subOpacity = useFade(scrollYProgress, [0.30, 0.44]);
-  const subY       = useSlide(scrollYProgress, [0.30, 0.44]);
+  useEffect(() => {
+    const measure = () => {
+      if (!ref.current) return;
+      const rect = ref.current.getBoundingClientRect();
+      setSectionTop(rect.top + window.scrollY);
+      setSectionH(ref.current.offsetHeight);
+      setVh(window.innerHeight);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
-  const cardsOpacity = useFade(scrollYProgress, [0.48, 0.60]);
-  const cardsY       = useSlide(scrollYProgress, [0.48, 0.60]);
+  /*
+   * 0 = section top enters viewport bottom (section slides in)
+   * ~0.36 = section top reaches viewport top (sticky pins)
+   * 1 = section bottom exits viewport bottom
+   */
+  const scrollYProgress = useTransform(
+    scrollY,
+    [sectionTop - vh, sectionTop - vh + sectionH],
+    [0, 1],
+    { clamp: true },
+  );
 
-  const featOpacity = (i: number) => useFade(scrollYProgress, [0.60 + i * 0.07, 0.70 + i * 0.07]);
-  const featY       = (i: number) => useSlide(scrollYProgress, [0.60 + i * 0.07, 0.70 + i * 0.07], 16);
+  /* ── All useTransform calls at top level — no helper functions ── */
 
-  /* ── Feature rows (4 items, hooks must be called unconditionally) ── */
-  const f0o = featOpacity(0); const f0y = featY(0);
-  const f1o = featOpacity(1); const f1y = featY(1);
-  const f2o = featOpacity(2); const f2y = featY(2);
-  const f3o = featOpacity(3); const f3y = featY(3);
+  /* Logo: enters while section slides up, fully visible when pinned */
+  const logoO  = useTransform(scrollYProgress, [0.05, 0.30], [0, 1],      { clamp: true });
+  const logoSc = useTransform(scrollYProgress, [0.05, 0.30], [0.82, 1],   { clamp: true });
+  const logoY  = useTransform(scrollYProgress, [0.05, 0.30], [32, 0],     { clamp: true });
+
+  /* Title: reveals shortly after section pins (~0.36) */
+  const titleO = useTransform(scrollYProgress, [0.42, 0.56], [0, 1],      { clamp: true });
+  const titleY = useTransform(scrollYProgress, [0.42, 0.56], [32, 0],     { clamp: true });
+
+  /* Sub-paragraph */
+  const subO   = useTransform(scrollYProgress, [0.56, 0.67], [0, 1],      { clamp: true });
+  const subY   = useTransform(scrollYProgress, [0.56, 0.67], [24, 0],     { clamp: true });
+
+  /* Platform cards */
+  const cardsO = useTransform(scrollYProgress, [0.67, 0.76], [0, 1],      { clamp: true });
+  const cardsY = useTransform(scrollYProgress, [0.67, 0.76], [20, 0],     { clamp: true });
+
+  /* Feature bullet rows — 4 items, all called unconditionally at top level */
+  const f0O    = useTransform(scrollYProgress, [0.76, 0.82], [0, 1],      { clamp: true });
+  const f0Y    = useTransform(scrollYProgress, [0.76, 0.82], [16, 0],     { clamp: true });
+  const f1O    = useTransform(scrollYProgress, [0.79, 0.85], [0, 1],      { clamp: true });
+  const f1Y    = useTransform(scrollYProgress, [0.79, 0.85], [16, 0],     { clamp: true });
+  const f2O    = useTransform(scrollYProgress, [0.82, 0.88], [0, 1],      { clamp: true });
+  const f2Y    = useTransform(scrollYProgress, [0.82, 0.88], [16, 0],     { clamp: true });
+  const f3O    = useTransform(scrollYProgress, [0.85, 0.91], [0, 1],      { clamp: true });
+  const f3Y    = useTransform(scrollYProgress, [0.85, 0.91], [16, 0],     { clamp: true });
+
   const featRows = [
-    { o: f0o, y: f0y },
-    { o: f1o, y: f1y },
-    { o: f2o, y: f2y },
-    { o: f3o, y: f3y },
+    { o: f0O, y: f0Y },
+    { o: f1O, y: f1Y },
+    { o: f2O, y: f2Y },
+    { o: f3O, y: f3Y },
   ];
 
   return (
-    /* Tall outer div — gives the sticky panel room to scroll through */
     <div
       ref={ref}
       style={{
@@ -84,7 +103,7 @@ export default function ShopifyReveal() {
 
           {/* 1. Shopify logo */}
           <motion.div
-            style={{ opacity: logoOpacity, scale: logoScale, y: logoY, marginBottom: 36, display: 'inline-block' }}
+            style={{ opacity: logoO, scale: logoSc, y: logoY, marginBottom: 36, display: 'inline-block' }}
           >
             <div style={{ animation: 'shopifyFloat 4s ease-in-out infinite' }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="-91.815 -43.65 795.73 261.9" width="340" height="112" aria-label="Shopify" fill="#96BF48">
@@ -99,7 +118,7 @@ export default function ShopifyReveal() {
           {/* 2. Title */}
           <motion.h2
             className="section-title shopify-green-title"
-            style={{ margin: '0 0 20px', opacity: titleOpacity, y: titleY }}
+            style={{ margin: '0 0 20px', opacity: titleO, y: titleY }}
           >
             Your catalog.<br />In every ad, live.
           </motion.h2>
@@ -107,7 +126,7 @@ export default function ShopifyReveal() {
           {/* 3. Sub */}
           <motion.p
             className="section-sub"
-            style={{ maxWidth: '520px', margin: '0 auto 28px', opacity: subOpacity, y: subY }}
+            style={{ maxWidth: '520px', margin: '0 auto 28px', opacity: subO, y: subY }}
           >
             Ephermal connects directly to the official Shopify Admin API, reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
           </motion.p>
@@ -115,7 +134,7 @@ export default function ShopifyReveal() {
           {/* 4. Platform cards */}
           <motion.div
             className="meta-platforms"
-            style={{ justifyContent: 'center', marginBottom: 24, opacity: cardsOpacity, y: cardsY }}
+            style={{ justifyContent: 'center', marginBottom: 24, opacity: cardsO, y: cardsY }}
           >
             <div className="meta-platform-card">
               <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
@@ -139,7 +158,7 @@ export default function ShopifyReveal() {
             </div>
           </motion.div>
 
-          {/* 5. Feature rows */}
+          {/* 5. Feature bullet rows */}
           <div className="meta-features" style={{ maxWidth: '480px', margin: '0 auto' }}>
             {FEATURES.map((f, i) => (
               <motion.div
