@@ -558,38 +558,61 @@ export default function Home() {
               Most Shopify brands are paying for 4–6 disconnected tools, switching between dashboards, and still missing the full picture. Ephermal runs the entire marketing loop — brief, launch, attribution, profit — in one place.
             </p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '32px' }}>
-            {[
-              { tool: 'AdCreative.ai', cost: '$149/mo', does: 'AI ad creatives', ephermal: 'Creative Brief + UGC scripts' },
-              { tool: 'Madgicx', cost: '$49+/mo', does: 'Meta Ads automation', ephermal: 'Meta + Google, both automated' },
-              { tool: 'Triple Whale', cost: '$129/mo', does: 'Attribution & analytics', ephermal: 'ROAS dashboard, live' },
-              { tool: 'Foreplay.co', cost: '$49/mo', does: 'Competitor ad spy', ephermal: 'Competitor Radar built-in' },
-              { tool: 'Profitmetrics.io', cost: '$79/mo', does: 'Profit tracking', ephermal: 'Profit Tracker + margin optimisation' },
-              { tool: 'Agency retainer', cost: '$3,000/mo', does: 'Strategy + execution', ephermal: 'Full AI agent, 24/7' },
-            ].map((r, i) => (
-              <div key={i} data-reveal data-delay={String((i % 3) + 1)} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '22px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
-                  <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)' }}>{r.tool}</span>
-                  <span style={{ fontWeight: 700, fontSize: '13px', color: '#EA4335', background: 'rgba(234,67,53,0.1)', padding: '2px 8px', borderRadius: '6px' }}>{r.cost}</span>
+          {/* Invoice */}
+          <div data-reveal style={{ maxWidth: '640px', margin: '0 auto 32px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', overflow: 'hidden' }}>
+            {/* Invoice header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '28px 32px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <div>
+                <div style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Monthly Statement</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', fontFamily: 'monospace' }}>#INV-2026-0041</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>Billed to: Your Shopify store</div>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: '#EA4335', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(234,67,53,0.12)', border: '1px solid rgba(234,67,53,0.25)', padding: '4px 10px', borderRadius: '6px', marginBottom: '6px' }}>Past Due</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Auto-renews monthly</div>
+              </div>
+            </div>
+            {/* Line items */}
+            <div style={{ padding: '8px 32px 20px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0', marginBottom: '4px', padding: '8px 0 6px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                <span style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Description</span>
+                <span style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'right' }}>Amount</span>
+              </div>
+              {[
+                { desc: 'AI ad creative & UGC platform',         amount: '$149.00' },
+                { desc: 'Paid social automation & optimisation', amount: '$49.00'  },
+                { desc: 'Attribution & ROAS analytics',          amount: '$129.00' },
+                { desc: 'Competitor ad intelligence',            amount: '$49.00'  },
+                { desc: 'Profit & margin tracking',              amount: '$79.00'  },
+                { desc: 'Marketing strategy & execution',        amount: '$3,000.00' },
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center' }}>
+                  <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{item.desc}</span>
+                  <span style={{ fontSize: '13px', color: 'rgba(234,67,53,0.9)', fontWeight: 600, fontFamily: 'monospace', textAlign: 'right' }}>{item.amount}</span>
                 </div>
-                <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px' }}>{r.does}</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#96BF48', fontWeight: 600 }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#96BF48" strokeWidth="2.5" width="13" height="13" style={{ flexShrink: 0 }}>
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  {r.ephermal}
+              ))}
+              {/* Total row */}
+              <div style={{ marginTop: '16px', padding: '16px 20px', background: 'rgba(234,67,53,0.07)', border: '1px solid rgba(234,67,53,0.15)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>Monthly total</div>
+                  <div style={{ fontSize: '28px', fontWeight: 900, color: '#EA4335', fontFamily: 'monospace', letterSpacing: '-1px' }}>$3,455.00</div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>That&apos;s per year</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(234,67,53,0.7)', fontFamily: 'monospace' }}>$41,460.00</div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
-          <div data-reveal style={{ textAlign: 'center', padding: '32px', background: 'linear-gradient(135deg, rgba(85,88,232,0.12), rgba(6,214,199,0.08))', border: '1px solid rgba(85,88,232,0.25)', borderRadius: '20px', marginBottom: '16px' }}>
-            <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '8px' }}>You&apos;d pay $3,455+/month for those 6 tools separately.</div>
-            <div style={{ fontSize: '32px', fontWeight: 900, color: 'var(--text)', marginBottom: '4px' }}>Ephermal does all of it for <span style={{ color: 'var(--accent)' }}>$89/month.</span></div>
-            <div style={{ fontSize: '13px', color: 'var(--muted)' }}>That&apos;s a 97% saving — with a single unified AI brain, not 6 disconnected tabs.</div>
+
+          {/* Knockout */}
+          <div data-reveal style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'center', padding: '36px 32px', background: 'linear-gradient(135deg, rgba(150,191,72,0.1), rgba(6,214,199,0.07))', border: '1px solid rgba(150,191,72,0.25)', borderRadius: '20px' }}>
+            <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '10px' }}>Everything on that statement. One tool. One tab.</div>
+            <div style={{ fontSize: 'clamp(32px,5vw,48px)', fontWeight: 900, color: 'var(--text)', letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '10px' }}>
+              Ephermal. <span style={{ color: 'var(--accent)' }}>$89/month.</span>
+            </div>
+            <div style={{ fontSize: '14px', color: 'var(--muted)' }}>No agency. No contracts. Cancel any time.</div>
           </div>
-          <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--muted)', opacity: 0.55 }}>
-            Competitor prices based on publicly listed starting rates as of 2026 and may vary. Competitor names used for factual comparison only.
-          </p>
         </div>
       </section>
 
