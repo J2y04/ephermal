@@ -92,6 +92,9 @@ function resolveFunctionName(path: string): string | null {
   if (/^\/(optimize|roas)/.test(path))              return 'roas-optimizer';
   if (/^\/(budget)/.test(path))                     return 'budget-ai';
   if (/^\/(launch)/.test(path))                     return 'campaign-launcher';
+  if (/^\/(creative-brief)/.test(path))             return 'creative-brief';
+  if (/^\/(competitor-radar)/.test(path))           return 'competitor-radar';
+  if (/^\/(profit-tracker)/.test(path))             return 'profit-tracker';
   return null;
 }
 
@@ -111,6 +114,9 @@ const PATH_TO_ACTION: Record<string, string> = {
   'roas':               'analyze',
   'budget':             'calculate',
   'launch':             'prepare',
+  'creative-brief':     'generate',
+  'competitor-radar':   'search',
+  'profit-tracker':     'get_report',
 };
 
 /** Build the target Supabase function URL, preserving query params and injecting action */

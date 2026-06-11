@@ -176,7 +176,7 @@ export default function Home() {
         <div className="container">
           <div data-reveal>
             <div className="section-label">What Ephermal does</div>
-            <h2 className="section-title">Every part of advertising.<br />Handled.</h2>
+            <h2 className="section-title">Every part of marketing.<br />Handled.</h2>
           </div>
           <div className="services-grid">
             {[
@@ -256,7 +256,7 @@ export default function Home() {
           <div className="meta-inner">
             <div className="meta-logo-block" data-reveal="left">
               <h2>Powered by</h2>
-              <img src="https://static.xx.fbcdn.net/rsrc.php/y3/r/y6QsbGgc866.svg" alt="Meta" width={300} height={200} />
+              <img src="https://static.xx.fbcdn.net/rsrc.php/y3/r/y6QsbGgc866.svg" alt="Meta" width={300} height={200} style={{ filter: 'drop-shadow(0 0 32px rgba(0,132,255,0.5)) drop-shadow(0 0 64px rgba(0,132,255,0.25))', transition: 'filter 0.3s ease' }} />
             </div>
             <div className="meta-content" data-reveal="right" data-delay="1">
               <div className="section-label">Powered by Meta</div>
@@ -360,7 +360,7 @@ export default function Home() {
             </div>
             <div className="meta-logo-block" data-reveal="right">
               <h2>Also powered by</h2>
-              <svg viewBox="0 0 272 92" width="240" height="80" xmlns="http://www.w3.org/2000/svg">
+              <svg viewBox="0 0 272 92" width="240" height="80" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 0 28px rgba(66,133,244,0.55)) drop-shadow(0 0 56px rgba(52,168,83,0.25))', transition: 'filter 0.3s ease' }}>
                 <path d="M115.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18C71.25 34.32 81.24 25 93.5 25s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44S80.99 39.2 80.99 47.18c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z" fill="#EA4335"/>
                 <path d="M163.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18c0-12.85 9.99-22.18 22.25-22.18s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44s-12.51 5.46-12.51 13.44c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z" fill="#FBBC05"/>
                 <path d="M209.75 26.34v39.82c0 16.38-9.66 23.07-21.08 23.07-10.75 0-17.22-7.19-19.66-13.07l8.48-3.53c1.51 3.61 5.21 7.87 11.17 7.87 7.31 0 11.84-4.51 11.84-13v-3.19h-.34c-2.18 2.69-6.38 5.04-11.68 5.04-11.09 0-21.25-9.66-21.25-22.09 0-12.52 10.16-22.26 21.25-22.26 5.29 0 9.49 2.35 11.68 4.96h.34v-3.61h9.25zm-8.56 20.92c0-7.81-5.21-13.52-11.84-13.52-6.72 0-12.35 5.71-12.35 13.52 0 7.73 5.63 13.36 12.35 13.36 6.63 0 11.84-5.63 11.84-13.36z" fill="#4285F4"/>
@@ -370,6 +370,226 @@ export default function Home() {
               </svg>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Competitor Radar Section ── */}
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(85,88,232,0.07) 0%, rgba(6,214,199,0.04) 100%)' }}>
+        <div className="container">
+          <div className="meta-inner">
+            <div className="meta-content" data-reveal="left" data-delay="1">
+              <div className="section-label" style={{ color: 'var(--accent)' }}>Competitor Radar</div>
+              <h2 className="section-title">Your competitor just<br />launched a new ad.<br />You already know.</h2>
+              <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
+                Thursday morning. Your biggest competitor goes live with a new campaign. By the time you spot their creative in your own feed, they&apos;ve already spent $4,000 and locked the algorithm. Competitor Radar watches the Meta Ad Library around the clock — the moment they go live, you get the full breakdown. Hook decoded. Counter-play ready.
+              </p>
+              <div className="meta-features">
+                {[
+                  'Live competitor ad feed from Meta Ad Library',
+                  'AI hook + emotion + CTA breakdown per ad',
+                  'Counter-strategy generated automatically',
+                  'Filter by country, industry, and keyword',
+                ].map((f, i) => (
+                  <div key={i} className="meta-feat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {f}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="meta-logo-block" data-reveal="right">
+              <div style={{ background: 'rgba(85,88,232,0.08)', border: '1px solid rgba(85,88,232,0.2)', borderRadius: '20px', padding: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                  <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
+                    <circle cx="24" cy="24" r="20" stroke="#5558e8" strokeWidth="1.5" opacity="0.3"/>
+                    <circle cx="24" cy="24" r="13" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
+                    <circle cx="24" cy="24" r="6" stroke="#5558e8" strokeWidth="1.5" opacity="0.8"/>
+                    <circle cx="24" cy="24" r="2.5" fill="#5558e8"/>
+                    <line x1="24" y1="4" x2="24" y2="10" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="24" y1="38" x2="24" y2="44" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="4" y1="24" x2="10" y2="24" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="38" y1="24" x2="44" y2="24" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
+                  </svg>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '5px 10px', background: 'rgba(85,88,232,0.15)', borderRadius: '8px' }}>
+                    <div style={{ width: '7px', height: '7px', background: '#5558e8', borderRadius: '50%', boxShadow: '0 0 6px #5558e8' }} />
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#8b8ef0', letterSpacing: '0.05em', textTransform: 'uppercase' }}>New ad detected · FitFuel Co.</span>
+                  </div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px 14px', marginBottom: '14px', fontSize: '12px', color: 'var(--muted)', lineHeight: 1.65, fontStyle: 'italic', borderLeft: '2px solid rgba(85,88,232,0.5)' }}>
+                  &ldquo;Tired of pre-workouts that don&apos;t deliver? FitFuel gives you 4-hour clean energy — no crash, no jitters. Try it today.&rdquo;
+                </div>
+                {[
+                  { label: 'Hook type', value: 'Problem → Solution' },
+                  { label: 'Emotion', value: 'Frustration + Relief' },
+                  { label: 'CTA', value: 'Try it today' },
+                ].map((r, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '10px', marginBottom: '7px', fontSize: '12px' }}>
+                    <span style={{ color: 'var(--muted)', width: '76px', flexShrink: 0 }}>{r.label}</span>
+                    <span style={{ color: 'var(--text)', fontWeight: 600 }}>{r.value}</span>
+                  </div>
+                ))}
+                <div style={{ marginTop: '14px', padding: '10px 12px', background: 'rgba(6,214,199,0.08)', borderRadius: '8px', fontSize: '12px', color: '#06d6c7', fontWeight: 600, lineHeight: 1.5 }}>
+                  Counter: Lead with &ldquo;zero compromise&rdquo; — own what they&apos;re promising but can&apos;t prove.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Creative Brief Section ── */}
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(6,214,199,0.05) 0%, rgba(85,88,232,0.04) 100%)' }}>
+        <div className="container">
+          <div className="meta-inner" style={{ direction: 'rtl' }}>
+            <div className="meta-content" data-reveal="right" data-delay="1" style={{ direction: 'ltr' }}>
+              <div className="section-label" style={{ color: '#06d6c7' }}>Creative Brief AI</div>
+              <h2 className="section-title">From blank page to<br />ready-to-shoot brief.<br />Eight seconds.</h2>
+              <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
+                Your creator is asking for direction. The agency wants a brief. You&apos;re staring at a blank doc at 11pm, trying to remember what made last month&apos;s top ad work. Brief AI reads your live catalog, checks what&apos;s actually converting, and hands you a complete creative strategy — hook angle, emotions to hit, headline variants, exact CTA — in the time it takes to pour a coffee.
+              </p>
+              <div className="meta-features">
+                {[
+                  'Product-specific brief from your live catalog',
+                  'Hook angle + emotion + CTA per creative',
+                  '3 headline variants per ad brief',
+                  'Stored in your dashboard, reuse anytime',
+                ].map((f, i) => (
+                  <div key={i} className="meta-feat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {f}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="meta-logo-block" data-reveal="left" style={{ direction: 'ltr' }}>
+              <div style={{ background: 'rgba(6,214,199,0.06)', border: '1px solid rgba(6,214,199,0.2)', borderRadius: '20px', padding: '32px', fontSize: '13px', lineHeight: 1.7 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#06d6c7', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Brief · Protein Powder 1kg</div>
+                  <div style={{ fontSize: '10px', color: '#06d6c7', background: 'rgba(6,214,199,0.1)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>Generated · just now</div>
+                </div>
+                {[
+                  { label: 'Hook angle', value: 'Transformation / Results' },
+                  { label: 'Target emotion', value: 'Aspiration + Self-doubt' },
+                  { label: 'Headline 1', value: '"The protein your body actually absorbs."' },
+                  { label: 'Headline 2', value: '"Stop guessing. Start building."' },
+                  { label: 'Headline 3', value: '"Your gym session deserves better fuel."' },
+                  { label: 'CTA', value: 'Try Risk-Free — 30 Day Returns' },
+                ].map((r, i) => (
+                  <div key={i} style={{ display: 'flex', gap: '12px', marginBottom: '9px' }}>
+                    <span style={{ color: 'var(--muted)', width: '110px', flexShrink: 0, fontSize: '12px' }}>{r.label}</span>
+                    <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: '12px' }}>{r.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Profit Tracker Section ── */}
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(150,191,72,0.06) 0%, rgba(85,88,232,0.03) 100%)' }}>
+        <div className="container">
+          <div className="meta-inner">
+            <div className="meta-content" data-reveal="left" data-delay="1">
+              <div className="section-label" style={{ color: '#96BF48' }}>Profit Tracker</div>
+              <h2 className="section-title">You&apos;re probably<br />optimising the campaign<br />that&apos;s losing you money.</h2>
+              <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
+                You spent $8,000 on ads and made $32,000 in revenue. Great ROAS. But your pre-workout costs $46 to make and land on the door. At $59 retail, every 4× ROAS order was bleeding you $3.20 after platform fees. Enter your real COGS and Ephermal shifts every campaign bid to what actually keeps — not what just looks good in the dashboard.
+              </p>
+              <div className="meta-features">
+                {[
+                  'Enter COGS per product in seconds',
+                  'Margin % and net profit calculated per SKU',
+                  'Campaigns bid harder on your highest-margin products',
+                  'Profit-per-ROAS-point surfaced in your dashboard',
+                ].map((f, i) => (
+                  <div key={i} className="meta-feat">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    {f}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="meta-logo-block" data-reveal="right">
+              <div style={{ background: 'rgba(150,191,72,0.06)', border: '1px solid rgba(150,191,72,0.2)', borderRadius: '20px', padding: '32px' }}>
+                <div style={{ marginBottom: '20px', padding: '11px 14px', background: 'rgba(234,67,53,0.08)', borderRadius: '10px', border: '1px solid rgba(234,67,53,0.15)' }}>
+                  <div style={{ fontSize: '10px', color: '#EA4335', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>ROAS 4.1× · looks great</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>Pre-Workout 300g · $59 retail, $46 landed cost = 22% margin. Losing $3.20/order after fees.</div>
+                </div>
+                <div style={{ fontSize: '11px', fontWeight: 700, color: '#96BF48', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '14px' }}>Real margin by product</div>
+                {[
+                  { product: 'Protein Powder 1kg', margin: '68%', color: '#96BF48' },
+                  { product: 'Shaker Bottle', margin: '51%', color: '#06d6c7' },
+                  { product: 'Resistance Bands', margin: '43%', color: '#5558e8' },
+                  { product: 'Pre-Workout 300g', margin: '22%', color: '#EA4335' },
+                ].map((r, i) => (
+                  <div key={i} style={{ marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
+                      <span style={{ color: 'var(--text)', fontWeight: 600 }}>{r.product}</span>
+                      <span style={{ color: r.color, fontWeight: 700 }}>{r.margin}</span>
+                    </div>
+                    <div style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '4px', height: '5px' }}>
+                      <div style={{ background: r.color, borderRadius: '4px', height: '5px', width: r.margin, opacity: 0.8 }} />
+                    </div>
+                  </div>
+                ))}
+                <div style={{ marginTop: '14px', padding: '10px 12px', background: 'rgba(150,191,72,0.1)', borderRadius: '10px', fontSize: '12px', color: '#96BF48', fontWeight: 600 }}>
+                  Budget shifted → Protein Powder 1kg (+$2,400/day)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Replaces 6 Tools Section ── */}
+      <section className="section" style={{ paddingTop: 0 }}>
+        <div className="container">
+          <div data-reveal style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <div className="section-label">The full picture</div>
+            <h2 className="section-title">How many tabs are<br />open in your browser<br />right now?</h2>
+            <p className="section-sub" style={{ margin: '0 auto' }}>
+              Most Shopify brands are paying for 4–6 disconnected tools, switching between dashboards, and still missing the full picture. Ephermal runs the entire marketing loop — brief, launch, attribution, profit — in one place.
+            </p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px', marginBottom: '32px' }}>
+            {[
+              { tool: 'AdCreative.ai', cost: '$149/mo', does: 'AI ad creatives', ephermal: 'Creative Brief + UGC scripts' },
+              { tool: 'Madgicx', cost: '$49+/mo', does: 'Meta Ads automation', ephermal: 'Meta + Google, both automated' },
+              { tool: 'Triple Whale', cost: '$129/mo', does: 'Attribution & analytics', ephermal: 'ROAS dashboard, live' },
+              { tool: 'Foreplay.co', cost: '$49/mo', does: 'Competitor ad spy', ephermal: 'Competitor Radar built-in' },
+              { tool: 'Profitmetrics.io', cost: '$79/mo', does: 'Profit tracking', ephermal: 'Profit Tracker + margin optimisation' },
+              { tool: 'Agency retainer', cost: '$3,000/mo', does: 'Strategy + execution', ephermal: 'Full AI agent, 24/7' },
+            ].map((r, i) => (
+              <div key={i} data-reveal data-delay={String((i % 3) + 1)} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '22px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                  <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)' }}>{r.tool}</span>
+                  <span style={{ fontWeight: 700, fontSize: '13px', color: '#EA4335', background: 'rgba(234,67,53,0.1)', padding: '2px 8px', borderRadius: '6px' }}>{r.cost}</span>
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px' }}>{r.does}</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#96BF48', fontWeight: 600 }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#96BF48" strokeWidth="2.5" width="13" height="13" style={{ flexShrink: 0 }}>
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  {r.ephermal}
+                </div>
+              </div>
+            ))}
+          </div>
+          <div data-reveal style={{ textAlign: 'center', padding: '32px', background: 'linear-gradient(135deg, rgba(85,88,232,0.12), rgba(6,214,199,0.08))', border: '1px solid rgba(85,88,232,0.25)', borderRadius: '20px', marginBottom: '16px' }}>
+            <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '8px' }}>You&apos;d pay $3,455+/month for those 6 tools separately.</div>
+            <div style={{ fontSize: '32px', fontWeight: 900, color: 'var(--text)', marginBottom: '4px' }}>Ephermal does all of it for <span style={{ color: 'var(--accent)' }}>$89/month.</span></div>
+            <div style={{ fontSize: '13px', color: 'var(--muted)' }}>That&apos;s a 97% saving — with a single unified AI brain, not 6 disconnected tabs.</div>
+          </div>
+          <p style={{ textAlign: 'center', fontSize: '11px', color: 'var(--muted)', opacity: 0.55 }}>
+            Competitor prices based on publicly listed starting rates as of 2026 and may vary. Competitor names used for factual comparison only.
+          </p>
         </div>
       </section>
 

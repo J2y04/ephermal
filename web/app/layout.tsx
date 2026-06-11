@@ -4,16 +4,17 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ephermal: AI Advertising Agent for Shopify',
+    default: 'Ephermal: AI Marketing Agent for Shopify',
     template: '%s | Ephermal',
   },
   description:
-    'Ephermal is the AI advertising agent for Shopify stores. Automate Meta Ads and Google Ads, generate real UGC videos, and compound ROAS, all from one dashboard. Setup in under 3 minutes.',
+    'Ephermal is the AI marketing agent for Shopify stores. Automate Meta Ads, Google Ads, generate UGC, track profit margins, spy on competitors, and compound ROAS — all from one dashboard. Setup in under 3 minutes.',
   keywords: [
     'Ephermal',
     'Ephermal app',
     'ephermal.app',
-    'AI advertising agent',
+    'AI marketing agent',
+    'Shopify marketing automation',
     'Shopify ads automation',
     'Meta Ads automation',
     'Facebook Ads AI',
@@ -23,9 +24,12 @@ export const metadata: Metadata = {
     'ad automation Shopify',
     'ROAS optimization',
     'AI marketing tool',
-    'e-commerce ad automation',
+    'e-commerce marketing automation',
     'Shopify marketing AI',
-    'DTC advertising tool',
+    'DTC marketing platform',
+    'competitor ad spy',
+    'creative brief AI',
+    'profit margin tracking',
   ],
   authors: [{ name: 'Ephermal', url: 'https://ephermal.app' }],
   creator: 'Ephermal',
@@ -36,9 +40,9 @@ export const metadata: Metadata = {
     canonical: 'https://ephermal.app/',
   },
   openGraph: {
-    title: 'Ephermal: AI Advertising Agent for Shopify',
+    title: 'Ephermal: AI Marketing Agent for Shopify',
     description:
-      'Automate Meta Ads, Google Ads and UGC creation for your Shopify store with AI. From install to live campaigns in under 60 seconds.',
+      'Automate Meta Ads, Google Ads, UGC creation, profit tracking and competitor intelligence for your Shopify store. From install to live campaigns in under 3 minutes.',
     url: 'https://ephermal.app',
     siteName: 'Ephermal',
     type: 'website',
@@ -48,7 +52,7 @@ export const metadata: Metadata = {
         url: 'https://ephermal.app/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'Ephermal: AI Advertising Agent for Shopify',
+        alt: 'Ephermal: AI Marketing Agent for Shopify',
       },
     ],
   },
@@ -56,9 +60,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     site: '@ephermal',
     creator: '@ephermal',
-    title: 'Ephermal: AI Advertising Agent for Shopify',
+    title: 'Ephermal: AI Marketing Agent for Shopify',
     description:
-      'Automate Meta Ads, Google Ads and UGC creation for your Shopify store with AI.',
+      'Automate Meta Ads, Google Ads, UGC and competitor intelligence for your Shopify store with AI.',
     images: ['https://ephermal.app/og-image.png'],
   },
   robots: {
@@ -98,7 +102,7 @@ const jsonLd = {
         height: 512,
       },
       description:
-        'Ephermal is an AI advertising agent that automates Meta Ads, Google Ads, and UGC video creation for Shopify stores.',
+        'Ephermal is an AI marketing agent that automates Meta Ads, Google Ads, UGC creation, profit tracking, and competitor intelligence for Shopify stores.',
       sameAs: ['https://ephermal.app', 'https://twitter.com/ephermal'],
       contactPoint: {
         '@type': 'ContactPoint',
@@ -113,7 +117,7 @@ const jsonLd = {
       '@id': 'https://ephermal.app/#website',
       url: 'https://ephermal.app',
       name: 'Ephermal',
-      description: 'AI Advertising Agent for Shopify Stores',
+      description: 'AI Marketing Agent for Shopify Stores',
       publisher: { '@id': 'https://ephermal.app/#organization' },
       potentialAction: {
         '@type': 'SearchAction',
@@ -132,7 +136,7 @@ const jsonLd = {
       operatingSystem: 'Web',
       url: 'https://ephermal.app',
       description:
-        'Ephermal automates your Shopify advertising. Connect Meta Ads and Google Ads. The AI creates real UGC video ads, launches campaigns, and optimises ROAS around the clock.',
+        'Ephermal automates your entire Shopify marketing stack. Meta Ads, Google Ads, UGC creation, profit tracking, competitor intelligence — all AI-powered from one dashboard.',
       offers: [
         {
           '@type': 'Offer',
@@ -200,6 +204,22 @@ const jsonLd = {
           acceptedAnswer: {
             '@type': 'Answer',
             text: 'Billing is handled directly through Ephermal via Stripe. You subscribe monthly and can cancel any time from your dashboard. No agency fees, no hidden costs.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'What is Competitor Radar?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Competitor Radar uses the Meta Ad Library to surface active ads from competitors in your niche. The AI then analyses their hooks, angles, and CTAs so you can build counter-campaigns.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does profit-aware campaign optimisation work?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Enter your cost of goods (COGS) per product and Ephermal optimises campaigns for actual net profit — not just ROAS. A 5x ROAS on a 10% margin product is worse than 2x on a 70% margin product. Ephermal knows the difference.',
           },
         },
       ],
