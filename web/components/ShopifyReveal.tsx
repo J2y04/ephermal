@@ -11,12 +11,10 @@ const FEATURES = [
 
 export default function ShopifyReveal() {
   const ref = useRef<HTMLDivElement>(null);
-
-  /* Raw window scrollY — guaranteed to update on every scroll event */
   const { scrollY } = useScroll();
 
   const [sectionTop, setSectionTop] = useState(99999);
-  const [sectionH,   setSectionH]   = useState(4800);
+  const [sectionH,   setSectionH]   = useState(6200);
   const [vh,         setVh]         = useState(900);
 
   useEffect(() => {
@@ -33,9 +31,9 @@ export default function ShopifyReveal() {
   }, []);
 
   /*
-   * 0 = section top enters viewport bottom (section slides in)
-   * ~0.36 = section top reaches viewport top (sticky pins)
-   * 1 = section bottom exits viewport bottom
+   * Section is 360vh. Progress 0→1 over the full 360vh.
+   * Pin point ≈ 100/360 = 0.278 (section.top reaches viewport.top).
+   * All animations start at/after the pin so the page feels locked.
    */
   const scrollYProgress = useTransform(
     scrollY,
@@ -44,34 +42,33 @@ export default function ShopifyReveal() {
     { clamp: true },
   );
 
-  /* ── All useTransform calls at top level — no helper functions ── */
+  /* ── Logo: dramatic zoom-in while section is pinned ── */
+  const logoO    = useTransform(scrollYProgress, [0.27, 0.50], [0, 1],    { clamp: true });
+  const logoSc   = useTransform(scrollYProgress, [0.27, 0.56], [0.18, 1], { clamp: true });
+  const logoY    = useTransform(scrollYProgress, [0.27, 0.52], [40, 0],   { clamp: true });
 
-  /* Logo: enters while section slides up, fully visible when pinned */
-  const logoO  = useTransform(scrollYProgress, [0.05, 0.30], [0, 1],      { clamp: true });
-  const logoSc = useTransform(scrollYProgress, [0.05, 0.30], [0.82, 1],   { clamp: true });
-  const logoY  = useTransform(scrollYProgress, [0.05, 0.30], [32, 0],     { clamp: true });
+  /* Background glow pulses in with the logo */
+  const glowO    = useTransform(scrollYProgress, [0.27, 0.52], [0, 1],    { clamp: true });
 
-  /* Title: reveals shortly after section pins (~0.36) */
-  const titleO = useTransform(scrollYProgress, [0.42, 0.56], [0, 1],      { clamp: true });
-  const titleY = useTransform(scrollYProgress, [0.42, 0.56], [32, 0],     { clamp: true });
+  /* ── Content — only after logo is fully visible (0.56+) ── */
+  const titleO   = useTransform(scrollYProgress, [0.60, 0.70], [0, 1],    { clamp: true });
+  const titleY   = useTransform(scrollYProgress, [0.60, 0.70], [28, 0],   { clamp: true });
 
-  /* Sub-paragraph */
-  const subO   = useTransform(scrollYProgress, [0.56, 0.67], [0, 1],      { clamp: true });
-  const subY   = useTransform(scrollYProgress, [0.56, 0.67], [24, 0],     { clamp: true });
+  const subO     = useTransform(scrollYProgress, [0.70, 0.78], [0, 1],    { clamp: true });
+  const subY     = useTransform(scrollYProgress, [0.70, 0.78], [22, 0],   { clamp: true });
 
-  /* Platform cards */
-  const cardsO = useTransform(scrollYProgress, [0.67, 0.76], [0, 1],      { clamp: true });
-  const cardsY = useTransform(scrollYProgress, [0.67, 0.76], [20, 0],     { clamp: true });
+  const cardsO   = useTransform(scrollYProgress, [0.78, 0.85], [0, 1],    { clamp: true });
+  const cardsY   = useTransform(scrollYProgress, [0.78, 0.85], [18, 0],   { clamp: true });
 
-  /* Feature bullet rows — 4 items, all called unconditionally at top level */
-  const f0O    = useTransform(scrollYProgress, [0.76, 0.82], [0, 1],      { clamp: true });
-  const f0Y    = useTransform(scrollYProgress, [0.76, 0.82], [16, 0],     { clamp: true });
-  const f1O    = useTransform(scrollYProgress, [0.79, 0.85], [0, 1],      { clamp: true });
-  const f1Y    = useTransform(scrollYProgress, [0.79, 0.85], [16, 0],     { clamp: true });
-  const f2O    = useTransform(scrollYProgress, [0.82, 0.88], [0, 1],      { clamp: true });
-  const f2Y    = useTransform(scrollYProgress, [0.82, 0.88], [16, 0],     { clamp: true });
-  const f3O    = useTransform(scrollYProgress, [0.85, 0.91], [0, 1],      { clamp: true });
-  const f3Y    = useTransform(scrollYProgress, [0.85, 0.91], [16, 0],     { clamp: true });
+  /* Feature rows — staggered after cards */
+  const f0O      = useTransform(scrollYProgress, [0.85, 0.89], [0, 1],    { clamp: true });
+  const f0Y      = useTransform(scrollYProgress, [0.85, 0.89], [14, 0],   { clamp: true });
+  const f1O      = useTransform(scrollYProgress, [0.87, 0.91], [0, 1],    { clamp: true });
+  const f1Y      = useTransform(scrollYProgress, [0.87, 0.91], [14, 0],   { clamp: true });
+  const f2O      = useTransform(scrollYProgress, [0.89, 0.93], [0, 1],    { clamp: true });
+  const f2Y      = useTransform(scrollYProgress, [0.89, 0.93], [14, 0],   { clamp: true });
+  const f3O      = useTransform(scrollYProgress, [0.91, 0.95], [0, 1],    { clamp: true });
+  const f3Y      = useTransform(scrollYProgress, [0.91, 0.95], [14, 0],   { clamp: true });
 
   const featRows = [
     { o: f0O, y: f0Y },
@@ -81,15 +78,12 @@ export default function ShopifyReveal() {
   ];
 
   return (
+    /* 360vh gives ~260vh of "locked scroll" while pinned */
     <div
       ref={ref}
-      style={{
-        height: '280vh',
-        position: 'relative',
-        background: 'linear-gradient(135deg, rgba(0,128,96,0.06) 0%, rgba(150,191,72,0.04) 100%)',
-      }}
+      style={{ height: '360vh', position: 'relative', background: '#04050f' }}
     >
-      {/* Sticky viewport-height panel */}
+      {/* Sticky panel — fills viewport, solid bg so page feels stopped */}
       <div style={{
         position: 'sticky',
         top: 0,
@@ -98,13 +92,25 @@ export default function ShopifyReveal() {
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
+        background: '#04050f',
       }}>
-        <div style={{ textAlign: 'center', width: '100%', maxWidth: '640px', padding: '0 32px' }}>
 
-          {/* 1. Shopify logo */}
-          <motion.div
-            style={{ opacity: logoO, scale: logoSc, y: logoY, marginBottom: 36, display: 'inline-block' }}
-          >
+        {/* Radial green glow that blooms in with the logo */}
+        <motion.div
+          aria-hidden
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background: 'radial-gradient(ellipse 55% 45% at 50% 48%, rgba(150,191,72,0.10) 0%, transparent 70%)',
+            opacity: glowO,
+            pointerEvents: 'none',
+          }}
+        />
+
+        <div style={{ textAlign: 'center', width: '100%', maxWidth: '640px', padding: '0 32px', position: 'relative' }}>
+
+          {/* 1. Shopify logo — zooms in dramatically */}
+          <motion.div style={{ opacity: logoO, scale: logoSc, y: logoY, marginBottom: 36, display: 'inline-block' }}>
             <div style={{ animation: 'shopifyFloat 4s ease-in-out infinite' }}>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="-91.815 -43.65 795.73 261.9" width="340" height="112" aria-label="Shopify" fill="#96BF48">
                 <path d="M131.6 33.2c-.1-.9-.9-1.3-1.5-1.3s-13.7-1-13.7-1-9.1-9.1-10.2-10c-1-1-2.9-.7-3.7-.5-.1 0-2 .6-5.1 1.6C94.3 13.1 89 5 79.5 5h-.9c-2.6-3.4-6-5-8.8-5-22 0-32.6 27.5-35.9 41.5-8.6 2.7-14.7 4.5-15.4 4.8-4.8 1.5-4.9 1.6-5.5 6.1-.5 3.4-13 100.1-13 100.1l97.3 18.2 52.8-11.4c.1-.2-18.4-125.2-18.5-126.1zM92 23.4c-2.4.7-5.3 1.6-8.2 2.6v-1.8c0-5.4-.7-9.8-2-13.3 5 .6 8.1 6.1 10.2 12.5zM75.7 12c1.3 3.4 2.2 8.2 2.2 14.8v1c-5.4 1.7-11.1 3.4-17 5.3 3.3-12.6 9.6-18.8 14.8-21.1zm-6.4-6.2c1 0 2 .4 2.8 1-7.1 3.3-14.6 11.6-17.7 28.4-4.7 1.5-9.2 2.8-13.5 4.2C44.5 26.6 53.5 5.8 69.3 5.8z" fill="#95BF47"/>
@@ -115,7 +121,7 @@ export default function ShopifyReveal() {
             </div>
           </motion.div>
 
-          {/* 2. Title */}
+          {/* 2. Title — only after logo zoom completes */}
           <motion.h2
             className="section-title shopify-green-title"
             style={{ margin: '0 0 20px', opacity: titleO, y: titleY }}
