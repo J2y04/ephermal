@@ -3,5 +3,35 @@ Allow: /
 Disallow: /auth/
 Disallow: /dashboard.html
 Disallow: /setup.html
+Disallow: /config.js
+
+# AI crawlers — allow indexing public content
+User-agent: GPTBot
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: Claude-Web
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: anthropic-ai
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: Applebot
+Allow: /
 
 Sitemap: https://ephermal.app/sitemap.xml
+LLMs: https://ephermal.app/llms.txt

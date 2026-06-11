@@ -3,6 +3,8 @@ import ScrollReveal from '../components/ScrollReveal';
 import NavScrolled from '../components/NavScrolled';
 import NavAuth from '../components/NavAuth';
 import AgentNetwork from '../components/AgentNetwork';
+import HeroMotion from '../components/HeroMotion';
+import StatsMotion from '../components/StatsMotion';
 
 export default function Home() {
   return (
@@ -30,30 +32,23 @@ export default function Home() {
 
       {/* ── Hero ── */}
       <section className="hero">
-        <h1 data-split>
-          {['You', 'Build', 'It.'].map((w, i) => (
-            <span key={i} className="split-word">
-              <span className="split-inner" style={{ transitionDelay: `${i * 0.09}s` }}>{w}</span>
-            </span>
-          ))}
-          <br />
-          <span className="line2">
-            {['We', 'Scale', 'It.'].map((w, i) => (
-              <span key={i} className="split-word">
-                <span className="split-inner" style={{ transitionDelay: `${(i + 3) * 0.09}s` }}>{w}</span>
-              </span>
-            ))}
-          </span>
-        </h1>
-        <p className="hero-sub" data-reveal data-delay="1">
-          Stop paying $3,000/month for an agency that doesn&apos;t understand your store.
-          Ephermal reads your Shopify catalog, writes AI-powered ads, and launches
-          across Meta and Google, set up in minutes, not months.
-        </p>
-        <div className="hero-actions" data-reveal data-delay="2">
-          <a href="/auth/register.html" className="btn-primary">Get Started</a>
-          <a href="#how-it-works" className="btn-secondary">See how it works</a>
-        </div>
+        <HeroMotion
+          line1={['You', 'Build', 'It.']}
+          line2={['We', 'Scale', 'It.']}
+          sub={
+            <p className="hero-sub">
+              Stop paying $3,000/month for an agency that doesn&apos;t understand your store.
+              Ephermal reads your Shopify catalog, writes AI-powered ads, and launches
+              across Meta and Google, set up in minutes, not months.
+            </p>
+          }
+          cta={
+            <div className="hero-actions">
+              <a href="/auth/register.html" className="btn-primary">Get Started</a>
+              <a href="#how-it-works" className="btn-secondary">See how it works</a>
+            </div>
+          }
+        />
         <p className="hero-proof" data-reveal data-delay="3">
           <span>Meta &amp; Google Ads automated</span>
           <span className="dot" />
@@ -210,14 +205,16 @@ export default function Home() {
               {
                 icon: <path d="M18 20V10M12 20V4M6 20v-6" />,
                 title: 'Meta Ads Automation',
-                desc: 'Full campaign creation on your Facebook & Instagram accounts. Copy, audiences, budgets, launch: all autonomous. You just watch the ROAS.',
+                desc: 'Full campaign creation on your Facebook & Instagram accounts. Copy, audiences, budgets, launch: all autonomous. You just watch the ROAS. Built on the official Meta Marketing API.',
                 tag: 'Powered by Meta Ads API', delay: '3',
+                cite: { label: 'Meta Marketing API', href: 'https://developers.facebook.com/docs/marketing-apis' },
               },
               {
                 icon: <><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></>,
                 title: 'Google Ads Automation',
                 desc: 'Launch and scale Search, Shopping and Performance Max campaigns on Google. Ephermal handles keyword selection, bidding, creative and budget allocation. Growth+ only.',
                 tag: 'Powered by Google Ads API', delay: '4',
+                cite: { label: 'Google Ads API', href: 'https://developers.google.com/google-ads/api/docs/start' },
               },
               {
                 icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
@@ -237,12 +234,19 @@ export default function Home() {
                 desc: 'Ephermal monitors performance across your campaigns and flags what&apos;s draining budget. Clear signals so you&apos;re always allocating spend where it actually converts.',
                 tag: 'Performance-driven', delay: '3',
               },
-            ].map((s, i) => (
+            ].map((s: { icon: React.ReactNode; title: string; desc: string; tag: string; delay: string; cite?: { label: string; href: string } }, i) => (
               <div key={i} className="service-card" data-reveal data-delay={s.delay} data-spotlight>
                 <div className="service-icon"><svg viewBox="0 0 24 24">{s.icon}</svg></div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
-                <span className="service-tag">{s.tag}</span>
+                <div className="service-card-footer">
+                  <span className="service-tag">{s.tag}</span>
+                  {s.cite && (
+                    <a href={s.cite.href} target="_blank" rel="noopener noreferrer" className="service-cite">
+                      {s.cite.label} ↗
+                    </a>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -461,23 +465,13 @@ export default function Home() {
           <div data-reveal>
             <h2 className="section-title">What you actually get.</h2>
           </div>
-          <div className="stats-grid" data-stagger>
-            <div className="stat-block">
-              <div className="stat-num">3 min</div>
-              <div className="stat-label">From Shopify install to first campaign live</div>
-            </div>
-            <div className="stat-block">
-              <div className="stat-num">$89</div>
-              <div className="stat-label">Per month, a fraction of any agency retainer</div>
-            </div>
-            <div className="stat-block">
-              <div className="stat-num">2</div>
-              <div className="stat-label">Ad platforms automated: Meta and Google Ads</div>
-            </div>
-            <div className="stat-block">
-              <div className="stat-num">$0</div>
-              <div className="stat-label">Hidden fees, long contracts, or agency markups</div>
-            </div>
+          <div className="stats-grid">
+            <StatsMotion stats={[
+              { num: '3 min', label: 'From Shopify install to first campaign live' },
+              { num: '$89',   label: 'Per month, a fraction of any agency retainer' },
+              { num: '2',     label: 'Ad platforms automated: Meta and Google Ads' },
+              { num: '$0',    label: 'Hidden fees, long contracts, or agency markups' },
+            ]} />
           </div>
         </div>
       </section>

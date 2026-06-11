@@ -1,0 +1,45 @@
+# Ephermal
+
+> Ephermal is an AI advertising agent for Shopify merchants. It automates Meta Ads and Google Ads — generating creatives, launching campaigns, and optimising ROAS — from a single dashboard, without an agency.
+
+## What Ephermal Does
+
+Ephermal connects to a Shopify store via OAuth and reads the live product catalog in real time. A team of 7 specialised AI agents — coordinated by an Orchestrator — handles every step of running paid advertising:
+
+1. **Store Analyzer** — reads live catalog, pricing, and bestsellers
+2. **Copy Agent** — writes headlines, hooks, and ad copy per product
+3. **UGC Agent** — generates creator-style video and image ad scripts
+4. **Meta Agent** — creates and manages Facebook and Instagram campaigns via the Meta Marketing API
+5. **Google Agent** — handles Search, Shopping, and Performance Max via the Google Ads API
+6. **Audience Agent** — builds custom and lookalike audiences from store data
+7. **Analytics Agent** — tracks ROAS and surfaces performance signals
+
+## Pricing
+
+- **Starter** — $89/month: Meta Ads automation, 15 UGC credits/month, 1 store
+- **Growth** — $199/month: Meta + Google Ads, 75 UGC credits/month, Budget AI, Campaign Launcher
+- **Scale** — $349/month: Unlimited stores, 350 UGC credits/month, white-label, dedicated AI instance
+
+All plans billed monthly. Cancel any time.
+
+## Key Facts
+
+- Platform: Web SaaS (dashboard at ephermal.app)
+- Integrations: Shopify, Meta Ads (Facebook/Instagram), Google Ads
+- Authentication: Shopify OAuth, Meta OAuth, Google OAuth
+- AI stack: Groq (llama-3.3-70b), proprietary agent orchestration
+- Data storage: EU-hosted (Supabase EU region), GDPR compliant
+- Payments: Stripe
+- Founded: 2026
+
+## Contact
+
+- Website: https://ephermal.app
+- Support: hello@ephermal.app
+- Impressum: https://ephermal.app/impressum.html
+
+## Legal
+
+- Privacy Policy: https://ephermal.app/privacy
+- Terms of Service: https://ephermal.app/terms
+- GDPR compliant, EU Data Act compliant, EU AI Act compliant (from August 2026)
