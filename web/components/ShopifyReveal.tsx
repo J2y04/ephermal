@@ -1,186 +1,88 @@
 'use client';
-import { useRef, useEffect, useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
 
 const FEATURES = [
-  'Official Shopify Admin API: no scraping or middleware',
+  'Official Shopify Admin API — no scraping or middleware',
   'Real-time product, pricing and inventory sync',
   'Bestseller and collection detection for smarter ads',
-  'Secure OAuth 2.0: your store token never leaves Supabase',
+  'Secure OAuth 2.0 — your store token never leaves Supabase',
 ];
 
 export default function ShopifyReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll();
-
-  const [sectionTop, setSectionTop] = useState(99999);
-  const [sectionH,   setSectionH]   = useState(6200);
-  const [vh,         setVh]         = useState(900);
-
-  useEffect(() => {
-    const measure = () => {
-      if (!ref.current) return;
-      const rect = ref.current.getBoundingClientRect();
-      setSectionTop(rect.top + window.scrollY);
-      setSectionH(ref.current.offsetHeight);
-      setVh(window.innerHeight);
-    };
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, []);
-
-  /*
-   * Section is 360vh. Progress 0→1 over the full 360vh.
-   * Pin point ≈ 100/360 = 0.278 (section.top reaches viewport.top).
-   * All animations start at/after the pin so the page feels locked.
-   */
-  const scrollYProgress = useTransform(
-    scrollY,
-    [sectionTop - vh, sectionTop - vh + sectionH],
-    [0, 1],
-    { clamp: true },
-  );
-
-  /* ── Logo: dramatic zoom-in while section is pinned ── */
-  const logoO    = useTransform(scrollYProgress, [0.27, 0.50], [0, 1],    { clamp: true });
-  const logoSc   = useTransform(scrollYProgress, [0.27, 0.56], [0.18, 1], { clamp: true });
-  const logoY    = useTransform(scrollYProgress, [0.27, 0.52], [40, 0],   { clamp: true });
-
-  /* Background glow pulses in with the logo */
-  const glowO    = useTransform(scrollYProgress, [0.27, 0.52], [0, 1],    { clamp: true });
-
-  /* ── Content — only after logo is fully visible (0.56+) ── */
-  const titleO   = useTransform(scrollYProgress, [0.60, 0.70], [0, 1],    { clamp: true });
-  const titleY   = useTransform(scrollYProgress, [0.60, 0.70], [28, 0],   { clamp: true });
-
-  const subO     = useTransform(scrollYProgress, [0.70, 0.78], [0, 1],    { clamp: true });
-  const subY     = useTransform(scrollYProgress, [0.70, 0.78], [22, 0],   { clamp: true });
-
-  const cardsO   = useTransform(scrollYProgress, [0.78, 0.85], [0, 1],    { clamp: true });
-  const cardsY   = useTransform(scrollYProgress, [0.78, 0.85], [18, 0],   { clamp: true });
-
-  /* Feature rows — staggered after cards */
-  const f0O      = useTransform(scrollYProgress, [0.85, 0.89], [0, 1],    { clamp: true });
-  const f0Y      = useTransform(scrollYProgress, [0.85, 0.89], [14, 0],   { clamp: true });
-  const f1O      = useTransform(scrollYProgress, [0.87, 0.91], [0, 1],    { clamp: true });
-  const f1Y      = useTransform(scrollYProgress, [0.87, 0.91], [14, 0],   { clamp: true });
-  const f2O      = useTransform(scrollYProgress, [0.89, 0.93], [0, 1],    { clamp: true });
-  const f2Y      = useTransform(scrollYProgress, [0.89, 0.93], [14, 0],   { clamp: true });
-  const f3O      = useTransform(scrollYProgress, [0.91, 0.95], [0, 1],    { clamp: true });
-  const f3Y      = useTransform(scrollYProgress, [0.91, 0.95], [14, 0],   { clamp: true });
-
-  const featRows = [
-    { o: f0O, y: f0Y },
-    { o: f1O, y: f1Y },
-    { o: f2O, y: f2Y },
-    { o: f3O, y: f3Y },
-  ];
-
   return (
-    /* 360vh gives ~260vh of "locked scroll" while pinned */
-    <div
-      ref={ref}
-      style={{ height: '360vh', position: 'relative', background: '#04050f' }}
-    >
-      {/* Sticky panel — fills viewport, solid bg so page feels stopped */}
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', textAlign: 'center' }}>
+
+      {/* Logo */}
       <div style={{
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        overflow: 'hidden',
-        background: '#04050f',
+        animation: 'shopifyFloat 4s ease-in-out infinite, shopifyFadeIn 0.8s cubic-bezier(0.16,1,0.3,1) both',
+        display: 'inline-block',
+        marginBottom: '40px',
+        filter: 'drop-shadow(0 0 40px rgba(150,191,72,0.45))',
       }}>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="-91.815 -43.65 795.73 261.9" width="400" height="132" aria-label="Shopify" fill="#96BF48">
+          <path d="M131.6 33.2c-.1-.9-.9-1.3-1.5-1.3s-13.7-1-13.7-1-9.1-9.1-10.2-10c-1-1-2.9-.7-3.7-.5-.1 0-2 .6-5.1 1.6C94.3 13.1 89 5 79.5 5h-.9c-2.6-3.4-6-5-8.8-5-22 0-32.6 27.5-35.9 41.5-8.6 2.7-14.7 4.5-15.4 4.8-4.8 1.5-4.9 1.6-5.5 6.1-.5 3.4-13 100.1-13 100.1l97.3 18.2 52.8-11.4c.1-.2-18.4-125.2-18.5-126.1zM92 23.4c-2.4.7-5.3 1.6-8.2 2.6v-1.8c0-5.4-.7-9.8-2-13.3 5 .6 8.1 6.1 10.2 12.5zM75.7 12c1.3 3.4 2.2 8.2 2.2 14.8v1c-5.4 1.7-11.1 3.4-17 5.3 3.3-12.6 9.6-18.8 14.8-21.1zm-6.4-6.2c1 0 2 .4 2.8 1-7.1 3.3-14.6 11.6-17.7 28.4-4.7 1.5-9.2 2.8-13.5 4.2C44.5 26.6 53.5 5.8 69.3 5.8z" fill="#95BF47"/>
+          <path d="M130.1 31.7c-.6 0-13.7-1-13.7-1s-9.1-9.1-10.2-10c-.4-.4-.9-.6-1.3-.6l-7.3 150.6 52.8-11.4S131.9 34.1 131.8 33.2c-.4-.9-1.1-1.3-1.7-1.5z" fill="#5E8E3E"/>
+          <path d="M79.5 60.9l-6.4 19.3s-5.8-3.1-12.7-3.1c-10.3 0-10.8 6.5-10.8 8.1 0 8.8 23 12.2 23 32.9 0 16.3-10.3 26.8-24.2 26.8-16.8 0-25.2-10.4-25.2-10.4l4.5-14.8s8.8 7.6 16.2 7.6c4.9 0 6.9-3.8 6.9-6.6 0-11.5-18.8-12-18.8-31 0-15.9 11.4-31.3 34.5-31.3 8.6-.1 13 2.5 13 2.5z" fill="#FFF"/>
+          <path d="M211.7 97.2c-5.3-2.8-8-5.3-8-8.6 0-4.2 3.8-6.9 9.7-6.9 6.9 0 13 2.8 13 2.8l4.8-14.7s-4.4-3.4-17.4-3.4c-18.1 0-30.7 10.4-30.7 25 0 8.3 5.9 14.6 13.7 19.1 6.4 3.5 8.6 6.1 8.6 9.9 0 3.9-3.2 7.1-9.1 7.1-8.7 0-17-4.5-17-4.5l-5.1 14.7s7.6 5.1 20.4 5.1c18.6 0 32.1-9.2 32.1-25.7-.2-9-6.9-15.2-15-19.9zm74.2-31c-9.2 0-16.4 4.4-21.9 11l-.2-.1 8-41.6h-20.7l-20.2 106h20.7l6.9-36.2c2.7-13.7 9.8-22.2 16.4-22.2 4.7 0 6.5 3.2 6.5 7.7 0 2.8-.2 6.4-.9 9.2l-7.8 41.5h20.7l8.1-42.8c.9-4.5 1.5-9.9 1.5-13.6-.1-11.9-6.2-18.9-17.1-18.9zm63.9 0c-25 0-41.5 22.5-41.5 47.6 0 16 9.9 29 28.5 29 24.5 0 41-21.9 41-47.6.1-14.9-8.5-29-28-29zM339.6 127c-7.1 0-10-6-10-13.6 0-11.9 6.1-31.2 17.4-31.2 7.3 0 9.8 6.4 9.8 12.5 0 12.7-6.3 32.3-17.2 32.3zm91.3-60.8c-14 0-21.9 12.4-21.9 12.4h-.2l1.2-11.1h-18.4c-.9 7.5-2.6 19-4.2 27.5l-14.3 75.9h20.7l5.8-30.7h.5s4.3 2.7 12.1 2.7c24.4 0 40.3-25 40.3-50.2-.1-14-6.4-26.5-21.6-26.5zm-19.8 61c-5.4 0-8.6-3.1-8.6-3.1l3.4-19.3c2.4-13 9.2-21.5 16.4-21.5 6.4 0 8.3 5.9 8.3 11.4.1 13.4-7.9 32.5-19.5 32.5zM482 36.5c-6.6 0-11.9 5.3-11.9 12 0 6.1 3.9 10.4 9.8 10.4h.2c6.5 0 12-4.4 12.1-12 .1-6.1-4-10.4-10.2-10.4zm-29 104.9h20.7l14-73.6h-20.8m73.6-.1h-14.4l.7-3.4c1.2-7.1 5.4-13.3 12.4-13.3 3.7 0 6.6 1.1 6.6 1.1l4-16.3s-3.5-1.8-11.3-1.8c-7.3 0-14.7 2.1-20.3 6.9-7.1 6-10.4 14.7-12 23.5l-.6 3.4h-9.7l-3.1 15.7h9.7l-11 58h20.7l11-58h14.3zm49.9.1s-13 32.7-18.7 50.6h-.2c-.4-5.8-5.1-50.6-5.1-50.6h-21.8l12.5 67.4c.2 1.5.1 2.4-.5 3.4-2.4 4.7-6.5 9.2-11.3 12.5-3.9 2.8-8.3 4.7-11.8 5.9l5.8 17.6c4.2-.9 13-4.4 20.3-11.3 9.4-8.8 18.2-22.5 27.2-41.1l25.3-54.5h-21.7z"/>
+        </svg>
+      </div>
 
-        {/* Radial green glow that blooms in with the logo */}
-        <motion.div
-          aria-hidden
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'radial-gradient(ellipse 55% 45% at 50% 48%, rgba(150,191,72,0.10) 0%, transparent 70%)',
-            opacity: glowO,
-            pointerEvents: 'none',
-          }}
-        />
+      {/* Title */}
+      <h2
+        className="section-title shopify-green-title"
+        style={{ margin: '0 0 20px', animation: 'shopifySlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.15s both' }}
+      >
+        Your catalog.<br />In every ad, live.
+      </h2>
 
-        <div style={{ textAlign: 'center', width: '100%', maxWidth: '640px', padding: '0 32px', position: 'relative' }}>
+      {/* Paragraph */}
+      <p
+        className="section-sub"
+        style={{ maxWidth: '560px', margin: '0 auto 36px', animation: 'shopifySlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.28s both' }}
+      >
+        Ephermal connects directly to the official Shopify Admin API — reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
+      </p>
 
-          {/* 1. Shopify logo — zooms in dramatically */}
-          <motion.div style={{ opacity: logoO, scale: logoSc, y: logoY, marginBottom: 36, display: 'inline-block' }}>
-            <div style={{ animation: 'shopifyFloat 4s ease-in-out infinite' }}>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="-91.815 -43.65 795.73 261.9" width="340" height="112" aria-label="Shopify" fill="#96BF48">
-                <path d="M131.6 33.2c-.1-.9-.9-1.3-1.5-1.3s-13.7-1-13.7-1-9.1-9.1-10.2-10c-1-1-2.9-.7-3.7-.5-.1 0-2 .6-5.1 1.6C94.3 13.1 89 5 79.5 5h-.9c-2.6-3.4-6-5-8.8-5-22 0-32.6 27.5-35.9 41.5-8.6 2.7-14.7 4.5-15.4 4.8-4.8 1.5-4.9 1.6-5.5 6.1-.5 3.4-13 100.1-13 100.1l97.3 18.2 52.8-11.4c.1-.2-18.4-125.2-18.5-126.1zM92 23.4c-2.4.7-5.3 1.6-8.2 2.6v-1.8c0-5.4-.7-9.8-2-13.3 5 .6 8.1 6.1 10.2 12.5zM75.7 12c1.3 3.4 2.2 8.2 2.2 14.8v1c-5.4 1.7-11.1 3.4-17 5.3 3.3-12.6 9.6-18.8 14.8-21.1zm-6.4-6.2c1 0 2 .4 2.8 1-7.1 3.3-14.6 11.6-17.7 28.4-4.7 1.5-9.2 2.8-13.5 4.2C44.5 26.6 53.5 5.8 69.3 5.8z" fill="#95BF47"/>
-                <path d="M130.1 31.7c-.6 0-13.7-1-13.7-1s-9.1-9.1-10.2-10c-.4-.4-.9-.6-1.3-.6l-7.3 150.6 52.8-11.4S131.9 34.1 131.8 33.2c-.4-.9-1.1-1.3-1.7-1.5z" fill="#5E8E3E"/>
-                <path d="M79.5 60.9l-6.4 19.3s-5.8-3.1-12.7-3.1c-10.3 0-10.8 6.5-10.8 8.1 0 8.8 23 12.2 23 32.9 0 16.3-10.3 26.8-24.2 26.8-16.8 0-25.2-10.4-25.2-10.4l4.5-14.8s8.8 7.6 16.2 7.6c4.9 0 6.9-3.8 6.9-6.6 0-11.5-18.8-12-18.8-31 0-15.9 11.4-31.3 34.5-31.3 8.6-.1 13 2.5 13 2.5z" fill="#FFF"/>
-                <path d="M211.7 97.2c-5.3-2.8-8-5.3-8-8.6 0-4.2 3.8-6.9 9.7-6.9 6.9 0 13 2.8 13 2.8l4.8-14.7s-4.4-3.4-17.4-3.4c-18.1 0-30.7 10.4-30.7 25 0 8.3 5.9 14.6 13.7 19.1 6.4 3.5 8.6 6.1 8.6 9.9 0 3.9-3.2 7.1-9.1 7.1-8.7 0-17-4.5-17-4.5l-5.1 14.7s7.6 5.1 20.4 5.1c18.6 0 32.1-9.2 32.1-25.7-.2-9-6.9-15.2-15-19.9zm74.2-31c-9.2 0-16.4 4.4-21.9 11l-.2-.1 8-41.6h-20.7l-20.2 106h20.7l6.9-36.2c2.7-13.7 9.8-22.2 16.4-22.2 4.7 0 6.5 3.2 6.5 7.7 0 2.8-.2 6.4-.9 9.2l-7.8 41.5h20.7l8.1-42.8c.9-4.5 1.5-9.9 1.5-13.6-.1-11.9-6.2-18.9-17.1-18.9zm63.9 0c-25 0-41.5 22.5-41.5 47.6 0 16 9.9 29 28.5 29 24.5 0 41-21.9 41-47.6.1-14.9-8.5-29-28-29zM339.6 127c-7.1 0-10-6-10-13.6 0-11.9 6.1-31.2 17.4-31.2 7.3 0 9.8 6.4 9.8 12.5 0 12.7-6.3 32.3-17.2 32.3zm91.3-60.8c-14 0-21.9 12.4-21.9 12.4h-.2l1.2-11.1h-18.4c-.9 7.5-2.6 19-4.2 27.5l-14.3 75.9h20.7l5.8-30.7h.5s4.3 2.7 12.1 2.7c24.4 0 40.3-25 40.3-50.2-.1-14-6.4-26.5-21.6-26.5zm-19.8 61c-5.4 0-8.6-3.1-8.6-3.1l3.4-19.3c2.4-13 9.2-21.5 16.4-21.5 6.4 0 8.3 5.9 8.3 11.4.1 13.4-7.9 32.5-19.5 32.5zM482 36.5c-6.6 0-11.9 5.3-11.9 12 0 6.1 3.9 10.4 9.8 10.4h.2c6.5 0 12-4.4 12.1-12 .1-6.1-4-10.4-10.2-10.4zm-29 104.9h20.7l14-73.6h-20.8m73.6-.1h-14.4l.7-3.4c1.2-7.1 5.4-13.3 12.4-13.3 3.7 0 6.6 1.1 6.6 1.1l4-16.3s-3.5-1.8-11.3-1.8c-7.3 0-14.7 2.1-20.3 6.9-7.1 6-10.4 14.7-12 23.5l-.6 3.4h-9.7l-3.1 15.7h9.7l-11 58h20.7l11-58h14.3zm49.9.1s-13 32.7-18.7 50.6h-.2c-.4-5.8-5.1-50.6-5.1-50.6h-21.8l12.5 67.4c.2 1.5.1 2.4-.5 3.4-2.4 4.7-6.5 9.2-11.3 12.5-3.9 2.8-8.3 4.7-11.8 5.9l5.8 17.6c4.2-.9 13-4.4 20.3-11.3 9.4-8.8 18.2-22.5 27.2-41.1l25.3-54.5h-21.7z"/>
-              </svg>
-            </div>
-          </motion.div>
-
-          {/* 2. Title — only after logo zoom completes */}
-          <motion.h2
-            className="section-title shopify-green-title"
-            style={{ margin: '0 0 20px', opacity: titleO, y: titleY }}
-          >
-            Your catalog.<br />In every ad, live.
-          </motion.h2>
-
-          {/* 3. Sub */}
-          <motion.p
-            className="section-sub"
-            style={{ maxWidth: '520px', margin: '0 auto 28px', opacity: subO, y: subY }}
-          >
-            Ephermal connects directly to the official Shopify Admin API, reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
-          </motion.p>
-
-          {/* 4. Platform cards */}
-          <motion.div
-            className="meta-platforms"
-            style={{ justifyContent: 'center', marginBottom: 24, opacity: cardsO, y: cardsY }}
-          >
-            <div className="meta-platform-card">
-              <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
-                <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" strokeLinecap="round" strokeLinejoin="round"/>
-                <line x1="3" y1="6" x2="21" y2="6"/>
-                <path d="M16 10a4 4 0 01-8 0" strokeLinecap="round"/>
-              </svg>
-              <div>
-                <div className="meta-platform-name">Product Catalog</div>
-                <div className="meta-platform-sub">Live sync · Pricing · Inventory</div>
-              </div>
-            </div>
-            <div className="meta-platform-card">
-              <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <div>
-                <div className="meta-platform-name">Admin API</div>
-                <div className="meta-platform-sub">OAuth 2.0 · Secure · Official</div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* 5. Feature bullet rows */}
-          <div className="meta-features" style={{ maxWidth: '480px', margin: '0 auto' }}>
-            {FEATURES.map((f, i) => (
-              <motion.div
-                key={i}
-                className="meta-feat"
-                style={{ opacity: featRows[i].o, y: featRows[i].y }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                {f}
-              </motion.div>
-            ))}
+      {/* Platform cards */}
+      <div
+        className="meta-platforms"
+        style={{ justifyContent: 'center', marginBottom: '28px', animation: 'shopifySlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.38s both' }}
+      >
+        <div className="meta-platform-card">
+          <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" strokeLinecap="round" strokeLinejoin="round"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0" strokeLinecap="round"/>
+          </svg>
+          <div>
+            <div className="meta-platform-name">Product Catalog</div>
+            <div className="meta-platform-sub">Live sync · Pricing · Inventory</div>
           </div>
-
         </div>
+        <div className="meta-platform-card">
+          <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ color: '#96BF48' }}>
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <div>
+            <div className="meta-platform-name">Admin API</div>
+            <div className="meta-platform-sub">OAuth 2.0 · Secure · Official</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bullet points */}
+      <div className="meta-features" style={{ maxWidth: '480px', margin: '0 auto', textAlign: 'left' }}>
+        {FEATURES.map((f, i) => (
+          <div
+            key={i}
+            className="meta-feat"
+            style={{ animation: `shopifySlideUp 0.6s cubic-bezier(0.16,1,0.3,1) ${0.52 + i * 0.1}s both` }}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="#96BF48" strokeWidth="2.5" width="16" height="16">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+            {f}
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -244,7 +244,11 @@ export default function Home() {
       </section>
 
       {/* ── Shopify Section ── */}
-      <ShopifyReveal />
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(0,128,96,0.06) 0%, rgba(150,191,72,0.04) 100%)' }}>
+        <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+          <ShopifyReveal />
+        </div>
+      </section>
 
       {/* ── Meta Section ── */}
       <section className="section meta-section">
