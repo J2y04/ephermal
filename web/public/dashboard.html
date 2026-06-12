@@ -3311,10 +3311,16 @@ function _loadSettingsFieldsInner() {
     const b = document.getElementById('dash-meta-badge'); if (b) b.style.display = 'none';
     const btn = document.getElementById('dash-meta-oauth-btn'); if (btn) btn.style.display = 'flex';
   }
-  // Google - show badge if already connected, else show OAuth button
+  // Google - show badge if fully connected, CID entry if token-only, OAuth button if not connected
+  const googleToken   = localStorage.getItem('google_token');
   const googleAccount = localStorage.getItem('google_account');
   if (googleAccount) {
     dashShowGoogleBadge(googleAccount, false);
+  } else if (googleToken) {
+    // OAuth done but no customer ID yet — skip the OAuth button, show CID entry
+    const b = document.getElementById('dash-google-badge'); if (b) b.style.display = 'none';
+    const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display = 'none';
+    const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display = '';
   } else {
     const b = document.getElementById('dash-google-badge'); if (b) b.style.display = 'none';
     const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display = 'flex';
