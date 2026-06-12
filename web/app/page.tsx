@@ -110,7 +110,7 @@ export default function Home() {
       {/* ── Pain vs Gain ── */}
       <div className="compare-bar">
         <div className="compare-grid">
-          <div className="compare-card bad" data-reveal="left">
+          <div className="compare-card bad">
             <div className="compare-label">The Old Way</div>
             <ul className="compare-list">
               <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>$3,000–$8,000/month agency retainer</li>
@@ -120,7 +120,7 @@ export default function Home() {
               <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>You explain your store to a stranger, again</li>
             </ul>
           </div>
-          <div className="compare-card good" data-reveal="right">
+          <div className="compare-card good">
             <div className="compare-label">The Ephermal Way</div>
             <ul className="compare-list">
               <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>From $89/month, less than one bad ad</li>
@@ -143,29 +143,29 @@ export default function Home() {
             <p className="section-sub">No agency. No brief. No guesswork. Ephermal reads your store and builds the entire ad operation for you.</p>
           </div>
           <div className="steps">
-            <div className="step" data-reveal data-delay="1">
+            <div className="step">
               <div className="step-num">01</div>
               <h3>Connect Your Store</h3>
               <p>Connect your Shopify store via OAuth. Link Meta Ads (all plans) or Google Ads (Growth+). Under 3 minutes from zero to ready.</p>
             </div>
-            <div className="step" data-reveal data-delay="2">
+            <div className="step">
               <div className="step-num">02</div>
               <h3>AI Reads Everything</h3>
               <p>Ephermal scans your products, pricing, bestsellers and brand voice, building a complete advertising strategy automatically.</p>
             </div>
-            <div className="step" data-reveal data-delay="3">
+            <div className="step">
               <div className="step-num">03</div>
               <h3>AI Ad Content Built</h3>
               <p>Creator-style scripts, hooks, headlines, and copy generated from your actual products. Not a template library. Every creative is specific to your store and audience.</p>
             </div>
-            <div className="step" data-reveal data-delay="4">
+            <div className="step">
               <div className="step-num">04</div>
               <h3>Launch &amp; Optimise</h3>
               <p>Campaigns go live across Meta and Google Ads. The AI monitors ROAS across placements, surfaces what&apos;s working, and tells you exactly where to scale.</p>
             </div>
           </div>
           {/* Agent summary */}
-          <div className="hiw-agents" data-reveal data-delay="1">
+          <div className="hiw-agents">
             <p className="hiw-agents-label">7 specialized agents running on your store around the clock</p>
           </div>
         </div>
@@ -224,8 +224,20 @@ export default function Home() {
                 desc: "Ephermal monitors performance across your campaigns and flags what's draining budget. Clear signals so you're always allocating spend where it actually converts.",
                 tag: 'Performance-driven', delay: '3',
               },
+              {
+                icon: <><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/></>,
+                title: 'Creative Fatigue Detection',
+                desc: 'Ephermal tracks frequency and CTR decay across your ad sets. When a creative stops converting it flags the drop automatically — so you refresh before performance tanks.',
+                tag: 'Auto-refresh signals', delay: '4',
+              },
+              {
+                icon: <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></>,
+                title: 'Multi-Platform Reporting',
+                desc: 'One unified view across Meta and Google Ads. Track ROAS, CPM, CTR, and conversions side by side. No tab-switching, no manual exports — all live from the dashboard.',
+                tag: 'Unified analytics', delay: '5',
+              },
             ].map((s: { icon: React.ReactNode; title: string; desc: string; tag: string; delay: string; cite?: { label: string; href: string } }, i) => (
-              <div key={i} className="service-card" data-reveal data-delay={s.delay} data-spotlight>
+              <div key={i} className="service-card" data-spotlight>
                 <div className="service-icon"><svg viewBox="0 0 24 24">{s.icon}</svg></div>
                 <h3>{s.title}</h3>
                 <p>{s.desc}</p>
@@ -630,7 +642,7 @@ export default function Home() {
                   { title: 'Performance Signals', body: 'Ephermal tracks results across your campaigns and refines its strategy based on what actually converts in your category.' },
                   { title: 'Full Transparency', body: 'See exactly what the AI decided and why. Approve creatives before launch. You are always in control.' },
                 ].map((f, i) => (
-                  <div key={i} className="feat-item" data-reveal data-delay={String(i + 1)}>
+                  <div key={i} className="feat-item">
                     <div className="feat-dot" />
                     <div><h4>{f.title}</h4><p>{f.body}</p></div>
                   </div>
@@ -686,7 +698,7 @@ export default function Home() {
               { title: 'Direct founder access', body: 'Questions, setup, feature requests: you reach us directly. Not a support ticket queue.', delay: '2' },
               { title: 'Shape the roadmap', body: 'Your feedback drives what we build next. Early users have real influence on the product.', delay: '3' },
             ].map((p, i) => (
-              <div key={i} className="quote-card" data-reveal="pop" data-delay={p.delay} style={{ textAlign: 'left' }}>
+              <div key={i} className="quote-card" style={{ textAlign: 'left' }}>
                 <h4 style={{ fontSize: '15px', fontWeight: 700, marginBottom: '10px', color: 'var(--text)' }}>{p.title}</h4>
                 <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.65 }}>{p.body}</p>
               </div>
@@ -712,7 +724,7 @@ export default function Home() {
             <p className="section-sub" style={{ margin: '0 auto' }}>Flat monthly rate. No long-term contracts. Cancel from your dashboard.</p>
           </div>
           <div className="pricing-grid">
-            <div className="price-card" data-reveal="pop" data-delay="1" data-spotlight>
+            <div className="price-card" data-spotlight>
               <div className="price-badge">Starter</div>
               <div className="price-amount"><sup>$</sup>89</div>
               <div className="price-per">/ month, saves $2,911 vs an agency</div>
@@ -752,7 +764,7 @@ export default function Home() {
               </ul>
               <a href="/auth/register.html" className="price-btn">Get Started</a>
             </div>
-            <div className="price-card featured" data-reveal="pop" data-delay="2" data-spotlight>
+            <div className="price-card featured" data-spotlight>
               <div className="price-badge">Growth</div>
               <div className="price-amount"><sup>$</sup>199</div>
               <div className="price-per">/ month, saves $2,801 vs an agency</div>
@@ -794,7 +806,7 @@ export default function Home() {
               </ul>
               <a href="/auth/register.html" className="price-btn primary">Subscribe now</a>
             </div>
-            <div className="price-card" data-reveal="pop" data-delay="3" data-spotlight>
+            <div className="price-card" data-spotlight>
               <div className="price-badge">Scale</div>
               <div className="price-amount"><sup>$</sup>349</div>
               <div className="price-per">/ month, white-label available</div>
