@@ -57,8 +57,10 @@ async function isRateLimited(userId: string): Promise<boolean> {
   return count > RATE_LIMIT;
 }
 
-// TTL map by action type (0 = never cache)
+// TTL map — keyed as "fnName:action" (function-scoped to prevent collisions).
+// Legacy bare action keys kept for any direct callers.
 const CACHE_TTL: Record<string, number> = {
+  // legacy bare keys
   overview:   60,
   campaigns:  120,
   creatives:  120,
@@ -67,6 +69,25 @@ const CACHE_TTL: Record<string, number> = {
   products:   300,
   analytics:  300,
   insights:   300,
+  // function-scoped keys (used by all new cache lookups)
+  'meta-api:overview':          60,
+  'meta-api:campaigns':         120,
+  'meta-api:creatives':         120,
+  'meta-api:audiences':         300,
+  'meta-api:pixel':             600,
+  'meta-api:analytics':         300,
+  'meta-api:insights':          300,
+  'shopify-api:products':       300,
+  'google-api:campaigns':       120,
+  'google-api:analytics':       300,
+  'creative-fatigue:analyze':   300,
+  'roas-optimizer:analyze':     300,
+  'competitor-radar:search':    600,
+  'competitor-radar:analyze':   600,
+  'ugc-generate:script':        300,
+  'profit-tracker:get_report':  120,
+  'creative-brief:generate':    300,
+  'budget-ai:calculate':        120,
 };
 
 // Actions that mutate state — never cache, always forward
@@ -74,7 +95,21 @@ const WRITE_ACTIONS = new Set([
   'create_campaign', 'update_campaign', 'pause', 'enable', 'scale_budget',
   'create_audience', 'create_lookalike', 'sync_products', 'launch', 'approve',
   'reject', 'bulk-action',
+  'set_cogs', 'bulk_set',  // profit-tracker writes
 ]);
+
+// After a write, invalidate related read caches
+const WRITE_INVALIDATES: Record<string, string[]> = {
+  set_cogs:       ['profit-tracker:get_report'],
+  bulk_set:       ['profit-tracker:get_report'],
+  sync_products:  ['shopify-api:products'],
+  create_campaign:    ['meta-api:campaigns', 'meta-api:overview', 'google-api:campaigns'],
+  update_campaign:    ['meta-api:campaigns', 'meta-api:overview', 'google-api:campaigns'],
+  pause:              ['meta-api:campaigns', 'meta-api:overview'],
+  enable:             ['meta-api:campaigns', 'meta-api:overview'],
+  scale_budget:       ['meta-api:campaigns', 'meta-api:overview'],
+  'bulk-action':      ['meta-api:campaigns', 'meta-api:overview'],
+};
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SUPABASE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -210,16 +245,26 @@ Deno.serve(async (req) => {
     return new Response('Invalid path', { status: 400, headers: CORS_HEADERS });
   }
 
+  // ── Resolve target function early (needed for scoped cache keys) ─────────
+  const fnName = resolveFunctionName(path);
+  if (!fnName) {
+    return new Response(JSON.stringify({ error: `No function mapped for path: ${path}` }), {
+      status: 404,
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    });
+  }
+
   // Determine action for cache key + write detection
   const action = extractAction(path, reqBody ?? {});
+  const scopedAction = `${fnName}:${action}`;
   const isWrite = method === 'POST' && WRITE_ACTIONS.has(action);
-  const ttl = isWrite ? 0 : (CACHE_TTL[action] ?? 0);
+  const ttl = isWrite ? 0 : (CACHE_TTL[scopedAction] ?? CACHE_TTL[action] ?? 0);
   const canCache = ttl > 0 && redisAvailable();
 
   // ── Cache lookup (read-only, non-AI requests) ─────────────────────────────
   if (canCache) {
     const scope = extractScope(extraHeaders);
-    const key = cacheKey(userId, action, scope);
+    const key = cacheKey(userId, scopedAction, scope);
     const cached = await redis.getJSON<unknown>(key);
     if (cached !== null) {
       return new Response(JSON.stringify(cached), {
@@ -227,15 +272,6 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': 'application/json', 'X-Cache': 'HIT', ...CORS_HEADERS },
       });
     }
-  }
-
-  // ── Resolve target Supabase function ─────────────────────────────────────
-  const fnName = resolveFunctionName(path);
-  if (!fnName) {
-    return new Response(JSON.stringify({ error: `No function mapped for path: ${path}` }), {
-      status: 404,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
-    });
   }
 
   const targetUrl = buildFunctionUrl(fnName, path);
@@ -275,8 +311,19 @@ Deno.serve(async (req) => {
   // ── Store in cache (best-effort) ──────────────────────────────────────────
   if (canCache) {
     const scope = extractScope(extraHeaders);
-    const key = cacheKey(userId, action, scope);
+    const key = cacheKey(userId, scopedAction, scope);
     redis.setJSON(key, responseData, ttl).catch(() => {});
+  }
+
+  // ── Invalidate related caches after successful writes ─────────────────────
+  if (isWrite && redisAvailable()) {
+    const keysToInvalidate = WRITE_INVALIDATES[action] ?? [];
+    if (keysToInvalidate.length > 0) {
+      const scope = extractScope(extraHeaders);
+      Promise.all(
+        keysToInvalidate.map(k => redis.del(cacheKey(userId, k, scope)).catch(() => {}))
+      ).catch(() => {});
+    }
   }
 
   return new Response(JSON.stringify(responseData), {
