@@ -20,9 +20,10 @@
   // Google OAuth Client ID — create at console.cloud.google.com → APIs & Services → Credentials
   window.GOOGLE_OAUTH_CLIENT_ID = '1590993825-ucshnlj9hvj6f5tf2kscfj0n5iqb6j1l.apps.googleusercontent.com';
 
-  // Google OAuth callback — Supabase Edge Function that receives the code from Google and exchanges it for tokens
-  // Add this URL to Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client → Authorized Redirect URIs
-  window.GOOGLE_CALLBACK_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/google-oauth-callback';
+  // Google OAuth callback — proxied through ephermal.app so Google shows "ephermal.app" on the consent screen
+  // vercel.json rewrites /auth/google/callback → supabase function transparently
+  // Add https://ephermal.app/auth/google/callback to Google Cloud Console → OAuth 2.0 Client → Authorized Redirect URIs
+  window.GOOGLE_CALLBACK_URL = 'https://ephermal.app/auth/google/callback';
 
   // Supabase — replace with your project values (safe to expose — RLS protects data)
   window.SUPABASE_URL = 'https://twfgnqddoqeqrjhgioxd.supabase.co';

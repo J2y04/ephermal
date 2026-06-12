@@ -18,5 +18,11 @@
   ],
   "redirects": [
     { "source": "/404", "destination": "/404.html", "statusCode": 404 }
+  ],
+  "rewrites": [
+    {
+      "source": "/auth/google/callback",
+      "destination": "https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/google-oauth-callback"
+    }
   ]
 }
