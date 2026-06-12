@@ -2052,7 +2052,7 @@ async function loadIntegrationsFromSupabase() {
   try {
     const { data } = await sb
       .from('user_integrations')
-      .select('meta_token, meta_account, shopify_token, shopify_shop, shopify_shop_name, google_ads_customer_id, store_url')
+      .select('meta_token, meta_account, shopify_token, shopify_shop, shopify_shop_name, google_refresh_token, google_ads_customer_id, store_url')
       .eq('user_id', clerkUserId)
       .single();
     if (!data) return;
@@ -2060,6 +2060,7 @@ async function loadIntegrationsFromSupabase() {
     if (data.meta_account  && !localStorage.getItem('meta_account'))        localStorage.setItem('meta_account',        data.meta_account);
     if (data.shopify_token && !localStorage.getItem('shopify_token'))       localStorage.setItem('shopify_token',       data.shopify_token);
     if (data.shopify_shop  && !localStorage.getItem('shopify_domain'))      localStorage.setItem('shopify_domain',      data.shopify_shop);
+    if (data.google_refresh_token && !localStorage.getItem('google_token')) localStorage.setItem('google_token',        '1');
     if (data.google_ads_customer_id && !localStorage.getItem('google_account')) localStorage.setItem('google_account', data.google_ads_customer_id);
     if (data.store_url     && !localStorage.getItem('last_analyzed_store')) localStorage.setItem('last_analyzed_store', data.store_url);
     // Auto-mark setup complete if any integration exists in DB
@@ -4324,6 +4325,9 @@ async function checkGoogleOAuthReturn() {
   const data   = await claimOAuth(claimCode, userId, 'google');
   if (!data) { showToast('Google claim expired - please reconnect', 'error'); return; }
 
+  // Mark OAuth as complete regardless of whether we have a customer ID yet
+  localStorage.setItem('google_token', '1');
+
   // If we got a customer ID from the API, store and show badge
   if (data.customer_id) {
     localStorage.setItem('google_account', data.customer_id);
@@ -4332,6 +4336,7 @@ async function checkGoogleOAuthReturn() {
     // Developer token not set yet - show CID entry so user can enter manually
     const btn  = document.getElementById('dash-google-oauth-btn');  if (btn)  btn.style.display='none';
     const area = document.getElementById('dash-google-cid-area');   if (area) area.style.display='';
+    refreshGoogleStatus(); updatePlatformBanner();
     showToast('Google connected - enter your Customer ID to finish', 'success');
   }
 }
@@ -4339,6 +4344,7 @@ async function checkGoogleOAuthReturn() {
 function dashSaveGoogleAccount() {
   const raw = (document.getElementById('dash-s-google-account')?.value || '').trim().replace(/-/g,'');
   if (!raw || !/^\d{8,10}$/.test(raw)) { showToast('Enter a valid Customer ID (8-10 digits)', 'warn'); return; }
+  localStorage.setItem('google_token', '1');
   localStorage.setItem('google_account', raw);
   const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display='none';
   dashShowGoogleBadge(raw);
