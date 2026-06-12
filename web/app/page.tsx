@@ -328,9 +328,9 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="meta-platform-card">
-                  <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" width="24" height="24">
-                    <rect x="2" y="3" width="20" height="14" rx="2" fill="none" stroke="#EA4335" strokeWidth="1.5"/>
-                    <path d="M8 21h8M12 17v4" stroke="#EA4335" strokeWidth="1.5" strokeLinecap="round"/>
+                  <svg className="meta-platform-icon" viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.6 12 3.6 12 3.6s-7.54 0-9.38.45A3.02 3.02 0 0 0 .5 6.19C.06 8.05.06 12 .06 12s0 3.95.44 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.4 12 20.4 12 20.4s7.54 0 9.38-.45a3.02 3.02 0 0 0 2.12-2.14C24 15.95 24 12 24 12s0-3.95-.5-5.81z" fill="#FF0000"/>
+                    <polygon points="9.75,15.5 15.75,12 9.75,8.5" fill="#ffffff"/>
                   </svg>
                   <div>
                     <div className="meta-platform-name">YouTube &amp; Display</div>
