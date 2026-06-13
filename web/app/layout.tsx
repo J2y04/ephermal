@@ -119,14 +119,6 @@ const jsonLd = {
       name: 'Ephermal',
       description: 'AI Marketing Agent for Shopify Stores',
       publisher: { '@id': 'https://ephermal.app/#organization' },
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: 'https://ephermal.app/?q={search_term_string}',
-        },
-        'query-input': 'required name=search_term_string',
-      },
     },
     {
       '@type': 'SoftwareApplication',
