@@ -4641,9 +4641,9 @@ async function searchCompetitorAds() {
     body.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No active ads found. Try a different keyword or country.</p></div>';
   } else {
     body.innerHTML = _radarAds.map((ad, i) => {
-      const page = ad.page_name || 'Unknown advertiser';
+      const page = escHtml(ad.page_name || 'Unknown advertiser');
       const bodyText = (ad.ad_creative_bodies || [])[0] || '';
-      const preview = bodyText.slice(0, 220);
+      const preview = escHtml(bodyText.slice(0, 220));
       return '<div style="border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px">' +
         '<div style="display:flex;justify-content:space-between;align-items:flex-start' + (preview ? ';margin-bottom:10px' : '') + '">' +
         '<span style="font-size:13px;font-weight:700;color:var(--text)">' + page + '</span>' +
@@ -4676,11 +4676,11 @@ async function analyzeCompetitorAd(idx, btn) {
   if (el) el.innerHTML =
     '<div style="margin-top:8px;padding:14px;background:rgba(85,88,232,0.06);border-radius:10px;border-left:2px solid var(--primary)">' +
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px">' +
-        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Hook type</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + (d.hook_type || '—') + '</div></div>' +
-        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Emotion</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + (d.emotion || '—') + '</div></div>' +
-        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">CTA</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + (d.cta || '—') + '</div></div>' +
+        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Hook type</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.hook_type || '—') + '</div></div>' +
+        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Emotion</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.emotion || '—') + '</div></div>' +
+        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">CTA</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.cta || '—') + '</div></div>' +
       '</div>' +
-      '<div style="font-size:12px;color:var(--accent);font-weight:600;line-height:1.6">' + (d.counter_strategy ? '<span style="color:var(--muted);font-weight:500">Counter: </span>' + d.counter_strategy : '—') + '</div>' +
+      '<div style="font-size:12px;color:var(--accent);font-weight:600;line-height:1.6">' + (d.counter_strategy ? '<span style="color:var(--muted);font-weight:500">Counter: </span>' + escHtml(d.counter_strategy) : '—') + '</div>' +
     '</div>';
 }
 
@@ -4792,7 +4792,7 @@ function renderProfitTable() {
       const margin = p.margin_percent !== null ? p.margin_percent.toFixed(1) + '%' : '—';
       const marginColor = p.margin_percent === null ? 'var(--muted)' : p.margin_percent >= 50 ? 'var(--success)' : p.margin_percent >= 25 ? 'var(--warning)' : 'var(--danger)';
       return '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">' +
-        '<span style="font-size:13px;color:var(--text);padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (p.title || '') + '</span>' +
+        '<span style="font-size:13px;color:var(--text);padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(p.title || '') + '</span>' +
         '<span style="font-size:13px;color:var(--muted);text-align:right;padding-right:24px">$' + price + '</span>' +
         '<span style="text-align:right;padding-right:24px"><input type="number" min="0" step="0.01" data-idx="' + i + '" value="' + (p.cogs_cents !== null ? (p.cogs_cents / 100).toFixed(2) : '') + '" placeholder="0.00" style="width:80px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;text-align:right"></span>' +
         '<span style="font-size:13px;font-weight:700;color:' + marginColor + ';text-align:right">' + margin + '</span>' +

@@ -45,9 +45,13 @@ const TEMPLATES: Record<string, { subject: string }> = {
   ai_limit_hit:              { subject: 'AI message limit reached — top up to continue' },
 };
 
-/** Replace {{variable}} placeholders in a template string */
+function escapeHtml(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+/** Replace {{variable}} placeholders in a template string, HTML-escaping all values */
 function renderTemplate(html: string, vars: Record<string, string> = {}): string {
-  return html.replace(/\{\{(\w+)\}\}/g, (_, key) => vars[key] ?? '');
+  return html.replace(/\{\{(\w+)\}\}/g, (_, key) => escapeHtml(vars[key] ?? ''));
 }
 
 // Basic RFC-5321 email format guard — prevents header injection
