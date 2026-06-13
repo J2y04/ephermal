@@ -21,6 +21,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { extractUserId } from '../_shared/auth.ts'
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 // Allow the production domain + Vercel previews during development.
@@ -70,20 +71,25 @@ Deno.serve(async (req: Request) => {
     return json({ error: 'method_not_allowed' }, 405, origin)
   }
 
+  // ── Verify Clerk JWT — identity must come from the signed token ─────────
+  const verifiedUserId = await extractUserId(req.headers.get('Authorization'))
+  if (!verifiedUserId) {
+    return json({ error: 'unauthorized' }, 401, origin)
+  }
+
   // ── Parse request body ───────────────────────────────────────────────────
-  let body: { claim?: unknown; user_id?: unknown; platform?: unknown }
+  let body: { claim?: unknown; platform?: unknown }
   try {
     body = await req.json()
   } catch {
     return json({ error: 'invalid_json' }, 400, origin)
   }
 
-  const { claim, user_id, platform } = body
+  const { claim, platform } = body
 
   // ── Strict input validation ──────────────────────────────────────────────
   if (
-    typeof claim    !== 'string' || !UUID_RE.test(claim)    ||
-    typeof user_id  !== 'string' || !user_id.trim()         ||
+    typeof claim    !== 'string' || !UUID_RE.test(claim) ||
     typeof platform !== 'string' || !['meta', 'shopify', 'google'].includes(platform)
   ) {
     return json({ error: 'invalid_request' }, 400, origin)
@@ -92,7 +98,7 @@ Deno.serve(async (req: Request) => {
   // ── Atomic claim exchange ────────────────────────────────────────────────
   // Update `used = true` only if:
   //   - id matches the claim code
-  //   - user_id matches (prevents cross-user theft even if claim is intercepted)
+  //   - user_id matches the verified JWT identity (prevents cross-user theft)
   //   - platform matches
   //   - not already used
   //   - not expired
@@ -108,7 +114,7 @@ Deno.serve(async (req: Request) => {
     .from('oauth_claims')
     .update({ used: true })
     .eq('id',       claim)
-    .eq('user_id',  user_id.trim())
+    .eq('user_id',  verifiedUserId)
     .eq('platform', platform)
     .eq('used',     false)
     .gt('expires_at', now)

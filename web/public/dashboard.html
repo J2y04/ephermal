@@ -3279,8 +3279,7 @@ async function checkShopifyReturn() {
   localStorage.removeItem('shopify_oauth_nonce');
   localStorage.removeItem('shopify_oauth_shop');
 
-  const userId = window.__clerk?.user?.id || '';
-  const data   = await claimOAuth(claimCode, userId, 'shopify');
+  const data   = await claimOAuth(claimCode, 'shopify');
   if (!data || !data.access_token) {
     showToast('Shopify claim expired - please reconnect', 'error'); return;
   }
@@ -4166,12 +4165,14 @@ async function createUGCForNewProduct() {
 function _esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 /** Exchange one-time claim code for access token (token never appears in URL) */
-async function claimOAuth(claimCode, userId, platform) {
+async function claimOAuth(claimCode, platform) {
   try {
+    const token = await window.__clerk?.session?.getToken();
+    if (!token) { console.error('claimOAuth: no Clerk session'); return null; }
     const res = await fetch(`${window.SUPABASE_URL}/functions/v1/claim-oauth`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON },
-      body: JSON.stringify({ claim: claimCode, user_id: userId, platform })
+      headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON, 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ claim: claimCode, platform })
     });
     if (!res.ok) return null;
     return await res.json();
@@ -4221,8 +4222,7 @@ async function checkMetaOAuthReturn() {
   }
   localStorage.removeItem('meta_oauth_nonce');
 
-  const userId = window.__clerk?.user?.id || '';
-  const data   = await claimOAuth(claimCode, userId, 'meta');
+  const data   = await claimOAuth(claimCode, 'meta');
   if (!data || !data.access_token) {
     showToast('Meta claim expired - please reconnect', 'error'); return;
   }
@@ -4327,8 +4327,7 @@ async function checkGoogleOAuthReturn() {
   }
   localStorage.removeItem('google_oauth_nonce');
 
-  const userId = window.__clerk?.user?.id || '';
-  const data   = await claimOAuth(claimCode, userId, 'google');
+  const data   = await claimOAuth(claimCode, 'google');
   if (!data) { showToast('Google claim expired - please reconnect', 'error'); return; }
 
   // Mark OAuth as complete regardless of whether we have a customer ID yet
