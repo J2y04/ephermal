@@ -19,6 +19,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
+import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rate-limit.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -54,10 +55,10 @@ async function callGroq(system: string, user: string, maxTokens = 1500): Promise
 async function getMetaToken(userId: string): Promise<string | null> {
   const { data } = await supabase
     .from('user_integrations')
-    .select('meta_access_token')
+    .select('meta_token')
     .eq('user_id', userId)
     .single();
-  return data?.meta_access_token ?? null;
+  return data?.meta_token ?? null;
 }
 
 async function handleSearch(
@@ -140,6 +141,15 @@ Deno.serve(async (req) => {
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
+  // Rate limit: 5/min, 30/hour per user
+  const rl = await rateLimitTiered(userId, 'radar', [
+    { max: 5,  window: 60   },
+    { max: 30, window: 3600 },
+  ]);
+  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
+
+  if (bodyTooLarge(req, 32_768)) return errResponse('Request body too large', 413, origin);
+
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
 
@@ -160,7 +170,7 @@ Deno.serve(async (req) => {
 
       case 'analyze': {
         if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
-        const adText = String(body.ad_text ?? '').trim();
+        const adText = String(body.ad_text ?? '').trim().slice(0, 4000);
         if (!adText) return errResponse('ad_text is required', 400, origin);
         return okResponse(await handleAnalyze(adText), origin);
       }
@@ -170,6 +180,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('competitor-radar error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Competitor radar error', 500, origin);
+    return errResponse('Competitor radar error', 500, origin);
   }
 });

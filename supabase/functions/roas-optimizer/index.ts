@@ -24,6 +24,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { metaGet, metaPost, parseROAS } from '../_shared/meta.ts';
+import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -199,6 +200,12 @@ Deno.serve(async (req) => {
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
+  const rl = await rateLimitTiered(userId, 'roas', [
+    { max: 5,  window: 60   },
+    { max: 30, window: 3600 },
+  ]);
+  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
+
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
 
@@ -267,12 +274,14 @@ Deno.serve(async (req) => {
 
       case 'rules': {
         // Update or create optimizer rules for this user
+        const rawMultiplier   = Number(body.scale_multiplier  ?? DEFAULT_RULES.scale_multiplier);
+        const rawMaxBudget    = Number(body.max_daily_budget  ?? DEFAULT_RULES.max_daily_budget);
         const newRules = {
           user_id:           userId,
           pause_below_roas:  body.pause_below_roas  ?? DEFAULT_RULES.pause_below_roas,
           scale_above_roas:  body.scale_above_roas  ?? DEFAULT_RULES.scale_above_roas,
-          scale_multiplier:  body.scale_multiplier  ?? DEFAULT_RULES.scale_multiplier,
-          max_daily_budget:  body.max_daily_budget  ?? DEFAULT_RULES.max_daily_budget,
+          scale_multiplier:  Math.min(Math.max(rawMultiplier, 1.0), 2.0),
+          max_daily_budget:  Math.min(Math.max(rawMaxBudget, 1), 10000),
           min_spend:         body.min_spend          ?? DEFAULT_RULES.min_spend,
           lookback_days:     body.lookback_days      ?? DEFAULT_RULES.lookback_days,
           updated_at:        new Date().toISOString(),

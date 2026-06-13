@@ -61,6 +61,10 @@ export async function extractUserId(authHeader: string | null): Promise<string |
     const headerJson  = JSON.parse(atob(parts[0].replace(/-/g, '+').replace(/_/g, '/')));
     const payloadJson = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
 
+    // Validate issuer — must be our Clerk domain
+    const expectedIss = Deno.env.get('CLERK_ISSUER') ?? 'https://clerk.ephermal.app';
+    if (payloadJson.iss && payloadJson.iss !== expectedIss) return null;
+
     // Validate expiry and not-before
     const now = Math.floor(Date.now() / 1000);
     if (payloadJson.exp && now > payloadJson.exp) return null;

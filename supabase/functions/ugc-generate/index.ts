@@ -23,6 +23,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
+import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -82,6 +83,12 @@ Deno.serve(async (req) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
+
+  const rl = await rateLimitTiered(userId, 'ugc', [
+    { max: 5,  window: 60   },
+    { max: 30, window: 3600 },
+  ]);
+  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
 
   if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
 

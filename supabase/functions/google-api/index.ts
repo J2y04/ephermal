@@ -149,10 +149,14 @@ Deno.serve(async (req: Request) => {
   const creds = await getCredentials(userId)
   if (!creds) return errResponse('Google Ads not connected. Connect in Settings.', 403, origin)
 
-  const url    = new URL(req.url)
+  const url = new URL(req.url)
+  let postBody: Record<string, unknown> = {}
+  if (req.method === 'POST') {
+    try { postBody = await req.json() } catch { /* empty body ok */ }
+  }
   const action = req.method === 'GET'
     ? (url.searchParams.get('action') ?? 'campaigns')
-    : String(((await req.json().catch(() => ({}))).action) ?? '')
+    : String(postBody.action ?? '')
 
   let accessToken: string
   try {
@@ -256,9 +260,8 @@ Deno.serve(async (req: Request) => {
 
       // ── toggle: pause or enable a campaign ────────────────────────────────
       case 'toggle': {
-        const body = await req.json().catch(() => ({})) as Record<string, unknown>
-        const campaignId = String(body.campaign_id ?? '')
-        const newStatus  = String(body.status ?? 'PAUSED')
+        const campaignId = String(postBody.campaign_id ?? '')
+        const newStatus  = String(postBody.status ?? 'PAUSED')
 
         if (!campaignId || !['PAUSED', 'ENABLED'].includes(newStatus)) {
           return errResponse('campaign_id and status (PAUSED|ENABLED) are required', 400, origin)
@@ -282,9 +285,8 @@ Deno.serve(async (req: Request) => {
 
       // ── budget: update campaign daily budget ─────────────────────────────
       case 'budget': {
-        const body = await req.json().catch(() => ({})) as Record<string, unknown>
-        const campaignId   = String(body.campaign_id ?? '')
-        const budgetUsd    = Number(body.budget_usd ?? 0)
+        const campaignId = String(postBody.campaign_id ?? '')
+        const budgetUsd  = Number(postBody.budget_usd ?? 0)
 
         if (!campaignId || budgetUsd < 1) {
           return errResponse('campaign_id and budget_usd (minimum 1) are required', 400, origin)
@@ -328,7 +330,6 @@ Deno.serve(async (req: Request) => {
     }
   } catch (err) {
     console.error('[google-api] error:', err)
-    const msg = err instanceof Error ? err.message : 'Google Ads API error'
-    return errResponse(msg, 500, origin)
+    return errResponse('Google Ads API error', 500, origin)
   }
 })

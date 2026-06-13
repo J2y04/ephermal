@@ -555,6 +555,10 @@ Deno.serve(async (req) => {
         case 'enable': {
           const id = String(body.campaign_id ?? body.id ?? '');
           if (!id) return errResponse('campaign_id required', 400, origin);
+          // BOLA guard: verify campaign belongs to this user before touching Meta API
+          const { data: owned } = await supabase.from('campaigns')
+            .select('id').eq('id', id).eq('user_id', userId).single();
+          if (!owned) return errResponse('Campaign not found', 403, origin);
           return okResponse(
             await setCampaignStatus(token, id, postAction === 'enable' ? 'ACTIVE' : 'PAUSED'),
             origin,
@@ -565,6 +569,10 @@ Deno.serve(async (req) => {
           const id  = String(body.campaign_id ?? body.id ?? '');
           const mul = parseFloat(String(body.multiplier ?? body.budget_multiplier ?? '1.15'));
           if (!id) return errResponse('campaign_id required', 400, origin);
+          // BOLA guard
+          const { data: owned } = await supabase.from('campaigns')
+            .select('id').eq('id', id).eq('user_id', userId).single();
+          if (!owned) return errResponse('Campaign not found', 403, origin);
           return okResponse(await scaleBudget(token, userId, id, mul), origin);
         }
 
@@ -572,6 +580,12 @@ Deno.serve(async (req) => {
         case 'bulk-action': {
           const ids = Array.isArray(body.campaign_ids) ? body.campaign_ids.map(String) : [];
           if (!ids.length) return errResponse('campaign_ids required', 400, origin);
+          // BOLA guard: verify ALL campaign IDs belong to this user
+          const { data: owned } = await supabase.from('campaigns')
+            .select('id').in('id', ids).eq('user_id', userId);
+          const ownedIds = new Set((owned ?? []).map((r: { id: string }) => r.id));
+          const unauthorized = ids.find(id => !ownedIds.has(id));
+          if (unauthorized) return errResponse('Campaign not found', 403, origin);
           return okResponse(
             await bulkAction(token, userId, ids, String(body.action_type ?? body.action ?? 'pause'), parseFloat(String(body.budget_multiplier ?? '1.15'))),
             origin,

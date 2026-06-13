@@ -111,9 +111,11 @@ const WRITE_INVALIDATES: Record<string, string[]> = {
   'bulk-action':      ['meta-api:campaigns', 'meta-api:overview'],
 };
 
-const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
-const SUPABASE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-const FN_BASE      = `${SUPABASE_URL}/functions/v1`;
+const SUPABASE_URL  = Deno.env.get('SUPABASE_URL') ?? '';
+// Use the anon key for downstream apikey header — NOT the service role key.
+// Individual edge functions verify the Clerk JWT and use their own service role key internally.
+const SUPABASE_ANON = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+const FN_BASE       = `${SUPABASE_URL}/functions/v1`;
 const APP_URL      = Deno.env.get('APP_URL') ?? 'https://ephermal.app';
 
 /** Map a request path prefix to the target Supabase Edge Function name */
@@ -211,6 +213,12 @@ Deno.serve(async (req) => {
   // runtime) and passes Clerk JWT in the JSON body as `clerkToken`.
   const authHeader = req.headers.get('Authorization') ?? '';
 
+  // ── Payload size guard (512 KB) ─────────────────────────────────────────────
+  const cl = req.headers.get('content-length');
+  if (cl && parseInt(cl, 10) > 524_288) {
+    return new Response('Request too large', { status: 413, headers: CORS_HEADERS });
+  }
+
   let body: {
     path:       string;
     method?:    string;
@@ -279,7 +287,7 @@ Deno.serve(async (req) => {
   const forwardHeaders: Record<string, string> = {
     'Authorization':  `Bearer ${rawToken}`,
     'Content-Type':   'application/json',
-    'apikey':         SUPABASE_KEY,
+    'apikey':         SUPABASE_ANON,
     ...extraHeaders,
   };
 
@@ -297,9 +305,15 @@ Deno.serve(async (req) => {
 
   if (!upstreamRes.ok) {
     const errText = await upstreamRes.text();
-    return new Response(errText || 'Upstream error', {
+    // Log detail server-side; return generic message to avoid leaking internals
+    console.error(`[cache-proxy] upstream ${fnName} ${upstreamRes.status}:`, errText.slice(0, 500));
+    // Forward the status code so client can distinguish 401/403/429/503, but not the body
+    const clientMsg = upstreamRes.status === 429
+      ? JSON.stringify({ error: 'Too many requests — please slow down.' })
+      : JSON.stringify({ error: 'Upstream service error.' });
+    return new Response(clientMsg, {
       status: upstreamRes.status,
-      headers: { 'Content-Type': 'text/plain', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
     });
   }
 

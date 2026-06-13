@@ -20,6 +20,14 @@
  *   4. Copy the Signing Secret → add as CLERK_WEBHOOK_SECRET secret in Supabase
  */
 
+// ── Constant-time string comparison (prevents timing attacks) ────────────────
+function timingSafeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
 // ── Clerk webhook signature verification (no external deps) ─────────────────
 // Clerk signs webhooks using svix: HMAC-SHA256 over "{id}.{timestamp}.{body}"
 // Secret is "whsec_" + base64-encoded key
@@ -48,7 +56,8 @@ async function verifyClerkSignature(
     .filter(s => s.startsWith('v1,'))
     .map(s => s.slice(3));
 
-  return provided.some(sig => sig === computed);
+  // Use constant-time comparison to prevent timing side-channel attacks
+  return provided.some(sig => timingSafeEqual(sig, computed));
 }
 
 // ── Types ────────────────────────────────────────────────────────────────────

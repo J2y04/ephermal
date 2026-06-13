@@ -219,6 +219,20 @@ Deno.serve(async (req) => {
     return new Response('Invalid webhook signature', { status: 400 });
   }
 
+  // Idempotency guard: skip if already processed (Stripe may replay events)
+  const { error: dupErr } = await supabase.from('stripe_processed_events')
+    .insert({ event_id: event.id });
+  if (dupErr) {
+    // Unique violation = already processed; other errors we log and continue
+    if (dupErr.code === '23505') {
+      console.log(`Duplicate Stripe event ignored: ${event.id}`);
+      return new Response(JSON.stringify({ received: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    console.error('stripe_processed_events insert error:', dupErr);
+  }
+
   try {
     switch (event.type) {
       case 'checkout.session.completed':
