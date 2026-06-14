@@ -1,0 +1,253 @@
+- generic [ref=e3]:
+  - generic [ref=e9]:
+    - generic [ref=e15]:
+      - img "Meta symbol" [ref=e20]
+      - generic [ref=e30]:
+        - generic [ref=e35]:
+          - text: Get started with
+          - generic [ref=e36]: Meta for Developers
+        - generic [ref=e40]: "Manage everything to do with apps you’ve built for you or your business, including:"
+        - list [ref=e46]:
+          - listitem [ref=e47]:
+            - generic [ref=e48]: •
+            - generic [ref=e49]: Create apps with use cases that can connect your app with Facebook, Instagram, WhatsApp, Threads and more.
+          - listitem [ref=e50]:
+            - generic [ref=e51]: •
+            - generic [ref=e52]: Request access to permissions and features in App Review.
+          - listitem [ref=e53]:
+            - generic [ref=e54]: •
+            - generic [ref=e55]: Manage apps and track analytics, such as API calls and user rate limits
+          - listitem [ref=e56]:
+            - generic [ref=e57]: •
+            - generic [ref=e58]: Discover new ways to reach your users
+          - listitem [ref=e59]:
+            - generic [ref=e60]: •
+            - generic [ref=e61]: Complete all verification and data access requirements to keep your apps secure and trusted
+    - generic [ref=e67]:
+      - generic [ref=e70]: Log into Meta for Developers
+      - button "Continue with Facebook" [ref=e73] [cursor=pointer]:
+        - generic [ref=e74]:
+          - img [ref=e76]
+          - generic [ref=e79]: Continue with Facebook
+      - button "Create new account" [ref=e82] [cursor=pointer]:
+        - generic [ref=e85]: Create new account
+      - separator [ref=e87]
+      - button "Log in with a managed Meta account" [ref=e90] [cursor=pointer]:
+        - generic [ref=e93]: Log in with a managed Meta account
+      - img "Meta logo" [ref=e95]
+  - generic [ref=e104]:
+    - generic [ref=e295]:
+      - generic [ref=e296]:
+        - generic [ref=e298]:
+          - paragraph [ref=e300]:
+            - generic [ref=e301]: Meta Technologies
+          - generic:
+            - link "Facebook" [ref=e303] [cursor=pointer]:
+              - /url: /business/marketing/facebook
+            - link "Instagram" [ref=e305] [cursor=pointer]:
+              - /url: /business/instagram
+            - link "Messenger" [ref=e307] [cursor=pointer]:
+              - /url: /business/marketing/messenger
+            - link "WhatsApp" [ref=e309] [cursor=pointer]:
+              - /url: /business/marketing/whatsapp
+            - link "Audience Network" [ref=e311] [cursor=pointer]:
+              - /url: /business/marketing/audience-network
+            - link "Meta Quest" [ref=e313] [cursor=pointer]:
+              - /url: https://www.meta.com/quest
+              - text: Meta
+              - generic [ref=e314]: Quest
+            - link "Workplace" [ref=e317] [cursor=pointer]:
+              - /url: https://www.workplace.com/
+              - generic [ref=e318]: Workplace
+            - link "Meta for Work" [ref=e321] [cursor=pointer]:
+              - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fforwork.meta.com%2F&h=AUBe9KW4VjQvtXJKivp8q2OxFX37z103kFFZOlHRFbxyclLpqEvt0qzAD9iJ4rRf9H3qRpQV4fda1odJ0WCnESjsk0dwVYcgmSk67pirW1dzCEmrtKUS-oJl6hqDEUnteknk0suq3ZJJQWWMOKYeMQ
+              - text: Meta for
+              - generic [ref=e322]: Work
+        - generic [ref=e325]:
+          - paragraph [ref=e327]:
+            - generic [ref=e328]: Tools
+          - generic:
+            - link "Free Tools" [ref=e330] [cursor=pointer]:
+              - /url: /business/small-business/free-tools
+            - link "Facebook Pages" [ref=e332] [cursor=pointer]:
+              - /url: /business/tools/facebook-pages
+            - link "Instagram Profiles" [ref=e334] [cursor=pointer]:
+              - /url: /business/profiles
+            - link "Stories" [ref=e336] [cursor=pointer]:
+              - /url: /business/ads/stories-ad-format
+            - link "Shops" [ref=e338] [cursor=pointer]:
+              - /url: /business/shops
+            - link "Meta Business Suite" [ref=e340] [cursor=pointer]:
+              - /url: https://www.facebook.com/business/tools/meta-business-suite
+            - link "Facebook Ads" [ref=e342] [cursor=pointer]:
+              - /url: /business/tools/facebook-ads
+            - link "Messenger Ads" [ref=e344] [cursor=pointer]:
+              - /url: /business/ads/messenger-ads
+            - link "Instagram Ads" [ref=e346] [cursor=pointer]:
+              - /url: /business/instagram/advertising
+            - link "Video Ads" [ref=e348] [cursor=pointer]:
+              - /url: /business/ads/video-ad-format
+            - link "Ads Manager" [ref=e350] [cursor=pointer]:
+              - /url: /business/tools/ads-manager
+      - generic [ref=e351]:
+        - generic [ref=e353]:
+          - paragraph [ref=e355]:
+            - generic [ref=e356]: Goals
+          - generic:
+            - link "Set Up a Facebook Page" [ref=e358] [cursor=pointer]:
+              - /url: /business/tools/facebook-pages/get-started
+            - link "Build Brand Awareness" [ref=e360] [cursor=pointer]:
+              - /url: /business/goals/build-awareness
+            - link "Promote Your Local Business" [ref=e362] [cursor=pointer]:
+              - /url: /business/goals/promote-local-business
+            - link "Grow Online Sales" [ref=e364] [cursor=pointer]:
+              - /url: /business/goals/increase-online-sales
+            - link "Promote Your App" [ref=e366] [cursor=pointer]:
+              - /url: /business/goals/promote-app
+            - link "Generate Leads" [ref=e368] [cursor=pointer]:
+              - /url: /business/goals/generate-leads
+            - link "Measure and Optimize Ads" [ref=e370] [cursor=pointer]:
+              - /url: /business/measurement
+            - link "Retarget Existing Customers" [ref=e372] [cursor=pointer]:
+              - /url: /business/goals/retargeting
+            - link "View All Goals" [ref=e374] [cursor=pointer]:
+              - /url: /business/goals
+        - generic [ref=e376]:
+          - paragraph [ref=e378]:
+            - generic [ref=e379]: Business Types
+          - generic:
+            - link "Small Business" [ref=e381] [cursor=pointer]:
+              - /url: /business/small-business
+            - link "Large Business" [ref=e383] [cursor=pointer]:
+              - /url: /business/industries
+            - link "Agency" [ref=e385] [cursor=pointer]:
+              - /url: /business/agencies
+            - link "Media and Publisher" [ref=e387] [cursor=pointer]:
+              - /url: /formedia?ref=fb4b_footer
+              - text: Media and
+              - generic [ref=e388]: Publisher
+            - link "Creator" [ref=e391] [cursor=pointer]:
+              - /url: /creators?ref=fb4b_footer
+              - generic [ref=e392]: Creator
+            - link "Developer" [ref=e395] [cursor=pointer]:
+              - /url: https://developers.facebook.com/?ref=fb4b_footer
+              - generic [ref=e396]: Developer
+            - link "Business Partner" [ref=e399] [cursor=pointer]:
+              - /url: /business/marketing-partners/become-a-partner
+      - generic [ref=e400]:
+        - generic [ref=e402]:
+          - paragraph [ref=e404]:
+            - generic [ref=e405]: Industries
+          - generic:
+            - link "Automotive" [ref=e407] [cursor=pointer]:
+              - /url: /business/industries/automotive
+            - link "Consumer Packaged Goods" [ref=e409] [cursor=pointer]:
+              - /url: /business/industries/consumer-goods
+            - link "Ecommerce" [ref=e411] [cursor=pointer]:
+              - /url: /business/industries/ecommerce
+            - link "Entertainment and Media" [ref=e413] [cursor=pointer]:
+              - /url: /business/industries/entertainment
+            - link "Financial Services" [ref=e415] [cursor=pointer]:
+              - /url: /business/industries/financial-services
+            - link "Gaming" [ref=e417] [cursor=pointer]:
+              - /url: /business/industries/gaming
+            - link "Real Estate" [ref=e419] [cursor=pointer]:
+              - /url: /business/industries/real-estate
+            - link "Restaurants" [ref=e421] [cursor=pointer]:
+              - /url: /business/industries/restaurants
+            - link "Retail" [ref=e423] [cursor=pointer]:
+              - /url: /business/industries/retail
+            - link "Technology and Telecom" [ref=e425] [cursor=pointer]:
+              - /url: /business/industries/technology-telecom
+            - link "Travel" [ref=e427] [cursor=pointer]:
+              - /url: /business/industries/travel
+        - generic [ref=e429]:
+          - paragraph [ref=e431]:
+            - generic [ref=e432]: Inspiration
+          - generic:
+            - link "Business News" [ref=e434] [cursor=pointer]:
+              - /url: /business/news
+            - link "Case Studies" [ref=e436] [cursor=pointer]:
+              - /url: /business/success
+            - link "Events" [ref=e438] [cursor=pointer]:
+              - /url: /business/events
+            - link "Creative Hub" [ref=e440] [cursor=pointer]:
+              - /url: /business/inspiration/creative-hub
+      - generic [ref=e441]:
+        - generic [ref=e443]:
+          - paragraph [ref=e445]:
+            - generic [ref=e446]: Skills and Training
+          - generic:
+            - link "Online Learning" [ref=e448] [cursor=pointer]:
+              - /url: /business/learn
+            - link "Certification Programs" [ref=e450] [cursor=pointer]:
+              - /url: /business/learn/certification
+            - link "Webinars" [ref=e452] [cursor=pointer]:
+              - /url: /business/webinars
+        - generic [ref=e454]:
+          - paragraph [ref=e456]:
+            - generic [ref=e457]: Guides and Resources
+          - generic:
+            - link "Ads Guide" [ref=e459] [cursor=pointer]:
+              - /url: /business/ads-guide
+            - link "Brand Safety and Suitability" [ref=e461] [cursor=pointer]:
+              - /url: /business/brand-safety-and-suitability
+            - link "'Click Here' Book" [ref=e463] [cursor=pointer]:
+              - /url: /business/click-here-alex-schultz-digital-marketing-advertising-book
+            - link "Media Responsibility" [ref=e465] [cursor=pointer]:
+              - /url: /business/brand-safety/media-responsibility
+            - link "Sitemap" [ref=e467] [cursor=pointer]:
+              - /url: /business/sitemap
+        - generic [ref=e469]:
+          - paragraph [ref=e471]:
+            - generic [ref=e472]: Business Help Center
+          - generic:
+            - link "Create and Manage Accounts" [ref=e474] [cursor=pointer]:
+              - /url: /business/help/148723649153231?ref=fbb_footer
+            - link "Publish and Distribute Content" [ref=e476] [cursor=pointer]:
+              - /url: /business/help/2094583417443686?ref=fbb_footer
+            - link "Advertise" [ref=e478] [cursor=pointer]:
+              - /url: /business/help/169249477193317?ref=fbb_footer
+            - link "Sell on Facebook and Instagram" [ref=e480] [cursor=pointer]:
+              - /url: /business/help/626723211000233?ref=fbb_footer
+            - link "Monetize Your Content or App" [ref=e482] [cursor=pointer]:
+              - /url: /business/help/227638664476590?ref=fbb_footer
+            - link "View All Articles" [ref=e484] [cursor=pointer]:
+              - /url: /business/help?ref=fbb_footer
+    - generic [ref=e107]:
+      - generic [ref=e108]:
+        - link "© 2026 Meta" [ref=e109] [cursor=pointer]:
+          - /url: https://www.facebook.com/
+        - link "Follow Meta for Business (ex Facebook for Business) Facebook Page Social Media Channel" [ref=e491] [cursor=pointer]:
+          - /url: /MetaforBusiness?ref=fbb_footer
+          - img "Follow Meta for Business (ex Facebook for Business) Facebook Page Social Media Channel" [ref=e492]
+      - generic [ref=e110]:
+        - generic [ref=e111]:
+          - link "About" [ref=e112] [cursor=pointer]:
+            - /url: https://www.meta.com/about/
+          - link "Developers" [ref=e113] [cursor=pointer]:
+            - /url: https://developers.meta.com/
+          - link "Careers" [ref=e114] [cursor=pointer]:
+            - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.metacareers.com%2F&h=AUBFjuqBNbGrY549JxV-rvT6wzdvqMZMPdRiyPoMzumOewup62yrt7DNdqs4khLE1U3I_BPsUzFREwYtoY1vVCH_4x0l63W_rmHBZAXtRkBHnBcoBDT1spiwuX8nb_7tS1kFsve1OBxC7ipb2__Agg
+          - link "Privacy" [ref=e115] [cursor=pointer]:
+            - /url: https://www.facebook.com/privacy/explanation
+          - link "Cookies" [ref=e116] [cursor=pointer]:
+            - /url: https://www.facebook.com/help/cookies
+          - link "Terms" [ref=e117] [cursor=pointer]:
+            - /url: https://www.facebook.com/policies/
+          - link "Help Center" [ref=e118] [cursor=pointer]:
+            - /url: https://www.facebook.com/business/help/
+        - generic [ref=e119]:
+          - link "English (US)" [ref=e120] [cursor=pointer]:
+            - /url: https://business.facebook.com/business/loginpage/?next=https%3A%2F%2Fdevelopers.facebook.com%2Fapps%2F1504672747779574%2Fdashboard%2F
+          - link "English (UK)" [ref=e121] [cursor=pointer]:
+            - /url: https://business.facebook.com/business/loginpage/?next=https%3A%2F%2Fdevelopers.facebook.com%2Fapps%2F1504672747779574%2Fdashboard%2F
+          - link "Español" [ref=e122] [cursor=pointer]:
+            - /url: https://business.facebook.com/business/loginpage/?next=https%3A%2F%2Fdevelopers.facebook.com%2Fapps%2F1504672747779574%2Fdashboard%2F
+          - link "Português (Brasil)" [ref=e123] [cursor=pointer]:
+            - /url: https://business.facebook.com/business/loginpage/?next=https%3A%2F%2Fdevelopers.facebook.com%2Fapps%2F1504672747779574%2Fdashboard%2F
+          - link "Français (France)" [ref=e124] [cursor=pointer]:
+            - /url: https://business.facebook.com/business/loginpage/?next=https%3A%2F%2Fdevelopers.facebook.com%2Fapps%2F1504672747779574%2Fdashboard%2F
+          - link "Español (España)" [ref=e125] [cursor=pointer]:
+            - /url: https://business.facebook.com/business/loginpage/?next=https%3A%2F%2Fdevelopers.facebook.com%2Fapps%2F1504672747779574%2Fdashboard%2F
+          - button "More languages" [ref=e126] [cursor=pointer]: More languages

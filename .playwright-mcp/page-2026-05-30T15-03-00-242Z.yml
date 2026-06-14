@@ -1,0 +1,158 @@
+- generic [active] [ref=e1]:
+  - complementary [ref=e2]:
+    - generic [ref=e3]:
+      - img "Ephermal" [ref=e4]
+      - generic [ref=e5]: Ephermal
+    - generic [ref=e6]:
+      - generic [ref=e7]: Overview
+      - generic [ref=e8] [cursor=pointer]:
+        - img [ref=e9]
+        - text: Dashboard
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+        - text: Analytics
+    - generic [ref=e17]:
+      - generic [ref=e18]: Advertising
+      - generic [ref=e19] [cursor=pointer]:
+        - img [ref=e20]
+        - text: Campaigns
+      - generic [ref=e23] [cursor=pointer]:
+        - img [ref=e24]
+        - text: Creatives
+      - generic [ref=e27] [cursor=pointer]:
+        - img [ref=e28]
+        - text: Audience Intel
+      - generic [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - text: Bulk Manager
+    - generic [ref=e36]:
+      - generic [ref=e37]: Store
+      - generic [ref=e38] [cursor=pointer]:
+        - img [ref=e39]
+        - text: Store Products
+    - generic [ref=e42]:
+      - generic [ref=e43]: Account
+      - generic [ref=e44] [cursor=pointer]:
+        - img [ref=e45]
+        - text: Multi-Store
+      - generic [ref=e48] [cursor=pointer]:
+        - img [ref=e49]
+        - text: White-label
+      - generic [ref=e51] [cursor=pointer]:
+        - img [ref=e52]
+        - text: Settings
+      - generic [ref=e55] [cursor=pointer]:
+        - img [ref=e56]
+        - text: Billing
+      - generic [ref=e58] [cursor=pointer]:
+        - img [ref=e59]
+        - text: Dev Tools
+    - generic [ref=e62]:
+      - generic [ref=e64]:
+        - generic [ref=e65]: UGC Credits
+        - strong [ref=e66]: 350 / 350
+      - generic [ref=e68]:
+        - generic [ref=e69]: J
+        - generic [ref=e70]:
+          - generic [ref=e71]: Jamal Settah
+          - generic [ref=e73]: 👑 CEO
+          - generic [ref=e74]: jamalsettah2604@gmail.com
+        - generic [ref=e75]: SCALE
+  - generic [ref=e76]:
+    - generic [ref=e77]:
+      - generic [ref=e79]: Dashboard
+      - generic [ref=e80]:
+        - button "Generate UGC" [ref=e81] [cursor=pointer]:
+          - img [ref=e82]
+          - generic [ref=e83]: Generate UGC
+        - generic [ref=e84] [cursor=pointer]: Sign out
+    - generic [ref=e86]:
+      - generic [ref=e87]:
+        - img [ref=e88]
+        - generic [ref=e90]:
+          - strong [ref=e91]: Connect at least one ad platform to start running AI-powered campaigns
+          - text: Link Meta Ads (all plans) or Google Ads (Growth+) to unlock live performance data, ROAS tracking, and automated campaigns.
+        - generic [ref=e92]:
+          - button "Connect Meta" [ref=e93] [cursor=pointer]:
+            - img [ref=e94]
+            - text: Connect Meta
+          - button "Connect Google" [ref=e96] [cursor=pointer]:
+            - img [ref=e97]
+            - text: Connect Google
+      - generic [ref=e102]:
+        - generic [ref=e103]: Saturday, May 30
+        - generic [ref=e104]: End of day push. Make it happen.
+      - generic [ref=e105]:
+        - generic [ref=e106]:
+          - img [ref=e109]
+          - generic [ref=e111]: Average ROAS
+        - generic [ref=e112]:
+          - img [ref=e115]
+          - generic [ref=e117]: Total Ad Spend
+        - generic [ref=e118]:
+          - img [ref=e121]
+          - generic [ref=e124]: UGC Ads Created
+        - generic [ref=e125]:
+          - img [ref=e128]
+          - generic [ref=e130]: Total Conversions
+      - generic [ref=e131]:
+        - generic [ref=e132]:
+          - generic [ref=e133]:
+            - generic [ref=e134]: Campaigns
+            - button "Refresh ↺" [ref=e135] [cursor=pointer]
+          - generic [ref=e137]:
+            - generic [ref=e138]: Campaign
+            - generic [ref=e139]: ROAS
+            - generic [ref=e140]: Spend
+            - generic [ref=e141]: CTR
+            - generic [ref=e142]: Status
+            - generic [ref=e143]: On/Off
+        - generic [ref=e160]:
+          - generic [ref=e162]: Status
+          - generic [ref=e163]:
+            - generic [ref=e164]:
+              - img [ref=e166]
+              - generic [ref=e168]:
+                - generic [ref=e169]: Meta Ads
+                - generic [ref=e170]: Not connected — click Configure
+              - button "Configure" [ref=e171] [cursor=pointer]
+            - generic [ref=e172] [cursor=pointer]:
+              - img [ref=e174]
+              - generic [ref=e179]:
+                - generic [ref=e180]: Google Ads
+                - generic [ref=e181]: Not configured — set credentials in Settings
+              - button "Configure" [ref=e182]
+            - generic [ref=e183]:
+              - img [ref=e185]
+              - generic [ref=e188]:
+                - generic [ref=e189]: Store Analysis
+                - generic [ref=e190]: Not analysed yet
+              - button "Analyse →" [ref=e191] [cursor=pointer]
+            - generic [ref=e192]:
+              - img [ref=e194]
+              - generic [ref=e197]:
+                - generic [ref=e198]: UGC Generation
+                - generic [ref=e199]: Ready — AI video generation
+              - button "Generate" [ref=e200] [cursor=pointer]
+      - generic [ref=e202]:
+        - generic [ref=e203]: Creatives Pending Review
+        - button "Refresh ↺" [ref=e204] [cursor=pointer]
+  - generic [ref=e220]:
+    - generic [ref=e221]:
+      - generic [ref=e222]:
+        - img [ref=e223]
+        - generic [ref=e225]:
+          - text: Ephermal AI
+          - generic [ref=e226]: Your advertising co-pilot
+      - button "×" [ref=e227] [cursor=pointer]
+    - generic [ref=e229]: Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?
+    - generic [ref=e230]:
+      - button "Improve ROAS" [ref=e231] [cursor=pointer]
+      - button "Write UGC script" [ref=e232] [cursor=pointer]
+      - button "Audience ideas" [ref=e233] [cursor=pointer]
+      - button "Fix low CTR" [ref=e234] [cursor=pointer]
+      - button "Budget advice" [ref=e235] [cursor=pointer]
+    - generic [ref=e236]:
+      - textbox "Ask anything about your ads…" [ref=e237]
+      - button [ref=e238] [cursor=pointer]:
+        - img [ref=e239]

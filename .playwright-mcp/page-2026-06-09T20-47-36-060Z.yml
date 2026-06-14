@@ -1,0 +1,194 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: We use essential cookies for authentication (Clerk) and session management. No tracking cookies without your consent.
+      - link "Privacy Policy" [ref=e4] [cursor=pointer]:
+        - /url: /privacy.html
+      - text: ·
+      - link "Impressum" [ref=e5] [cursor=pointer]:
+        - /url: /impressum.html
+    - button "Decline non-essential" [ref=e6] [cursor=pointer]
+    - button "Accept & Continue" [ref=e7] [cursor=pointer]
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - img "Ephermal" [ref=e10]
+      - generic [ref=e11]: Ephermal
+    - generic [ref=e12]:
+      - generic [ref=e13]: Overview
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+        - text: Dashboard
+      - generic [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+        - text: Analytics
+    - generic [ref=e23]:
+      - generic [ref=e24]: Advertising
+      - generic [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Campaigns
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+        - text: Creatives
+      - generic [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - text: Audience Intel
+      - generic [ref=e39] [cursor=pointer]:
+        - img [ref=e40]
+        - text: Bulk Manager
+      - generic [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - text: Budget AI
+      - generic [ref=e45] [cursor=pointer]:
+        - img [ref=e46]
+        - text: Launch Campaign
+    - generic [ref=e51]:
+      - generic [ref=e52]: Store
+      - generic [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - text: Store Products
+    - generic [ref=e57]:
+      - generic [ref=e58]: Account
+      - generic [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - text: Multi-Store
+      - generic [ref=e63] [cursor=pointer]:
+        - img [ref=e64]
+        - text: White-label
+      - generic [ref=e66] [cursor=pointer]:
+        - img [ref=e67]
+        - text: Settings
+      - generic [ref=e70] [cursor=pointer]:
+        - img [ref=e71]
+        - text: Billing
+      - generic [ref=e73] [cursor=pointer]:
+        - img [ref=e74]
+        - text: Dev Tools
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - generic [ref=e80]: UGC Credits
+        - strong [ref=e81]: 349 / 350
+      - generic [ref=e84]:
+        - generic [ref=e85]: J
+        - generic [ref=e86]:
+          - generic [ref=e87]: Jamal Settah
+          - generic [ref=e89]: 👑 CEO
+          - generic [ref=e90]: jamalsettah2604@gmail.com
+        - generic [ref=e91]: SCALE
+  - generic [ref=e92]:
+    - generic [ref=e93]:
+      - generic [ref=e95]: Audience Intelligence
+      - generic [ref=e96]:
+        - button "Generate UGC" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e99]: Generate UGC
+        - generic [ref=e100] [cursor=pointer]: Sign out
+    - generic [ref=e339]:
+      - generic [ref=e340]:
+        - img [ref=e342]
+        - generic [ref=e347]:
+          - generic [ref=e348]: Audience Intelligence
+          - generic [ref=e349]: Build custom audiences, create lookalikes, and monitor your Meta Pixel.
+      - generic [ref=e350]:
+        - generic [ref=e351]:
+          - generic [ref=e352]:
+            - generic [ref=e353]: Pixel Status
+            - img [ref=e355]
+          - generic [ref=e358]: —
+          - generic [ref=e359]: Checking…
+        - generic [ref=e360]:
+          - generic [ref=e361]:
+            - generic [ref=e362]: Custom Audiences
+            - img [ref=e364]
+          - generic [ref=e367]: "0"
+          - generic [ref=e368]: Audiences created
+        - generic [ref=e369]:
+          - generic [ref=e370]:
+            - generic [ref=e371]: Largest Reach
+            - img [ref=e373]
+          - generic [ref=e376]: "0"
+          - generic [ref=e377]: Estimated people
+        - generic [ref=e378]:
+          - generic [ref=e379]:
+            - generic [ref=e380]: Lookalikes
+            - img [ref=e382]
+          - generic [ref=e387]: "0"
+          - generic [ref=e388]: Lookalike audiences
+      - generic [ref=e389]:
+        - generic [ref=e390]:
+          - generic [ref=e393]: Meta Pixel
+          - button "Refresh" [ref=e394] [cursor=pointer]:
+            - img [ref=e395]
+            - text: Refresh
+        - paragraph [ref=e401]: No Meta Pixel found on your ad account.
+      - generic [ref=e402]:
+        - generic [ref=e403]:
+          - generic [ref=e404]: Custom Audiences
+          - button "Refresh" [ref=e405] [cursor=pointer]:
+            - img [ref=e406]
+            - text: Refresh
+        - generic [ref=e412]:
+          - img [ref=e413]
+          - paragraph [ref=e416]: No custom audiences yet — create one below
+      - generic [ref=e417]:
+        - generic [ref=e418]:
+          - generic [ref=e420]:
+            - img [ref=e422]
+            - generic [ref=e425]: Create Audience
+          - generic [ref=e426]:
+            - generic [ref=e427]:
+              - generic [ref=e428]: Audience Name
+              - textbox "e.g. High-value customers" [ref=e429]
+            - generic [ref=e430]:
+              - generic [ref=e431]: Audience Type
+              - combobox [ref=e432] [cursor=pointer]:
+                - option "Customer List" [selected]
+                - option "Website Visitors"
+                - option "Engagement"
+            - generic [ref=e433]:
+              - generic [ref=e434]: Description (optional)
+              - textbox "What this audience is for" [ref=e435]
+            - button "Create Audience" [ref=e437] [cursor=pointer]:
+              - img [ref=e438]
+              - text: Create Audience
+        - generic [ref=e439]:
+          - generic [ref=e440]:
+            - generic [ref=e441]:
+              - img [ref=e443]
+              - generic [ref=e448]: Lookalike Creator
+            - generic [ref=e449]: AI-powered
+          - generic [ref=e450]:
+            - generic [ref=e451]:
+              - generic [ref=e452]: Source Audience ID
+              - textbox "Custom audience ID (e.g. 1234567890)" [ref=e453]
+            - generic [ref=e454]:
+              - generic [ref=e455]:
+                - generic [ref=e456]: Country Code
+                - textbox "GB" [ref=e457]
+              - generic [ref=e458]:
+                - generic [ref=e459]: Similarity Ratio
+                - spinbutton [ref=e460]: "0.02"
+            - generic [ref=e461]:
+              - strong [ref=e462]: "Tip:"
+              - text: 0.02 = top 2% most similar to your source audience. Smaller ratio = higher precision, smaller pool.
+            - button "Create Lookalike" [ref=e464] [cursor=pointer]:
+              - img [ref=e465]
+              - text: Create Lookalike
+  - generic [ref=e207]:
+    - generic [ref=e208]:
+      - generic [ref=e209]:
+        - img [ref=e210]
+        - generic [ref=e212]:
+          - text: Ephermal AI
+          - generic [ref=e213]: Your advertising co-pilot
+      - button "×" [ref=e214] [cursor=pointer]
+    - generic [ref=e216]: Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?
+    - generic [ref=e217]:
+      - button "Improve ROAS" [ref=e218] [cursor=pointer]
+      - button "Write UGC script" [ref=e219] [cursor=pointer]
+      - button "Audience ideas" [ref=e220] [cursor=pointer]
+      - button "Fix low CTR" [ref=e221] [cursor=pointer]
+      - button "Budget advice" [ref=e222] [cursor=pointer]
+    - generic [ref=e223]:
+      - textbox "Ask anything about your ads…" [ref=e224]
+      - button [ref=e225] [cursor=pointer]:
+        - img [ref=e226]

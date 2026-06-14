@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "ruflo": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "ruflo@latest", "mcp", "start"],
+      "env": {}
+    },
+    "claude-flow": {
+      "command": "cmd",
+      "args": ["/c", "npx", "-y", "@claude-flow/cli@latest"],
+      "env": {}
+    }
+  }
+}

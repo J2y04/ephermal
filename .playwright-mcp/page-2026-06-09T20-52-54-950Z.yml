@@ -1,0 +1,163 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: We use essential cookies for authentication (Clerk) and session management. No tracking cookies without your consent.
+      - link "Privacy Policy" [ref=e4] [cursor=pointer]:
+        - /url: /privacy.html
+      - text: ·
+      - link "Impressum" [ref=e5] [cursor=pointer]:
+        - /url: /impressum.html
+    - button "Decline non-essential" [ref=e6] [cursor=pointer]
+    - button "Accept & Continue" [ref=e7] [cursor=pointer]
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - img "Ephermal" [ref=e10]
+      - generic [ref=e11]: Ephermal
+    - generic [ref=e12]:
+      - generic [ref=e13]: Overview
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+        - text: Dashboard
+      - generic [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+        - text: Analytics
+    - generic [ref=e23]:
+      - generic [ref=e24]: Advertising
+      - generic [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Campaigns
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+        - text: Creatives
+      - generic [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - text: Audience Intel
+      - generic [ref=e39] [cursor=pointer]:
+        - img [ref=e40]
+        - text: Bulk Manager
+      - generic [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - text: Budget AI
+      - generic [ref=e45] [cursor=pointer]:
+        - img [ref=e46]
+        - text: Launch Campaign
+    - generic [ref=e51]:
+      - generic [ref=e52]: Store
+      - generic [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - text: Store Products
+    - generic [ref=e57]:
+      - generic [ref=e58]: Account
+      - generic [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - text: Multi-Store
+      - generic [ref=e63] [cursor=pointer]:
+        - img [ref=e64]
+        - text: White-label
+      - generic [ref=e66] [cursor=pointer]:
+        - img [ref=e67]
+        - text: Settings
+      - generic [ref=e70] [cursor=pointer]:
+        - img [ref=e71]
+        - text: Billing
+      - generic [ref=e73] [cursor=pointer]:
+        - img [ref=e74]
+        - text: Dev Tools
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - generic [ref=e80]: UGC Credits
+        - strong [ref=e81]: 349 / 350
+      - generic [ref=e84]:
+        - generic [ref=e85]: J
+        - generic [ref=e86]:
+          - generic [ref=e87]: Jamal Settah
+          - generic [ref=e89]: 👑 CEO
+          - generic [ref=e90]: jamalsettah2604@gmail.com
+        - generic [ref=e91]: SCALE
+  - generic [ref=e92]:
+    - generic [ref=e93]:
+      - generic [ref=e95]: Launch Campaign
+      - generic [ref=e96]:
+        - button "Generate UGC" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e99]: Generate UGC
+        - generic [ref=e100] [cursor=pointer]: Sign out
+    - generic [ref=e566]:
+      - generic [ref=e567]:
+        - generic [ref=e568]:
+          - img [ref=e570]
+          - generic [ref=e573]:
+            - generic [ref=e574]: Launch Campaign
+            - generic [ref=e575]: AI writes the copy, picks the audience, and launches to Meta — zero ad manager.
+        - button "New Campaign" [active] [ref=e576] [cursor=pointer]:
+          - img [ref=e577]
+          - text: New Campaign
+      - generic [ref=e1105]:
+        - generic [ref=e1107]: Campaign Builder
+        - generic [ref=e1108]:
+          - generic [ref=e1109]:
+            - generic [ref=e1110]: "1"
+            - generic [ref=e1111]:
+              - generic [ref=e1112]: Product
+              - generic [ref=e1113]: Select or describe the product you want to advertise.
+              - generic [ref=e1114]:
+                - textbox "Product name (e.g. Blue Wireless Earbuds)" [ref=e1115]
+                - textbox "What problem does it solve? What's the key benefit?" [ref=e1116]
+                - generic [ref=e1117]:
+                  - spinbutton [ref=e1118]
+                  - combobox [ref=e1119] [cursor=pointer]:
+                    - option "Sales / Conversions" [selected]
+                    - option "Traffic"
+                    - option "Brand Awareness"
+                    - option "Lead Generation"
+          - generic [ref=e1120]:
+            - generic [ref=e1121]: "2"
+            - generic [ref=e1122]:
+              - generic [ref=e1123]: Target Audience
+              - generic [ref=e1124]: AI suggests targeting based on your product — or customise below.
+              - generic [ref=e1125]:
+                - textbox "Describe your target audience (e.g. women 25-45 interested in fitness)" [ref=e1126]
+                - generic [ref=e1127]:
+                  - spinbutton [ref=e1128]
+                  - spinbutton [ref=e1129]
+                - textbox "Target countries (e.g. US, CA, UK) — comma separated" [ref=e1130]
+          - generic [ref=e1131]:
+            - generic [ref=e1132]: "3"
+            - generic [ref=e1133]:
+              - generic [ref=e1134]: Budget & Platform
+              - generic [ref=e1135]: Daily budget and where to run the ads.
+              - generic [ref=e1136]:
+                - spinbutton [ref=e1137]
+                - combobox [ref=e1138] [cursor=pointer]:
+                  - option "Meta Only (Facebook + Instagram)" [selected]
+                  - option "Google Only"
+                  - option "Meta + Google"
+          - button "Generate AI Copy" [ref=e1140] [cursor=pointer]:
+            - img [ref=e1141]
+            - text: Generate AI Copy
+      - generic [ref=e578]:
+        - generic [ref=e579]:
+          - generic [ref=e580]: Launched Campaigns
+          - button "Refresh ↺" [ref=e581] [cursor=pointer]
+        - generic [ref=e1099]:
+          - img [ref=e1100]
+          - paragraph [ref=e1103]: No campaigns launched yet. Click "New Campaign" to start.
+  - generic [ref=e207]:
+    - generic [ref=e208]:
+      - generic [ref=e209]:
+        - img [ref=e210]
+        - generic [ref=e212]:
+          - text: Ephermal AI
+          - generic [ref=e213]: Your advertising co-pilot
+      - button "×" [ref=e214] [cursor=pointer]
+    - generic [ref=e216]: Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?
+    - generic [ref=e217]:
+      - button "Improve ROAS" [ref=e218] [cursor=pointer]
+      - button "Write UGC script" [ref=e219] [cursor=pointer]
+      - button "Audience ideas" [ref=e220] [cursor=pointer]
+      - button "Fix low CTR" [ref=e221] [cursor=pointer]
+      - button "Budget advice" [ref=e222] [cursor=pointer]
+    - generic [ref=e223]:
+      - textbox "Ask anything about your ads…" [ref=e224]
+      - button [ref=e225] [cursor=pointer]:
+        - img [ref=e226]

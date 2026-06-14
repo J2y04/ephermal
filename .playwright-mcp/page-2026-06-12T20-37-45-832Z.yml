@@ -1,0 +1,241 @@
+- generic [ref=e1]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - complementary [ref=e819]:
+        - link [ref=e820] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: Skip to main content
+        - button [ref=e821]:
+          - generic [ref=e13]: Keyboard shortcuts
+        - link [ref=e822] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_GB
+          - generic [ref=e15]:
+            - text: Accessibility help
+            - img [ref=e824]:
+              - img [ref=e18]
+        - link [ref=e825] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_GB
+          - generic [ref=e21]:
+            - text: Accessibility feedback
+            - img [ref=e827]:
+              - img [ref=e24]
+      - banner [ref=e27]:
+        - generic [ref=e28]:
+          - navigation [ref=e31]:
+            - button [ref=e828] [cursor=pointer]:
+              - img [ref=e34]
+          - link [ref=e829] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button [ref=e830]:
+            - generic [ref=e45]:
+              - img [ref=e278]
+              - generic [ref=e47]: Ephermal
+        - search [ref=e831]:
+          - combobox [ref=e54]:
+            - searchbox [ref=e832]
+          - button [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - button [ref=e833] [cursor=pointer]:
+              - img [ref=e63]
+            - button [ref=e834] [cursor=pointer]:
+              - img [ref=e285]
+            - button [ref=e835] [cursor=pointer]:
+              - img [ref=e70]
+            - button [ref=e836] [cursor=pointer]:
+              - generic [ref=e78]: "3"
+            - button [ref=e837] [cursor=pointer]:
+              - img [ref=e85]
+          - button [ref=e838]:
+            - img [ref=e92]
+    - generic [ref=e101]:
+      - navigation [ref=e839]:
+        - link [ref=e840] [cursor=pointer]:
+          - /url: /auth?project=ephermal-497911
+          - img [ref=e687]
+          - generic [ref=e299]: Google Auth Platform
+        - list [ref=e300]:
+          - listitem [ref=e690]:
+            - generic [ref=e691]: /
+            - link [ref=e841] [cursor=pointer]:
+              - /url: /auth/audience?project=ephermal-497911
+              - generic [ref=e696]: Audience
+      - generic [ref=e112]:
+        - navigation [ref=e842]:
+          - generic [ref=e120]:
+            - list [ref=e843]:
+              - listitem [ref=e135]:
+                - generic [ref=e138]:
+                  - link [ref=e844] [cursor=pointer]:
+                    - /url: /auth/overview?project=ephermal-497911
+                    - generic [ref=e140]:
+                      - img [ref=e143]
+                      - generic [ref=e145]: Overview
+                  - button [ref=e845] [cursor=pointer]:
+                    - img [ref=e149]
+              - listitem [ref=e151]:
+                - generic [ref=e154]:
+                  - link [ref=e846] [cursor=pointer]:
+                    - /url: /auth/branding?project=ephermal-497911
+                    - generic [ref=e156]:
+                      - img [ref=e159]
+                      - generic [ref=e165]: Branding
+                  - button [ref=e847] [cursor=pointer]:
+                    - img [ref=e169]
+              - listitem [ref=e171]:
+                - generic [ref=e174]:
+                  - link [ref=e848] [cursor=pointer]:
+                    - /url: /auth/audience?project=ephermal-497911
+                    - generic [ref=e176]:
+                      - img [ref=e179]
+                      - generic [ref=e181]: Audience
+                  - button [ref=e849] [cursor=pointer]:
+                    - img [ref=e185]
+              - listitem [ref=e187]:
+                - generic [ref=e190]:
+                  - link [ref=e850] [cursor=pointer]:
+                    - /url: /auth/clients?project=ephermal-497911
+                    - generic [ref=e192]:
+                      - img [ref=e195]
+                      - generic [ref=e197]: Clients
+                  - button [ref=e851] [cursor=pointer]:
+                    - img [ref=e201]
+              - listitem [ref=e203]:
+                - generic [ref=e206]:
+                  - link [ref=e852] [cursor=pointer]:
+                    - /url: /auth/scopes?project=ephermal-497911
+                    - generic [ref=e208]:
+                      - img [ref=e211]
+                      - generic [ref=e214]: Data access
+                  - button [ref=e853] [cursor=pointer]:
+                    - img [ref=e218]
+              - listitem [ref=e220]:
+                - generic [ref=e223]:
+                  - link [ref=e854] [cursor=pointer]:
+                    - /url: /auth/verification?project=ephermal-497911
+                    - generic [ref=e225]:
+                      - img [ref=e228]
+                      - generic [ref=e231]: Verification centre
+                  - button [ref=e855] [cursor=pointer]:
+                    - img [ref=e235]
+              - listitem [ref=e237]:
+                - generic [ref=e240]:
+                  - link [ref=e856] [cursor=pointer]:
+                    - /url: /auth/settings?project=ephermal-497911
+                    - generic [ref=e242]:
+                      - img [ref=e245]
+                      - generic [ref=e247]: Settings
+                  - button [ref=e857] [cursor=pointer]:
+                    - img [ref=e251]
+            - button [pressed] [ref=e858] [cursor=pointer]:
+              - img [ref=e257]
+        - main [ref=e260]:
+          - generic [ref=e702]:
+            - heading [level=1] [ref=e859]:
+              - generic [ref=e709]: Audience
+            - generic [ref=e711]:
+              - generic [ref=e712]:
+                - generic [ref=e714]:
+                  - text: Publishing status
+                  - button [ref=e860] [cursor=pointer]:
+                    - img [ref=e718]
+                - paragraph [ref=e720]: Testing
+                - button [ref=e861]:
+                  - generic [ref=e723]: Publish app
+              - generic [ref=e724]:
+                - generic [ref=e725]: User type
+                - paragraph [ref=e726]:
+                  - text: External
+                  - button [ref=e862] [cursor=pointer]:
+                    - img [ref=e730]
+                - button [disabled] [ref=e863]:
+                  - generic [ref=e734]: Make internal
+              - generic [ref=e735]:
+                - text: OAuth user cap
+                - button [ref=e864] [cursor=pointer]:
+                  - img [ref=e739]
+              - generic [ref=e742]:
+                - group [ref=e865]:
+                  - generic [ref=e746]:
+                    - paragraph [ref=e747]:
+                      - text: While publishing status is set to 'Testing,' only test users are able to access the app. Allowed user cap prior to app verification is 100, and is counted over the entire lifetime of the app.
+                      - link [ref=e866] [cursor=pointer]:
+                        - /url: https://support.google.com/cloud/answer/7454865?hl=en_GB
+                        - text: Learn more
+                        - img [ref=e867]:
+                          - img [ref=e750]
+                    - generic [ref=e763]: 0 users (0 test, 0 other) / 100 user cap
+                    - button [ref=e868] [cursor=pointer]:
+                      - img [ref=e767]
+                    - generic [ref=e769]: Test users
+                    - button [ref=e869]:
+                      - generic [ref=e771]:
+                        - img [ref=e773]:
+                          - img [ref=e774]
+                        - text: Add users
+                    - generic [ref=e779]:
+                      - img [ref=e781]
+                      - generic [ref=e783]: Filter
+                      - group [ref=e870]:
+                        - combobox [ref=e871]: Enter property name or value
+                      - button [ref=e872] [cursor=pointer]:
+                        - img [ref=e790]
+                    - grid [ref=e873]:
+                      - rowgroup [ref=e800]:
+                        - row [ref=e874]:
+                          - columnheader [ref=e875]:
+                            - generic [ref=e804]: User information
+                          - columnheader [ref=e876]
+                      - rowgroup [ref=e807]:
+                        - row [ref=e877]:
+                          - gridcell [ref=e878]: No rows to display
+                - button [expanded] [ref=e879]:
+                  - generic [ref=e813]:
+                    - img [ref=e815]
+                    - text: Show less
+  - iframe [ref=e272]:
+    
+  - iframe [ref=e275]:
+    
+  - dialog "Add users" [ref=e881]:
+    - generic [ref=e885]:
+      - generic [ref=e888]:
+        - button "Close" [ref=e892] [cursor=pointer]:
+          - img [ref=e894]
+        - heading "Add users" [level=1] [ref=e898]:
+          - generic [ref=e899]: Add users
+      - generic [ref=e901]:
+        - status [ref=e903]:
+          - img "Warning" [ref=e904]:
+            - img [ref=e905]
+          - generic [ref=e907]:
+            - generic [ref=e909]: While publishing status is set to 'Testing,' only test users are able to access the app. Allowed user cap prior to app verification is 100, and is counted over the entire lifetime of the app.
+            - link "Learn more about user quota restrictions external, opens new window" [ref=e911] [cursor=pointer]:
+              - /url: https://support.google.com/cloud/answer/7454865?hl=en_GB
+              - generic [ref=e912]:
+                - text: Learn more
+                - img "external, opens new window" [ref=e913]:
+                  - img "external, opens new window" [ref=e914]:
+                    - img [ref=e915]
+        - generic [ref=e917]:
+          - generic [ref=e920]:
+            - generic [ref=e922] [cursor=pointer]:
+              - grid [ref=e942]:
+                - row "jamalsettah2604@gmail.com Click to remove email" [ref=e943]:
+                  - gridcell "jamalsettah2604@gmail.com" [ref=e944]:
+                    - generic [ref=e945]: jamalsettah2604@gmail.com
+                  - gridcell "Click to remove email" [ref=e946]:
+                    - button "Click to remove email" [ref=e947]:
+                      - img [ref=e948]:
+                        - img [ref=e949]
+                - textbox "Text field for emails" [active] [ref=e925]
+              - button "Help with email" [ref=e928]:
+                - img [ref=e930]
+            - generic [ref=e935]: 1 / 100
+          - button "Save" [ref=e938]:
+            - generic [ref=e939]: Save

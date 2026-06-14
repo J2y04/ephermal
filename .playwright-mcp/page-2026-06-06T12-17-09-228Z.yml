@@ -1,0 +1,39 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications (F8)":
+      - list
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]:
+            - link "Organization logo Personal workspace Hobby" [ref=e7] [cursor=pointer]:
+              - /url: /apps
+              - img "Organization logo" [ref=e9]
+              - text: Personal workspace
+              - generic [ref=e12]: Hobby
+            - button "Switch organization" [ref=e13] [cursor=pointer]:
+              - img [ref=e14]
+          - img [ref=e17]
+          - generic [ref=e19]:
+            - link "Ephermal" [ref=e20] [cursor=pointer]:
+              - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ
+              - generic [ref=e21]: Ephermal
+            - button "Switch application" [ref=e22] [cursor=pointer]:
+              - img [ref=e23]
+          - img [ref=e26]
+          - generic [ref=e29]:
+            - link "production" [ref=e30] [cursor=pointer]:
+              - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ
+              - generic [ref=e32]: production
+            - button "Switch environment" [ref=e33] [cursor=pointer]:
+              - img [ref=e34]
+        - generic [ref=e37]:
+          - generic [ref=e38]:
+            - button "Notifications, 1 unread" [ref=e39] [cursor=pointer]:
+              - img [ref=e42]
+            - generic: "1"
+          - button "Invite user" [ref=e44] [cursor=pointer]:
+            - generic [ref=e46]: Invite
+          - button "Open user menu" [ref=e47] [cursor=pointer]:
+            - img "User avatar" [ref=e49]
+  - alert [ref=e51]

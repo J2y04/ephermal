@@ -1,0 +1,124 @@
+- generic [active] [ref=e1]:
+  - region "console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic." [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic.
+      - link "Learn more about how Google uses cookies. Opens in a new tab." [ref=e4] [cursor=pointer]:
+        - /url: https://policies.google.com/technologies/cookies?hl=en-GB
+        - text: Learn more
+    - button "Hide" [ref=e5] [cursor=pointer]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - complementary "Skip links" [ref=e9]:
+        - link "Skip to main content" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: Skip to main content
+        - button "Keyboard shortcuts" [ref=e12]:
+          - generic [ref=e13]: Keyboard shortcuts
+        - link "Accessibility help external, opens in a new window" [ref=e14] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_GB
+          - generic [ref=e15]:
+            - text: Accessibility help
+            - generic "external, opens in a new window" [ref=e16]:
+              - img "external, opens in a new window" [ref=e17]:
+                - img [ref=e18]
+        - link "Accessibility feedback external, opens in a new window" [ref=e20] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_GB
+          - generic [ref=e21]:
+            - text: Accessibility feedback
+            - generic "external, opens in a new window" [ref=e22]:
+              - img "external, opens in a new window" [ref=e23]:
+                - img [ref=e24]
+      - banner [ref=e27]:
+        - generic [ref=e28]:
+          - navigation [ref=e31]:
+            - button "Navigation menu (.)" [ref=e32] [cursor=pointer]:
+              - img [ref=e34]
+          - link "Google Cloud Platform Home" [ref=e36] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button "No project selected. Hit enter to select a project, folder or organisation." [ref=e44]
+        - search "Google Cloud Platform" [ref=e50]:
+          - combobox [ref=e51]:
+            - searchbox "Enter query to search for resources, docs, products and more" [ref=e52]
+          - button "See all search results" [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - generic [ref=e57]:
+              - button "Activate Cloud Shell (G then S)" [disabled]:
+                - generic:
+                  - img
+            - button "4 unread notifications. Open notifications" [ref=e61] [cursor=pointer]:
+              - generic [ref=e64]: "4"
+            - button "Settings and utilities" [ref=e69] [cursor=pointer]:
+              - img [ref=e71]
+          - img [ref=e75]
+    - generic [ref=e95]:
+      - navigation "APIs and services" [ref=e102]:
+        - generic [ref=e103]:
+          - heading "APIs and services" [level=2] [ref=e105]:
+            - link "APIs and services" [ref=e106] [cursor=pointer]:
+              - /url: /apis
+              - img [ref=e109]
+              - generic [ref=e113]: APIs and services
+          - list "Enabled APIs and services, 1 of 5 More options Library, 2 of 5 More options Credentials, 3 of 5 More options OAuth consent screen, 4 of 5 More options Page usage agreements, 5 of 5 More options" [ref=e117]:
+            - listitem [ref=e118]:
+              - generic [ref=e121]:
+                - link "Enabled APIs and services, 1 of 5" [ref=e122] [cursor=pointer]:
+                  - /url: /apis/dashboard
+                  - generic [ref=e123]:
+                    - img [ref=e126]
+                    - generic [ref=e128]: Enabled APIs and services
+                - button "More options" [ref=e130] [cursor=pointer]:
+                  - img [ref=e132]
+            - listitem [ref=e134]:
+              - generic [ref=e137]:
+                - link "Library, 2 of 5" [ref=e138] [cursor=pointer]:
+                  - /url: /apis/library
+                  - generic [ref=e139]:
+                    - img [ref=e142]
+                    - generic [ref=e144]: Library
+                - button "More options" [ref=e146] [cursor=pointer]:
+                  - img [ref=e148]
+            - listitem [ref=e150]:
+              - generic [ref=e153]:
+                - link "Credentials, 3 of 5" [ref=e154] [cursor=pointer]:
+                  - /url: /apis/credentials
+                  - generic [ref=e155]:
+                    - img [ref=e158]
+                    - generic [ref=e160]: Credentials
+                - button "More options" [ref=e162] [cursor=pointer]:
+                  - img [ref=e164]
+            - listitem [ref=e166]:
+              - generic [ref=e169]:
+                - link "OAuth consent screen, 4 of 5" [ref=e170] [cursor=pointer]:
+                  - /url: /apis/credentials/consent
+                  - generic [ref=e171]:
+                    - img [ref=e174]
+                    - generic [ref=e176]: OAuth consent screen
+                - button "More options" [ref=e178] [cursor=pointer]:
+                  - img [ref=e180]
+            - listitem [ref=e182]:
+              - generic [ref=e185]:
+                - link "Page usage agreements, 5 of 5" [ref=e186] [cursor=pointer]:
+                  - /url: /apis/agreements
+                  - generic [ref=e187]:
+                    - img [ref=e190]
+                    - generic [ref=e193]: Page usage agreements
+                - button "More options" [ref=e195] [cursor=pointer]:
+                  - img [ref=e197]
+          - button "Toggle APIs and services navigation menu" [pressed] [ref=e200] [cursor=pointer]:
+            - img [ref=e203]
+      - main [ref=e206]:
+        - progressbar [ref=e214]:
+          - img [ref=e216]
+          - generic [ref=e219]:
+            - img [ref=e221]
+            - img [ref=e224]
+            - img [ref=e227]
+  - iframe [ref=e230]:
+    
+  - paragraph

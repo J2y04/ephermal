@@ -94,7 +94,7 @@ async function analyzeCampaigns(
     .from('campaigns')
     .select('*')
     .eq('user_id', userId)
-    .eq('status', 'ACTIVE');
+    .eq('status', 'live');
 
   if (!campaigns?.length) return [];
 
@@ -269,7 +269,14 @@ Deno.serve(async (req) => {
           ran_at:     new Date().toISOString(),
         }).catch(() => {}); // best-effort
 
-        return okResponse({ applied: results, planned }, origin);
+        const paused = results.filter(r => r.action === 'pause' && r.success).length;
+        const scaled = results.filter(r => r.action === 'scale' && r.success).length;
+        const failed = results.filter(r => !r.success).length;
+        return okResponse({
+          applied: results,
+          planned,
+          summary: { paused, scaled, failed, total: results.length },
+        }, origin);
       }
 
       case 'rules': {

@@ -1,0 +1,47 @@
+- generic [active]:
+  - generic:
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic [ref=e10]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - link "Meta logo" [ref=e16] [cursor=pointer]:
+            - /url: /?no_redirect=true
+            - img "Meta logo" [ref=e18]
+          - tablist [ref=e27]:
+            - link "My Apps" [ref=e28] [cursor=pointer]:
+              - /url: /apps/
+              - generic [ref=e31]: My Apps
+            - link "Required actions" [ref=e32] [cursor=pointer]:
+              - /url: /required-actions/
+              - generic [ref=e35]: Required actions
+            - tab "Docs" [ref=e36] [cursor=pointer]:
+              - generic [ref=e39]: Docs
+            - tab "Tools" [ref=e41] [cursor=pointer]:
+              - generic [ref=e44]: Tools
+            - tab "Support" [ref=e46] [cursor=pointer]:
+              - generic [ref=e49]: Support
+        - generic [ref=e51]:
+          - generic [ref=e52]:
+            - generic [ref=e58]: Search input
+            - textbox "Search input" [ref=e69]:
+              - /placeholder: Search...
+          - link [ref=e72] [cursor=pointer]:
+            - /url: "#"
+          - link "Facebook" [ref=e77] [cursor=pointer]:
+            - /url: "#"
+            - img "Facebook" [ref=e82]
+      - generic [ref=e83]:
+        - generic [ref=e85]:
+          - progressbar [ref=e86]
+          - progressbar [ref=e124]
+        - generic [ref=e151]:
+          - progressbar [ref=e152]:
+            - img [ref=e153]
+          - heading "Loading Use Cases" [level=4] [ref=e157]

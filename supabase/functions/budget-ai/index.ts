@@ -23,6 +23,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { metaPost } from '../_shared/meta.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -230,16 +231,125 @@ Deno.serve(async (req) => {
       }
 
       case 'apply': {
-        if (plan !== 'scale') return errResponse('Auto-apply requires Scale plan', 403, origin);
-        const recId = String(body.recommendation_id ?? '');
-        if (!recId) return errResponse('recommendation_id required', 400, origin);
-        const { error } = await supabase
+        if (plan === 'starter') return errResponse('Upgrade to Growth to apply budgets', 403, origin);
+        const recId     = String(body.recommendation_id ?? '');
+        const campaignId = String(body.campaign_id ?? '');
+        const platform  = String(body.platform ?? 'meta'); // 'meta'|'google'|'both'
+        const budgetUsd = Number(body.budget_usd ?? 0);
+
+        if (!recId)      return errResponse('recommendation_id required', 400, origin);
+        if (!campaignId) return errResponse('campaign_id required', 400, origin);
+        if (budgetUsd < 1) return errResponse('budget_usd must be at least 1', 400, origin);
+
+        // Load recommendation (ownership check)
+        const { data: rec, error: recErr } = await supabase
           .from('budget_recommendations')
-          .update({ applied: true, auto_applied: true })
+          .select('recommendation')
+          .eq('id', recId)
+          .eq('user_id', userId)
+          .single();
+        if (recErr || !rec) return errResponse('Recommendation not found', 404, origin);
+
+        const applied: { platform: string; success: boolean; error?: string }[] = [];
+
+        // ── Apply to Meta ──────────────────────────────────────────────────────
+        if (platform === 'meta' || platform === 'both') {
+          const { data: creds } = await supabase
+            .from('user_integrations')
+            .select('meta_token')
+            .eq('user_id', userId)
+            .single();
+          const metaToken = (creds?.meta_token as string) ?? '';
+          if (!metaToken) {
+            applied.push({ platform: 'meta', success: false, error: 'Meta not connected' });
+          } else {
+            try {
+              // Meta daily_budget is in cents
+              await metaPost(`/${campaignId}`, { daily_budget: String(Math.round(budgetUsd * 100)) }, metaToken);
+              await supabase.from('campaigns')
+                .update({ daily_budget: Math.round(budgetUsd * 100) })
+                .eq('id', campaignId)
+                .eq('user_id', userId);
+              applied.push({ platform: 'meta', success: true });
+            } catch (e) {
+              applied.push({ platform: 'meta', success: false, error: e instanceof Error ? e.message : 'Meta API error' });
+            }
+          }
+        }
+
+        // ── Apply to Google ────────────────────────────────────────────────────
+        if (platform === 'google' || platform === 'both') {
+          const { data: gCreds } = await supabase
+            .from('user_integrations')
+            .select('google_refresh_token, google_ads_customer_id')
+            .eq('user_id', userId)
+            .single();
+
+          const refreshToken = (gCreds?.google_refresh_token as string) ?? '';
+          const customerId   = (gCreds?.google_ads_customer_id as string) ?? '';
+          const devToken     = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN') ?? '';
+
+          if (!refreshToken || !customerId || !devToken) {
+            applied.push({ platform: 'google', success: false, error: 'Google Ads not connected' });
+          } else {
+            try {
+              // Exchange refresh token
+              const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                  refresh_token: refreshToken,
+                  client_id:     Deno.env.get('GOOGLE_CLIENT_ID') ?? '',
+                  client_secret: Deno.env.get('GOOGLE_CLIENT_SECRET') ?? '',
+                  grant_type:    'refresh_token',
+                }).toString(),
+              });
+              const tokenData = await tokenRes.json() as { access_token?: string; error?: string };
+              if (!tokenData.access_token) throw new Error(`Token refresh: ${tokenData.error}`);
+              const accessToken = tokenData.access_token;
+
+              const GADS = 'https://googleads.googleapis.com/v17';
+              const headers = {
+                'Authorization':   `Bearer ${accessToken}`,
+                'developer-token': devToken,
+                'Content-Type':    'application/json',
+              };
+
+              // Look up campaign budget resource name
+              const searchRes = await fetch(`${GADS}/customers/${customerId}/googleAds:search`, {
+                method: 'POST', headers,
+                body: JSON.stringify({ query: `SELECT campaign_budget.resource_name FROM campaign WHERE campaign.id = ${campaignId} LIMIT 1` }),
+              });
+              const searchData = await searchRes.json() as { results?: { campaign_budget?: { resource_name?: string } }[] };
+              const budgetResource = searchData.results?.[0]?.campaign_budget?.resource_name;
+              if (!budgetResource) throw new Error('Campaign not found in Google Ads');
+
+              // Update budget
+              const mutateRes = await fetch(`${GADS}/customers/${customerId}/campaignBudgets:mutate`, {
+                method: 'POST', headers,
+                body: JSON.stringify({
+                  operations: [{ update: { resourceName: budgetResource, amountMicros: Math.round(budgetUsd * 1_000_000) }, updateMask: 'amountMicros' }],
+                }),
+              });
+              if (!mutateRes.ok) {
+                const err = await mutateRes.json().catch(() => ({})) as { error?: { message?: string } };
+                throw new Error(err.error?.message ?? `Google API ${mutateRes.status}`);
+              }
+              applied.push({ platform: 'google', success: true });
+            } catch (e) {
+              applied.push({ platform: 'google', success: false, error: e instanceof Error ? e.message : 'Google Ads error' });
+            }
+          }
+        }
+
+        // Mark recommendation applied
+        await supabase.from('budget_recommendations')
+          .update({ applied: true, auto_applied: false })
           .eq('id', recId)
           .eq('user_id', userId);
-        if (error) throw new Error(error.message);
-        return okResponse({ applied: true, recommendation_id: recId }, origin);
+
+        const anySuccess = applied.some(r => r.success);
+        return okResponse({ applied, recommendation_id: recId, any_success: anySuccess }, origin);
       }
 
       case 'history': {

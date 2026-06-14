@@ -1,0 +1,299 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: We use essential cookies for authentication (Clerk) and session management. No tracking cookies without your consent.
+      - link "Privacy Policy" [ref=e4] [cursor=pointer]:
+        - /url: /privacy.html
+      - text: ·
+      - link "Impressum" [ref=e5] [cursor=pointer]:
+        - /url: /impressum.html
+    - button "Decline non-essential" [ref=e6] [cursor=pointer]
+    - button "Accept & Continue" [ref=e7] [cursor=pointer]
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - img "Ephermal" [ref=e10]
+      - generic [ref=e11]: Ephermal
+    - generic [ref=e12]:
+      - generic [ref=e13]: Overview
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+        - text: Dashboard
+      - generic [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+        - text: Analytics
+    - generic [ref=e23]:
+      - generic [ref=e24]: Advertising
+      - generic [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Campaigns
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+        - text: Creatives
+      - generic [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - text: Audience Intel
+      - generic [ref=e39] [cursor=pointer]:
+        - img [ref=e40]
+        - text: Bulk Manager
+      - generic [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - text: Budget AI
+      - generic [ref=e45] [cursor=pointer]:
+        - img [ref=e46]
+        - text: Launch Campaign
+    - generic [ref=e51]:
+      - generic [ref=e52]: Store
+      - generic [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - text: Store Products
+    - generic [ref=e57]:
+      - generic [ref=e58]: Account
+      - generic [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - text: Multi-Store
+      - generic [ref=e63] [cursor=pointer]:
+        - img [ref=e64]
+        - text: White-label
+      - generic [ref=e66] [cursor=pointer]:
+        - img [ref=e67]
+        - text: Settings
+      - generic [ref=e70] [cursor=pointer]:
+        - img [ref=e71]
+        - text: Billing
+      - generic [ref=e73] [cursor=pointer]:
+        - img [ref=e74]
+        - text: Dev Tools
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - generic [ref=e80]: UGC Credits
+        - strong [ref=e81]: 349 / 350
+      - generic [ref=e84]:
+        - generic [ref=e85]: J
+        - generic [ref=e86]:
+          - generic [ref=e87]: Jamal Settah
+          - generic [ref=e89]: 👑 CEO
+          - generic [ref=e90]: jamalsettah2604@gmail.com
+        - generic [ref=e91]: SCALE
+  - generic [ref=e92]:
+    - generic [ref=e93]:
+      - generic [ref=e95]: Billing
+      - generic [ref=e96]:
+        - button "Generate UGC" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e99]: Generate UGC
+        - generic [ref=e100] [cursor=pointer]: Sign out
+    - generic [ref=e739]:
+      - generic [ref=e740]:
+        - generic [ref=e742]: Your Plan
+        - generic [ref=e743]:
+          - generic [ref=e744]:
+            - generic [ref=e745]: S
+            - generic [ref=e746]:
+              - generic [ref=e747]: Scale
+              - generic [ref=e748]: $349/month · 350 UGC credits/month · Unlimited stores
+            - generic [ref=e749]: SCALE
+          - generic [ref=e750]:
+            - generic [ref=e751]:
+              - generic [ref=e752]: UGC Credits Used
+              - generic [ref=e753]: "1"
+            - generic [ref=e754]:
+              - generic [ref=e755]: Credits Remaining
+              - generic [ref=e756]: "349"
+            - generic [ref=e757]:
+              - generic [ref=e758]: Resets
+              - generic [ref=e759]: Jul 1
+          - generic [ref=e760]:
+            - link "Cancel subscription" [ref=e761] [cursor=pointer]:
+              - /url: mailto:billing@ephermal.app?subject=Cancel%20my%20Ephermal%20subscription&body=Hi%2C%20I%20would%20like%20to%20cancel%20my%20Ephermal%20subscription.
+            - generic [ref=e762]:
+              - text: Invoices & billing questions →
+              - link "billing@ephermal.app" [ref=e763] [cursor=pointer]:
+                - /url: mailto:billing@ephermal.app
+      - generic [ref=e764]:
+        - generic [ref=e765]:
+          - generic [ref=e766]:
+            - generic [ref=e767]: Starter
+            - generic [ref=e768]: $89/mo
+          - list [ref=e769]:
+            - listitem [ref=e770]:
+              - img [ref=e771]
+              - generic [ref=e773]: 1 Shopify store
+            - listitem [ref=e774]:
+              - img [ref=e775]
+              - generic [ref=e777]: 15 UGC creatives/mo
+            - listitem [ref=e778]:
+              - img [ref=e779]
+              - generic [ref=e781]: Meta Ads automation
+            - listitem [ref=e782]:
+              - img [ref=e783]
+              - generic [ref=e785]: Live store sync
+            - listitem [ref=e786]:
+              - img [ref=e787]
+              - generic [ref=e789]: Campaign dashboard
+            - listitem [ref=e790]:
+              - img [ref=e791]
+              - generic [ref=e793]: Creative approval workflow
+            - listitem [ref=e794]:
+              - img [ref=e795]
+              - generic [ref=e797]: Basic analytics
+            - listitem [ref=e798]:
+              - img [ref=e799]
+              - generic [ref=e802]: Google Ads automationGrowth+
+            - listitem [ref=e803]:
+              - img [ref=e804]
+              - generic [ref=e807]: AI ad strategist chatGrowth+
+            - listitem [ref=e808]:
+              - img [ref=e809]
+              - generic [ref=e812]: AI UGC script writerGrowth+
+            - listitem [ref=e813]:
+              - img [ref=e814]
+              - generic [ref=e817]: Store intelligence & audiencesGrowth+
+            - listitem [ref=e818]:
+              - img [ref=e819]
+              - generic [ref=e822]: Closed-loop ROAS optimizationGrowth+
+            - listitem [ref=e823]:
+              - img [ref=e824]
+              - generic [ref=e827]: Bulk campaign managementScale
+            - listitem [ref=e828]:
+              - img [ref=e829]
+              - generic [ref=e832]: Multi-store consolidated viewScale
+            - listitem [ref=e833]:
+              - img [ref=e834]
+              - generic [ref=e837]: White-label optionScale
+          - button "Upgrade" [ref=e838] [cursor=pointer]
+        - generic [ref=e839]:
+          - generic [ref=e840]:
+            - generic [ref=e841]: Growth
+            - generic [ref=e842]: $199/mo
+          - list [ref=e843]:
+            - listitem [ref=e844]:
+              - img [ref=e845]
+              - generic [ref=e847]: 3 Shopify stores
+            - listitem [ref=e848]:
+              - img [ref=e849]
+              - generic [ref=e851]: 75 UGC creatives/mo
+            - listitem [ref=e852]:
+              - img [ref=e853]
+              - generic [ref=e855]: Meta Ads automation
+            - listitem [ref=e856]:
+              - img [ref=e857]
+              - generic [ref=e859]: Live store sync
+            - listitem [ref=e860]:
+              - img [ref=e861]
+              - generic [ref=e863]: Campaign dashboard
+            - listitem [ref=e864]:
+              - img [ref=e865]
+              - generic [ref=e867]: Creative approval workflow
+            - listitem [ref=e868]:
+              - img [ref=e869]
+              - generic [ref=e871]: Google Ads automation
+            - listitem [ref=e872]:
+              - img [ref=e873]
+              - generic [ref=e875]: AI ad strategist chat
+            - listitem [ref=e876]:
+              - img [ref=e877]
+              - generic [ref=e879]: AI UGC script writer
+            - listitem [ref=e880]:
+              - img [ref=e881]
+              - generic [ref=e883]: Store intelligence & audiences
+            - listitem [ref=e884]:
+              - img [ref=e885]
+              - generic [ref=e887]: Full campaign analytics
+            - listitem [ref=e888]:
+              - img [ref=e889]
+              - generic [ref=e891]: Closed-loop ROAS optimization
+            - listitem [ref=e892]:
+              - img [ref=e893]
+              - generic [ref=e895]: Priority AI agents
+            - listitem [ref=e896]:
+              - img [ref=e897]
+              - generic [ref=e900]: Bulk campaign managementScale
+            - listitem [ref=e901]:
+              - img [ref=e902]
+              - generic [ref=e905]: Multi-store consolidated viewScale
+            - listitem [ref=e906]:
+              - img [ref=e907]
+              - generic [ref=e910]: White-label optionScale
+            - listitem [ref=e911]:
+              - img [ref=e912]
+              - generic [ref=e915]: Dedicated AI instanceScale
+          - button "Upgrade" [ref=e916] [cursor=pointer]
+        - generic [ref=e917]:
+          - generic [ref=e918]:
+            - generic [ref=e919]: Scale
+            - generic [ref=e920]: $349/mo
+          - list [ref=e921]:
+            - listitem [ref=e922]:
+              - img [ref=e923]
+              - generic [ref=e925]: Unlimited stores
+            - listitem [ref=e926]:
+              - img [ref=e927]
+              - generic [ref=e929]: 350 UGC creatives/mo
+            - listitem [ref=e930]:
+              - img [ref=e931]
+              - generic [ref=e933]: Meta + Google Ads automation
+            - listitem [ref=e934]:
+              - img [ref=e935]
+              - generic [ref=e937]: Live store sync
+            - listitem [ref=e938]:
+              - img [ref=e939]
+              - generic [ref=e941]: Campaign dashboard
+            - listitem [ref=e942]:
+              - img [ref=e943]
+              - generic [ref=e945]: Creative approval workflow
+            - listitem [ref=e946]:
+              - img [ref=e947]
+              - generic [ref=e949]: AI ad strategist chat
+            - listitem [ref=e950]:
+              - img [ref=e951]
+              - generic [ref=e953]: AI UGC script writer
+            - listitem [ref=e954]:
+              - img [ref=e955]
+              - generic [ref=e957]: Store intelligence & audiences
+            - listitem [ref=e958]:
+              - img [ref=e959]
+              - generic [ref=e961]: Full campaign analytics
+            - listitem [ref=e962]:
+              - img [ref=e963]
+              - generic [ref=e965]: Closed-loop ROAS optimization
+            - listitem [ref=e966]:
+              - img [ref=e967]
+              - generic [ref=e969]: Priority AI agents
+            - listitem [ref=e970]:
+              - img [ref=e971]
+              - generic [ref=e973]: Bulk campaign management
+            - listitem [ref=e974]:
+              - img [ref=e975]
+              - generic [ref=e977]: Multi-store consolidated view
+            - listitem [ref=e978]:
+              - img [ref=e979]
+              - generic [ref=e981]: White-label option
+            - listitem [ref=e982]:
+              - img [ref=e983]
+              - generic [ref=e985]: Dedicated AI instance
+            - listitem [ref=e986]:
+              - img [ref=e987]
+              - generic [ref=e989]: Custom integrations
+            - listitem [ref=e990]:
+              - img [ref=e991]
+              - generic [ref=e993]: Slack support
+          - button "✓ Current plan" [ref=e994]
+  - generic [ref=e207]:
+    - generic [ref=e208]:
+      - generic [ref=e209]:
+        - img [ref=e210]
+        - generic [ref=e212]:
+          - text: Ephermal AI
+          - generic [ref=e213]: Your advertising co-pilot
+      - button "×" [ref=e214] [cursor=pointer]
+    - generic [ref=e216]: Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?
+    - generic [ref=e217]:
+      - button "Improve ROAS" [ref=e218] [cursor=pointer]
+      - button "Write UGC script" [ref=e219] [cursor=pointer]
+      - button "Audience ideas" [ref=e220] [cursor=pointer]
+      - button "Fix low CTR" [ref=e221] [cursor=pointer]
+      - button "Budget advice" [ref=e222] [cursor=pointer]
+    - generic [ref=e223]:
+      - textbox "Ask anything about your ads…" [ref=e224]
+      - button [ref=e225] [cursor=pointer]:
+        - img [ref=e226]

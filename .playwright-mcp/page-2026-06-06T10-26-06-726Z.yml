@@ -1,0 +1,31 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - heading "404" [level=1] [ref=e11]
+        - paragraph [ref=e12]: Page does not exist
+      - paragraph [ref=e13]: The page or resource you are looking for does not exist. Please check the URL and try again.
+      - link "Go home" [ref=e14] [cursor=pointer]:
+        - /url: /apps
+        - generic [ref=e15]:
+          - img [ref=e17]
+          - generic [ref=e19]: Go home
+    - generic [ref=e20]:
+      - paragraph [ref=e21]: Browse the docs for answers, contact support for direct help, or connect with other developers in our Discord community.
+      - generic [ref=e22]:
+        - link "View docs" [ref=e23] [cursor=pointer]:
+          - /url: https://clerk.com/docs
+          - generic [ref=e24]:
+            - img [ref=e26]
+            - generic [ref=e28]: View docs
+        - link "Contact support" [ref=e29] [cursor=pointer]:
+          - /url: https://clerk.com/contact/support
+          - generic [ref=e30]:
+            - img [ref=e32]
+            - generic [ref=e34]: Contact support
+        - link "Join Discord" [ref=e35] [cursor=pointer]:
+          - /url: https://clerk.com/discord
+          - generic [ref=e36]:
+            - img [ref=e38]
+            - generic [ref=e40]: Join Discord
+  - alert [ref=e41]

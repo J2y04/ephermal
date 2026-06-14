@@ -1,0 +1,98 @@
+- generic [ref=e3]:
+  - generic:
+    - link "Skip to content":
+      - /url: "#AppFrameMain"
+  - generic [ref=e5]:
+    - link "Return to home page" [ref=e7] [cursor=pointer]:
+      - /url: /4926169
+      - img "Return to home page" [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Search
+        - searchbox "Search" [ref=e13]
+        - generic:
+          - generic:
+            - img
+      - button "Notifications" [ref=e18] [cursor=pointer]:
+        - link "Notifications" [ref=e19]:
+          - /url: /4926169/notifications
+          - generic [ref=e20]:
+            - generic [ref=e21]: Notifications
+            - img [ref=e22]
+      - button "Avatar with initials E P Ephermal Jamal Settah" [ref=e26] [cursor=pointer]:
+        - img "Avatar with initials E P" [ref=e28]:
+          - img [ref=e30]:
+            - generic [ref=e31]: EP
+        - generic [ref=e32]:
+          - paragraph [ref=e33]: Ephermal
+          - paragraph [ref=e34]: Jamal Settah
+  - generic "Navigation" [ref=e35]:
+    - navigation [ref=e36]:
+      - generic [ref=e37]:
+        - list [ref=e38]:
+          - listitem [ref=e39]:
+            - link "Home" [ref=e42] [cursor=pointer]:
+              - /url: /4926169
+              - img [ref=e46]
+              - generic [ref=e48]: Home
+          - listitem [ref=e49]:
+            - link "Stores" [ref=e52] [cursor=pointer]:
+              - /url: https://dev.shopify.com/dashboard/218332705/stores
+              - img [ref=e56]
+              - generic [ref=e59]: Stores
+          - listitem [ref=e60]:
+            - link "Sales" [ref=e63] [cursor=pointer]:
+              - /url: /4926169/partner_leads
+              - img [ref=e67]
+              - generic [ref=e69]: Sales
+          - listitem [ref=e70]:
+            - link "App distribution" [expanded] [ref=e73] [cursor=pointer]:
+              - /url: /4926169/apps
+              - img [ref=e77]
+              - generic [ref=e79]: App distribution
+            - list [ref=e82]:
+              - listitem [ref=e83]:
+                - link "All apps" [ref=e86] [cursor=pointer]:
+                  - /url: /4926169/apps
+                  - generic [ref=e87]: All apps
+              - listitem [ref=e88]:
+                - link "App ads" [ref=e91] [cursor=pointer]:
+                  - /url: /4926169/ads
+                  - generic [ref=e92]: App ads
+          - listitem [ref=e93]:
+            - link "Catalogs" [ref=e96] [cursor=pointer]:
+              - /url: https://dev.shopify.com/dashboard/218332705/catalogs
+              - img [ref=e100]
+              - generic [ref=e104]: Catalogs
+          - listitem [ref=e105]:
+            - link "Themes" [ref=e108] [cursor=pointer]:
+              - /url: /4926169/themes
+              - img [ref=e112]
+              - generic [ref=e114]: Themes
+        - list [ref=e115]:
+          - listitem [ref=e116]:
+            - generic [ref=e117]: Admin
+          - listitem [ref=e118]:
+            - link "Payouts" [ref=e121] [cursor=pointer]:
+              - /url: /4926169/payments
+              - img [ref=e125]
+              - generic [ref=e127]: Payouts
+          - listitem [ref=e128]:
+            - link "Partner settings" [ref=e131] [cursor=pointer]:
+              - /url: /4926169/settings
+              - img [ref=e135]
+              - generic [ref=e137]: Partner settings
+        - list [ref=e138]:
+          - listitem [ref=e139]:
+            - link "Organization" [ref=e142] [cursor=pointer]:
+              - /url: https://admin.shopify.com/organization/218332705/settings/organization-account
+              - img [ref=e146]
+              - generic [ref=e149]: Organization
+          - listitem [ref=e150]:
+            - link "Dev dashboard" [ref=e153] [cursor=pointer]:
+              - /url: https://dev.shopify.com/dashboard/218332705
+              - img [ref=e157]
+              - generic [ref=e159]: Dev dashboard
+  - main [ref=e160]:
+    - status "Page loading" [ref=e163]:
+      - heading "App distribution" [level=1] [ref=e169]

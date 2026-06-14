@@ -1,0 +1,181 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: We use essential cookies for authentication (Clerk) and session management. No tracking cookies without your consent.
+      - link "Privacy Policy" [ref=e4] [cursor=pointer]:
+        - /url: /privacy.html
+      - text: ·
+      - link "Impressum" [ref=e5] [cursor=pointer]:
+        - /url: /impressum.html
+    - button "Decline non-essential" [ref=e6] [cursor=pointer]
+    - button "Accept & Continue" [ref=e7] [cursor=pointer]
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - img "Ephermal" [ref=e10]
+      - generic [ref=e11]: Ephermal
+    - generic [ref=e12]:
+      - generic [ref=e13]: Overview
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+        - text: Dashboard
+      - generic [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+        - text: Analytics
+    - generic [ref=e23]:
+      - generic [ref=e24]: Advertising
+      - generic [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Campaigns
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+        - text: Creatives
+      - generic [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - text: Audience Intel
+      - generic [ref=e39] [cursor=pointer]:
+        - img [ref=e40]
+        - text: Bulk Manager
+      - generic [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - text: Budget AI
+      - generic [ref=e45] [cursor=pointer]:
+        - img [ref=e46]
+        - text: Launch Campaign
+    - generic [ref=e51]:
+      - generic [ref=e52]: Intelligence
+      - generic [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - text: Competitor Radar
+      - generic [ref=e58] [cursor=pointer]:
+        - img [ref=e59]
+        - text: Creative Brief AI
+      - generic [ref=e62] [cursor=pointer]:
+        - img [ref=e63]
+        - text: Profit Tracker
+    - generic [ref=e64]:
+      - generic [ref=e65]: Store
+      - generic [ref=e66] [cursor=pointer]:
+        - img [ref=e67]
+        - text: Store Products
+    - generic [ref=e70]:
+      - generic [ref=e71]: Account
+      - generic [ref=e72] [cursor=pointer]:
+        - img [ref=e73]
+        - text: Multi-Store
+      - generic [ref=e76] [cursor=pointer]:
+        - img [ref=e77]
+        - text: White-label
+      - generic [ref=e79] [cursor=pointer]:
+        - img [ref=e80]
+        - text: Settings
+      - generic [ref=e83] [cursor=pointer]:
+        - img [ref=e84]
+        - text: Billing
+      - generic [ref=e236] [cursor=pointer]:
+        - img [ref=e237]
+        - text: Dev Tools
+    - generic [ref=e86]:
+      - generic [ref=e88]:
+        - generic [ref=e89]: UGC Credits
+        - strong [ref=e90]: 348 / 350
+      - generic [ref=e97]:
+        - generic [ref=e98]: J
+        - generic [ref=e99]:
+          - generic [ref=e100]: Jamal Settah
+          - generic [ref=e242]:
+            - img [ref=e243]
+            - text: CEO
+          - generic [ref=e245]: jamalsettah2604@gmail.com
+        - generic [ref=e101]: SCALE
+  - generic [ref=e102]:
+    - generic [ref=e103]:
+      - generic [ref=e105]: Settings
+      - generic [ref=e106]:
+        - button "Generate UGC" [ref=e107] [cursor=pointer]:
+          - img [ref=e108]
+          - generic [ref=e109]: Generate UGC
+        - generic [ref=e110] [cursor=pointer]: Sign out
+    - generic [ref=e277]:
+      - generic [ref=e278]:
+        - generic [ref=e280]: Profile
+        - generic [ref=e281]:
+          - generic [ref=e282]:
+            - generic [ref=e283]:
+              - generic [ref=e284]: Full Name
+              - textbox "Your name" [ref=e285]: Jamal Settah
+            - generic [ref=e286]:
+              - generic [ref=e287]: Email
+              - textbox "your@email.com" [ref=e288]: jamalsettah2604@gmail.com
+          - button "Save Changes" [ref=e290] [cursor=pointer]
+      - generic [ref=e291]:
+        - generic [ref=e293]: Integrations
+        - generic [ref=e294]:
+          - generic [ref=e295]:
+            - img [ref=e296]
+            - text: Meta Ads
+            - generic [ref=e298]: All plans
+          - generic [ref=e300]:
+            - generic [ref=e303]:
+              - generic [ref=e304]: act_1502188198016437
+              - generic [ref=e305]: act_1502188198016437
+            - button "Disconnect" [ref=e306] [cursor=pointer]
+          - generic [ref=e307]:
+            - generic [ref=e308]: Store URL (for analysis)
+            - textbox "https://yourstore.com" [ref=e309]
+          - generic [ref=e311]:
+            - generic [ref=e312]:
+              - img [ref=e313]
+              - text: Google Ads
+              - generic [ref=e318]: Growth+
+            - generic [ref=e320]:
+              - text: Google Ads Customer ID
+              - generic [ref=e321]:
+                - textbox "123-456-7890" [ref=e322]
+                - button "Connect" [ref=e323] [cursor=pointer]
+              - generic [ref=e324]: Find this at the top of your Google Ads dashboard
+          - generic [ref=e325]:
+            - generic [ref=e326]:
+              - img [ref=e327]
+              - text: Shopify
+              - generic [ref=e329]: All plans
+            - generic [ref=e330]:
+              - generic [ref=e333]:
+                - generic [ref=e334]: ephermal-test.myshopify.com
+                - generic [ref=e335]: ephermal-test.myshopify.com
+              - button "Disconnect" [ref=e336] [cursor=pointer]
+          - generic [ref=e337]: Your credentials are stored locally and used only to manage your ad accounts. At least one ad platform must be connected.
+          - button "Save Settings" [ref=e339] [cursor=pointer]
+      - generic [ref=e340]:
+        - generic [ref=e342]: Security
+        - generic [ref=e343]:
+          - generic [ref=e344]:
+            - generic [ref=e345]: New Password
+            - textbox "••••••••" [ref=e346]
+          - generic [ref=e347]: Min 8 chars · 1 uppercase · 1 number
+          - button "Update Password" [ref=e349] [cursor=pointer]
+      - generic [ref=e350]:
+        - generic [ref=e352]: Danger Zone
+        - generic [ref=e353]:
+          - generic [ref=e354]:
+            - generic [ref=e355]: Delete Account
+            - generic [ref=e356]: Permanently remove your account and all data
+          - button "Delete Account" [ref=e357] [cursor=pointer]
+  - generic [ref=e214]:
+    - generic [ref=e215]:
+      - generic [ref=e216]:
+        - img [ref=e217]
+        - generic [ref=e219]:
+          - text: Ephermal AI
+          - generic [ref=e220]: Your advertising co-pilot
+      - button "×" [ref=e221] [cursor=pointer]
+    - generic [ref=e223]: Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?
+    - generic [ref=e224]:
+      - button "Improve ROAS" [ref=e225] [cursor=pointer]
+      - button "Write UGC script" [ref=e226] [cursor=pointer]
+      - button "Audience ideas" [ref=e227] [cursor=pointer]
+      - button "Fix low CTR" [ref=e228] [cursor=pointer]
+      - button "Budget advice" [ref=e229] [cursor=pointer]
+    - generic [ref=e230]:
+      - textbox "Ask anything about your ads…" [ref=e231]
+      - button [ref=e232] [cursor=pointer]:
+        - img [ref=e233]

@@ -1,0 +1,389 @@
+- generic [ref=e2]:
+  - generic:
+    - iframe
+  - generic:
+    - iframe
+  - generic:
+    - iframe
+  - generic:
+    - iframe
+  - generic [ref=e3]:
+    - navigation "Main" [ref=e7]:
+      - generic [ref=e14]:
+        - generic [ref=e16]:
+          - button "Open mobile navigation menu" [ref=e18] [cursor=pointer]:
+            - img [ref=e21]
+          - link "Meta home" [ref=e23] [cursor=pointer]:
+            - /url: https://developers.facebook.com/
+            - img "Nav Logo" [ref=e24]
+        - generic [ref=e27]:
+          - link "My Apps" [ref=e28] [cursor=pointer]:
+            - /url: /apps/
+          - button "Search" [ref=e29] [cursor=pointer]:
+            - img "Search" [ref=e30]
+    - generic [ref=e33]:
+      - generic [ref=e38]:
+        - paragraph [ref=e39]: Join us September 23-24 for Connect!
+        - link "Sign up here" [ref=e40] [cursor=pointer]:
+          - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fmeta.com%2Fconnect%3Futm_source%3DSTDC-homepage%26utm_medium%3DSTDC%26utm_campaign%3DSTDC-homepage%26utm_content%3DMetaConnect2026%26fbclid%3DIwZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQBMAABHgsOvDlCUQD9kW_6phCVjsgyn-1gxm4JBsCoy1n4kWYx-5aDNy-d37j8Gb5X_aem_yEzFKTG-YgBQM4pd-MtVeg&h=AUDMEhew3v7BRF5pvPPsroabP3qrm0RKOA8wMDDK5JAJGADnjfrI9elHZeW7BGVYytHHX31X9XmF8JugCp6ESRFhmU3H2p1DCjQ94XBpfPj_XDwqFrdfT-3HZkx6XJUyBhWWgg
+          - generic [ref=e41]: Sign up here
+      - generic [ref=e43]:
+        - generic [ref=e51]:
+          - heading "Social technologies" [level=1] [ref=e52]
+          - paragraph [ref=e53]: Build technologies that help people connect, find communities and grow businesses.
+        - heading "Get started" [level=3] [ref=e59]
+        - generic [ref=e62]:
+          - generic [ref=e63]:
+            - img [ref=e65]
+            - link "Explore all products" [ref=e66] [cursor=pointer]:
+              - /url: /social-technologies/products/
+              - paragraph [ref=e67]: Explore all products
+              - img [ref=e69]
+          - generic [ref=e72]:
+            - img [ref=e74]
+            - link "Browse documentation" [ref=e75] [cursor=pointer]:
+              - /url: /docs/
+              - paragraph [ref=e76]: Browse documentation
+              - img [ref=e78]
+          - generic [ref=e81]:
+            - img [ref=e83]
+            - link "Developer tools" [ref=e84] [cursor=pointer]:
+              - /url: /tools/
+              - paragraph [ref=e85]: Developer tools
+              - img [ref=e87]
+          - generic [ref=e90]:
+            - img [ref=e92]
+            - link "Get support" [ref=e93] [cursor=pointer]:
+              - /url: /support/
+              - paragraph [ref=e94]: Get support
+              - img [ref=e96]
+        - heading "What's new" [level=2] [ref=e103]
+        - group "Slideshow" [ref=e106]:
+          - button "Previous Slide" [ref=e107] [cursor=pointer]:
+            - img [ref=e109]
+          - button "Next Slide" [ref=e113] [cursor=pointer]:
+            - img [ref=e115]
+          - generic [ref=e120]:
+            - generic [ref=e122]:
+              - img "Business Messaging onboarding user interface" [ref=e128]
+              - generic [ref=e131]:
+                - paragraph [ref=e132]: Business Messaging onboarding made easy
+                - paragraph [ref=e133]: Simplify business onboarding with Embedded signup v4
+                - link "See how (opens in new tab)" [ref=e134] [cursor=pointer]:
+                  - /url: https://developers.facebook.com/blog/post/2025/12/03/simplify-business-onboarding-with-embedded-signup-v4
+                  - text: See how
+            - group [ref=e135]:
+              - img [ref=e143]
+            - group [ref=e145]:
+              - generic [ref=e146]:
+                - img [ref=e153]
+                - generic [ref=e155]:
+                  - generic:
+                    - generic:
+                      - paragraph: Introducing Graph API v25.0 and Marketing API v25.0
+                      - link:
+                        - /url: https://developers.facebook.com/blog/post/2026/02/18/introducing-graph-api-v25-and-marketing-api-v25
+                        - text: Learn more
+            - group [ref=e156]:
+              - generic [ref=e157]:
+                - img [ref=e164]
+                - generic [ref=e166]:
+                  - generic:
+                    - generic:
+                      - paragraph: Business Messaging onboarding made easy
+                      - paragraph: Simplify business onboarding with Embedded signup v4
+                      - link:
+                        - /url: https://developers.facebook.com/blog/post/2025/12/03/simplify-business-onboarding-with-embedded-signup-v4
+                        - text: See how
+            - group [ref=e167]:
+              - generic [ref=e168]:
+                - img [ref=e175]
+                - generic [ref=e177]:
+                  - generic:
+                    - generic:
+                      - paragraph: Marketing API
+                      - paragraph: Latest Updates for Ads on Threads
+                      - link:
+                        - /url: https://developers.facebook.com/blog/post/2026/03/25/marketing-api-latest-updates-for-ads-on-threads
+                        - text: Learn more
+            - group [ref=e178]:
+              - img [ref=e186]
+        - generic [ref=e192]:
+          - heading "Build with us" [level=2] [ref=e193]
+          - paragraph [ref=e194]: Learn more about our social technologies solutions that can help you create, grow and connect across Facebook, Instagram, Messenger, WhatsApp, and Threads.
+          - generic [ref=e195]:
+            - button "Facebook" [ref=e197] [cursor=pointer]:
+              - generic [ref=e198]:
+                - img [ref=e200]
+                - paragraph [ref=e201]: Facebook
+                - img [ref=e203]
+            - button "Messenger" [ref=e207] [cursor=pointer]:
+              - generic [ref=e208]:
+                - img [ref=e210]
+                - paragraph [ref=e211]: Messenger
+                - img [ref=e213]
+          - generic [ref=e216]:
+            - button "Instagram" [ref=e218] [cursor=pointer]:
+              - generic [ref=e219]:
+                - img [ref=e221]
+                - paragraph [ref=e222]: Instagram
+                - img [ref=e224]
+            - button "WhatsApp" [ref=e228] [cursor=pointer]:
+              - generic [ref=e229]:
+                - img [ref=e231]
+                - paragraph [ref=e232]: WhatsApp
+                - img [ref=e234]
+          - button "Threads" [ref=e239] [cursor=pointer]:
+            - generic [ref=e240]:
+              - img [ref=e242]
+              - paragraph [ref=e243]: Threads
+              - img [ref=e245]
+        - generic [ref=e249]:
+          - paragraph [ref=e251]: SUCCESS STORIES
+          - heading "200M+ businesses use our services every month to connect with customers and grow." [level=3] [ref=e254]
+          - generic [ref=e256]:
+            - generic [ref=e258]:
+              - link "Concepto Móvil Concepto Móvil boosts business solutions and aligns teams through Meta Certification." [ref=e259] [cursor=pointer]:
+                - /url: /success-stories/Concepto-Movil/
+                - img [ref=e262]
+                - generic [ref=e263]:
+                  - heading "Concepto Móvil" [level=4] [ref=e265]
+                  - paragraph [ref=e267]: Concepto Móvil boosts business solutions and aligns teams through Meta Certification.
+              - link "Learn more" [ref=e270] [cursor=pointer]:
+                - /url: /success-stories/Concepto-Movil/
+                - paragraph [ref=e271]: Learn more
+                - img [ref=e273]
+            - generic [ref=e277]:
+              - link "Universal Pictures Engaging fans through interactive multimedia messaging campaigns." [ref=e278] [cursor=pointer]:
+                - /url: https://developers.facebook.com/success-stories/Universal-Studios/
+                - img [ref=e281]
+                - generic [ref=e282]:
+                  - heading "Universal Pictures" [level=4] [ref=e284]
+                  - paragraph [ref=e286]: Engaging fans through interactive multimedia messaging campaigns.
+              - link "Learn more" [ref=e289] [cursor=pointer]:
+                - /url: https://developers.facebook.com/success-stories/Universal-Studios/
+                - paragraph [ref=e290]: Learn more
+                - img [ref=e292]
+            - generic [ref=e296]:
+              - link "Housing Development Finance Corporation Developing a faster, simpler and convenient way to help customers determine their home loan eligibility." [ref=e297] [cursor=pointer]:
+                - /url: https://developers.facebook.com/success-stories/HDFC-whatsapp/
+                - img [ref=e300]
+                - generic [ref=e301]:
+                  - heading "Housing Development Finance Corporation" [level=4] [ref=e303]
+                  - paragraph [ref=e305]: Developing a faster, simpler and convenient way to help customers determine their home loan eligibility.
+              - link "Learn more" [ref=e308] [cursor=pointer]:
+                - /url: https://developers.facebook.com/success-stories/HDFC-whatsapp/
+                - paragraph [ref=e309]: Learn more
+                - img [ref=e311]
+          - button "View success stories" [ref=e318] [cursor=pointer]:
+            - generic [ref=e319]: View success stories
+        - generic [ref=e322]:
+          - generic [ref=e323]:
+            - heading "Explore all our products" [level=2] [ref=e325]
+            - paragraph [ref=e327]: Social technologies offer a wide range of solutions that can help you grow, build community and monetize your apps.
+          - generic [ref=e328]:
+            - generic [ref=e330]:
+              - generic [ref=e331]:
+                - generic [ref=e332]:
+                  - paragraph [ref=e333]: Ads and Monetization
+                  - paragraph [ref=e334]: Reach billions of people with Meta ads and monetization solutions to grow your business.
+                - link "Overview" [ref=e335] [cursor=pointer]:
+                  - /url: /social-technologies/ads-monetization/
+                  - paragraph [ref=e336]: Overview
+              - generic [ref=e337]:
+                - generic [ref=e338]:
+                  - paragraph [ref=e339]: Artificial Intelligence
+                  - paragraph [ref=e340]: Utilize industry-leading open and accessible AI tools for scale.
+                - link "Overview" [ref=e341] [cursor=pointer]:
+                  - /url: /social-technologies/products/?filter-id=ai
+                  - paragraph [ref=e342]: Overview
+              - generic [ref=e343]:
+                - generic [ref=e344]:
+                  - paragraph [ref=e345]: Authentication
+                  - paragraph [ref=e346]: Implement convenient and secure authentication methods, supported by robust authorization protocols.
+                - link "Overview" [ref=e347] [cursor=pointer]:
+                  - /url: /social-technologies/products/?filter-id=authentication-authorization
+                  - paragraph [ref=e348]: Overview
+              - generic [ref=e349]:
+                - generic [ref=e350]:
+                  - paragraph [ref=e351]: Business Messaging
+                  - paragraph [ref=e352]: Do more with conversations by getting the right messages to the right people at the right time.
+                - link "Overview" [ref=e353] [cursor=pointer]:
+                  - /url: /social-technologies/business-messaging/
+                  - paragraph [ref=e354]: Overview
+              - generic [ref=e355]:
+                - generic [ref=e356]:
+                  - paragraph [ref=e357]: Gaming
+                  - paragraph [ref=e358]: Access a suite of innovative gaming platforms and services.
+                - link "Overview" [ref=e359] [cursor=pointer]:
+                  - /url: /social-technologies/products/?filter-id=gaming
+                  - paragraph [ref=e360]: Overview
+              - generic [ref=e361]:
+                - generic [ref=e362]:
+                  - paragraph [ref=e363]: Open Source
+                  - paragraph [ref=e364]: Empower the community through open source technology.
+                - link "Overview" [ref=e365] [cursor=pointer]:
+                  - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fopensource.fb.com%2F&h=AUDM52HZXxAI0lsdqqRzln8c4b135hyf5UyKZ8sQcMokO9yrnv0vuxE526xOpwkMRPf_jxAEPJgTXH4bzQ-NaRXuFQF1PjUNIbOblp0v8yMncLf3dH7Dw2Zl5fTWF7xcVqDVrw
+                  - paragraph [ref=e366]: Overview
+              - generic [ref=e367]:
+                - generic [ref=e368]:
+                  - paragraph [ref=e369]: Social Integrations
+                  - paragraph [ref=e370]: Connect with and engage billions of people using our Meta technologies with our social integrations.
+                - link "Overview" [ref=e371] [cursor=pointer]:
+                  - /url: /social-technologies/social-integrations/
+                  - paragraph [ref=e372]: Overview
+            - generic [ref=e374]:
+              - separator [ref=e375]
+              - button "Explore all products" [ref=e376] [cursor=pointer]:
+                - generic [ref=e377]: Explore all products
+              - separator [ref=e378]
+        - generic [ref=e382]:
+          - heading "Latest news" [level=3] [ref=e384]
+          - generic [ref=e386]:
+            - generic [ref=e387]:
+              - 'link "Link to the blog: Ads Insights API Metric Availability Updates" [ref=e389] [cursor=pointer]':
+                - /url: https://developers.facebook.com/blog/post/2025/10/16/ads-insights-api-metric-availability-updates/
+                - 'generic "Featured Card Image: Ads Insights API Metric Availability Updates" [ref=e390]':
+                  - 'img "Featured Card Image: Ads Insights API Metric Availability Updates" [ref=e391]'
+                - generic [ref=e392]:
+                  - heading "OCTOBER 16, 2025" [level=6] [ref=e393]
+                  - heading "Ads Insights API Metric Availability Updates" [level=3] [ref=e394]
+                  - paragraph [ref=e395]: We continuously review the metrics we offer advertisers to ensure that they are accurate, intuitive, and valuable. To continue meeting our high standards, we will limit availability for certain metrics’ available attribution windows and breakdowns in the Ads Insights API beginning on January 12, 2026. Below, please find details relevant to the...
+                  - paragraph [ref=e396]: Business Tools, 2025
+              - 'link "Link to the blog: Introducing Graph API v24.0 and Marketing API v24.0" [ref=e398] [cursor=pointer]':
+                - /url: https://developers.facebook.com/blog/post/2025/10/08/introducing-graph-api-v24-and-marketing-api-v24/
+                - 'generic "Featured Card Image: Introducing Graph API v24.0 and Marketing API v24.0" [ref=e399]':
+                  - 'img "Featured Card Image: Introducing Graph API v24.0 and Marketing API v24.0" [ref=e400]'
+                - generic [ref=e401]:
+                  - heading "OCTOBER 8, 2025" [level=6] [ref=e402]
+                  - heading "Introducing Graph API v24.0 and Marketing API v24.0" [level=3] [ref=e403]
+                  - paragraph [ref=e404]: Here are the highlights of the new GAPI/MAPI changes below for V24. Please visit our changelog for a complete list of changes and details.General Updates...
+                  - paragraph [ref=e405]: Business Tools, 2025, Graph API, Marketing API
+              - 'link "Link to the blog: Introducing Limited Spend on Excluded Placements in Marketing API" [ref=e407] [cursor=pointer]':
+                - /url: https://developers.facebook.com/blog/post/2025/10/08/introducing-limited-spend-on-excluded-placements-in-marketing-api/
+                - 'generic "Featured Card Image: Introducing Limited Spend on Excluded Placements in Marketing API" [ref=e408]':
+                  - 'img "Featured Card Image: Introducing Limited Spend on Excluded Placements in Marketing API" [ref=e409]'
+                - generic [ref=e410]:
+                  - heading "OCTOBER 8, 2025" [level=6] [ref=e411]
+                  - heading "Introducing Limited Spend on Excluded Placements in Marketing API" [level=3] [ref=e412]
+                  - paragraph [ref=e413]: Starting October 8th, we’re rolling out a new feature within placements that allows up to 5% of your spend to be allocated for each excluded placement—when it’s likely to improve performance. This update provides you with flexibility to have some delivery to specific placements, without requiring you to completely remove placements from your...
+                  - paragraph [ref=e414]: Business Tools, 2025, Marketing API
+            - generic [ref=e415]:
+              - separator [ref=e416]
+              - button "Button to direct to the M4D all products page" [ref=e417] [cursor=pointer]:
+                - generic [ref=e418]: More on the blog
+              - separator [ref=e419]
+        - generic [ref=e425]:
+          - generic [ref=e426]:
+            - heading "Get our newsletter" [level=3] [ref=e427]
+            - paragraph [ref=e428]: Sign up for monthly updates from Meta for Developers.
+          - button "Sign up" [ref=e429] [cursor=pointer]:
+            - generic [ref=e430]: Sign up
+    - contentinfo [ref=e435]:
+      - generic [ref=e436]:
+        - separator [ref=e437]
+        - generic [ref=e439]:
+          - generic [ref=e441]:
+            - generic [ref=e443]:
+              - img "Meta" [ref=e445]
+              - list [ref=e447]:
+                - listitem:
+                  - link "Facebook":
+                    - /url: https://www.facebook.com/MetaforDevelopers
+                    - img "Facebook"
+                - listitem:
+                  - link "Instagram":
+                    - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.instagram.com%2Fmetafordevelopers%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHgwSZeVHogwGPHTYfgOmy2gy-7HWZhg5DF4NOeZrrxaNGjNBLOtcsDHcMkka_aem_5Ej_2MqQh1yo8iozd9Ldrg&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                    - img "Instagram"
+                - listitem:
+                  - link "X":
+                    - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Ftwitter.com%2Fmetafordevs%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHmH4TQMGdlcqj_VIDR08ry2QP7PGZ3vh5Bvs7kvM_8nT3LEH7n_hMgpYP14R_aem_dcWaT4pOxzAG0ERPz8ggjw&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                    - img "X"
+                - listitem:
+                  - link "LinkedIn":
+                    - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.linkedin.com%2Fshowcase%2Fmeta-for-developers%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHgwSZeVHogwGPHTYfgOmy2gy-7HWZhg5DF4NOeZrrxaNGjNBLOtcsDHcMkka_aem_5Ej_2MqQh1yo8iozd9Ldrg&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                    - img "LinkedIn"
+                - listitem:
+                  - link "YouTube":
+                    - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.youtube.com%2FMetaDevelopers%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHtR3wco86Y7clWMCPLmq3M-weoHaHAGFpI3A0mgovKWSf4G6LCca090E58a7_aem_9MGngv9_NhIAZ_xK2oMTgQ&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                    - img "YouTube"
+            - generic [ref=e449]:
+              - generic [ref=e452]:
+                - heading "Build with Meta" [level=2] [ref=e453]:
+                  - generic [ref=e454]: Build with Meta
+                - list [ref=e455]:
+                  - listitem [ref=e456]:
+                    - link "AI" [ref=e458] [cursor=pointer]:
+                      - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.llama.com%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHqRLgglj9qmAcVJtB0ej6xhjIJxPdC9Awks9LqXA9VtpT5KOgYA6XxsUAJuN_aem_bJPIdq6D-aTiwkFguja0UA&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                  - listitem [ref=e459]:
+                    - link "Meta Horizon" [ref=e461] [cursor=pointer]:
+                      - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fdevelopers.meta.com%2Fhorizon%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHg7skINziaYuANZtmSYSznrjxo3JqYZrBTrcVMvb-hDuOloe2DvJpuRuEbna_aem_cBJTFfwNBHJWdSKIuJeFkQ&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                  - listitem [ref=e462]:
+                    - link "Social technologies" [ref=e464] [cursor=pointer]:
+                      - /url: /social-technologies/
+                  - listitem [ref=e465]:
+                    - link "Wearables" [ref=e467] [cursor=pointer]:
+                      - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fdevelopers.meta.com%2Fwearables%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHg7skINziaYuANZtmSYSznrjxo3JqYZrBTrcVMvb-hDuOloe2DvJpuRuEbna_aem_cBJTFfwNBHJWdSKIuJeFkQ&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+              - generic [ref=e470]:
+                - heading "News" [level=2] [ref=e471]:
+                  - generic [ref=e472]: News
+                - list [ref=e473]:
+                  - listitem [ref=e474]:
+                    - link "Meta for Developers" [ref=e476] [cursor=pointer]:
+                      - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fdevelopers.meta.com%2Fblog%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHqRLgglj9qmAcVJtB0ej6xhjIJxPdC9Awks9LqXA9VtpT5KOgYA6XxsUAJuN_aem_bJPIdq6D-aTiwkFguja0UA&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                  - listitem [ref=e477]:
+                    - link "Blog" [ref=e479] [cursor=pointer]:
+                      - /url: /blog/
+                  - listitem [ref=e480]:
+                    - link "Success stories" [ref=e482] [cursor=pointer]:
+                      - /url: /success-stories/
+              - generic [ref=e485]:
+                - heading "Support" [level=2] [ref=e486]:
+                  - generic [ref=e487]: Support
+                - list [ref=e488]:
+                  - listitem [ref=e489]:
+                    - link "Developer Support" [ref=e491] [cursor=pointer]:
+                      - /url: /support/
+                  - listitem [ref=e492]:
+                    - link "Bug tool" [ref=e494] [cursor=pointer]:
+                      - /url: /support/bugs/
+                  - listitem [ref=e495]:
+                    - link "Platform status" [ref=e497] [cursor=pointer]:
+                      - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fmetastatus.com%2F%3Ffbclid%3DIwZXh0bgNhZW0CMTAAc3J0YwZhcHBfaWQBMAABHkXAM3ay2dAVJwGb5Og-IWjSTOfpqIOKmuAtqJ5kyzLWV36PXEK6pzmS5GsP_aem_TcUYzxUBVUy3TjcpfkWGVQ&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                  - listitem [ref=e498]:
+                    - link "Developer community forum" [ref=e500] [cursor=pointer]:
+                      - /url: https://www.facebook.com/groups/fbdevelopers/
+                  - listitem [ref=e501]:
+                    - link "Report an incident" [ref=e503] [cursor=pointer]:
+                      - /url: /incident/report/
+              - generic [ref=e506]:
+                - heading "About us" [level=2] [ref=e507]:
+                  - generic [ref=e508]: About us
+                - list [ref=e509]:
+                  - listitem [ref=e510]:
+                    - link "About" [ref=e512] [cursor=pointer]:
+                      - /url: https://l.facebook.com/l.php?u=https%3A%2F%2Fabout.fb.com%2F&h=AUDAK8cqTqixGUcD8gf5dmJTU-eB1U9vGB1VRpnph05MPKGNsBflsFkTXu6-NlhJ2symkxpDWp3_hLKYvFnl6khrzJgemwKUdUdXCuMUTpyjgB5ohRuznuOjFR4Ud2UC7dRrAg
+                  - listitem [ref=e513]:
+                    - link "Careers" [ref=e515] [cursor=pointer]:
+                      - /url: https://www.facebook.com/careers
+              - generic [ref=e518]:
+                - heading "Terms and policies" [level=2] [ref=e519]:
+                  - generic [ref=e520]: Terms and policies
+                - list [ref=e521]:
+                  - listitem [ref=e522]:
+                    - link "Responsible platform initiatives" [ref=e524] [cursor=pointer]:
+                      - /url: /products/responsible-platform-initiatives/
+                  - listitem [ref=e525]:
+                    - link "Platform terms" [ref=e527] [cursor=pointer]:
+                      - /url: /terms/dfc_platform_terms/
+                  - listitem [ref=e528]:
+                    - link "Developer policies" [ref=e530] [cursor=pointer]:
+                      - /url: /devpolicy/
+                  - listitem [ref=e531]:
+                    - link "Privacy policy" [ref=e533] [cursor=pointer]:
+                      - /url: https://www.facebook.com/about/privacy
+                  - listitem [ref=e534]:
+                    - link "Cookies" [ref=e536] [cursor=pointer]:
+                      - /url: https://www.facebook.com/help/cookies
+          - button "Change language" [ref=e541] [cursor=pointer]:
+            - generic [ref=e543]: English (US)

@@ -1,0 +1,24 @@
+- generic [ref=e2]:
+  - region "Notifications (F8)":
+    - list
+  - generic [ref=e4]:
+    - main [ref=e5]:
+      - generic [ref=e6]:
+        - generic:
+          - img
+          - img
+          - generic:
+            - generic:
+              - img
+    - contentinfo [ref=e8]:
+      - paragraph [ref=e9]: © 2026 Clerk
+      - list [ref=e10]:
+        - listitem [ref=e11]:
+          - link "Support" [ref=e12] [cursor=pointer]:
+            - /url: https://clerk.com/contact/support
+        - listitem [ref=e13]:
+          - link "Privacy" [ref=e14] [cursor=pointer]:
+            - /url: https://www.clerk.com/privacy
+        - listitem [ref=e15]:
+          - link "Terms" [ref=e16] [cursor=pointer]:
+            - /url: https://www.clerk.com/terms

@@ -1,0 +1,345 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications (F8)":
+      - list
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - generic [ref=e6]:
+            - link "Organization logo Personal workspace Hobby" [ref=e35] [cursor=pointer]:
+              - /url: /apps
+              - img "Organization logo" [ref=e37]
+              - text: Personal workspace
+              - generic [ref=e40]: Hobby
+            - button "Switch organization" [ref=e41] [cursor=pointer]:
+              - img [ref=e42]
+          - img [ref=e10]
+          - generic [ref=e12]:
+            - link "Ephermal" [ref=e13] [cursor=pointer]:
+              - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ
+              - generic [ref=e14]: Ephermal
+            - button "Switch application" [ref=e15] [cursor=pointer]:
+              - img [ref=e16]
+          - img [ref=e19]
+          - generic [ref=e22]:
+            - link "production" [ref=e23] [cursor=pointer]:
+              - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ
+              - generic [ref=e25]: production
+            - button "Switch environment" [ref=e26] [cursor=pointer]:
+              - img [ref=e27]
+        - generic [ref=e30]:
+          - generic [ref=e45]:
+            - button "Notifications, 1 unread" [ref=e46] [cursor=pointer]:
+              - img [ref=e49]
+            - generic: "1"
+          - button "Invite user" [ref=e51] [cursor=pointer]:
+            - generic [ref=e53]: Invite
+          - button "Open user menu" [ref=e54] [cursor=pointer]:
+            - img "User avatar" [ref=e56]
+    - button "Help Center" [ref=e59] [cursor=pointer]:
+      - generic [ref=e60]:
+        - img [ref=e61]
+        - img [ref=e65]
+        - img [ref=e67]
+    - dialog [ref=e71]:
+      - button "Close" [ref=e73] [cursor=pointer]:
+        - img [ref=e76]
+      - generic [ref=e77]:
+        - banner [ref=e78]: What's new
+        - paragraph [ref=e80]: Inspect transactional email delivery events from the Clerk Dashboard.
+        - link "Learn more" [ref=e81] [cursor=pointer]:
+          - /url: https://clerk.com/changelog/2026-06-01-email-logs-public-beta
+          - generic [ref=e82]:
+            - generic [ref=e83]: Learn more
+            - img [ref=e85]
+    - navigation [ref=e89]:
+      - link "Overview" [ref=e91] [cursor=pointer]:
+        - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ
+      - link "Users" [ref=e93] [cursor=pointer]:
+        - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/users
+      - link "Organizations" [ref=e94] [cursor=pointer]:
+        - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/organizations
+      - link "Billing Beta" [ref=e95] [cursor=pointer]:
+        - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/billing/subscriptions
+        - text: Billing
+        - generic [ref=e97]: Beta
+      - link "Logs" [ref=e98] [cursor=pointer]:
+        - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/application-logs
+      - link "Configure" [ref=e99] [cursor=pointer]:
+        - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/user-authentication/user-and-authentication
+        - text: Configure
+      - generic [ref=e100]:
+        - generic:
+          - generic:
+            - link:
+              - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ
+              - generic: production
+            - button:
+              - img
+    - generic [ref=e547]:
+      - complementary [ref=e548]:
+        - button "Find... Ctrl K" [ref=e549] [cursor=pointer]:
+          - generic [ref=e550]:
+            - img [ref=e552]
+            - generic [ref=e554]: Find...
+          - generic [ref=e555]:
+            - generic [ref=e556]: Ctrl
+            - generic [ref=e557]: K
+        - navigation [ref=e558]:
+          - generic [ref=e559]:
+            - heading "Configure" [level=3] [ref=e560]
+            - list "Configure" [ref=e561]:
+              - listitem [ref=e562]:
+                - generic [ref=e563]:
+                  - button "User & authentication" [expanded] [ref=e564] [cursor=pointer]:
+                    - img [ref=e565]
+                    - generic [ref=e567]:
+                      - text: User & authentication
+                      - img [ref=e569]
+                  - group "User & authentication" [ref=e571]:
+                    - list [ref=e572]:
+                      - listitem [ref=e573]:
+                        - link "User & authentication" [ref=e574] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/user-authentication/user-and-authentication
+                          - generic [ref=e578]: User & authentication
+                      - listitem [ref=e579]:
+                        - link "SSO connections" [ref=e580] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/user-authentication/sso-connections
+                          - generic [ref=e583]: SSO connections
+                      - listitem [ref=e584]:
+                        - link "Web3" [ref=e585] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/user-authentication/web3
+                          - generic [ref=e588]: Web3
+                      - listitem [ref=e589]:
+                        - link "Multi-factor" [ref=e590] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/user-authentication/multi-factor
+                          - generic [ref=e593]: Multi-factor
+                      - listitem [ref=e594]:
+                        - link "Waitlist" [ref=e595] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/user-authentication/waitlist
+                          - generic [ref=e598]: Waitlist
+                      - listitem [ref=e599]:
+                        - link "Legal" [ref=e600] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/compliance/legal
+                          - generic [ref=e603]: Legal
+              - listitem [ref=e604]:
+                - generic [ref=e605]:
+                  - button "Sessions" [ref=e606] [cursor=pointer]:
+                    - img [ref=e607]
+                    - generic [ref=e609]:
+                      - text: Sessions
+                      - img [ref=e611]
+                  - group "Sessions":
+                    - list:
+                      - listitem
+                      - listitem
+              - listitem [ref=e613]:
+                - generic [ref=e614]:
+                  - button "Organizations" [ref=e615] [cursor=pointer]:
+                    - img [ref=e616]
+                    - generic [ref=e618]:
+                      - text: Organizations
+                      - img [ref=e620]
+                  - group "Organizations":
+                    - list:
+                      - listitem
+                      - listitem
+              - listitem [ref=e622]:
+                - generic [ref=e623]:
+                  - button "Billing" [ref=e624] [cursor=pointer]:
+                    - img [ref=e625]
+                    - generic [ref=e627]:
+                      - text: Billing
+                      - img [ref=e629]
+                  - group "Billing":
+                    - list:
+                      - listitem
+                      - listitem
+              - listitem [ref=e631]:
+                - generic [ref=e632]:
+                  - button "Protect" [ref=e633] [cursor=pointer]:
+                    - img [ref=e634]
+                    - generic [ref=e636]:
+                      - text: Protect
+                      - img [ref=e638]
+                  - group "Protect":
+                    - list:
+                      - listitem
+                      - listitem
+              - listitem [ref=e640]:
+                - link "Account Portal" [ref=e641] [cursor=pointer]:
+                  - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/account-portal
+                  - img [ref=e642]
+                  - generic [ref=e644]: Account Portal
+              - listitem [ref=e645]:
+                - link "Features" [ref=e646] [cursor=pointer]:
+                  - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/features
+                  - img [ref=e647]
+                  - generic [ref=e652]: Features
+              - listitem [ref=e653]:
+                - generic [ref=e654]:
+                  - button "Customization" [expanded] [ref=e655] [cursor=pointer]:
+                    - img [ref=e656]
+                    - generic [ref=e658]:
+                      - text: Customization
+                      - img [ref=e660]
+                  - group "Customization" [ref=e841]:
+                    - list [ref=e842]:
+                      - listitem [ref=e843]:
+                        - link "Avatars" [ref=e844] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/customization/avatars
+                          - generic [ref=e847]: Avatars
+                      - listitem [ref=e848]:
+                        - link "Emails" [active] [ref=e849] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/customization/email
+                          - generic [ref=e852]: Emails
+                      - listitem [ref=e853]:
+                        - link "SMS" [ref=e854] [cursor=pointer]:
+                          - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/customization/sms
+                          - generic [ref=e857]: SMS
+              - listitem [ref=e662]:
+                - generic [ref=e663]:
+                  - button "Developers" [ref=e664] [cursor=pointer]:
+                    - img [ref=e665]
+                    - generic [ref=e667]:
+                      - text: Developers
+                      - img [ref=e669]
+                  - group "Developers":
+                    - list:
+                      - listitem
+                      - listitem
+                      - listitem
+                      - listitem
+                      - listitem
+                      - listitem
+                      - listitem
+                      - listitem
+          - generic [ref=e671]:
+            - heading "Instance" [level=3] [ref=e672]
+            - list "Instance" [ref=e673]:
+              - listitem [ref=e674]:
+                - link "Settings" [ref=e675] [cursor=pointer]:
+                  - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/instance-settings
+                  - img [ref=e676]
+                  - generic [ref=e678]: Settings
+              - listitem [ref=e679]:
+                - link "API keys" [ref=e680] [cursor=pointer]:
+                  - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/api-keys
+                  - img [ref=e681]
+                  - generic [ref=e683]: API keys
+              - listitem [ref=e684]:
+                - link "Updates" [ref=e685] [cursor=pointer]:
+                  - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/updates
+                  - img [ref=e686]
+                  - generic [ref=e688]: Updates
+          - generic [ref=e689]:
+            - heading "Application" [level=3] [ref=e690]
+            - list "Application" [ref=e691]:
+              - listitem [ref=e692]:
+                - link "Settings" [ref=e693] [cursor=pointer]:
+                  - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/settings
+                  - img [ref=e694]
+                  - generic [ref=e696]: Settings
+              - listitem [ref=e697]:
+                - link "Plan and Billing" [ref=e698] [cursor=pointer]:
+                  - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ/plan-billing
+                  - img [ref=e699]
+                  - generic [ref=e701]: Plan and Billing
+      - main [ref=e702]:
+        - article [ref=e859]:
+          - heading "Email templates" [level=1] [ref=e865]
+          - generic [ref=e869]:
+            - tablist [ref=e870]:
+              - tab "Authentication" [selected] [ref=e871] [cursor=pointer]:
+                - img [ref=e873]
+                - text: Authentication
+              - tab "Security" [ref=e875] [cursor=pointer]:
+                - img [ref=e876]
+                - text: Security
+              - tab "Passkeys" [ref=e878] [cursor=pointer]
+              - tab "Organizations" [ref=e879] [cursor=pointer]
+              - tab "Waitlist" [ref=e880] [cursor=pointer]
+              - tab "Billing" [ref=e881] [cursor=pointer]
+            - tabpanel "Authentication" [ref=e882]:
+              - generic [ref=e884]:
+                - generic [ref=e885]:
+                  - heading "Available templates" [level=2] [ref=e888]
+                  - grid "Available templates" [ref=e891]:
+                    - rowgroup [ref=e892]:
+                      - row "Template name Badges Updated at Actions" [ref=e893]:
+                        - columnheader "Template name" [ref=e894]
+                        - columnheader "Badges" [ref=e895]
+                        - columnheader "Updated at" [ref=e896]
+                        - columnheader "Actions":
+                          - generic [ref=e897]: Actions
+                    - rowgroup [ref=e898]:
+                      - row "Invitation Send an invitation email to new users to join your application." [ref=e899] [cursor=pointer]:
+                        - rowheader "Invitation Send an invitation email to new users to join your application." [ref=e900]:
+                          - generic [ref=e901]: Invitation
+                          - generic [ref=e902]: Send an invitation email to new users to join your application.
+                        - gridcell "Clerk" [ref=e903]:
+                          - button "Clerk" [ref=e905]:
+                            - generic [ref=e906]:
+                              - img [ref=e907]
+                              - generic [ref=e909]: Clerk
+                        - gridcell "Updated almost 2y ago" [ref=e910]:
+                          - generic [ref=e912]:
+                            - text: Updated
+                            - button "almost 2y ago" [ref=e913]
+                        - gridcell "Invitation cannot be disabled" [ref=e914]:
+                          - generic "Invitation cannot be disabled" [ref=e916]
+                      - row "Verification code Send a verification code for authentication or account confirmation." [ref=e918] [cursor=pointer]:
+                        - rowheader "Verification code Send a verification code for authentication or account confirmation." [ref=e919]:
+                          - generic [ref=e920]: Verification code
+                          - generic [ref=e921]: Send a verification code for authentication or account confirmation.
+                        - gridcell "Clerk" [ref=e922]:
+                          - button "Clerk" [ref=e924]:
+                            - generic [ref=e925]:
+                              - img [ref=e926]
+                              - generic [ref=e928]: Clerk
+                        - gridcell "Updated almost 2y ago" [ref=e929]:
+                          - generic [ref=e931]:
+                            - text: Updated
+                            - button "almost 2y ago" [ref=e932]
+                        - gridcell "Verification code cannot be disabled" [ref=e933]:
+                          - generic "Verification code cannot be disabled" [ref=e935]
+                - generic [ref=e937]:
+                  - generic [ref=e939]:
+                    - heading "Unavailable templates" [level=2] [ref=e940]
+                    - paragraph [ref=e941]: These email templates will become available once you have set up their corresponding feature.
+                  - grid "Unavailable templates" [ref=e944]:
+                    - rowgroup [ref=e945]:
+                      - row "Template name Action" [ref=e946]:
+                        - columnheader "Template name" [ref=e947]
+                        - columnheader "Action":
+                          - generic [ref=e948]: Action
+                    - rowgroup [ref=e949]:
+                      - row "Email link - Sign in Send a magic link to allow users to sign in." [ref=e950] [cursor=pointer]:
+                        - rowheader "Email link - Sign in Send a magic link to allow users to sign in." [ref=e951]:
+                          - generic [ref=e952]: Email link - Sign in
+                          - generic [ref=e953]: Send a magic link to allow users to sign in.
+                        - gridcell "Enable magic link" [ref=e954]:
+                          - generic [ref=e955]:
+                            - generic:
+                              - generic:
+                                - generic: Enable magic link
+                      - row "Email link - Sign up Send a magic link for users to sign up and create an account." [ref=e956] [cursor=pointer]:
+                        - rowheader "Email link - Sign up Send a magic link for users to sign up and create an account." [ref=e957]:
+                          - generic [ref=e958]: Email link - Sign up
+                          - generic [ref=e959]: Send a magic link for users to sign up and create an account.
+                        - gridcell "Enable magic link" [ref=e960]:
+                          - generic [ref=e961]:
+                            - generic:
+                              - generic:
+                                - generic: Enable magic link
+                      - row "Email link - Verify email Send a magic link for users to verify their email address." [ref=e962] [cursor=pointer]:
+                        - rowheader "Email link - Verify email Send a magic link for users to verify their email address." [ref=e963]:
+                          - generic [ref=e964]: Email link - Verify email
+                          - generic [ref=e965]: Send a magic link for users to verify their email address.
+                        - gridcell "Enable magic link" [ref=e966]:
+                          - generic [ref=e967]:
+                            - generic:
+                              - generic:
+                                - generic: Enable magic link
+  - alert [ref=e34]: Configure | Clerk.com
+  - generic [ref=e545]: "0"

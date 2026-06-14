@@ -21,6 +21,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts'
+import { redis, redisAvailable } from '../_shared/redis.ts'
 
 const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v17'
 
@@ -49,8 +50,15 @@ async function getCredentials(userId: string): Promise<GoogleCreds | null> {
   }
 }
 
-/** Exchange refresh token for a fresh access token */
-async function getAccessToken(refreshToken: string): Promise<string> {
+/** Exchange refresh token for a fresh access token, cached in Redis for 55 min */
+async function getAccessToken(refreshToken: string, userId: string): Promise<string> {
+  const cacheKey = `google_token:${userId}`
+
+  if (redisAvailable()) {
+    const cached = await redis.get(cacheKey)
+    if (cached) return cached
+  }
+
   const clientId     = Deno.env.get('GOOGLE_CLIENT_ID')
   const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET')
 
@@ -71,7 +79,11 @@ async function getAccessToken(refreshToken: string): Promise<string> {
   if (data.error || !data.access_token) {
     throw new Error(`Token refresh failed: ${data.error_description ?? data.error ?? 'unknown'}`)
   }
-  return data.access_token as string
+
+  const token = data.access_token as string
+  // Cache for 55 min (tokens are valid 60 min; 5 min buffer)
+  if (redisAvailable()) await redis.set(cacheKey, token, 3300)
+  return token
 }
 
 /** Execute a GAQL query against the Google Ads search endpoint */
@@ -160,7 +172,7 @@ Deno.serve(async (req: Request) => {
 
   let accessToken: string
   try {
-    accessToken = await getAccessToken(creds.refreshToken)
+    accessToken = await getAccessToken(creds.refreshToken, userId)
   } catch (e) {
     console.error('[google-api] Token refresh failed:', e)
     return errResponse('Google token refresh failed — please reconnect Google Ads', 401, origin)

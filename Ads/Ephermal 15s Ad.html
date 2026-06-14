@@ -1,0 +1,644 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Ephermal — 15s Product Ad</title>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<script type="text/babel" src="animations.jsx"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body, #root { width: 100%; height: 100%; background: #000; overflow: hidden; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const FF    = "'Inter Tight', system-ui, sans-serif";
+const IND   = 'rgba(99,102,241,';   // indigo base — append alpha + ')'
+const CYAN  = '#22d3ee';
+const GREEN = '#10b981';
+
+// ─── Particle Field ───────────────────────────────────────────────────────────
+const PTCLS = Array.from({ length: 72 }, (_, i) => ({
+  id:  i,
+  x:   960 + Math.cos(i * 2.4)       * (180 + (i % 7) * 115),
+  y:   540 + Math.sin(i * 2.4 * 0.8) * (130 + (i % 6) * 65),
+  sz:  0.8 + (i % 4) * 0.65,
+  sp:  0.22 + (i % 6) * 0.09,
+  ph:  i * 0.43,
+  op:  0.10 + (i % 7) * 0.06,
+}));
+
+function ParticleField({ opacity = 1 }) {
+  const time = useTime();
+  if (opacity < 0.01) return null;
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      {PTCLS.map(p => {
+        const ct = (time * p.sp + p.ph) % 10;
+        const a  = Math.sin(ct / 10 * Math.PI) * p.op * opacity;
+        if (a < 0.01) return null;
+        return (
+          <div key={p.id} style={{
+            position: 'absolute',
+            left: p.x + Math.sin(time * 0.3 + p.ph) * 22,
+            top:  p.y - ct * 19,
+            width: p.sz, height: p.sz,
+            borderRadius: '50%',
+            background: `rgba(129,140,248,${a})`,
+          }} />
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Pulsing dot ──────────────────────────────────────────────────────────────
+function PulsingDot({ size = 7 }) {
+  const time = useTime();
+  const p = 0.5 + 0.5 * Math.sin(time * Math.PI * 2.1 + size);
+  return (
+    <span style={{
+      display: 'inline-block', width: size, height: size, borderRadius: '50%',
+      background: GREEN, flexShrink: 0,
+      opacity: 0.5 + 0.5 * p,
+      boxShadow: `0 0 ${3 + 5 * p}px ${GREEN}`,
+      transform: `scale(${1 + 0.18 * p})`,
+    }} />
+  );
+}
+
+// ─── Phone Dashboard UI (designed for ~310px wide container) ─────────────────
+function DashboardUI({ revenue, roas }) {
+  const time = useTime();
+  const gid = React.useRef('g' + Math.random().toString(36).slice(2, 9)).current;
+  const br  = 0.5 + 0.5 * Math.sin(time * Math.PI * 1.5);
+
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      background: 'linear-gradient(158deg, #07091c 0%, #0a0f2a 50%, #060818 100%)',
+      padding: '17px 15px', fontFamily: FF, color: '#fff',
+      display: 'flex', flexDirection: 'column', overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: '0.12em', color: '#818cf8' }}>EPHERMAL</span>
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 5,
+          background: `${IND}${0.1 + 0.09 * br})`,
+          border: `1px solid rgba(129,140,248,${0.22 + 0.24 * br})`,
+          borderRadius: 20, padding: '3px 8px',
+          boxShadow: `0 0 ${8 + 9 * br}px ${IND}${0.1 + 0.18 * br})`,
+        }}>
+          <div style={{
+            width: 5, height: 5, borderRadius: '50%', background: '#818cf8',
+            boxShadow: `0 0 ${3 + 4 * br}px #6366f1`,
+          }} />
+          <span style={{ fontSize: 8, color: '#a5b4fc', fontWeight: 600, letterSpacing: '0.07em' }}>AI RUNNING</span>
+        </div>
+      </div>
+
+      <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', marginBottom: 13 }} />
+
+      {/* ROAS */}
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.38)', letterSpacing: '0.14em', marginBottom: 3 }}>ROAS</div>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 7 }}>
+          <span style={{ fontSize: 34, fontWeight: 900, color: CYAN, lineHeight: 1, letterSpacing: '-0.03em' }}>
+            {roas.toFixed(1)}×
+          </span>
+          <span style={{ fontSize: 9, color: GREEN, fontWeight: 700 }}>↑ +18%</span>
+        </div>
+      </div>
+
+      {/* Revenue */}
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.38)', letterSpacing: '0.14em', marginBottom: 3 }}>REVENUE TODAY</div>
+        <span style={{ fontSize: 26, fontWeight: 900, lineHeight: 1, letterSpacing: '-0.025em' }}>
+          €{Math.round(revenue).toLocaleString('en-IE')}
+        </span>
+      </div>
+
+      {/* Campaigns */}
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.38)', letterSpacing: '0.14em', marginBottom: 7 }}>CAMPAIGNS</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          {['Meta · Prospecting', 'Google · PMAX', 'Meta · Retargeting'].map((n, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              background: 'rgba(255,255,255,0.025)',
+              border: '1px solid rgba(255,255,255,0.05)',
+              borderRadius: 5, padding: '4px 7px',
+            }}>
+              <PulsingDot size={6} />
+              <span style={{ flex: 1, fontSize: 9, color: 'rgba(255,255,255,0.6)' }}>{n}</span>
+              <span style={{ fontSize: 8, color: GREEN, fontWeight: 700 }}>ACTIVE</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div style={{
+        flex: 1, minHeight: 0, position: 'relative',
+        background: `${IND}0.04)`, border: `1px solid ${IND}0.09)`,
+        borderRadius: 5, overflow: 'hidden',
+      }}>
+        <svg viewBox="0 0 100 50" preserveAspectRatio="none"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+          <defs>
+            <linearGradient id={gid} x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0%" stopColor={CYAN} stopOpacity="0.35" />
+              <stop offset="100%" stopColor={CYAN} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M0,43 L12,40 L26,41 L38,32 L52,24 L64,15 L78,8 L90,4 L100,1 L100,50 L0,50Z"
+            fill={`url(#${gid})`} />
+          <path d="M0,43 L12,40 L26,41 L38,32 L52,24 L64,15 L78,8 L90,4 L100,1"
+            fill="none" stroke={CYAN} strokeWidth="1.5" />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// ─── Phone notification (slides down) ────────────────────────────────────────
+function PhoneNotif({ progress }) {
+  const slideY = (1 - Easing.easeOutBack(clamp(progress * 1.3, 0, 1))) * -92;
+  const op     = clamp(progress * 6, 0, 1);
+  return (
+    <div style={{
+      position: 'absolute', top: slideY + 8, left: 8, right: 8, zIndex: 30,
+      background: 'rgba(7,10,24,0.96)',
+      backdropFilter: 'blur(14px)',
+      border: `1px solid ${IND}0.5)`,
+      borderRadius: 13, padding: '8px 10px',
+      opacity: op,
+      boxShadow: `0 8px 36px ${IND}0.30)`,
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+        <img src="ephermal-icon.png" alt="" style={{ width: 18, height: 18, borderRadius: 5 }} />
+        <span style={{ fontSize: 9, fontWeight: 700, color: '#a5b4fc', fontFamily: FF }}>Ephermal</span>
+      </div>
+      <div style={{ fontSize: 10, color: '#e0e7ff', lineHeight: 1.3, fontFamily: FF, fontWeight: 500 }}>
+        AI optimised your campaigns
+      </div>
+      <div style={{ fontSize: 10, color: GREEN, fontWeight: 700, marginTop: 2, fontFamily: FF }}>
+        ROAS up 18% — €12,450 today ✦
+      </div>
+    </div>
+  );
+}
+
+// ─── iPhone Device ────────────────────────────────────────────────────────────
+function DevicePhone({ oy = 0, sc = 1, ry = 0, rx = 0, dim = 1, glow = 1,
+                       revenue, roas, showNotif = false, notifP = 0, op = 1 }) {
+  const W = 312, H = 644, R = 46;
+  return (
+    <div style={{
+      position: 'absolute',
+      left: '50%', top: '50%',
+      marginLeft: -W / 2, marginTop: -H / 2,
+      width: W, height: H,
+      transform: `translateY(${oy}px) scale(${sc}) perspective(1400px) rotateY(${ry}deg) rotateX(${rx}deg)`,
+      transformStyle: 'preserve-3d',
+      opacity: op, willChange: 'transform, opacity',
+    }}>
+      {/* Underglow halo */}
+      <div style={{
+        position: 'absolute', bottom: -58, left: '50%', transform: 'translateX(-50%)',
+        width: W * 2.0, height: 108,
+        background: `radial-gradient(ellipse at 50% 0, rgba(99,102,241,${0.52 * glow}), transparent 66%)`,
+        filter: 'blur(24px)', pointerEvents: 'none',
+      }} />
+      {/* Ambient screen bleed */}
+      <div style={{
+        position: 'absolute', inset: -40, pointerEvents: 'none',
+        background: `radial-gradient(ellipse at 50% 50%, rgba(99,102,241,${0.07 * glow * dim}), transparent 65%)`,
+        filter: 'blur(28px)',
+      }} />
+      {/* Titanium frame */}
+      <div style={{
+        position: 'absolute', inset: 0, borderRadius: R,
+        background: 'linear-gradient(148deg, #303038 0%, #1e1e24 40%, #131316 100%)',
+        boxShadow: [
+          '0 0 0 1px rgba(255,255,255,0.10)',
+          '0 60px 120px rgba(0,0,0,0.92)',
+          `0 0 88px rgba(99,102,241,${0.14 * glow})`,
+          'inset 0 1px 0 rgba(255,255,255,0.05)',
+        ].join(', '),
+      }}>
+        {/* Screen */}
+        <div style={{
+          position: 'absolute', top: 10, left: 10, right: 10, bottom: 10,
+          borderRadius: R - 6, overflow: 'hidden', background: '#000',
+        }}>
+          <div style={{ position: 'absolute', inset: 0, opacity: dim }}>
+            <DashboardUI revenue={revenue} roas={roas} />
+          </div>
+          {showNotif && <PhoneNotif progress={notifP} />}
+          {/* Screen shine */}
+          <div style={{
+            position: 'absolute', inset: 0, pointerEvents: 'none',
+            background: 'linear-gradient(148deg, rgba(255,255,255,0.032) 0%, transparent 55%)',
+          }} />
+        </div>
+        {/* Dynamic Island */}
+        <div style={{
+          position: 'absolute', top: 17, left: '50%', transform: 'translateX(-50%)',
+          width: 98, height: 31, background: '#000',
+          borderRadius: 22, zIndex: 10,
+          boxShadow: '0 0 0 0.5px rgba(255,255,255,0.05)',
+        }} />
+        {/* Physical buttons */}
+        {[
+          { s: 'left',  t: 108, h: 32 },
+          { s: 'left',  t: 158, h: 54 },
+          { s: 'left',  t: 222, h: 54 },
+          { s: 'right', t: 172, h: 84 },
+        ].map((b, i) => (
+          <div key={i} style={{
+            position: 'absolute', [b.s]: -3, top: b.t,
+            width: 3, height: b.h,
+            background: 'rgba(88,88,102,0.7)',
+            borderRadius: b.s === 'left' ? '2px 0 0 2px' : '0 2px 2px 0',
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── MacBook Device ───────────────────────────────────────────────────────────
+function DeviceMac({ op = 1, revenue, roas }) {
+  const MW = 700, MH = 456, SH = 318;
+  return (
+    <div style={{
+      position: 'absolute',
+      left: '50%', top: '50%',
+      marginLeft: -MW / 2, marginTop: -MH / 2 + 82,
+      width: MW, height: MH, opacity: op,
+      transform: 'perspective(1800px) rotateX(-4deg) rotateY(-3deg)',
+      transformStyle: 'preserve-3d', willChange: 'opacity',
+    }}>
+      {/* Lid */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: SH,
+        background: 'linear-gradient(165deg, #1e1e28 0%, #131318 100%)',
+        borderRadius: '16px 16px 0 0',
+        border: '1px solid rgba(255,255,255,0.08)',
+        boxShadow: '0 32px 70px rgba(0,0,0,0.80)',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          position: 'absolute', top: 16, left: 24, right: 24, bottom: 12,
+          borderRadius: 8, overflow: 'hidden', background: '#000',
+        }}>
+          {/* Scale dashboard to fill MacBook screen */}
+          <div style={{ transform: 'scale(0.64)', transformOrigin: 'top left', width: '156%', height: '156%' }}>
+            <DashboardUI revenue={revenue} roas={roas} />
+          </div>
+        </div>
+        {/* Camera */}
+        <div style={{
+          position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)',
+          width: 7, height: 7, borderRadius: '50%',
+          background: '#1a1a22', border: '1px solid rgba(255,255,255,0.06)',
+        }} />
+        <div style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none',
+          background: 'linear-gradient(140deg, rgba(255,255,255,0.018) 0%, transparent 60%)',
+        }} />
+      </div>
+      {/* Base */}
+      <div style={{
+        position: 'absolute', top: SH - 1, left: 0, right: 0, bottom: 0,
+        background: 'linear-gradient(180deg, #1c1c24 0%, #131318 100%)',
+        borderRadius: '0 0 12px 12px',
+        border: '1px solid rgba(255,255,255,0.07)', borderTop: 'none',
+      }}>
+        <div style={{ position: 'absolute', top: 14, left: 32, right: 32 }}>
+          <div style={{ height: 6, background: 'rgba(255,255,255,0.03)', borderRadius: 3, marginBottom: 5 }} />
+          {[0, 1, 2, 3].map(r => (
+            <div key={r} style={{ display: 'flex', gap: 2.5, marginBottom: 2.5 }}>
+              {Array.from({ length: r === 3 ? 9 : 13 }, (_, j) => (
+                <div key={j} style={{
+                  flex: (r === 3 && j === 4) ? 4 : 1,
+                  height: 8, background: 'rgba(255,255,255,0.032)', borderRadius: 2,
+                }} />
+              ))}
+            </div>
+          ))}
+        </div>
+        <div style={{
+          position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)',
+          width: 136, height: 72,
+          background: 'rgba(255,255,255,0.018)',
+          border: '1px solid rgba(255,255,255,0.04)', borderRadius: 8,
+        }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Fullscreen Metrics (Scene 3) ─────────────────────────────────────────────
+function FullscreenMetrics({ notifP, showNotif }) {
+  const time = useTime();
+  const br = 0.6 + 0.4 * Math.sin(time * Math.PI * 1.35);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      background: 'linear-gradient(158deg, #04060f 0%, #060820 50%, #04060f 100%)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {/* Subtle grid */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        backgroundImage:
+          `linear-gradient(rgba(129,140,248,0.04) 1px, transparent 1px),
+           linear-gradient(90deg, rgba(129,140,248,0.04) 1px, transparent 1px)`,
+        backgroundSize: '80px 80px',
+      }} />
+      {/* Center bloom */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: `radial-gradient(ellipse at 50% 50%, rgba(99,102,241,${0.07 + 0.05 * br}), transparent 60%)`,
+      }} />
+
+      {/* AI badge */}
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 9, marginBottom: 44,
+        background: `${IND}${0.10 + 0.07 * br})`,
+        border: `1px solid rgba(129,140,248,${0.22 + 0.22 * br})`,
+        borderRadius: 30, padding: '7px 18px',
+        boxShadow: `0 0 ${14 + 14 * br}px ${IND}${0.12 + 0.16 * br})`,
+      }}>
+        <div style={{
+          width: 8, height: 8, borderRadius: '50%', background: '#818cf8',
+          boxShadow: `0 0 ${5 + 5 * br}px #6366f1`,
+        }} />
+        <span style={{ fontFamily: FF, fontSize: 14, color: '#a5b4fc', fontWeight: 600, letterSpacing: '0.10em' }}>
+          AI RUNNING
+        </span>
+      </div>
+
+      {/* Metrics row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 88 }}>
+        {/* ROAS */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 14, letterSpacing: '0.18em', color: 'rgba(255,255,255,0.32)', fontFamily: FF, marginBottom: 6 }}>
+            ROAS
+          </div>
+          <div style={{ fontSize: 122, fontWeight: 900, color: CYAN, letterSpacing: '-0.045em', lineHeight: 1, fontFamily: FF }}>
+            6.1×
+          </div>
+          <div style={{ fontSize: 14, color: GREEN, fontWeight: 700, fontFamily: FF, marginTop: 8 }}>↑ +18%</div>
+        </div>
+
+        {/* Divider */}
+        <div style={{ width: 1, height: 165, background: 'rgba(255,255,255,0.07)' }} />
+
+        {/* Revenue */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: 14, letterSpacing: '0.18em', color: 'rgba(255,255,255,0.32)', fontFamily: FF, marginBottom: 6 }}>
+            REVENUE TODAY
+          </div>
+          <div style={{ fontSize: 102, fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, fontFamily: FF }}>
+            €12,450
+          </div>
+          <div style={{ fontSize: 14, color: '#818cf8', fontWeight: 500, fontFamily: FF, marginTop: 8 }}>
+            3 campaigns active
+          </div>
+        </div>
+      </div>
+
+      {/* Campaign badges */}
+      <div style={{ display: 'flex', gap: 12, marginTop: 48 }}>
+        {['Meta · Prospecting', 'Google · PMAX', 'Meta · Retargeting'].map((n, i) => (
+          <div key={i} style={{
+            display: 'flex', alignItems: 'center', gap: 7,
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: 30, padding: '6px 16px',
+          }}>
+            <PulsingDot size={7} />
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.62)', fontFamily: FF }}>{n}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Notification */}
+      {showNotif && <FullscreenNotif progress={notifP} />}
+    </div>
+  );
+}
+
+// ─── Fullscreen Notification ──────────────────────────────────────────────────
+function FullscreenNotif({ progress }) {
+  const slideY = (1 - Easing.easeOutBack(clamp(progress * 1.25, 0, 1))) * -110;
+  const op     = clamp(progress * 5, 0, 1);
+  return (
+    <div style={{
+      position: 'absolute', top: 28 + slideY,
+      left: '50%', transform: 'translateX(-50%)',
+      width: 580,
+      background: 'rgba(7,10,24,0.95)',
+      backdropFilter: 'blur(18px)',
+      border: `1px solid ${IND}0.48)`,
+      borderRadius: 20, padding: '16px 22px',
+      opacity: op,
+      boxShadow: `0 12px 55px ${IND}0.38), 0 0 0 1px rgba(129,140,248,0.08)`,
+      display: 'flex', alignItems: 'center', gap: 16,
+    }}>
+      <img src="ephermal-icon.png" alt="" style={{ width: 46, height: 46, borderRadius: 11, flexShrink: 0 }} />
+      <div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: '#a5b4fc', letterSpacing: '0.04em', fontFamily: FF, marginBottom: 3 }}>
+          Ephermal
+        </div>
+        <div style={{ fontSize: 15, color: '#e0e7ff', lineHeight: 1.3, fontFamily: FF }}>
+          AI optimised your campaigns
+        </div>
+        <div style={{ fontSize: 15, color: GREEN, fontWeight: 700, fontFamily: FF, marginTop: 3 }}>
+          ROAS up 18% — €12,450 today ✦
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Logo Close ───────────────────────────────────────────────────────────────
+function LogoClose({ progress }) {
+  const time = useTime();
+  const br     = 0.62 + 0.38 * Math.sin(time * Math.PI * 1.3);
+  const logoOp = animate({ from: 0, to: 1, start: 0, end: 0.38 })(progress);
+  const logoSc = animate({ from: 0.62, to: 1.0, start: 0, end: 0.5, ease: Easing.easeOutBack })(progress);
+  const wordOp = animate({ from: 0, to: 1, start: 0.37, end: 0.65 })(progress);
+  const urlOp  = animate({ from: 0, to: 1, start: 0.60, end: 0.90 })(progress);
+
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {/* Breathing glow */}
+      <div style={{
+        position: 'absolute', width: 290, height: 290, borderRadius: '50%',
+        background: `radial-gradient(circle, rgba(99,102,241,${0.22 * br * logoOp}), transparent 66%)`,
+        filter: 'blur(48px)',
+        transform: `scale(${1 + 0.07 * br})`,
+        pointerEvents: 'none',
+      }} />
+      {/* Icon */}
+      <div style={{
+        opacity: logoOp, transform: `scale(${logoSc})`,
+        transformOrigin: 'center', marginBottom: 30,
+      }}>
+        <img src="ephermal-icon.png" alt="Ephermal"
+          style={{ width: 106, height: 106, borderRadius: 24 }} />
+      </div>
+      {/* Wordmark */}
+      <div style={{
+        opacity: wordOp, fontFamily: FF, fontSize: 60, fontWeight: 700,
+        color: '#fff', letterSpacing: '-0.03em', lineHeight: 1, marginBottom: 14,
+      }}>
+        ephermal
+      </div>
+      {/* URL */}
+      <div style={{
+        opacity: urlOp, fontFamily: FF, fontSize: 21, fontWeight: 400,
+        color: 'rgba(165,180,252,0.85)', letterSpacing: '0.05em',
+      }}>
+        ephermal.app
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Ad Component ────────────────────────────────────────────────────────
+function EphermalAd() {
+  const time = useTime();
+
+  // ── Scene 1: Entry (0–3s) ──────────────────────────────────────────────────
+  const phoneOy   = animate({ from: 400, to: 0,   start: 0.4, end: 2.0, ease: Easing.easeOutCubic })(time);
+  const phoneOp   = animate({ from: 0,   to: 1,   start: 0.4, end: 1.7 })(time);
+  const glowIn    = animate({ from: 0,   to: 1,   start: 1.5, end: 2.8 })(time);
+  const screenDim = animate({ from: 0,   to: 1,   start: 2.2, end: 3.3, ease: Easing.easeInOutCubic })(time);
+
+  // ── Scene 2: Orbit + metrics (3–9s) ───────────────────────────────────────
+  const ot = Math.max(0, time - 3.0);
+  const ry = time >= 3.0 ? 16 * Math.sin((2 * Math.PI * ot) / 6.0) : 0;
+  const rx = time >= 3.0 ? -4 + 5  * Math.sin((2 * Math.PI * ot) / 8.5) : 0;
+
+  const revenue = animate({ from: 0,   to: 12450, start: 3.6, end: 8.8, ease: Easing.easeOutExpo  })(time);
+  const roas    = animate({ from: 4.5, to: 6.1,   start: 3.2, end: 8.8, ease: Easing.easeOutCubic })(time);
+  const macOp   = animate({ from: 0,   to: 0.86,  start: 5.5, end: 7.5, ease: Easing.easeOutCubic })(time);
+  const ptOp    = animate({ from: 0,   to: 1.0,   start: 3.5, end: 5.8 })(time);
+
+  // ── Scene 3: Push + fullscreen (9–13s) ───────────────────────────────────
+  const pushP   = clamp((time - 9.0) / 3.0, 0, 1);
+  const pushE   = Easing.easeInOutCubic(pushP);
+  const phoneSc = time >= 9.0 ? 1 + pushE * 7.0 : 1;
+  const pushFade = time >= 9.0 ? animate({ from: 1, to: 0, start: 9.4, end: 11.0 })(time) : 1;
+  const macFade  = time >= 9.0 ? animate({ from: 1, to: 0, start: 9.0, end: 10.5 })(time) : 1;
+  const ptFade   = time >= 9.0 ? animate({ from: 1, to: 0, start: 9.0, end: 10.2 })(time) : 1;
+
+  // Orbit dampens as push begins
+  const effRy = ry * (1 - pushE);
+  const effRx = rx * (1 - pushE);
+
+  // Lock metrics at precise moments
+  const dispRevenue = time >= 10.0 ? 12450 : revenue;
+  const dispRoas    = time >= 10.5 ? 6.1   : roas;
+
+  // Fullscreen metrics crossfade
+  const fsOp = animate({ from: 0, to: 1, start: 10.0, end: 11.2 })(time);
+
+  // Notification
+  const showNotif = time >= 11.3 && time < 13.2;
+  const notifP    = clamp((time - 11.3) / 1.1, 0, 1);
+
+  // Glow pulse on notification chime
+  const glowPulse = time >= 11.9
+    ? 1 + 0.28 * Math.abs(Math.sin((time - 11.9) * Math.PI * 2.6))
+    : 1;
+  const glowTotal = glowIn * glowPulse;
+
+  // ── Scene 4: Outro (13–15s) ───────────────────────────────────────────────
+  const fadeToBlack = animate({ from: 0, to: 1, start: 13.1, end: 13.8, ease: Easing.easeInCubic })(time);
+  const logoP       = clamp((time - 13.6) / 1.4, 0, 1);
+
+  return (
+    <div data-screen-label={`t=${Math.floor(time)}s`}
+      style={{ position: 'absolute', inset: 0, background: '#000', overflow: 'hidden' }}>
+
+      {/* Deep space ambience */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none',
+        background: 'radial-gradient(ellipse at 50% 58%, rgba(8,12,36,0.96), #000 68%)',
+        opacity: clamp(1 - fadeToBlack, 0, 1),
+      }} />
+
+      {/* Particles */}
+      {time < 13.1 && <ParticleField opacity={ptOp * ptFade} />}
+
+      {/* MacBook — behind phone in z-order */}
+      {time >= 5.4 && time < 12.5 && (
+        <DeviceMac op={macOp * macFade} revenue={dispRevenue} roas={dispRoas} />
+      )}
+
+      {/* iPhone */}
+      {time < 12.8 && (
+        <DevicePhone
+          oy={phoneOy} sc={phoneSc} ry={effRy} rx={effRx}
+          dim={screenDim} glow={glowTotal}
+          revenue={dispRevenue} roas={dispRoas}
+          showNotif={false} notifP={0}
+          op={Math.min(phoneOp, pushFade)}
+        />
+      )}
+
+      {/* Fullscreen metrics reveal */}
+      {time >= 10.0 && time < 13.2 && (
+        <div style={{ position: 'absolute', inset: 0, opacity: fsOp }}>
+          <FullscreenMetrics notifP={notifP} showNotif={showNotif} />
+        </div>
+      )}
+
+      {/* Fade to black */}
+      {time >= 12.6 && (
+        <div style={{ position: 'absolute', inset: 0, background: '#000', opacity: fadeToBlack }} />
+      )}
+
+      {/* Logo close */}
+      {time >= 13.6 && <LogoClose progress={logoP} />}
+    </div>
+  );
+}
+
+// ─── App ──────────────────────────────────────────────────────────────────────
+function App() {
+  return (
+    <Stage
+      width={1920} height={1080}
+      duration={15}
+      background="#000"
+      loop={false}
+      autoplay={true}
+      persistKey="ephermal-ad-15s"
+    >
+      <EphermalAd />
+    </Stage>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

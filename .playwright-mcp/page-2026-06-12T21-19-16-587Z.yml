@@ -1,0 +1,253 @@
+- generic [ref=e1]:
+  - region "console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic." [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic.
+      - link "Learn more about how Google uses cookies. Opens in a new tab." [ref=e4] [cursor=pointer]:
+        - /url: https://policies.google.com/technologies/cookies?hl=en-GB
+        - text: Learn more
+    - button "Hide" [ref=e5] [cursor=pointer]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - complementary "Skip links" [ref=e9]:
+        - link "Skip to main content" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: Skip to main content
+        - button "Keyboard shortcuts" [ref=e12]:
+          - generic [ref=e13]: Keyboard shortcuts
+        - link "Accessibility help external, opens in a new window" [ref=e14] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_GB
+          - generic [ref=e15]:
+            - text: Accessibility help
+            - generic "external, opens in a new window" [ref=e16]:
+              - img "external, opens in a new window" [ref=e17]:
+                - img [ref=e18]
+        - link "Accessibility feedback external, opens in a new window" [ref=e20] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_GB
+          - generic [ref=e21]:
+            - text: Accessibility feedback
+            - generic "external, opens in a new window" [ref=e22]:
+              - img "external, opens in a new window" [ref=e23]:
+                - img [ref=e24]
+      - banner [ref=e27]:
+        - generic [ref=e28]:
+          - navigation [ref=e31]:
+            - button "Navigation menu (.)" [ref=e32] [cursor=pointer]:
+              - img [ref=e34]
+          - link "Google Cloud Platform Home" [ref=e36] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button "You're currently working in Ephermal. Hit enter to switch projects, folders or organisations" [ref=e269]:
+            - generic [ref=e270]:
+              - img [ref=e272]
+              - generic [ref=e275]: Ephermal
+        - search "Google Cloud Platform" [ref=e50]:
+          - combobox [ref=e51]:
+            - searchbox "Enter query to search for resources, docs, products and more" [ref=e52]
+          - button "See all search results" [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - button "Open or close Gemini Cloud Assist chat (Alt G)" [ref=e279] [cursor=pointer]:
+              - img [ref=e281]
+            - button "Free trial status" [ref=e286] [cursor=pointer]:
+              - img [ref=e288]
+            - button "Activate Cloud Shell (G then S)" [ref=e290] [cursor=pointer]:
+              - img [ref=e292]
+            - button "3 unread notifications. Open notifications" [ref=e61] [cursor=pointer]:
+              - generic [ref=e64]: "3"
+            - button "Settings and utilities" [ref=e69] [cursor=pointer]:
+              - img [ref=e71]
+          - 'button "Account: Jamal Settah (jamalsettah2604@gmail.com)" [ref=e296]':
+            - img [ref=e297]
+    - generic [ref=e84]:
+      - navigation "Breadcrumb" [ref=e302]:
+        - link "Google Auth Platform" [ref=e305] [cursor=pointer]:
+          - /url: /auth?project=ephermal-497911
+          - img [ref=e308]
+          - generic [ref=e312]: Google Auth Platform
+        - list [ref=e313]:
+          - listitem [ref=e314]:
+            - generic [ref=e315]: /
+            - link "Data access" [ref=e318] [cursor=pointer]:
+              - /url: /auth/scopes?project=ephermal-497911
+              - generic [ref=e320]: Data access
+      - generic [ref=e95]:
+        - navigation "Google Auth Platform" [ref=e102]:
+          - generic [ref=e103]:
+            - list "Overview, 1 of 7 More options Branding, 2 of 7 More options Audience, 3 of 7 More options Clients, 4 of 7 More options Data access, 5 of 7 More options Verification centre, 6 of 7 More options Settings, 7 of 7 More options" [ref=e117]:
+              - listitem [ref=e118]:
+                - generic [ref=e121]:
+                  - link "Overview, 1 of 7" [ref=e122] [cursor=pointer]:
+                    - /url: /auth/overview
+                    - generic [ref=e123]:
+                      - img [ref=e126]
+                      - generic [ref=e128]: Overview
+                  - button "More options" [ref=e130] [cursor=pointer]:
+                    - img [ref=e132]
+              - listitem [ref=e134]:
+                - generic [ref=e137]:
+                  - link "Branding, 2 of 7" [ref=e138] [cursor=pointer]:
+                    - /url: /auth/branding
+                    - generic [ref=e139]:
+                      - img [ref=e142]
+                      - generic [ref=e148]: Branding
+                  - button "More options" [ref=e150] [cursor=pointer]:
+                    - img [ref=e152]
+              - listitem [ref=e154]:
+                - generic [ref=e157]:
+                  - link "Audience, 3 of 7" [ref=e158] [cursor=pointer]:
+                    - /url: /auth/audience
+                    - generic [ref=e159]:
+                      - img [ref=e162]
+                      - generic [ref=e164]: Audience
+                  - button "More options" [ref=e166] [cursor=pointer]:
+                    - img [ref=e168]
+              - listitem [ref=e170]:
+                - generic [ref=e173]:
+                  - link "Clients, 4 of 7" [ref=e174] [cursor=pointer]:
+                    - /url: /auth/clients
+                    - generic [ref=e175]:
+                      - img [ref=e178]
+                      - generic [ref=e180]: Clients
+                  - button "More options" [ref=e182] [cursor=pointer]:
+                    - img [ref=e184]
+              - listitem [ref=e186]:
+                - generic [ref=e189]:
+                  - link "Data access, 5 of 7" [active] [ref=e190] [cursor=pointer]:
+                    - /url: /auth/scopes?project=ephermal-497911
+                    - generic [ref=e191]:
+                      - img [ref=e194]
+                      - generic [ref=e197]: Data access
+                  - button "More options" [ref=e199] [cursor=pointer]:
+                    - img [ref=e201]
+              - listitem [ref=e203]:
+                - generic [ref=e206]:
+                  - link "Verification centre, 6 of 7" [ref=e207] [cursor=pointer]:
+                    - /url: /auth/verification
+                    - generic [ref=e208]:
+                      - img [ref=e211]
+                      - generic [ref=e214]: Verification centre
+                  - button "More options" [ref=e216] [cursor=pointer]:
+                    - img [ref=e218]
+              - listitem [ref=e220]:
+                - generic [ref=e223]:
+                  - link "Settings, 7 of 7" [ref=e224] [cursor=pointer]:
+                    - /url: /auth/settings
+                    - generic [ref=e225]:
+                      - img [ref=e228]
+                      - generic [ref=e230]: Settings
+                  - button "More options" [ref=e232] [cursor=pointer]:
+                    - img [ref=e234]
+            - button "Toggle Google Auth Platform navigation menu" [pressed] [ref=e237] [cursor=pointer]:
+              - img [ref=e240]
+        - main [ref=e243]:
+          - generic [ref=e331]:
+            - heading "Data access" [level=1] [ref=e337]:
+              - generic [ref=e338]: Data access
+            - generic [ref=e341]:
+              - generic [ref=e343]:
+                - generic [ref=e344]:
+                  - paragraph [ref=e345]:
+                    - text: Scopes express the permissions that you request users to authorise for your app and allow your project to access specific types of private user data from their Google Account.
+                    - link "Learn more about OAuth scopes external, opens new window" [ref=e346] [cursor=pointer]:
+                      - /url: https://developers.google.com/identity/protocols/oauth2/scopes?hl=en_GB
+                      - text: Learn more
+                      - img "external, opens new window" [ref=e347]:
+                        - img [ref=e348]
+                  - button "Add or remove scopes" [ref=e350]:
+                    - generic [ref=e351]: Add or remove scopes
+                - separator [ref=e352]
+                - generic [ref=e353]:
+                  - heading "Your non-sensitive scopes" [level=2] [ref=e354]
+                  - grid "Table displaying a list of scopes , Navigate table with arrow keys. Enter key to interact with cell. Tab to navigate inside cell. Escape to exit cell." [ref=e359]:
+                    - rowgroup [ref=e365]:
+                      - row "API Scope User-facing description Delete Action" [ref=e366]:
+                        - columnheader "API" [ref=e367]:
+                          - generic [ref=e369] [cursor=pointer]:
+                            - generic [ref=e370]: API
+                            - button "Sort by API" [ref=e371]:
+                              - img [ref=e373]
+                        - columnheader "Scope" [ref=e375]:
+                          - generic [ref=e377] [cursor=pointer]:
+                            - generic [ref=e378]: Scope
+                            - button "Sort by Scope" [ref=e379]:
+                              - img [ref=e381]
+                        - columnheader "User-facing description" [ref=e383]:
+                          - generic [ref=e385] [cursor=pointer]:
+                            - generic [ref=e386]: User-facing description
+                            - button "Sort by User-facing description" [ref=e387]:
+                              - img [ref=e389]
+                        - columnheader "Delete Action" [ref=e391]
+                    - rowgroup [ref=e392]:
+                      - row "No rows to display" [ref=e393]:
+                        - gridcell "No rows to display" [ref=e394]
+                - separator [ref=e395]
+                - generic [ref=e396]:
+                  - heading "Your sensitive scopes" [level=2] [ref=e397]:
+                    - img [ref=e399]:
+                      - img [ref=e400]
+                    - text: Your sensitive scopes
+                  - paragraph [ref=e402]: Sensitive scopes are scopes that request access to private user data.
+                  - grid "Table displaying a list of scopes , Navigate table with arrow keys. Enter key to interact with cell. Tab to navigate inside cell. Escape to exit cell." [ref=e407]:
+                    - rowgroup [ref=e413]:
+                      - row "API Scope User-facing description Delete Action" [ref=e414]:
+                        - columnheader "API" [ref=e415]:
+                          - generic [ref=e417] [cursor=pointer]:
+                            - generic [ref=e418]: API
+                            - button "Sort by API" [ref=e419]:
+                              - img [ref=e421]
+                        - columnheader "Scope" [ref=e423]:
+                          - generic [ref=e425] [cursor=pointer]:
+                            - generic [ref=e426]: Scope
+                            - button "Sort by Scope" [ref=e427]:
+                              - img [ref=e429]
+                        - columnheader "User-facing description" [ref=e431]:
+                          - generic [ref=e433] [cursor=pointer]:
+                            - generic [ref=e434]: User-facing description
+                            - button "Sort by User-facing description" [ref=e435]:
+                              - img [ref=e437]
+                        - columnheader "Delete Action" [ref=e439]
+                    - rowgroup [ref=e440]:
+                      - row "No rows to display" [ref=e441]:
+                        - gridcell "No rows to display" [ref=e442]
+                - separator [ref=e443]
+                - generic [ref=e444]:
+                  - heading "Your restricted scopes" [level=2] [ref=e445]:
+                    - img [ref=e447]:
+                      - img [ref=e448]
+                    - text: Your restricted scopes
+                  - paragraph [ref=e450]: Restricted scopes are scopes that request access to highly sensitive user data.
+                  - grid "Table displaying a list of scopes , Navigate table with arrow keys. Enter key to interact with cell. Tab to navigate inside cell. Escape to exit cell." [ref=e455]:
+                    - rowgroup [ref=e461]:
+                      - row "API Scope User-facing description Delete Action" [ref=e462]:
+                        - columnheader "API" [ref=e463]:
+                          - generic [ref=e465] [cursor=pointer]:
+                            - generic [ref=e466]: API
+                            - button "Sort by API" [ref=e467]:
+                              - img [ref=e469]
+                        - columnheader "Scope" [ref=e471]:
+                          - generic [ref=e473] [cursor=pointer]:
+                            - generic [ref=e474]: Scope
+                            - button "Sort by Scope" [ref=e475]:
+                              - img [ref=e477]
+                        - columnheader "User-facing description" [ref=e479]:
+                          - generic [ref=e481] [cursor=pointer]:
+                            - generic [ref=e482]: User-facing description
+                            - button "Sort by User-facing description" [ref=e483]:
+                              - img [ref=e485]
+                        - columnheader "Delete Action" [ref=e487]
+                    - rowgroup [ref=e488]:
+                      - row "No rows to display" [ref=e489]:
+                        - gridcell "No rows to display" [ref=e490]
+              - button "Save" [disabled] [ref=e493]:
+                - generic [ref=e494]: Save
+              - button "Discard changes" [disabled] [ref=e495]:
+                - generic [ref=e496]: Discard changes
+  - iframe [ref=e267]:
+    
+  - iframe [ref=e498]:
+    
+  - paragraph

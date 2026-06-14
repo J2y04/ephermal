@@ -1,0 +1,61 @@
+- generic [ref=e3]:
+  - generic:
+    - link "Skip to content":
+      - /url: "#AppFrameMain"
+  - generic [ref=e5]:
+    - link "Return to home page" [ref=e7] [cursor=pointer]:
+      - /url: /4926169
+      - img "Return to home page" [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e11]:
+        - generic [ref=e12]: Search
+        - searchbox "Search" [ref=e13]
+        - generic:
+          - generic:
+            - img
+      - button "Notifications" [ref=e18] [cursor=pointer]:
+        - link "Notifications" [ref=e19]:
+          - /url: /4926169/notifications
+          - generic [ref=e20]:
+            - generic [ref=e21]: Notifications
+            - img [ref=e22]
+      - button "Avatar with initials E P Ephermal Jamal Settah" [ref=e26] [cursor=pointer]:
+        - img "Avatar with initials E P" [ref=e28]:
+          - img [ref=e30]:
+            - generic [ref=e31]: EP
+        - generic [ref=e32]:
+          - paragraph [ref=e33]: Ephermal
+          - paragraph [ref=e34]: Jamal Settah
+  - generic "Navigation" [ref=e35]:
+    - navigation [ref=e36]:
+      - generic [ref=e37]:
+        - list [ref=e39]:
+          - listitem [ref=e40]:
+            - link "ALL APPS" [ref=e43] [cursor=pointer]:
+              - /url: /4926169/apps
+              - img [ref=e47]
+              - generic [ref=e49]: ALL APPS
+        - heading "Ephermal" [level=2] [ref=e51]
+        - list [ref=e53]:
+          - listitem [ref=e54]:
+            - link "Overview" [ref=e57] [cursor=pointer]:
+              - /url: /4926169/apps/363710414849/overview
+              - generic [ref=e58]: Overview
+          - listitem [ref=e59]:
+            - link "API access requests" [ref=e62] [cursor=pointer]:
+              - /url: /4926169/apps/363710414849/api_access
+              - generic [ref=e63]: API access requests
+          - listitem [ref=e64]:
+            - link "Admin performance" [ref=e67] [cursor=pointer]:
+              - /url: /4926169/apps/363710414849/admin_performance
+              - generic [ref=e68]: Admin performance
+          - listitem [ref=e69]:
+            - link "Distribution" [ref=e72] [cursor=pointer]:
+              - /url: /4926169/apps/363710414849/distribution
+              - generic [ref=e73]: Distribution
+          - listitem [ref=e74]:
+            - link "App history" [ref=e77] [cursor=pointer]:
+              - /url: /4926169/apps/363710414849/history
+              - generic [ref=e78]: App history
+  - main [ref=e79]:
+    - status "Page loading" [ref=e82]

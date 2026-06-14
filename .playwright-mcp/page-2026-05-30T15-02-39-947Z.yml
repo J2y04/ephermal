@@ -1,0 +1,27 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img "Ephermal" [ref=e4]
+    - generic [ref=e5]: Ephermal
+  - generic [ref=e6]:
+    - heading "Welcome, Jamal — let's set up your account" [level=1] [ref=e7]
+    - paragraph [ref=e8]: Connect your store and ad accounts to start automating
+  - generic [ref=e9]:
+    - generic [ref=e11]: ✓1
+    - generic [ref=e14]: "2"
+    - generic [ref=e17]: "3"
+  - generic [ref=e18]:
+    - generic [ref=e19]: Shopify
+    - generic [ref=e20]: Meta Ads
+    - generic [ref=e21]: Google Ads
+  - generic [ref=e41]:
+    - img [ref=e43]
+    - heading "Connect Meta Ads" [level=2] [ref=e45]
+    - paragraph [ref=e46]: Log in with Facebook to link your Meta Business ad account — no API keys needed
+    - button "Continue with Facebook" [ref=e48] [cursor=pointer]:
+      - img [ref=e49]
+      - text: Continue with Facebook
+    - paragraph [ref=e51]:
+      - text: You'll be taken to Facebook to authorise access.
+      - text: Ephermal only requests ad account read/write permissions.
+    - link "Skip for now →" [ref=e52] [cursor=pointer]:
+      - /url: "#"

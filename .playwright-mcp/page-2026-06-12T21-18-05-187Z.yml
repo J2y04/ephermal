@@ -1,0 +1,14 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img "Ephermal" [ref=e4]
+    - generic [ref=e5]: Ephermal
+  - generic [ref=e6]: "404"
+  - heading "Page not found" [level=1] [ref=e7]
+  - paragraph [ref=e8]: This page doesn't exist or was moved. Head back to the dashboard and keep scaling your ads.
+  - generic [ref=e9]:
+    - link "Go to Dashboard" [ref=e10] [cursor=pointer]:
+      - /url: /dashboard.html
+      - img [ref=e11]
+      - text: Go to Dashboard
+    - link "← Home" [ref=e14] [cursor=pointer]:
+      - /url: /

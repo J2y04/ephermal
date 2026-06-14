@@ -265,7 +265,10 @@ Deno.serve(async (req) => {
   // Determine action for cache key + write detection
   const action = extractAction(path, reqBody ?? {});
   const scopedAction = `${fnName}:${action}`;
-  const isWrite = method === 'POST' && WRITE_ACTIONS.has(action);
+  // isWrite is action-driven, not method-driven: a caller omitting method still invalidates caches
+  const isWrite = WRITE_ACTIONS.has(action);
+  // Ensure write actions are always forwarded as POST even if caller omitted method
+  const effectiveMethod = isWrite && method === 'GET' ? 'POST' : method;
   const ttl = isWrite ? 0 : (CACHE_TTL[scopedAction] ?? CACHE_TTL[action] ?? 0);
   const canCache = ttl > 0 && redisAvailable();
 
@@ -294,9 +297,9 @@ Deno.serve(async (req) => {
   let upstreamRes: Response;
   try {
     upstreamRes = await fetch(targetUrl, {
-      method,
+      method: effectiveMethod,
       headers: forwardHeaders,
-      ...(method === 'POST' && reqBody ? { body: JSON.stringify(reqBody) } : {}),
+      ...(effectiveMethod === 'POST' && reqBody ? { body: JSON.stringify(reqBody) } : {}),
     });
   } catch (e) {
     console.error('upstream fetch error:', e);

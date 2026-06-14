@@ -1,0 +1,25 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - region "Notifications (F8)":
+      - list
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link [ref=e7] [cursor=pointer]:
+            - /url: /apps
+          - img [ref=e10]
+          - generic [ref=e12]:
+            - link "Ephermal" [ref=e13] [cursor=pointer]:
+              - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ
+              - generic [ref=e14]: Ephermal
+            - button "Switch application" [ref=e15] [cursor=pointer]:
+              - img [ref=e16]
+          - img [ref=e19]
+          - generic [ref=e22]:
+            - link "production" [ref=e23] [cursor=pointer]:
+              - /url: /apps/app_3E7hACiGW8oWYSy7OUHE08KWGnd/instances/ins_3EGnT5sdft59NY75lFzKMoUZJJJ
+              - generic [ref=e25]: production
+            - button "Switch environment" [ref=e26] [cursor=pointer]:
+              - img [ref=e27]
+        - generic "Invite user" [ref=e32]
+  - alert [ref=e34]

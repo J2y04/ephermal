@@ -1,0 +1,316 @@
+- generic [ref=e1]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - complementary [ref=e602]:
+        - link [ref=e603] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: Skip to main content
+        - button [ref=e604]:
+          - generic [ref=e13]: Keyboard shortcuts
+        - link [ref=e605] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_GB
+          - generic [ref=e15]:
+            - text: Accessibility help
+            - img [ref=e607]:
+              - img [ref=e18]
+        - link [ref=e608] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_GB
+          - generic [ref=e21]:
+            - text: Accessibility feedback
+            - img [ref=e610]:
+              - img [ref=e24]
+      - banner [ref=e27]:
+        - generic [ref=e28]:
+          - navigation [ref=e31]:
+            - button [ref=e611] [cursor=pointer]:
+              - img [ref=e34]
+          - link [ref=e612] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button [ref=e613]:
+            - generic [ref=e271]:
+              - img [ref=e273]
+              - generic [ref=e276]: Ephermal
+        - search [ref=e614]:
+          - combobox [ref=e51]:
+            - searchbox [ref=e615]
+          - button [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - button [ref=e616] [cursor=pointer]:
+              - img [ref=e282]
+            - button [ref=e617] [cursor=pointer]:
+              - img [ref=e289]
+            - button [ref=e618] [cursor=pointer]:
+              - img [ref=e293]
+            - button [ref=e619] [cursor=pointer]:
+              - generic [ref=e735]: "4"
+            - button [ref=e620] [cursor=pointer]:
+              - img [ref=e71]
+          - button [ref=e621]:
+            - img [ref=e298]
+    - generic [ref=e84]:
+      - navigation [ref=e622]:
+        - link [ref=e623] [cursor=pointer]:
+          - /url: /auth?project=ephermal-497911
+          - img [ref=e309]
+          - generic [ref=e313]: Google Auth Platform
+        - list [ref=e314]:
+          - listitem [ref=e376]:
+            - generic [ref=e377]: /
+            - link [ref=e624] [cursor=pointer]:
+              - /url: /auth/branding;showIssues=true?project=ephermal-497911
+              - generic [ref=e382]: Branding
+      - generic [ref=e95]:
+        - navigation [ref=e625]:
+          - generic [ref=e103]:
+            - list [ref=e626]:
+              - listitem [ref=e118]:
+                - generic [ref=e121]:
+                  - link [ref=e627] [cursor=pointer]:
+                    - /url: /auth/overview
+                    - generic [ref=e123]:
+                      - img [ref=e126]
+                      - generic [ref=e128]: Overview
+                  - button [ref=e628] [cursor=pointer]:
+                    - img [ref=e132]
+              - listitem [ref=e134]:
+                - generic [ref=e137]:
+                  - link [ref=e629] [cursor=pointer]:
+                    - /url: /auth/branding
+                    - generic [ref=e139]:
+                      - img [ref=e142]
+                      - generic [ref=e148]: Branding
+                  - button [ref=e630] [cursor=pointer]:
+                    - img [ref=e152]
+              - listitem [ref=e154]:
+                - generic [ref=e157]:
+                  - link [ref=e631] [cursor=pointer]:
+                    - /url: /auth/audience
+                    - generic [ref=e159]:
+                      - img [ref=e162]
+                      - generic [ref=e164]: Audience
+                  - button [ref=e632] [cursor=pointer]:
+                    - img [ref=e168]
+              - listitem [ref=e170]:
+                - generic [ref=e173]:
+                  - link [ref=e633] [cursor=pointer]:
+                    - /url: /auth/clients
+                    - generic [ref=e175]:
+                      - img [ref=e178]
+                      - generic [ref=e180]: Clients
+                  - button [ref=e634] [cursor=pointer]:
+                    - img [ref=e184]
+              - listitem [ref=e186]:
+                - generic [ref=e189]:
+                  - link [ref=e635] [cursor=pointer]:
+                    - /url: /auth/scopes
+                    - generic [ref=e191]:
+                      - img [ref=e194]
+                      - generic [ref=e197]: Data access
+                  - button [ref=e636] [cursor=pointer]:
+                    - img [ref=e201]
+              - listitem [ref=e203]:
+                - generic [ref=e206]:
+                  - link [ref=e637] [cursor=pointer]:
+                    - /url: /auth/verification
+                    - generic [ref=e208]:
+                      - img [ref=e211]
+                      - generic [ref=e214]: Verification centre
+                  - button [ref=e638] [cursor=pointer]:
+                    - img [ref=e218]
+              - listitem [ref=e220]:
+                - generic [ref=e223]:
+                  - link [ref=e639] [cursor=pointer]:
+                    - /url: /auth/settings
+                    - generic [ref=e225]:
+                      - img [ref=e228]
+                      - generic [ref=e230]: Settings
+                  - button [ref=e640] [cursor=pointer]:
+                    - img [ref=e234]
+            - button [pressed] [ref=e641] [cursor=pointer]:
+              - img [ref=e240]
+        - main [ref=e243]:
+          - generic [ref=e388]:
+            - generic [ref=e391]:
+              - heading [level=1] [ref=e642]:
+                - generic [ref=e395]: Branding
+              - button [ref=e643] [cursor=pointer]:
+                - img [ref=e403]
+            - generic [ref=e410]:
+              - generic [ref=e412]:
+                - text: App information
+                - paragraph [ref=e413]: This shows in the consent screen, and helps end users know who you are and contact you
+                - generic [ref=e414]:
+                  - generic [ref=e416] [cursor=pointer]:
+                    - generic [ref=e417]:
+                      - text: App name
+                      - generic [ref=e418]: "*"
+                    - textbox [ref=e644]: Ephermal
+                  - generic [ref=e423]: The name of the app asking for consent
+                - generic [ref=e425]:
+                  - generic [ref=e427] [cursor=pointer]:
+                    - generic [ref=e428]:
+                      - text: User support email
+                      - generic [ref=e429]: "*"
+                    - combobox [ref=e645]:
+                      - generic [ref=e432]:
+                        - generic [ref=e434]: jamalsettah2604@gmail.com
+                        - img [ref=e436]
+                  - generic [ref=e440]:
+                    - text: For users to contact you with questions about their consent.
+                    - link [ref=e646] [cursor=pointer]:
+                      - /url: https://support.google.com/cloud/answer/10311615?hl=en_GB#user-support-email
+                      - text: Learn more
+                      - img [ref=e647]:
+                        - img [ref=e443]
+                - generic [ref=e446]:
+                  - heading [level=3] [ref=e648]: App logo
+                  - paragraph [ref=e448]:
+                    - text: This is your logo. It helps people to recognise your app and is displayed on the OAuth consent screen. After you upload a logo, you will need to submit your app for verification unless the app is configured for internal use only or has a publishing status of 'Testing'.
+                    - link [ref=e649] [cursor=pointer]:
+                      - /url: https://support.google.com/cloud/answer/9110914?hl=en_GB
+                      - text: Learn more
+                      - img [ref=e650]:
+                        - img [ref=e451]
+                  - img [ref=e751]
+                  - button [ref=e752]:
+                    - img [ref=e754]:
+                      - img [ref=e755]
+                    - generic [ref=e757]: Remove
+                  - heading [level=4] [ref=e653]:
+                    - button [ref=e654]:
+                      - generic [ref=e467]:
+                        - img [ref=e469]:
+                          - img [ref=e470]
+                        - text: Change logo
+                      - img [ref=e473]:
+                        - img [ref=e474]
+                - text: App domain
+                - paragraph [ref=e476]: To protect you and your users, Google only allows apps using OAuth to use Authorised Domains. The following information will be shown to your users on the consent screen.
+                - generic [ref=e479]:
+                  - generic [ref=e481] [cursor=pointer]:
+                    - generic [ref=e482]: Application home page
+                    - textbox [ref=e655]: https://ephermal.app
+                  - generic [ref=e487]: Provide users a link to your home page
+                - generic [ref=e491]:
+                  - generic [ref=e493] [cursor=pointer]:
+                    - generic [ref=e494]: Application privacy policy link
+                    - textbox [ref=e656]: https://ephermal.app/privacy.html
+                  - generic [ref=e499]: Provide users a link to your public privacy policy
+                - generic [ref=e503]:
+                  - generic [ref=e505] [cursor=pointer]:
+                    - generic [ref=e506]: Application Terms of Service link
+                    - textbox [ref=e657]: https://ephermal.app/terms.html
+                  - generic [ref=e511]: Provide users a link to your public Terms of Service
+                - group [ref=e658]:
+                  - generic [ref=e659]:
+                    - heading [level=2] [ref=e660]: Authorised domains
+                    - button [ref=e661] [cursor=pointer]:
+                      - img [ref=e523]
+                  - generic [ref=e526]:
+                    - text: When a domain is used on the consent screen or in an OAuth client's configuration, it must be pre-registered here. If your app needs to go through verification, please go to the
+                    - link [ref=e662] [cursor=pointer]:
+                      - /url: https://search.google.com/search-console/about
+                      - text: Google Search Console
+                    - text: to check if your domains are authorised.
+                    - link [ref=e663] [cursor=pointer]:
+                      - /url: https://support.google.com/cloud/answer/7650096?hl=en_GB
+                      - text: Learn more
+                      - img [ref=e664]:
+                        - img [ref=e530]
+                    - text: about the authorised domain limit.
+                  - group [ref=e533]:
+                    - generic [ref=e534]:
+                      - group [ref=e760]:
+                        - generic [ref=e764] [cursor=pointer]:
+                          - generic [ref=e765]:
+                            - generic [ref=e766]: Authorised domain 1
+                            - generic [ref=e767]: "*"
+                          - textbox [ref=e769]:
+                            - /placeholder: example.com
+                            - text: ephermal.app
+                        - button [disabled] [ref=e771]:
+                          - img [ref=e773]
+                      - group [ref=e775]:
+                        - generic [ref=e779] [cursor=pointer]:
+                          - generic [ref=e780]:
+                            - generic [ref=e781]: Authorised domain 2
+                            - generic [ref=e782]: "*"
+                          - textbox [ref=e784]:
+                            - /placeholder: example.com
+                            - text: twfgnqddoqeqrjhgioxd.supabase.co
+                        - button [disabled] [ref=e786]:
+                          - img [ref=e788]
+                    - button [ref=e671]:
+                      - generic [ref=e568]:
+                        - img [ref=e570]
+                        - text: Add domain
+                - text: Developer contact information
+                - generic [ref=e574]:
+                  - generic [ref=e576] [cursor=pointer]:
+                    - generic [ref=e577]:
+                      - text: Email addresses
+                      - generic [ref=e578]: "*"
+                    - grid [ref=e580]:
+                      - row [ref=e790]:
+                        - gridcell [ref=e791]:
+                          - generic [ref=e792]: jamalsettah2604@gmail.com
+                        - gridcell [ref=e793]:
+                          - button [ref=e794]:
+                            - img [ref=e795]:
+                              - img [ref=e796]
+                      - textbox [ref=e676]
+                  - generic [ref=e592]: These email addresses are for Google to notify you about any changes to your project.
+              - button [disabled] [ref=e677]:
+                - generic [ref=e597]: Save
+              - button [disabled] [ref=e678]:
+                - generic [ref=e599]: Discard changes
+  - iframe [ref=e267]:
+    
+  - iframe [ref=e269]:
+    
+  - dialog "Branding verification issues" [ref=e799]:
+    - generic [ref=e803]:
+      - generic [ref=e806]:
+        - button "Close" [ref=e810] [cursor=pointer]:
+          - img [ref=e812]
+        - heading "Branding verification issues" [level=1] [ref=e816]:
+          - generic [ref=e817]: Branding verification issues
+      - generic [ref=e819]:
+        - heading "Issues found from the previous verification attempt:" [level=2] [ref=e820]
+        - list [ref=e823]:
+          - listitem [ref=e824]:
+            - generic [ref=e825]: Your homepage does not explain the purpose of your app.
+            - generic [ref=e826]:
+              - text: Update your homepage to outline the purpose of your application.
+              - link "Learn more about how to resolve the app verification issues external, opens new window" [ref=e827] [cursor=pointer]:
+                - /url: https://support.google.com/cloud/answer/13807376?hl=en_GB
+                - text: Learn more
+                - img "external, opens new window" [ref=e828]:
+                  - img [ref=e829]
+        - separator [ref=e831]
+        - generic [ref=e833]:
+          - heading "Select how you would like to proceed:" [level=2] [ref=e834]
+          - radiogroup [ref=e835]:
+            - generic [ref=e837]:
+              - radio "I have fixed the issues" [ref=e839] [cursor=pointer]
+              - generic [ref=e842] [cursor=pointer]: I have fixed the issues
+            - generic [ref=e843]: Request reverification for your branding
+            - generic [ref=e845]:
+              - radio "I believe that the issues found are incorrect" [checked] [active] [ref=e847] [cursor=pointer]
+              - generic [ref=e850] [cursor=pointer]: I believe that the issues found are incorrect
+            - generic [ref=e851]: Request additional review
+          - status [ref=e862]:
+            - img "Warning" [ref=e863]:
+              - img [ref=e864]
+            - generic [ref=e868]: The third-party data safety team will review your verification request. This process may take two to three working days.
+      - generic [ref=e854]:
+        - button "Proceed" [ref=e855]:
+          - generic [ref=e856]: Proceed
+        - button "Cancel" [ref=e857]:
+          - generic [ref=e858]: Cancel

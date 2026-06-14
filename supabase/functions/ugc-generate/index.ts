@@ -68,12 +68,25 @@ async function getUsage(userId: string) {
   return { plan, used, limit };
 }
 
-async function incrementUsage(userId: string, currentUsed: number) {
+/** Atomically claim one credit. Returns false if the limit was already reached concurrently. */
+async function claimUsageSlot(userId: string, currentUsed: number, limit: number): Promise<boolean> {
   const month = new Date().toISOString().slice(0, 7);
-  await supabase.from('ugc_credits').upsert(
-    { user_id: userId, month, used: currentUsed + 1 },
-    { onConflict: 'user_id,month' },
-  );
+  if (currentUsed === 0) {
+    // First use this month — try an INSERT to race-safely claim slot 1
+    const { error } = await supabase.from('ugc_credits')
+      .insert({ user_id: userId, month, used: 1 });
+    if (!error) return true;
+    // Conflict = another request inserted first; fall through to update path
+  }
+  // Optimistic update: increment only if value hasn't changed since we read it
+  const { data } = await supabase.from('ugc_credits')
+    .update({ used: currentUsed + 1 })
+    .eq('user_id', userId)
+    .eq('month', month)
+    .eq('used', currentUsed)  // lost-write check
+    .lt('used', limit)         // hard limit check
+    .select('used');
+  return Array.isArray(data) && data.length > 0;
 }
 
 Deno.serve(async (req) => {
@@ -116,6 +129,12 @@ Deno.serve(async (req) => {
     return errResponse(`AI message limit reached (${limit}/month). Top up in billing.`, 429, origin);
   }
 
+  // Atomically claim the slot BEFORE calling the AI — prevents concurrent over-use
+  const claimed = await claimUsageSlot(userId, used, limit);
+  if (!claimed) {
+    return errResponse(`AI message limit reached (${limit}/month). Top up in billing.`, 429, origin);
+  }
+
   try {
     let result: unknown;
 
@@ -133,7 +152,7 @@ Keep total script under 60 seconds (~130 words/min).
 Return JSON: { hook, problem, solution, proof, cta, full_script, estimated_duration_seconds }
 Return ONLY valid JSON.`;
         const reply = await callAI(system, `Product: ${JSON.stringify(product)}\nTone: ${tone}\nAudience: ${audience}\nWrite a UGC-style ad script.`, 1200);
-        await incrementUsage(userId, used);
+
         try { result = JSON.parse(reply); } catch { result = { full_script: reply }; }
         break;
       }
@@ -147,7 +166,7 @@ Use diverse angles: problem-first, curiosity, controversy, social proof, transfo
 Return a JSON array: [{ "hook": "...", "angle": "problem|curiosity|controversy|social_proof|transformation" }]
 Return ONLY valid JSON.`;
         const reply = await callAI(system, `Product: ${JSON.stringify(product)}`, 800);
-        await incrementUsage(userId, used);
+
         try { result = JSON.parse(reply); } catch { result = [{ hook: reply, angle: 'general' }]; }
         break;
       }
@@ -160,7 +179,7 @@ Write a clear brief for a ${creatorType} to film a 30-60 second ad.
 Return JSON: { overview, target_audience, key_messages: string[], hooks_to_try: string[], do_list: string[], dont_list: string[], cta, filming_tips }
 Return ONLY valid JSON.`;
         const reply = await callAI(system, `Product: ${JSON.stringify(product)}`, 1500);
-        await incrementUsage(userId, used);
+
         try { result = JSON.parse(reply); } catch { result = { overview: reply }; }
         break;
       }
@@ -174,7 +193,7 @@ Rewrite the given script ${count} times with different angle or tone.
 Keep the core message and CTA. Return a JSON array: [{ "variation": 1, "label": "...", "script": "..." }]
 Return ONLY valid JSON.`;
         const reply = await callAI(system, `Original script:\n${script}`, 1800);
-        await incrementUsage(userId, used);
+
         try { result = JSON.parse(reply); } catch { result = [{ variation: 1, label: 'Variation A', script: reply }]; }
         break;
       }
@@ -207,7 +226,7 @@ Return ONLY valid JSON.`;
 Products sample: ${JSON.stringify(products.slice(0, 10))}
 Analyze and provide marketing insights.`;
         const reply = await callAI(system, userMsg, 1500);
-        await incrementUsage(userId, used);
+
         try { result = JSON.parse(reply); } catch { result = { summary: reply }; }
         break;
       }
@@ -236,7 +255,7 @@ Return ONLY valid JSON.`;
 Store analysis: ${JSON.stringify(storeAnalysis)}
 Create audience segments for paid ads.`;
         const reply = await callAI(system, userMsg, 1500);
-        await incrementUsage(userId, used);
+
         try { result = JSON.parse(reply); } catch { result = []; }
         break;
       }
@@ -268,7 +287,7 @@ Target audience: ${JSON.stringify(audience)}
 Platform: ${platform}
 Write launch-ready ad copy.`;
         const reply = await callAI(system, userMsg, 1200);
-        await incrementUsage(userId, used);
+
         try { result = JSON.parse(reply); } catch { result = {}; }
         break;
       }
@@ -316,7 +335,7 @@ Write launch-ready ad copy.`;
         let copy: Record<string, unknown>;
         try { copy = JSON.parse(copyReply); } catch { copy = {}; }
 
-        await incrementUsage(userId, used);
+
         result = { store_analysis: storeAnalysis, audiences, script, copy, budget_suggestion: { daily: budget, meta_pct: 65, google_pct: 35 } };
         break;
       }
@@ -367,7 +386,7 @@ Write launch-ready ad copy.`;
           meta_data: { script, copy, audiences, preset, aspect_ratio: aspectRatio, product_description: desc },
         }).select('id').single();
 
-        await incrementUsage(userId, used);
+
         result = { creative_id: creative?.id, script, copy, audiences, status: 'pending_review' };
         break;
       }
@@ -415,7 +434,7 @@ Write launch-ready ad copy.`;
           meta_data: { script, copy, audiences, product_id: productId, product_title: productTitle, product_image: productImage },
         }).select('id').single();
 
-        await incrementUsage(userId, used);
+
         result = { creative_id: creative?.id, script, copy, audiences, status: 'pending_review' };
         break;
       }

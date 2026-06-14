@@ -1,0 +1,179 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: We use essential cookies for authentication (Clerk) and session management. No tracking cookies without your consent.
+      - link "Privacy Policy" [ref=e4] [cursor=pointer]:
+        - /url: /privacy.html
+      - text: ·
+      - link "Impressum" [ref=e5] [cursor=pointer]:
+        - /url: /impressum.html
+    - button "Decline non-essential" [ref=e6] [cursor=pointer]
+    - button "Accept & Continue" [ref=e7] [cursor=pointer]
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - img "Ephermal" [ref=e10]
+      - generic [ref=e11]: Ephermal
+    - generic [ref=e12]:
+      - generic [ref=e13]: Overview
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+        - text: Dashboard
+      - generic [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+        - text: Analytics
+    - generic [ref=e23]:
+      - generic [ref=e24]: Advertising
+      - generic [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Campaigns
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+        - text: Creatives
+      - generic [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - text: Audience Intel
+      - generic [ref=e39] [cursor=pointer]:
+        - img [ref=e40]
+        - text: Bulk Manager
+      - generic [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - text: Budget AI
+      - generic [ref=e45] [cursor=pointer]:
+        - img [ref=e46]
+        - text: Launch Campaign
+    - generic [ref=e51]:
+      - generic [ref=e52]: Intelligence
+      - generic [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - text: Competitor Radar
+      - generic [ref=e58] [cursor=pointer]:
+        - img [ref=e59]
+        - text: Creative Brief AI
+      - generic [ref=e62] [cursor=pointer]:
+        - img [ref=e63]
+        - text: Profit Tracker
+    - generic [ref=e64]:
+      - generic [ref=e65]: Store
+      - generic [ref=e66] [cursor=pointer]:
+        - img [ref=e67]
+        - text: Store Products
+    - generic [ref=e70]:
+      - generic [ref=e71]: Account
+      - generic [ref=e72] [cursor=pointer]:
+        - img [ref=e73]
+        - text: Multi-Store
+      - generic [ref=e76] [cursor=pointer]:
+        - img [ref=e77]
+        - text: White-label
+      - generic [ref=e79] [cursor=pointer]:
+        - img [ref=e80]
+        - text: Settings
+      - generic [ref=e83] [cursor=pointer]:
+        - img [ref=e84]
+        - text: Billing
+    - generic [ref=e86]:
+      - generic [ref=e88]:
+        - generic [ref=e89]: UGC Credits
+        - strong [ref=e90]: — / —
+      - generic [ref=e93]:
+        - generic [ref=e94]: AI Messages
+        - strong [ref=e95]: — / —
+      - generic [ref=e97]:
+        - generic [ref=e98]: "?"
+        - generic [ref=e100]: Loading…
+        - generic [ref=e101]: —
+  - generic [ref=e102]:
+    - generic [ref=e103]:
+      - generic [ref=e105]: Dashboard
+      - generic [ref=e106]:
+        - button "Generate UGC" [ref=e107] [cursor=pointer]:
+          - img [ref=e108]
+          - generic [ref=e109]: Generate UGC
+        - generic [ref=e110] [cursor=pointer]: Sign out
+    - generic [ref=e112]:
+      - generic [ref=e113]:
+        - generic [ref=e114]:
+          - img [ref=e117]
+          - generic [ref=e119]: —
+          - generic [ref=e120]: Average ROAS
+        - generic [ref=e121]:
+          - img [ref=e124]
+          - generic [ref=e126]: —
+          - generic [ref=e127]: Total Ad Spend
+        - generic [ref=e128]:
+          - img [ref=e131]
+          - generic [ref=e134]: —
+          - generic [ref=e135]: UGC Ads Created
+        - generic [ref=e136]:
+          - img [ref=e139]
+          - generic [ref=e141]: —
+          - generic [ref=e142]: Total Conversions
+      - generic [ref=e143]:
+        - generic [ref=e144]:
+          - generic [ref=e145]:
+            - generic [ref=e146]: Campaigns
+            - button "Refresh ↺" [ref=e147] [cursor=pointer]
+          - generic [ref=e148]:
+            - generic [ref=e149]:
+              - generic [ref=e150]: Campaign
+              - generic [ref=e151]: ROAS
+              - generic [ref=e152]: Spend
+              - generic [ref=e153]: CTR
+              - generic [ref=e154]: Status
+              - generic [ref=e155]: On/Off
+            - generic [ref=e157]:
+              - img [ref=e158]
+              - paragraph [ref=e161]: No campaigns yet
+        - generic [ref=e162]:
+          - generic [ref=e164]: Status
+          - generic [ref=e165]:
+            - generic [ref=e166]:
+              - img [ref=e168]
+              - generic [ref=e170]:
+                - generic [ref=e171]: Meta Ads
+                - generic [ref=e172]: Checking…
+              - button "Configure" [ref=e173] [cursor=pointer]
+            - generic [ref=e174] [cursor=pointer]:
+              - img [ref=e176]
+              - generic [ref=e181]:
+                - generic [ref=e182]: Google Ads
+                - generic [ref=e183]: Checking…
+              - button "Configure" [ref=e184]
+            - generic [ref=e185]:
+              - img [ref=e187]
+              - generic [ref=e190]:
+                - generic [ref=e191]: Store Analysis
+                - generic [ref=e192]: Not analysed yet
+              - button "Analyse →" [ref=e193] [cursor=pointer]
+            - generic [ref=e194]:
+              - img [ref=e196]
+              - generic [ref=e199]:
+                - generic [ref=e200]: UGC Generation
+                - generic [ref=e201]: Ready - AI video generation
+              - button "Generate" [ref=e202] [cursor=pointer]
+      - generic [ref=e203]:
+        - generic [ref=e204]:
+          - generic [ref=e205]: Creatives Pending Review
+          - button "Refresh ↺" [ref=e206] [cursor=pointer]
+        - generic [ref=e209]:
+          - img [ref=e210]
+          - paragraph [ref=e213]: No creatives pending review
+  - generic [ref=e214]:
+    - generic [ref=e215]:
+      - generic [ref=e216]:
+        - img [ref=e217]
+        - generic [ref=e219]:
+          - text: Ephermal AI
+          - generic [ref=e220]: Your advertising co-pilot
+      - button "×" [ref=e221] [cursor=pointer]
+    - generic [ref=e223]: Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?
+    - generic [ref=e224]:
+      - button "Improve ROAS" [ref=e225] [cursor=pointer]
+      - button "Write UGC script" [ref=e226] [cursor=pointer]
+      - button "Audience ideas" [ref=e227] [cursor=pointer]
+      - button "Fix low CTR" [ref=e228] [cursor=pointer]
+      - button "Budget advice" [ref=e229] [cursor=pointer]
+    - generic [ref=e230]:
+      - textbox "Ask anything about your ads…" [ref=e231]
+      - button [ref=e232] [cursor=pointer]:
+        - img [ref=e233]

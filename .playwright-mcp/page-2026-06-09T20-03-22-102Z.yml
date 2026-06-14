@@ -1,0 +1,104 @@
+- generic [active] [ref=e243]:
+  - banner [ref=e244]:
+    - generic [ref=e246]:
+      - link "Skip to main content" [ref=e247] [cursor=pointer]:
+        - /url: "#main"
+      - link "Dev Dashboard logo" [ref=e249] [cursor=pointer]:
+        - /url: /dashboard/218332705
+        - img "Dev Dashboard logo" [ref=e250]
+    - button "Settings" [ref=e253] [cursor=pointer]:
+      - img "View code" [ref=e255]
+      - paragraph [ref=e259]: Ephermal
+  - generic [ref=e260]:
+    - navigation "Primary" [ref=e264]:
+      - generic [ref=e266]:
+        - list [ref=e268]:
+          - listitem [ref=e269]:
+            - link "Apps Apps" [ref=e270] [cursor=pointer]:
+              - /url: /dashboard/218332705/apps
+              - img "Apps" [ref=e272]
+              - text: Apps
+          - listitem [ref=e277]:
+            - link "Dev Stores icon Stores" [ref=e278] [cursor=pointer]:
+              - /url: /dashboard/218332705/stores
+              - img "Dev Stores icon" [ref=e280]
+              - text: Stores
+          - listitem [ref=e282]:
+            - link "Catalogs icon Catalogs" [ref=e283] [cursor=pointer]:
+              - /url: /dashboard/218332705/catalogs
+              - img "Catalogs icon" [ref=e285]
+              - text: Catalogs
+        - list [ref=e291]:
+          - listitem [ref=e292]:
+            - link "Default app icon Ephermal" [ref=e293] [cursor=pointer]:
+              - /url: /dashboard/218332705/apps/363710414849
+              - img "Default app icon" [ref=e294]
+              - generic [ref=e299]: Ephermal
+          - listitem [ref=e300]:
+            - list [ref=e301]:
+              - listitem [ref=e302]:
+                - img
+                - link "Monitoring" [ref=e303] [cursor=pointer]:
+                  - /url: /dashboard/218332705/apps/363710414849/monitoring
+              - listitem [ref=e304]:
+                - img
+                - link "Logs" [ref=e305] [cursor=pointer]:
+                  - /url: /dashboard/218332705/apps/363710414849/logs
+              - listitem [ref=e306]:
+                - img
+                - link "Versions" [ref=e307] [cursor=pointer]:
+                  - /url: /dashboard/218332705/apps/363710414849/versions
+              - listitem [ref=e308]:
+                - link "Settings" [ref=e309] [cursor=pointer]:
+                  - /url: /dashboard/218332705/apps/363710414849/settings
+      - list [ref=e311]:
+        - listitem [ref=e312]:
+          - link "Organization icon Organization" [ref=e313] [cursor=pointer]:
+            - /url: https://admin.shopify.com/organization/218332705/settings/organization-account?from=dev
+            - img "Organization icon" [ref=e315]
+            - text: Organization
+    - main [ref=e321]:
+      - generic [ref=e323]:
+        - generic [ref=e325]:
+          - link "Arrow Back to versions list page" [ref=e326] [cursor=pointer]:
+            - /url: /dashboard/218332705/apps/363710414849/versions
+            - img "Arrow" [ref=e327]
+            - generic [ref=e329]: Back to versions list page
+          - heading "ephermal-3" [level=1] [ref=e330]
+          - generic [ref=e331]: Active
+        - generic [ref=e333]:
+          - generic [ref=e335]:
+            - generic [ref=e337]:
+              - paragraph [ref=e338]: App name
+              - paragraph [ref=e339]: Ephermal
+            - generic [ref=e340]:
+              - paragraph [ref=e341]: Access
+              - generic [ref=e342]:
+                - paragraph [ref=e343]: Redirect URLs
+                - paragraph [ref=e344]: "[\"https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/shopify-oauth-callback\"]"
+                - paragraph [ref=e345]: Scopes
+                - paragraph [ref=e346]: read_analytics,read_customers,read_orders,read_products
+                - paragraph [ref=e347]: Use legacy install flow
+                - paragraph [ref=e348]: "false"
+            - generic [ref=e349]:
+              - paragraph [ref=e350]: App URL
+              - generic [ref=e351]:
+                - paragraph [ref=e352]:
+                  - code [ref=e353]: app_url
+                - paragraph [ref=e354]: https://ephermal.app
+                - paragraph [ref=e355]:
+                  - code [ref=e356]: embedded
+                - paragraph [ref=e357]: "false"
+            - generic [ref=e358]:
+              - paragraph [ref=e359]: Webhooks
+              - generic [ref=e360]:
+                - paragraph [ref=e361]:
+                  - code [ref=e362]: api_version
+                - paragraph [ref=e363]: 2026-04
+          - generic [ref=e366]:
+            - generic [ref=e371]:
+              - generic [ref=e372]: Released
+              - generic [ref=e373]: May 30, 2026 at 11:27 am +0000
+            - generic [ref=e376]:
+              - generic [ref=e377]: Created
+              - generic [ref=e378]: May 30, 2026 at 11:27 am +0000

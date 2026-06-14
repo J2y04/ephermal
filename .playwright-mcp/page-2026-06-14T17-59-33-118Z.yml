@@ -1,0 +1,63 @@
+- generic [active] [ref=e1]:
+  - region "console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic." [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic.
+      - link "Learn more about how Google uses cookies. Opens in a new tab." [ref=e4] [cursor=pointer]:
+        - /url: https://policies.google.com/technologies/cookies?hl=en-GB
+        - text: Learn more
+    - button "Hide" [ref=e5] [cursor=pointer]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - complementary "Skip links" [ref=e9]:
+        - link "Skip to main content" [ref=e10] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: Skip to main content
+        - button "Keyboard shortcuts" [ref=e12]:
+          - generic [ref=e13]: Keyboard shortcuts
+        - link "Accessibility help external, opens in a new window" [ref=e14] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_GB
+          - generic [ref=e15]:
+            - text: Accessibility help
+            - generic "external, opens in a new window" [ref=e16]:
+              - img "external, opens in a new window" [ref=e17]:
+                - img [ref=e18]
+        - link "Accessibility feedback external, opens in a new window" [ref=e20] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_GB
+          - generic [ref=e21]:
+            - text: Accessibility feedback
+            - generic "external, opens in a new window" [ref=e22]:
+              - img "external, opens in a new window" [ref=e23]:
+                - img [ref=e24]
+      - banner [ref=e27]:
+        - generic [ref=e28]:
+          - navigation [ref=e31]:
+            - button "Navigation menu (.)" [ref=e32] [cursor=pointer]:
+              - img [ref=e34]
+          - link "Google Cloud Platform Home" [ref=e36] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button "No project selected. Hit enter to select a project, folder or organisation." [ref=e44]
+        - button "Open search" [ref=e51] [cursor=pointer]:
+          - img [ref=e53]
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - generic [ref=e59]:
+              - button "Activate Cloud Shell (G then S)" [disabled]:
+                - generic:
+                  - img
+            - button "4 unread notifications. Open notifications" [ref=e63] [cursor=pointer]:
+              - generic [ref=e66]: "4"
+            - button "Settings and utilities" [ref=e71] [cursor=pointer]:
+              - img [ref=e73]
+          - img [ref=e77]
+    - main [ref=e98]:
+      - progressbar [ref=e106]:
+        - img [ref=e108]
+        - generic [ref=e111]:
+          - img [ref=e113]
+          - img [ref=e116]
+          - img [ref=e119]
+  - iframe [ref=e122]:
+    
+  - paragraph

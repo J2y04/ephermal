@@ -1,0 +1,205 @@
+- generic [ref=e2]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button "Main menu" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+        - link "Google Search Console" [ref=e12] [cursor=pointer]:
+          - /url: ./search-console?resource_id=https%3A%2F%2Fephermal.app%2F
+          - img [ref=e13]
+      - generic [ref=e14]:
+        - search [ref=e16]:
+          - generic [ref=e22]:
+            - textbox [disabled] [ref=e23]: Inspect any URL in 'https://ephermal.app/'
+            - combobox "Inspect any URL in https://ephermal.app/" [ref=e24]
+          - button "Search" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+        - generic [ref=e29]:
+          - generic [ref=e31]:
+            - button "Help" [ref=e33] [cursor=pointer]:
+              - generic [ref=e36]: 
+            - button "User settings" [ref=e38] [cursor=pointer]:
+              - img [ref=e41]
+          - 'button "Unread messages: 2" [ref=e45] [cursor=pointer]':
+            - generic [ref=e47]:
+              - generic [ref=e48]: 
+              - generic [ref=e50]: "2"
+      - generic [ref=e52]:
+        - button "Google apps" [ref=e56] [cursor=pointer]:
+          - img [ref=e57]
+        - 'button "Google Account: Jamal Settah (jamalsettah2604@gmail.com)" [ref=e62] [cursor=pointer]':
+          - img [ref=e64]
+  - dialog "navigational drawer" [ref=e68]:
+    - navigation "Primary" [ref=e71]:
+      - button "Search property" [ref=e75] [cursor=pointer]:
+        - img "favicon" [ref=e77]
+        - combobox "https://ephermal.app/" [ref=e84]
+        - generic [ref=e85]: 
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - link "Overview" [ref=e90] [cursor=pointer]:
+              - /url: ./search-console?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e92]: home
+              - generic [ref=e94]: Overview
+            - link "Insights" [ref=e97] [cursor=pointer]:
+              - /url: ./search-console/performance/insights?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e99]: lightbulb_2
+              - generic [ref=e101]: Insights
+            - link "Performance" [ref=e104] [cursor=pointer]:
+              - /url: ./search-console/performance/search-analytics?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e106]: trending_up
+              - generic [ref=e108]: Performance
+            - button "URL inspection" [ref=e111] [cursor=pointer]:
+              - generic [ref=e113]: search
+              - generic [ref=e115]: URL inspection
+          - generic [ref=e119]:
+            - generic [ref=e121]:
+              - generic [ref=e124]: Indexing
+              - button "Indexing report section" [expanded] [ref=e126] [cursor=pointer]:
+                - generic [ref=e128]: keyboard_arrow_up
+            - generic [ref=e132]:
+              - link "Pages" [ref=e134] [cursor=pointer]:
+                - /url: ./search-console/index?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e136]: file_copy
+                - generic [ref=e138]: Pages
+              - link "Sitemaps" [ref=e141] [cursor=pointer]:
+                - /url: ./search-console/sitemaps?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e143]: account_tree
+                - generic [ref=e145]: Sitemaps
+              - link "Removals" [ref=e148] [cursor=pointer]:
+                - /url: ./search-console/removals?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e150]: visibility_off
+                - generic [ref=e152]: Removals
+          - generic [ref=e156]:
+            - generic [ref=e158]:
+              - generic [ref=e161]: Experience
+              - button "Experience report section" [expanded] [ref=e163] [cursor=pointer]:
+                - generic [ref=e165]: keyboard_arrow_up
+            - generic [ref=e169]:
+              - link "Core web vitals" [ref=e171] [cursor=pointer]:
+                - /url: ./search-console/core-web-vitals?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e173]: speed
+                - generic [ref=e175]: Core web vitals
+              - link "HTTPS" [ref=e178] [cursor=pointer]:
+                - /url: ./search-console/https?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e180]: lock
+                - generic [ref=e182]: HTTPS
+          - generic [ref=e186]:
+            - generic [ref=e188]:
+              - generic [ref=e191]: Enhancements
+              - button "Enhancements report section" [expanded] [ref=e193] [cursor=pointer]:
+                - generic [ref=e195]: keyboard_arrow_up
+            - generic [ref=e199]:
+              - link "FAQ" [ref=e201] [cursor=pointer]:
+                - /url: ./search-console/r/faq?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e203]: layers
+                - generic [ref=e205]: FAQ
+              - link "Review snippets" [ref=e208] [cursor=pointer]:
+                - /url: ./search-console/r/review-snippet?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e210]: layers
+                - generic [ref=e212]: Review snippets
+          - generic [ref=e218]:
+            - generic [ref=e221]: Security & Manual Actions
+            - button "Security & Manual Actions report section" [ref=e223] [cursor=pointer]:
+              - generic [ref=e225]: keyboard_arrow_down
+          - generic [ref=e226]:
+            - link "Links report" [ref=e228] [cursor=pointer]:
+              - /url: ./search-console/links?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e230]: link_2
+              - generic [ref=e232]: Links
+            - link "Achievements" [ref=e235] [cursor=pointer]:
+              - /url: ./search-console/achievements?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e237]: trophy
+              - generic [ref=e239]: Achievements
+            - link "Settings" [ref=e242] [cursor=pointer]:
+              - /url: ./search-console/settings?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e244]: settings
+              - generic [ref=e246]: Settings
+        - generic [ref=e248]:
+          - generic [ref=e250]:
+            - button "Submit feedback" [ref=e252] [cursor=pointer]:
+              - generic [ref=e254]: feedback
+              - generic [ref=e256]: Submit feedback
+            - button "About Search Console" [ref=e259] [cursor=pointer]:
+              - generic [ref=e261]: info
+              - generic [ref=e263]: About Search Console
+          - generic [ref=e267]:
+            - link "Privacy" [ref=e268] [cursor=pointer]:
+              - /url: https://myaccount.google.com/privacypolicy?hl=en-GB
+            - link "Terms" [ref=e269] [cursor=pointer]:
+              - /url: https://myaccount.google.com/termsofservice?hl=en-GB
+  - generic [ref=e271]:
+    - navigation "Breadcrumbs" [ref=e276]:
+      - heading "Sitemaps" [level=1] [ref=e279]
+    - main [ref=e283]:
+      - generic [ref=e286]:
+        - generic [ref=e287]: Add a new sitemap
+        - generic [ref=e288]:
+          - generic [ref=e289]:
+            - generic [ref=e290]: https://ephermal.app/
+            - generic [ref=e295]:
+              - textbox "Enter sitemap URL" [active] [ref=e296]
+              - generic: Enter sitemap URL
+          - button "Submit" [disabled] [ref=e300]:
+            - generic [ref=e303]: Submit
+      - generic [ref=e307]:
+        - generic [ref=e308]:
+          - heading "Submitted sitemaps" [level=1] [ref=e309]:
+            - generic [ref=e310]: Submitted sitemaps
+          - button "Filter table rows" [ref=e313] [cursor=pointer]:
+            - generic [ref=e316]: 
+        - table [ref=e318]:
+          - rowgroup [ref=e319]:
+            - row "Sitemap Type Submitted Last read Status Discovered pages Discovered videos" [ref=e320]:
+              - columnheader "Sitemap" [ref=e321]:
+                - text: Sitemap
+                - img [ref=e323] [cursor=pointer]
+              - columnheader "Type" [ref=e325]:
+                - text: Type
+                - img [ref=e327] [cursor=pointer]
+              - columnheader "Submitted" [ref=e329]:
+                - text: Submitted
+                - img [ref=e331] [cursor=pointer]
+              - columnheader "Last read" [ref=e333]:
+                - text: Last read
+                - img [ref=e335] [cursor=pointer]
+              - columnheader "Status" [ref=e337]:
+                - text: Status
+                - img [ref=e339] [cursor=pointer]
+              - columnheader "Discovered pages" [ref=e341]:
+                - img [ref=e343] [cursor=pointer]
+                - text: Discovered pages
+              - columnheader "Discovered videos" [ref=e345]:
+                - img [ref=e347] [cursor=pointer]
+                - text: Discovered videos
+              - columnheader [ref=e349]
+          - rowgroup [ref=e350]:
+            - row "/sitemap.xml Sitemap 26 May 2026 3 Jun 2026 Success 3 0" [ref=e351] [cursor=pointer]:
+              - cell "/sitemap.xml" [ref=e352]
+              - cell "Sitemap" [ref=e353]
+              - cell "26 May 2026" [ref=e354]
+              - cell "3 Jun 2026" [ref=e355]
+              - cell "Success" [ref=e356]:
+                - generic [ref=e357]: Success
+              - cell "3" [ref=e358]
+              - cell "0" [ref=e359]
+              - cell [ref=e360]:
+                - button [ref=e362]:
+                  - generic [ref=e365]: 
+        - generic [ref=e368]:
+          - generic [ref=e370]:
+            - generic [ref=e371]: "Rows per page:"
+            - listbox "Number of rows per page" [ref=e372] [cursor=pointer]:
+              - option "5"
+              - option "10" [selected] [ref=e373]
+              - option "25"
+              - option "50"
+              - option "100"
+              - option "250"
+              - option "500"
+          - generic [ref=e374]:
+            - generic [ref=e375]: 1-1 of 1
+            - generic [ref=e376]:
+              - generic [ref=e378]: 
+              - generic [ref=e380]: 

@@ -1,0 +1,32 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img "Ephermal" [ref=e4]
+    - generic [ref=e5]: Ephermal
+  - generic [ref=e55]:
+    - generic [ref=e56]:
+      - generic [ref=e58]:
+        - heading "Check your email" [level=1] [ref=e59]
+        - paragraph [ref=e60]: to continue to Ephermal
+        - generic [ref=e61]:
+          - paragraph [ref=e62]: jamalsettah2604@gmail.com
+          - button "Edit" [ref=e63] [cursor=pointer]:
+            - img [ref=e64]
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - generic [ref=e69]:
+            - generic:
+              - group
+              - textbox "Enter verification code" [active] [ref=e70]
+          - button "Didn't receive a code? Resend (29)" [disabled]
+        - generic [ref=e72]:
+          - button "Continue" [ref=e73] [cursor=pointer]:
+            - generic [ref=e74]:
+              - text: Continue
+              - img [ref=e75]
+          - link "Use another method" [ref=e78] [cursor=pointer]:
+            - /url: https://ephermal.app/CLERK-ROUTER/HASH/factor-one
+    - generic [ref=e83]:
+      - paragraph [ref=e84]: Secured by
+      - link "Clerk logo" [ref=e85] [cursor=pointer]:
+        - /url: https://go.clerk.com/components
+        - img [ref=e86]

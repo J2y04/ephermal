@@ -1835,6 +1835,38 @@ select.form-input{cursor:pointer}
   </div>
 </div>
 
+<!-- APPLY BUDGET MODAL -->
+<div class="modal-overlay" id="apply-budget-modal">
+  <div class="modal" style="max-width:480px">
+    <button class="modal-close" onclick="closeApplyBudgetModal()">×</button>
+    <div class="modal-title">Apply Budget to Campaign</div>
+    <div class="modal-sub" style="margin-bottom:20px">Select a campaign and confirm to push the AI-recommended budget to Meta or Google Ads.</div>
+
+    <div class="form-group" style="margin-bottom:16px">
+      <label class="form-label">Campaign</label>
+      <select class="form-input" id="apply-budget-campaign-select" style="width:100%" onchange="onApplyBudgetCampaignChange()">
+        <option value="">Loading campaigns…</option>
+      </select>
+    </div>
+
+    <div id="apply-budget-info" style="display:none;background:rgba(6,214,199,.07);border:1px solid rgba(6,214,199,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">New Daily Budget</div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--accent)" id="apply-budget-amount">—</div>
+        </div>
+        <div id="apply-budget-platform-badge" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px"></div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px" id="apply-budget-note">Budget will be applied immediately to the selected campaign.</div>
+    </div>
+
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+      <button class="btn-secondary" onclick="closeApplyBudgetModal()" style="padding:9px 20px;font-size:13px">Cancel</button>
+      <button class="btn-save" onclick="confirmApplyBudget()" id="apply-budget-confirm-btn" style="padding:9px 22px;font-size:13px" disabled>Apply Budget</button>
+    </div>
+  </div>
+</div>
+
 <!-- UGC MODAL -->
 <div class="modal-overlay" id="ugc-modal">
   <div class="modal" style="max-width:520px">
@@ -2897,7 +2929,7 @@ async function runROASOptimizer() {
   const btn = document.getElementById('btn-roas-optimize');
   if (btn) { btn.disabled = true; btn.textContent = 'Optimizing…'; }
   try {
-    const r = await authFetch('/optimize/roas', { method: 'POST', body: JSON.stringify({ pause_below: 1.5, scale_above: 4.0, min_spend: 50 }) });
+    const r = await authFetch('/optimize/roas', { method: 'POST', body: JSON.stringify({ action: 'apply', pause_below_roas: 1.5, scale_above_roas: 4.0, min_spend: 50 }) });
     if (!r || !r.ok) { showToast('Optimizer failed - check credentials', 'error'); return; }
     const d = await r.json();
     const { paused = 0, scaled = 0, failed = 0 } = d.summary || {};
@@ -2955,7 +2987,7 @@ async function loadAllCreatives() {
 async function approveCreative(id, btn) {
   btn.disabled=true; btn.textContent='…';
   try {
-    const r = await authFetch('/creatives/action', {method:'POST', body:JSON.stringify({id, action:'approve'})});
+    const r = await authFetch('/creatives?action=approve', {method:'POST', body:JSON.stringify({id})});
     if (r && r.ok) {
       invalidateCache('creatives');
       const card=document.getElementById(`card-${id}`); if(card)card.style.cssText+='border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.05)';
@@ -2967,7 +2999,7 @@ async function approveCreative(id, btn) {
 async function rejectCreative(id, btn) {
   btn.disabled=true; btn.textContent='…';
   try {
-    const r = await authFetch('/creatives/action', {method:'POST', body:JSON.stringify({id, action:'reject'})});
+    const r = await authFetch('/creatives?action=reject', {method:'POST', body:JSON.stringify({id})});
     if (r && r.ok) {
       invalidateCache('creatives');
       const card=document.getElementById(`card-${id}`); if(card){card.style.opacity='.3';card.style.transition='opacity .4s';setTimeout(()=>card.remove(),400);}
@@ -3025,17 +3057,29 @@ async function runFatigueAnalysis() {
   if (!body) return;
   body.innerHTML = `<div class="fatigue-grid">${Array.from({length:4},()=>`<div class="fatigue-item">${skelBlock('60%',13,'margin-bottom:6px')}${skelBlock('100%',6,'border-radius:3px;margin-bottom:8px')}${skelBlock('80%',10,'border-radius:4px')}</div>`).join('')}</div>`;
   if (btn) { btn.disabled=true; btn.textContent='Analysing…'; }
-  let creatives = [];
+  let scored = [];
   try {
-    const r = await authFetch('/creatives?status=launched');
-    if (r && r.ok) { const d = await r.json(); creatives = Array.isArray(d)?d:(d.creatives||d.data||[]); }
-  } catch(e) {}
+    // Call the edge function — it enriches from live Meta insights server-side
+    const r = await authFetch('/creative-fatigue', { method: 'POST' });
+    if (r && r.ok) {
+      const d = await r.json();
+      const results = d.results || [];
+      // Map edge function results to the display shape
+      scored = results.map(c => ({
+        ...c,
+        _f: c.score,
+        _s: c.signals || [],
+        _l: c.level,
+        headline: c.headline || c.creative_id,
+      }));
+    }
+  } catch(e) { console.warn('creative-fatigue edge call failed:', e); }
   if (btn) { btn.disabled=false; btn.textContent='Analyse ↺'; }
-  if (!creatives.length) {
+  if (!scored.length) {
     body.innerHTML=`<div class="empty-state" style="padding:24px"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No launched creatives to analyse</p></div>`;
     if(badge) badge.style.display='none'; return;
   }
-  const scored = creatives.map(c=>{const{score,signals}=computeFatigueScore(c);return{...c,_f:score,_s:signals,_l:fatigueLevel(score)};}).sort((a,b)=>b._f-a._f);
+  scored = scored.sort((a,b)=>b._f-a._f);
   const nc=scored.filter(c=>c._l==='critical').length, nw=scored.filter(c=>c._l==='warn').length;
   if(badge){if(nc>0){badge.textContent=`${nc} critical`;badge.style.cssText='display:inline-block;background:rgba(248,113,113,.15);color:var(--danger);font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;border:1px solid rgba(248,113,113,.25)';}else if(nw>0){badge.textContent=`${nw} at risk`;badge.style.cssText='display:inline-block;background:rgba(251,191,36,.12);color:var(--warning);font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;border:1px solid rgba(251,191,36,.2)';}else{badge.style.display='none';}}
   const col={critical:'var(--danger)',warn:'var(--warning)',ok:'var(--success)'};
@@ -3046,7 +3090,7 @@ async function runFatigueAnalysis() {
       <div class="fatigue-item-top"><div class="fatigue-item-name" title="${n}">${n}</div><span class="fatigue-score-badge ${c._l}">${lbl}</span></div>
       <div class="fatigue-bar-track"><div class="fatigue-bar-fill" style="width:0%;background:${col[c._l]}" data-w="${c._f}"></div></div>
       ${c._s.length?`<div class="fatigue-signals">${c._s.map(s=>`<span class="fatigue-signal">${escHtml(s)}</span>`).join('')}</div>`:''}
-      <div class="fatigue-rec ${c._l}">${escHtml(fatigueRec(c._f))}</div>
+      <div class="fatigue-rec ${c._l}">${escHtml(c.recommendation || fatigueRec(c._f))}</div>
     </div>`;
   }).join('')}</div>`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{body.querySelectorAll('.fatigue-bar-fill').forEach(b=>{b.style.width=(b.dataset.w||0)+'%';});}));
@@ -4428,6 +4472,8 @@ function cookieDecline() {
 // ── BUDGET AI ─────────────────────────────────────────────────────────────────
 let _budgetRecId = null;
 let _budgetDailyBudget = 0;
+let _budgetMetaDaily = 0;
+let _budgetGoogleDaily = 0;
 
 async function calculateBudget() {
   const goal = parseFloat(document.getElementById('budget-revenue-goal')?.value || '0');
@@ -4448,6 +4494,8 @@ async function calculateBudget() {
 
     _budgetRecId = data.recommendation_id;
     _budgetDailyBudget = data.daily_budget_total || (goal / days / (data.expected_roas || 2.5));
+    _budgetMetaDaily = data.daily_budget_meta || Math.round(_budgetDailyBudget * 0.65);
+    _budgetGoogleDaily = data.daily_budget_google || Math.round(_budgetDailyBudget * 0.35);
 
     document.getElementById('bud-daily-total').textContent = '$' + Math.round(_budgetDailyBudget);
     document.getElementById('bud-roas').textContent = (data.expected_roas || 2.5).toFixed(1) + '×';
@@ -4465,7 +4513,7 @@ async function calculateBudget() {
     document.getElementById('bud-reasoning').textContent = data.reasoning || 'Budget calculated using ROAS-based CPA model with platform benchmarks.';
 
     const applyBtn = document.getElementById('bud-apply-btn');
-    if (applyBtn && plan === 'scale') applyBtn.style.display = '';
+    if (applyBtn && plan !== 'starter') applyBtn.style.display = '';
 
     document.getElementById('budget-rec-wrap').style.display = '';
     document.getElementById('budget-history-wrap').style.display = '';
@@ -4501,9 +4549,121 @@ async function loadBudgetForecast() {
 }
 
 async function applyBudgetRec() {
-  if (!_budgetRecId) return;
-  const r = await authFetch('/budget', { method: 'POST', body: JSON.stringify({ action: 'apply', recommendation_id: _budgetRecId }) });
-  if (r && r.ok) showToast('Budget recommendation applied', 'success');
+  if (!_budgetRecId) { showToast('Calculate a budget first', 'warn'); return; }
+  await openApplyBudgetModal();
+}
+
+async function openApplyBudgetModal() {
+  const modal = document.getElementById('apply-budget-modal');
+  const sel   = document.getElementById('apply-budget-campaign-select');
+  if (!modal || !sel) return;
+
+  // Reset state
+  sel.innerHTML = '<option value="">Loading campaigns…</option>';
+  document.getElementById('apply-budget-info').style.display = 'none';
+  document.getElementById('apply-budget-confirm-btn').disabled = true;
+  modal.classList.add('open');
+
+  // Fetch campaigns (Meta + Google)
+  try {
+    const [metaRes, gRes] = await Promise.allSettled([
+      authFetch('/meta?action=campaigns'),
+      authFetch('/google?action=campaigns'),
+    ]);
+    const campaigns = [];
+    if (metaRes.status === 'fulfilled' && metaRes.value?.ok) {
+      const d = await metaRes.value.json();
+      (d.campaigns || d.data || []).forEach(c => campaigns.push({ ...c, platform: 'meta' }));
+    }
+    if (gRes.status === 'fulfilled' && gRes.value?.ok) {
+      const d = await gRes.value.json();
+      (d.campaigns || []).forEach(c => campaigns.push({ ...c, platform: 'google' }));
+    }
+
+    if (!campaigns.length) {
+      sel.innerHTML = '<option value="">No active campaigns found</option>';
+      return;
+    }
+
+    sel.innerHTML = '<option value="">Select a campaign…</option>' +
+      campaigns.map(c => {
+        const badge = c.platform === 'meta' ? '🔵 Meta' : '🟢 Google';
+        const status = c.status ? ` [${c.status}]` : '';
+        return `<option value="${escHtml(String(c.id))}" data-platform="${c.platform}" data-name="${escHtml(c.name||'')}">
+          ${badge} — ${escHtml(c.name || c.id)}${status}
+        </option>`;
+      }).join('');
+  } catch(e) {
+    sel.innerHTML = '<option value="">Failed to load campaigns</option>';
+  }
+}
+
+function onApplyBudgetCampaignChange() {
+  const sel = document.getElementById('apply-budget-campaign-select');
+  const opt = sel?.options[sel.selectedIndex];
+  const info = document.getElementById('apply-budget-info');
+  const btn  = document.getElementById('apply-budget-confirm-btn');
+
+  if (!opt || !opt.value) {
+    if (info) info.style.display = 'none';
+    if (btn) btn.disabled = true;
+    return;
+  }
+
+  const platform = opt.dataset.platform || 'meta';
+  const budgetUsd = platform === 'google' ? _budgetGoogleDaily : _budgetMetaDaily;
+
+  document.getElementById('apply-budget-amount').textContent = '$' + Math.round(budgetUsd) + '/day';
+  const badge = document.getElementById('apply-budget-platform-badge');
+  if (badge) {
+    badge.textContent = platform === 'meta' ? 'Meta Ads' : 'Google Ads';
+    badge.style.cssText = `font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;background:${platform==='meta'?'rgba(24,119,242,.15)':'rgba(66,133,244,.15)'};color:${platform==='meta'?'#1877F2':'#4285F4'}`;
+  }
+  if (info) info.style.display = '';
+  if (btn) btn.disabled = false;
+}
+
+function closeApplyBudgetModal() {
+  document.getElementById('apply-budget-modal')?.classList.remove('open');
+}
+
+async function confirmApplyBudget() {
+  const sel = document.getElementById('apply-budget-campaign-select');
+  const opt = sel?.options[sel.selectedIndex];
+  if (!opt?.value) return;
+
+  const campaignId = opt.value;
+  const platform   = opt.dataset.platform || 'meta';
+  const budgetUsd  = platform === 'google' ? _budgetGoogleDaily : _budgetMetaDaily;
+  const btn        = document.getElementById('apply-budget-confirm-btn');
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Applying…'; }
+
+  try {
+    const r = await authFetch('/budget', {
+      method: 'POST',
+      body: JSON.stringify({
+        action:             'apply',
+        recommendation_id:  _budgetRecId,
+        campaign_id:        campaignId,
+        platform,
+        budget_usd:         budgetUsd,
+      }),
+    });
+
+    const data = r ? await r.json() : null;
+    if (r && r.ok && data?.any_success) {
+      showToast(`Budget $${Math.round(budgetUsd)}/day applied to ${opt.dataset.name || campaignId}`, 'success');
+      closeApplyBudgetModal();
+    } else {
+      const errs = (data?.applied || []).filter(a => !a.success).map(a => a.error).join('; ');
+      showToast(errs || 'Failed to apply budget — check platform connection', 'error');
+    }
+  } catch(e) {
+    showToast('Apply failed: ' + (e.message || 'unknown error'), 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Apply Budget'; }
+  }
 }
 
 async function loadBudgetHistory() {

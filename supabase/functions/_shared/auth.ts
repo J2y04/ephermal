@@ -63,11 +63,11 @@ export async function extractUserId(authHeader: string | null): Promise<string |
 
     // Validate issuer — must be our Clerk domain
     const expectedIss = Deno.env.get('CLERK_ISSUER') ?? 'https://clerk.ephermal.app';
-    if (payloadJson.iss && payloadJson.iss !== expectedIss) return null;
+    if (!payloadJson.iss || payloadJson.iss !== expectedIss) return null;
 
     // Validate expiry and not-before
     const now = Math.floor(Date.now() / 1000);
-    if (payloadJson.exp && now > payloadJson.exp) return null;
+    if (!payloadJson.exp || now > payloadJson.exp) return null;
     if (payloadJson.nbf && now < payloadJson.nbf) return null;
 
     // Verify RS256 signature

@@ -1,0 +1,399 @@
+- generic [active]:
+  - generic:
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic [ref=e1]:
+      - generic [ref=e4]:
+        - generic [ref=e5]:
+          - link "Meta logo" [ref=e7] [cursor=pointer]:
+            - /url: /?no_redirect=true
+            - img "Meta logo" [ref=e9]
+          - tablist [ref=e18]:
+            - link "My Apps" [ref=e19] [cursor=pointer]:
+              - /url: /apps/
+              - generic [ref=e22]: My Apps
+            - link "Required actions" [ref=e23] [cursor=pointer]:
+              - /url: /required-actions/
+              - generic [ref=e26]: Required actions
+            - tab "Docs" [ref=e27] [cursor=pointer]:
+              - generic [ref=e30]: Docs
+            - tab "Tools" [ref=e32] [cursor=pointer]:
+              - generic [ref=e35]: Tools
+            - tab "Support" [ref=e37] [cursor=pointer]:
+              - generic [ref=e40]: Support
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e49]: Search input
+            - textbox "Search input" [ref=e60]:
+              - /placeholder: Search...
+          - link [ref=e63] [cursor=pointer]:
+            - /url: "#"
+          - link "Facebook" [ref=e68] [cursor=pointer]:
+            - /url: "#"
+            - img "Facebook" [ref=e73]
+      - generic [ref=e74]:
+        - generic [ref=e124]:
+          - generic [ref=e127]:
+            - generic [ref=e130]:
+              - generic [ref=e136]: Searchable selector for all apps
+              - combobox "Searchable selector for all apps Ephermal" [ref=e141] [cursor=pointer]:
+                - generic [ref=e151]: Ephermal
+            - navigation [ref=e154]:
+              - list [ref=e155]:
+                - listitem [ref=e156]:
+                  - button "Dashboard" [ref=e158] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Dashboard
+                - listitem [ref=e164]:
+                  - button "Required actions" [ref=e166] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Required actions
+                - listitem [ref=e172]:
+                  - button "Use cases" [ref=e174] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Use cases
+                - listitem [ref=e180]:
+                  - generic [ref=e181]:
+                    - button "Facebook Login for Business" [ref=e183] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Facebook Login for Business
+                          - button "Toggle group" [ref=e189] [cursor=pointer]:
+                            - generic [ref=e192]: Toggle group
+                  - list [ref=e195]:
+                    - generic [ref=e196]:
+                      - button "Settings" [ref=e198] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Settings
+                    - generic [ref=e203]:
+                      - button "Quickstart" [ref=e205] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Quickstart
+                    - generic [ref=e210]:
+                      - button "Configurations" [ref=e212] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Configurations
+                - listitem [ref=e217]:
+                  - generic [ref=e218]:
+                    - button "Review" [ref=e220] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Review
+                          - button "Toggle group" [ref=e226] [cursor=pointer]:
+                            - generic [ref=e229]: Toggle group
+                  - list [ref=e232]:
+                    - generic [ref=e233]:
+                      - button "Testing" [ref=e235] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Testing
+                    - generic [ref=e240]:
+                      - button "Verification" [ref=e242] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Verification
+                    - generic [ref=e247]:
+                      - button "App Review" [ref=e249] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: App Review
+                - listitem [ref=e254]:
+                  - button "Publish" [ref=e256] [cursor=pointer]:
+                    - generic [ref=e259]:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Unpublished
+                          - status: App Publish Status
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Publish
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Unpublished
+                            - status: App Publish Status
+          - generic [ref=e262]:
+            - navigation [ref=e263]:
+              - list [ref=e264]:
+                - listitem [ref=e265]:
+                  - generic [ref=e266]:
+                    - button "App settings" [expanded] [ref=e268] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: App settings
+                          - button "Toggle group" [ref=e274] [cursor=pointer]:
+                            - generic [ref=e277]: Toggle group
+                  - list [ref=e281]:
+                    - generic [ref=e282]:
+                      - button "Basic" [ref=e284] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Basic
+                    - generic [ref=e289]:
+                      - button "Advanced" [ref=e291] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Advanced
+                - listitem [ref=e296]:
+                  - generic [ref=e297]:
+                    - button "App roles" [ref=e299] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: App roles
+                          - button "Toggle group" [ref=e305] [cursor=pointer]:
+                            - generic [ref=e308]: Toggle group
+                  - list [ref=e311]:
+                    - generic [ref=e312]:
+                      - button "Roles" [ref=e314] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Roles
+                    - generic [ref=e319]:
+                      - button "Test users" [ref=e321] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Test users
+                - listitem [ref=e326]:
+                  - button "Alert Inbox" [ref=e328] [cursor=pointer]:
+                    - generic [ref=e331]:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: "1"
+                          - status: 1 unread alerts
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Alert Inbox
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: "1"
+                            - status: 1 unread alerts
+            - separator [ref=e334]
+            - generic [ref=e335]:
+              - button "Activity Log" [ref=e336] [cursor=pointer]:
+                - generic [ref=e339]: Activity Log
+              - button "Help" [ref=e343] [cursor=pointer]:
+                - generic [ref=e346]: Help
+              - button "Open/close side nav" [ref=e351] [cursor=pointer]:
+                - generic [ref=e354]: Open/close side nav
+        - generic [ref=e361]:
+          - generic [ref=e363]:
+            - generic [ref=e365]:
+              - generic [ref=e366]: Currently Ineligible for Submission
+              - generic [ref=e367]: "Your submission is missing data in the following fields:"
+              - list [ref=e368]:
+                - listitem [ref=e369]:
+                  - generic [ref=e370]: App icon (1024 x 1024)
+                - listitem [ref=e371]:
+                  - generic [ref=e372]: Privacy policy URL
+                - listitem [ref=e373]:
+                  - generic [ref=e374]: Category
+            - table [ref=e375]:
+              - rowgroup [ref=e376]:
+                - row "App ID 1504672747779574 App secret App secret ●●●●●●●● Show" [ref=e377]:
+                  - cell "App ID 1504672747779574" [ref=e378]:
+                    - generic [ref=e382]:
+                      - generic [ref=e388]: App ID
+                      - textbox "App ID" [disabled] [ref=e397]: "1504672747779574"
+                  - cell "App secret App secret ●●●●●●●● Show" [ref=e398]:
+                    - generic [ref=e400]:
+                      - heading "App secret" [level=4] [ref=e401]
+                      - generic [ref=e402]:
+                        - generic [ref=e403]:
+                          - generic [ref=e409]: App secret
+                          - textbox "App secret" [disabled] [ref=e418]: ●●●●●●●●
+                        - button "Show" [ref=e419] [cursor=pointer]:
+                          - generic [ref=e423]: Show
+                - row "Display name Display name Ephermal Namespace Namespace" [ref=e424]:
+                  - cell "Display name Display name Ephermal" [ref=e425]:
+                    - heading "Display name" [level=4] [ref=e427]
+                    - generic [ref=e429]:
+                      - generic [ref=e435]: Display name
+                      - textbox "Display name" [disabled] [ref=e444]: Ephermal
+                  - cell "Namespace Namespace" [ref=e445]:
+                    - generic [ref=e446]:
+                      - heading "Namespace" [level=4] [ref=e447]
+                      - generic [ref=e449]:
+                        - generic [ref=e455]: Namespace
+                        - textbox "Namespace" [disabled] [ref=e464]
+                - row "App domains ephermal.app Clear ephermal.app Contact email Contact email jamalsettah2604@gmail.com" [ref=e846]:
+                  - cell "App domains ephermal.app Clear ephermal.app" [ref=e847]:
+                    - generic [ref=e470]:
+                      - generic [ref=e476]: App domains
+                      - generic [ref=e485]:
+                        - generic [ref=e850]:
+                          - generic [ref=e851]: ephermal.app
+                          - button "Clear ephermal.app" [ref=e852] [cursor=pointer]
+                        - combobox "App domains" [disabled] [ref=e486]
+                  - cell "Contact email Contact email jamalsettah2604@gmail.com" [ref=e487]:
+                    - generic [ref=e488]:
+                      - heading "Contact email" [level=4] [ref=e490]
+                      - generic [ref=e497]:
+                        - generic [ref=e503]: Contact email
+                        - textbox "Contact email" [disabled] [ref=e512]:
+                          - /placeholder: Used for important communication about your app
+                          - text: jamalsettah2604@gmail.com
+                - row "Privacy policy URL Privacy policy URL https://ephermal.app/privacy.html Terms of Service URL Terms of Service URL https://ephermal.app/terms.html" [ref=e826]:
+                  - cell "Privacy policy URL Privacy policy URL https://ephermal.app/privacy.html" [ref=e827]:
+                    - heading "Privacy policy URL" [level=4] [ref=e515]
+                    - generic [ref=e517]:
+                      - generic [ref=e523]: Privacy policy URL
+                      - textbox "Privacy policy URL" [disabled] [ref=e532]:
+                        - /placeholder: Privacy policy for Login dialog and app details
+                        - text: https://ephermal.app/privacy.html
+                  - cell "Terms of Service URL Terms of Service URL https://ephermal.app/terms.html" [ref=e828]:
+                    - generic [ref=e534]:
+                      - heading "Terms of Service URL" [level=4] [ref=e535]
+                      - generic [ref=e537]:
+                        - generic [ref=e543]: Terms of Service URL
+                        - textbox "Terms of Service URL" [disabled] [ref=e552]:
+                          - /placeholder: Terms of Service for Login dialog and app details
+                          - text: https://ephermal.app/terms.html
+                - row "User data deletion Data deletion instructions URL User data deletion App icon (1024 x 1024) 1024 x 1024" [ref=e553]:
+                  - cell "User data deletion Data deletion instructions URL User data deletion" [ref=e554]:
+                    - generic [ref=e559]:
+                      - generic [ref=e561]:
+                        - generic [ref=e567]: User data deletion
+                        - combobox "User data deletion Data deletion instructions URL" [ref=e574] [cursor=pointer]:
+                          - generic [ref=e581]: Data deletion instructions URL
+                      - generic [ref=e585]:
+                        - generic [ref=e591]: User data deletion
+                        - textbox "User data deletion" [disabled] [ref=e600]:
+                          - /placeholder: You can also provide a link
+                  - cell "App icon (1024 x 1024) 1024 x 1024" [ref=e601]:
+                    - generic [ref=e602]: App icon (1024 x 1024)
+                    - button "1024 x 1024" [ref=e604] [cursor=pointer]:
+                      - generic [ref=e606]: 1024 x 1024
+                - row "Category" [ref=e607]:
+                  - cell "Category" [ref=e608]:
+                    - generic [ref=e612]:
+                      - generic [ref=e618]: Category
+                      - combobox "Category" [ref=e625] [cursor=pointer]
+                  - cell [ref=e631]
+          - generic [ref=e635]:
+            - heading "Data Protection Officer contact information" [level=2] [ref=e638]
+            - generic [ref=e640]:
+              - generic [ref=e641]:
+                - generic [ref=e642]: The General Data Protection Regulation (GDPR) requires certain companies doing business in the European Union to designate a Data Protection Officer who people can contact for information about how their data is being processed.
+                - generic [ref=e644]:
+                  - text: This contact information will be available to people on Facebook along with other information about your app or website.
+                  - link "Learn More." [ref=e645] [cursor=pointer]:
+                    - /url: https://www.facebook.com/business/gdpr/
+              - generic [ref=e646]:
+                - generic [ref=e647]:
+                  - generic [ref=e649]:
+                    - generic [ref=e651]:
+                      - heading "Name" [level=4] [ref=e652]
+                      - generic [ref=e653]: ∙
+                      - generic [ref=e654]: Optional
+                    - generic [ref=e655]:
+                      - generic [ref=e661]: Name∙Optional
+                      - textbox "Name∙Optional" [disabled] [ref=e670]
+                  - generic [ref=e672]:
+                    - heading "Email" [level=4] [ref=e673]
+                    - generic [ref=e675]:
+                      - generic [ref=e681]: Email
+                      - textbox "Email" [disabled] [ref=e690]
+                - heading "Address" [level=3] [ref=e692]
+                - generic [ref=e693]:
+                  - generic [ref=e694]:
+                    - heading "Street Address" [level=4] [ref=e695]
+                    - generic [ref=e697]:
+                      - generic [ref=e703]: Street Address
+                      - textbox "Street Address" [disabled] [ref=e712]
+                  - generic [ref=e715]:
+                    - generic [ref=e721]: Apt/Suite/Other∙Optional
+                    - textbox "Apt/Suite/Other∙Optional" [disabled] [ref=e730]
+                  - generic [ref=e733]:
+                    - generic [ref=e739]: City/District
+                    - textbox "City/District" [disabled] [ref=e748]
+                  - generic [ref=e749]:
+                    - generic [ref=e753]:
+                      - generic [ref=e759]: State/Province/Region
+                      - textbox "State/Province/Region" [disabled] [ref=e768]
+                    - generic [ref=e772]:
+                      - generic [ref=e778]: ZIP/Postal Code
+                      - textbox "ZIP/Postal Code" [disabled] [ref=e787]
+                    - generic [ref=e791]:
+                      - generic [ref=e797]: Country
+                      - combobox "Country United States" [ref=e802] [cursor=pointer]:
+                        - generic [ref=e809]: United States
+          - generic [ref=e813]:
+            - button
+            - button "Add platform" [ref=e815] [cursor=pointer]:
+              - generic [ref=e820]: Add platform
+          - generic [ref=e823]:
+            - progressbar [ref=e859]
+            - button "Save changes" [disabled] [ref=e824] [cursor=pointer]
+            - button "Discard" [ref=e825] [cursor=pointer]

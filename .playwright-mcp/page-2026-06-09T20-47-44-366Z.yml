@@ -1,0 +1,144 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: We use essential cookies for authentication (Clerk) and session management. No tracking cookies without your consent.
+      - link "Privacy Policy" [ref=e4] [cursor=pointer]:
+        - /url: /privacy.html
+      - text: ·
+      - link "Impressum" [ref=e5] [cursor=pointer]:
+        - /url: /impressum.html
+    - button "Decline non-essential" [ref=e6] [cursor=pointer]
+    - button "Accept & Continue" [ref=e7] [cursor=pointer]
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - img "Ephermal" [ref=e10]
+      - generic [ref=e11]: Ephermal
+    - generic [ref=e12]:
+      - generic [ref=e13]: Overview
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+        - text: Dashboard
+      - generic [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+        - text: Analytics
+    - generic [ref=e23]:
+      - generic [ref=e24]: Advertising
+      - generic [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Campaigns
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+        - text: Creatives
+      - generic [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - text: Audience Intel
+      - generic [ref=e39] [cursor=pointer]:
+        - img [ref=e40]
+        - text: Bulk Manager
+      - generic [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - text: Budget AI
+      - generic [ref=e45] [cursor=pointer]:
+        - img [ref=e46]
+        - text: Launch Campaign
+    - generic [ref=e51]:
+      - generic [ref=e52]: Store
+      - generic [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - text: Store Products
+    - generic [ref=e57]:
+      - generic [ref=e58]: Account
+      - generic [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - text: Multi-Store
+      - generic [ref=e63] [cursor=pointer]:
+        - img [ref=e64]
+        - text: White-label
+      - generic [ref=e66] [cursor=pointer]:
+        - img [ref=e67]
+        - text: Settings
+      - generic [ref=e70] [cursor=pointer]:
+        - img [ref=e71]
+        - text: Billing
+      - generic [ref=e73] [cursor=pointer]:
+        - img [ref=e74]
+        - text: Dev Tools
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - generic [ref=e80]: UGC Credits
+        - strong [ref=e81]: 349 / 350
+      - generic [ref=e84]:
+        - generic [ref=e85]: J
+        - generic [ref=e86]:
+          - generic [ref=e87]: Jamal Settah
+          - generic [ref=e89]: 👑 CEO
+          - generic [ref=e90]: jamalsettah2604@gmail.com
+        - generic [ref=e91]: SCALE
+  - generic [ref=e92]:
+    - generic [ref=e93]:
+      - generic [ref=e95]: Bulk Manager
+      - generic [ref=e96]:
+        - button "Generate UGC" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e99]: Generate UGC
+        - generic [ref=e100] [cursor=pointer]: Sign out
+    - generic [ref=e471]:
+      - generic [ref=e472]:
+        - img [ref=e474]
+        - generic [ref=e477]:
+          - generic [ref=e478]: Bulk Campaign Manager
+          - generic [ref=e479]: Pause, enable, or scale budgets across all campaigns in one click.
+      - generic [ref=e480]:
+        - generic [ref=e481]:
+          - generic [ref=e482]:
+            - generic [ref=e483]: Total Campaigns
+            - img [ref=e485]
+          - generic [ref=e490]: "0"
+          - generic [ref=e491]: Loaded
+        - generic [ref=e492]:
+          - generic [ref=e493]:
+            - generic [ref=e494]: Live
+            - img [ref=e496]
+          - generic [ref=e499]: "0"
+          - generic [ref=e500]: Active campaigns
+        - generic [ref=e501]:
+          - generic [ref=e502]:
+            - generic [ref=e503]: Paused
+            - img [ref=e505]
+          - generic [ref=e508]: "0"
+          - generic [ref=e509]: Paused campaigns
+      - generic [ref=e510]:
+        - generic [ref=e511]:
+          - generic [ref=e513]:
+            - checkbox "Select all" [ref=e514] [cursor=pointer]
+            - generic [ref=e515] [cursor=pointer]: Select all
+          - generic [ref=e516]:
+            - button "Pause" [ref=e517] [cursor=pointer]:
+              - img [ref=e518]
+              - text: Pause
+            - button "Enable" [ref=e521] [cursor=pointer]:
+              - img [ref=e522]
+              - text: Enable
+            - button "Scale +15%" [ref=e524] [cursor=pointer]:
+              - img [ref=e525]
+              - text: Scale +15%
+        - generic [ref=e537]: Visit Campaigns first to load data, then return here
+  - generic [ref=e207]:
+    - generic [ref=e208]:
+      - generic [ref=e209]:
+        - img [ref=e210]
+        - generic [ref=e212]:
+          - text: Ephermal AI
+          - generic [ref=e213]: Your advertising co-pilot
+      - button "×" [ref=e214] [cursor=pointer]
+    - generic [ref=e216]: Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?
+    - generic [ref=e217]:
+      - button "Improve ROAS" [ref=e218] [cursor=pointer]
+      - button "Write UGC script" [ref=e219] [cursor=pointer]
+      - button "Audience ideas" [ref=e220] [cursor=pointer]
+      - button "Fix low CTR" [ref=e221] [cursor=pointer]
+      - button "Budget advice" [ref=e222] [cursor=pointer]
+    - generic [ref=e223]:
+      - textbox "Ask anything about your ads…" [ref=e224]
+      - button [ref=e225] [cursor=pointer]:
+        - img [ref=e226]

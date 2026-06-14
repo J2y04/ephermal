@@ -1,0 +1,167 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e4]:
+      - link "Skip to main content" [ref=e5] [cursor=pointer]:
+        - /url: "#main"
+      - link "Dev Dashboard logo" [ref=e7] [cursor=pointer]:
+        - /url: /dashboard/218332705
+        - img "Dev Dashboard logo" [ref=e8]
+    - button "Settings" [ref=e11] [cursor=pointer]:
+      - img "View code" [ref=e13]
+      - paragraph [ref=e17]: Ephermal
+  - generic [ref=e18]:
+    - navigation "Primary" [ref=e22]:
+      - generic [ref=e24]:
+        - list [ref=e26]:
+          - listitem [ref=e27]:
+            - link "Apps Apps" [ref=e28] [cursor=pointer]:
+              - /url: /dashboard/218332705/apps
+              - img "Apps" [ref=e30]
+              - text: Apps
+          - listitem [ref=e35]:
+            - link "Dev Stores icon Stores" [ref=e36] [cursor=pointer]:
+              - /url: /dashboard/218332705/stores
+              - img "Dev Stores icon" [ref=e38]
+              - text: Stores
+          - listitem [ref=e40]:
+            - link "Catalogs icon Catalogs" [ref=e41] [cursor=pointer]:
+              - /url: /dashboard/218332705/catalogs
+              - img "Catalogs icon" [ref=e43]
+              - text: Catalogs
+        - list [ref=e49]:
+          - listitem [ref=e50]:
+            - link "Default app icon Ephermal" [ref=e51] [cursor=pointer]:
+              - /url: /dashboard/218332705/apps/363710414849
+              - img "Default app icon" [ref=e52]
+              - generic [ref=e57]: Ephermal
+          - listitem [ref=e58]:
+            - list [ref=e59]:
+              - listitem [ref=e60]:
+                - img
+                - link "Monitoring" [ref=e61] [cursor=pointer]:
+                  - /url: /dashboard/218332705/apps/363710414849/monitoring
+              - listitem [ref=e62]:
+                - img
+                - link "Logs" [ref=e63] [cursor=pointer]:
+                  - /url: /dashboard/218332705/apps/363710414849/logs
+              - listitem [ref=e64]:
+                - img
+                - link "Versions" [ref=e65] [cursor=pointer]:
+                  - /url: /dashboard/218332705/apps/363710414849/versions
+              - listitem [ref=e66]:
+                - link "Settings" [ref=e67] [cursor=pointer]:
+                  - /url: /dashboard/218332705/apps/363710414849/settings
+      - list [ref=e69]:
+        - listitem [ref=e70]:
+          - link "Organization icon Organization" [ref=e71] [cursor=pointer]:
+            - /url: https://admin.shopify.com/organization/218332705/settings/organization-account?from=dev
+            - img "Organization icon" [ref=e73]
+            - text: Organization
+    - main [ref=e79]:
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - link "Arrow Back to versions list page" [ref=e85] [cursor=pointer]:
+              - /url: /dashboard/218332705/apps/363710414849/versions
+              - img "Arrow" [ref=e86]
+              - generic [ref=e88]: Back to versions list page
+            - heading "Create version" [level=1] [ref=e89]
+          - button "Release" [ref=e91] [cursor=pointer]:
+            - generic [ref=e93]: Release
+        - generic [ref=e94]:
+          - link "Based on ephermal-3 Active" [ref=e96] [cursor=pointer]:
+            - /url: /dashboard/218332705/apps/363710414849/versions/991487918081
+            - text: Based on
+            - generic [ref=e97]: ephermal-3
+            - generic [ref=e98]: Active
+          - generic [ref=e100]:
+            - generic [ref=e102]:
+              - generic [ref=e103]:
+                - paragraph [ref=e104]: Start using Shopify CLI
+                - link "Docs Open in new tab" [ref=e105] [cursor=pointer]:
+                  - /url: https://shopify.dev/docs/api/shopify-cli/app/app-config-link
+                  - generic [ref=e106]: Docs
+                  - img "Open in new tab" [ref=e107]
+              - paragraph [ref=e110]: To get access to all configuration and extensions, create a new local project and connect to this app
+              - generic [ref=e112]:
+                - generic [ref=e113]: $
+                - generic [ref=e114]: shopify app config link
+                - button "Copy to clipboard" [ref=e116] [cursor=pointer]:
+                  - img "Copy to clipboard" [ref=e119]
+            - img "Pixel art computer" [ref=e122]
+          - generic [ref=e123]:
+            - generic [ref=e125]:
+              - generic [ref=e126]: App name
+              - generic [ref=e129]:
+                - textbox "App name" [ref=e130]: Ephermal
+                - generic [ref=e131]: 8 / 30
+            - generic [ref=e133]:
+              - paragraph [ref=e135]: Access
+              - generic [ref=e136]:
+                - generic [ref=e137]:
+                  - img [ref=e138]
+                  - paragraph [ref=e141]:
+                    - text: Some scopes require Shopify permission before you can include them in a version
+                    - link "Request access" [ref=e142] [cursor=pointer]:
+                      - /url: https://partners.shopify.com/org/218332705/org_apps/363710414849/api_access
+                      - text: Request access
+                      - img [ref=e143]
+                - generic [ref=e146]:
+                  - generic [ref=e147]:
+                    - generic [ref=e148]: Scopes
+                    - link "Docs Open in new tab" [ref=e150] [cursor=pointer]:
+                      - /url: https://shopify.dev/docs/apps/build/cli-for-apps/app-configuration#access_scopes
+                      - generic [ref=e151]: Docs
+                      - img "Open in new tab" [ref=e152]
+                  - button "Select scopes" [ref=e155] [cursor=pointer]:
+                    - generic [ref=e157]: Select scopes
+                - generic [ref=e158]:
+                  - textbox [ref=e162]: read_analytics,read_customers,read_orders,read_products
+                  - paragraph [ref=e163]: These scopes are required to provide your app functionality. Enter scopes as a comma-separated list
+                - generic [ref=e164]:
+                  - generic [ref=e165]: Optional scopes
+                  - button "Select scopes" [ref=e166] [cursor=pointer]:
+                    - generic [ref=e168]: Select scopes
+                - generic [ref=e169]:
+                  - textbox [ref=e173]
+                  - paragraph [ref=e174]: Enter scopes as a comma-separated list
+                - generic [ref=e175]:
+                  - checkbox "Use legacy install flow" [ref=e178] [cursor=pointer]
+                  - generic [ref=e179] [cursor=pointer]: Use legacy install flow
+                  - link "Docs Open in new tab" [ref=e181] [cursor=pointer]:
+                    - /url: https://shopify.dev/docs/apps/build/cli-for-apps/app-configuration#access_scopes
+                    - generic [ref=e182]: Docs
+                    - img "Open in new tab" [ref=e183]
+                - generic [ref=e186]:
+                  - generic [ref=e187]: Redirect URLs
+                  - textbox "Redirect URLs" [ref=e191]: https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/shopify-oauth-callback
+                  - paragraph [ref=e192]: Enter redirect URLs as a comma-separated list
+            - generic [ref=e194]:
+              - paragraph [ref=e196]: URLs
+              - generic [ref=e197]:
+                - generic [ref=e198]:
+                  - generic [ref=e199]: App URL
+                  - textbox "App URL" [ref=e203]: https://ephermal.app
+                - generic [ref=e204]:
+                  - checkbox "Embed app in Shopify admin" [ref=e207] [cursor=pointer]
+                  - generic [ref=e208] [cursor=pointer]: Embed app in Shopify admin
+                - generic [ref=e209]:
+                  - generic [ref=e210]: Preferences URL (optional)
+                  - textbox "Preferences URL (optional)" [ref=e214]
+            - generic [ref=e216]:
+              - paragraph [ref=e218]: Webhooks API version
+              - generic [ref=e221]:
+                - combobox [ref=e222] [cursor=pointer]:
+                  - option "2025-07"
+                  - option "2025-10"
+                  - option "2026-01"
+                  - option "2026-04" [selected]
+                - img "Selector icon"
+            - button "Expand POS" [ref=e225] [cursor=pointer]:
+              - img "Expand" [ref=e226]
+              - paragraph [ref=e230]: POS
+            - button "Expand App proxy" [ref=e233] [cursor=pointer]:
+              - img "Expand" [ref=e234]
+              - paragraph [ref=e238]: App proxy
+          - button "Release" [ref=e240] [cursor=pointer]:
+            - generic [ref=e242]: Release

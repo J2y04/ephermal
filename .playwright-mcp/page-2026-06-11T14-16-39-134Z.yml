@@ -1,0 +1,652 @@
+- generic [active] [ref=e1]:
+  - navigation [ref=e2]:
+    - link "Ephermal logoEphermal" [ref=e3] [cursor=pointer]:
+      - /url: /
+      - img "Ephermal logo" [ref=e4]
+      - text: Ephermal
+    - generic [ref=e5]:
+      - link "How it works" [ref=e6] [cursor=pointer]:
+        - /url: "#how-it-works"
+      - link "Features" [ref=e7] [cursor=pointer]:
+        - /url: "#services"
+      - link "Budget AI" [ref=e8] [cursor=pointer]:
+        - /url: /advertising.html
+      - link "Pricing" [ref=e9] [cursor=pointer]:
+        - /url: "#pricing"
+      - link "Results" [ref=e10] [cursor=pointer]:
+        - /url: "#about"
+  - generic [ref=e11]:
+    - heading "You Build It. We Scale It." [level=1] [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e15]: You
+        - generic [ref=e17]: Build
+        - generic [ref=e19]: It.
+      - generic [ref=e20]:
+        - generic [ref=e22]: We
+        - generic [ref=e24]: Scale
+        - generic [ref=e26]: It.
+    - paragraph [ref=e27]: Stop paying $3,000/month for an agency that doesn't understand your store. Ephermal reads your Shopify catalog, writes AI-powered ads, and launches across Meta and Google, set up in minutes, not months.
+    - generic [ref=e28]:
+      - link "Get Started" [ref=e29] [cursor=pointer]:
+        - /url: /auth/register.html
+      - link "See how it works" [ref=e30] [cursor=pointer]:
+        - /url: "#how-it-works"
+    - paragraph [ref=e31]:
+      - text: Meta & Google Ads automated
+      - text: Setup in 3 minutes
+      - text: No agency needed
+    - generic [ref=e33]:
+      - generic [ref=e34]:
+        - generic [ref=e35]:
+          - generic [ref=e36]: ROAS
+          - generic [ref=e37]: 4.8×
+          - generic [ref=e38]: ↑ 127% vs last month
+        - generic [ref=e39]:
+          - generic [ref=e40]: Ad Spend
+          - generic [ref=e41]: $12,400
+          - generic [ref=e42]: ↑ Optimized by AI
+        - generic [ref=e43]:
+          - generic [ref=e44]: UGC Ads Created
+          - generic [ref=e45]: "34"
+          - generic [ref=e46]: ↑ 12 this week
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - text: Meta Ads
+          - text: 84% efficiency
+        - generic [ref=e49]:
+          - text: Google Ads
+          - text: 81% efficiency
+        - generic [ref=e50]:
+          - text: UGC Quality
+          - text: 96% approval rate
+  - generic [ref=e52]:
+    - generic [ref=e53]: $89/mo vs $3k agencies·
+    - generic [ref=e54]: Meta Ads fully automated·
+    - generic [ref=e55]: Google Ads on Growth+·
+    - generic [ref=e56]: AI-written scripts & copy·
+    - generic [ref=e57]: Zero agency fees·
+    - generic [ref=e58]: Live Shopify data sync·
+    - generic [ref=e59]: No brief no onboarding call·
+    - generic [ref=e60]: Cancel any time·
+    - generic [ref=e61]: Shopify native integration·
+    - generic [ref=e62]: $89/mo vs $3k agencies·
+    - generic [ref=e63]: Meta Ads fully automated·
+    - generic [ref=e64]: Google Ads on Growth+·
+    - generic [ref=e65]: AI-written scripts & copy·
+    - generic [ref=e66]: Zero agency fees·
+    - generic [ref=e67]: Live Shopify data sync·
+    - generic [ref=e68]: No brief no onboarding call·
+    - generic [ref=e69]: Cancel any time·
+    - generic [ref=e70]: Shopify native integration·
+  - generic [ref=e72]:
+    - generic [ref=e73]:
+      - generic [ref=e74]: The Old Way
+      - list [ref=e75]:
+        - listitem [ref=e76]:
+          - img [ref=e78]
+          - text: $3,000–$8,000/month agency retainer
+        - listitem [ref=e81]:
+          - img [ref=e83]
+          - text: 2–4 weeks to launch a campaign
+        - listitem [ref=e86]:
+          - img [ref=e88]
+          - text: Generic creatives from a template library
+        - listitem [ref=e91]:
+          - img [ref=e93]
+          - text: Weekly reports, no real-time visibility
+        - listitem [ref=e96]:
+          - img [ref=e98]
+          - text: You explain your store to a stranger, again
+    - generic [ref=e101]:
+      - generic [ref=e102]: The Ephermal Way
+      - list [ref=e103]:
+        - listitem [ref=e104]:
+          - img [ref=e106]
+          - text: From $89/month, less than one bad ad
+        - listitem [ref=e108]:
+          - img [ref=e110]
+          - text: Live campaigns in under 60 seconds
+        - listitem [ref=e112]:
+          - img [ref=e114]
+          - text: Real UGC-style ads built from your products
+        - listitem [ref=e116]:
+          - img [ref=e118]
+          - text: Live ROAS dashboard, 24/7
+        - listitem [ref=e120]:
+          - img [ref=e122]
+          - text: AI reads your store. You explain nothing.
+  - generic [ref=e125]:
+    - generic [ref=e126]:
+      - generic [ref=e127]: How it works
+      - heading "From store to live ads in under 60 seconds." [level=2] [ref=e128]:
+        - text: From store to live ads
+        - text: in under 60 seconds.
+      - paragraph [ref=e129]: No agency. No brief. No guesswork. Ephermal reads your store and builds the entire ad operation for you.
+    - generic [ref=e130]:
+      - generic [ref=e131]:
+        - generic [ref=e132]: "01"
+        - heading "Connect Your Store" [level=3] [ref=e133]
+        - paragraph [ref=e134]: Connect your Shopify store via OAuth. Link Meta Ads (all plans) or Google Ads (Growth+). Under 3 minutes from zero to ready.
+      - generic [ref=e135]:
+        - generic [ref=e136]: "02"
+        - heading "AI Reads Everything" [level=3] [ref=e137]
+        - paragraph [ref=e138]: Ephermal scans your products, pricing, bestsellers and brand voice, building a complete advertising strategy automatically.
+      - generic [ref=e139]:
+        - generic [ref=e140]: "03"
+        - heading "AI Ad Content Built" [level=3] [ref=e141]
+        - paragraph [ref=e142]: Creator-style scripts, hooks, headlines, and copy generated from your actual products. Not a template library. Every creative is specific to your store and audience.
+      - generic [ref=e143]:
+        - generic [ref=e144]: "04"
+        - heading "Launch & Optimise" [level=3] [ref=e145]
+        - paragraph [ref=e146]: Campaigns go live across Meta and Google Ads. The AI monitors ROAS across placements, surfaces what's working, and tells you exactly where to scale.
+    - paragraph [ref=e148]: 7 specialized agents running on your store around the clock
+  - generic [ref=e150]:
+    - generic [ref=e151]:
+      - generic [ref=e152]: What Ephermal does
+      - heading "Every part of advertising. Handled." [level=2] [ref=e153]:
+        - text: Every part of advertising.
+        - text: Handled.
+    - generic [ref=e154]:
+      - generic [ref=e155]:
+        - img [ref=e157]
+        - heading "Live Store Intelligence" [level=3] [ref=e159]
+        - paragraph [ref=e160]: "Ephermal reads your Shopify store in real time: inventory, pricing, bestsellers. Reflected live in every ad. When your price changes, your ad updates."
+        - generic [ref=e161]: Real-time sync
+      - generic [ref=e162]:
+        - img [ref=e164]
+        - heading "AI Content Engine" [level=3] [ref=e167]
+        - paragraph [ref=e168]: Creator-style scripts, hooks, headlines, and ad copy generated from your actual product catalog. Every brief is unique to your store, not pulled from a template library.
+        - generic [ref=e169]: Script & Copy Engine
+      - generic [ref=e170]:
+        - img [ref=e172]
+        - heading "Meta Ads Automation" [level=3] [ref=e174]
+        - paragraph [ref=e175]: "Full campaign creation on your Facebook & Instagram accounts. Copy, audiences, budgets, launch: all autonomous. You just watch the ROAS. Built on the official Meta Marketing API."
+        - generic [ref=e176]:
+          - text: Powered by Meta Ads API
+          - link "Meta Marketing API ↗" [ref=e177] [cursor=pointer]:
+            - /url: https://developers.facebook.com/docs/marketing-apis
+      - generic [ref=e178]:
+        - img [ref=e180]
+        - heading "Google Ads Automation" [level=3] [ref=e183]
+        - paragraph [ref=e184]: Launch and scale Search, Shopping and Performance Max campaigns on Google. Ephermal handles keyword selection, bidding, creative and budget allocation. Growth+ only.
+        - generic [ref=e185]:
+          - text: Powered by Google Ads API
+          - link "Google Ads API ↗" [ref=e186] [cursor=pointer]:
+            - /url: https://developers.google.com/google-ads/api/docs/start
+      - generic [ref=e187]:
+        - img [ref=e189]
+        - heading "Audience Intelligence" [level=3] [ref=e193]
+        - paragraph [ref=e194]: Ephermal builds custom audiences from your store data, then finds similar buyers across Meta and Google. Lookalike audiences, retargeting, and Pixel + CAPI, all automated.
+        - generic [ref=e195]: Meta Pixel + CAPI · Google Signals
+      - generic [ref=e196]:
+        - img [ref=e198]
+        - heading "AI Copywriting Agent" [level=3] [ref=e200]
+        - paragraph [ref=e201]: Every headline, description and CTA is written by a dedicated copywriting AI trained on high-converting DTC copy. Specific to your product. Not a template.
+        - generic [ref=e202]: Conversion-optimized
+      - generic [ref=e203]:
+        - img [ref=e205]
+        - heading "ROAS Optimisation" [level=3] [ref=e207]
+        - paragraph [ref=e208]: Ephermal monitors performance across your campaigns and flags what&apos;s draining budget. Clear signals so you&apos;re always allocating spend where it actually converts.
+        - generic [ref=e209]: Performance-driven
+  - generic [ref=e212]:
+    - img "Shopify" [ref=e215]
+    - heading "Your catalog. In every ad, live." [level=2] [ref=e220]:
+      - text: Your catalog.
+      - text: In every ad, live.
+    - paragraph [ref=e221]: Ephermal connects directly to the official Shopify Admin API, reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
+    - generic [ref=e222]:
+      - generic [ref=e223]:
+        - img [ref=e224]
+        - generic [ref=e227]:
+          - generic [ref=e228]: Product Catalog
+          - generic [ref=e229]: Live sync · Pricing · Inventory
+      - generic [ref=e230]:
+        - img [ref=e231]
+        - generic [ref=e233]:
+          - generic [ref=e234]: Admin API
+          - generic [ref=e235]: OAuth 2.0 · Secure · Official
+    - generic [ref=e236]:
+      - generic [ref=e237]:
+        - img [ref=e238]
+        - text: "Official Shopify Admin API: no scraping or middleware"
+      - generic [ref=e240]:
+        - img [ref=e241]
+        - text: Real-time product, pricing and inventory sync
+      - generic [ref=e243]:
+        - img [ref=e244]
+        - text: Bestseller and collection detection for smarter ads
+      - generic [ref=e246]:
+        - img [ref=e247]
+        - text: "Secure OAuth 2.0: your store token never leaves Supabase"
+  - generic [ref=e251]:
+    - generic [ref=e252]:
+      - heading "Powered by" [level=2] [ref=e253]
+      - img "Meta" [ref=e254]
+    - generic [ref=e255]:
+      - generic [ref=e256]: Powered by Meta
+      - heading "Facebook & Instagram, natively integrated." [level=2] [ref=e257]:
+        - text: Facebook & Instagram,
+        - text: natively integrated.
+      - paragraph [ref=e258]: Ephermal connects directly to Meta's official Ads API, the same infrastructure used by the world's largest advertisers. No scraping, no third-party middleware. Your campaigns run natively inside Meta's ad platform.
+      - generic [ref=e259]:
+        - generic [ref=e260]:
+          - img [ref=e261]
+          - generic [ref=e263]:
+            - generic [ref=e264]: Facebook
+            - generic [ref=e265]: Feed · Stories · Reels
+        - generic [ref=e266]:
+          - img [ref=e267]
+          - generic [ref=e269]:
+            - generic [ref=e270]: Instagram
+            - generic [ref=e271]: Feed · Stories · Reels
+      - generic [ref=e272]:
+        - generic [ref=e273]:
+          - img [ref=e274]
+          - text: "Native Meta Ads API: no third-party middleware"
+        - generic [ref=e276]:
+          - img [ref=e277]
+          - text: Automated campaign creation & budget management
+        - generic [ref=e279]:
+          - img [ref=e280]
+          - text: Pixel + Conversions API for precise attribution
+        - generic [ref=e282]:
+          - img [ref=e283]
+          - text: Dynamic creative testing across all placements
+  - generic [ref=e287]:
+    - generic [ref=e288]:
+      - generic [ref=e289]: Growth & Scale Plans
+      - heading "Google Ads, fully automated." [level=2] [ref=e290]:
+        - text: Google Ads,
+        - text: fully automated.
+      - paragraph [ref=e291]: Unlock Google Search, Shopping and Performance Max campaigns on Growth and Scale. Ephermal connects to the official Google Ads API, selects keywords from your product catalog, allocates budget intelligently, and optimises bids in real time.
+      - generic [ref=e292]:
+        - generic [ref=e293]:
+          - img [ref=e294]
+          - generic [ref=e299]:
+            - generic [ref=e300]: Search & Shopping
+            - generic [ref=e301]: Keywords · PMax · Smart Bidding
+        - generic [ref=e302]:
+          - img [ref=e303]
+          - generic [ref=e306]:
+            - generic [ref=e307]: YouTube & Display
+            - generic [ref=e308]: Video · Responsive Display · Remarketing
+      - generic [ref=e309]:
+        - generic [ref=e310]:
+          - img [ref=e311]
+          - text: "Google Ads API: native campaign creation"
+        - generic [ref=e313]:
+          - img [ref=e314]
+          - text: AI keyword research from your product catalog
+        - generic [ref=e316]:
+          - img [ref=e317]
+          - text: Performance Max with your UGC creatives
+        - generic [ref=e319]:
+          - img [ref=e320]
+          - text: "Smart bidding: Target ROAS & Target CPA"
+      - generic [ref=e322]:
+        - img [ref=e323]
+        - text: Available on Growth & Scale plans
+    - generic [ref=e326]:
+      - heading "Also powered by" [level=2] [ref=e327]
+      - img [ref=e328]
+  - generic [ref=e337]:
+    - generic [ref=e338]:
+      - generic [ref=e339]: Under the hood
+      - heading "One brain. Seven specialists." [level=2] [ref=e340]:
+        - text: One brain.
+        - text: Seven specialists.
+      - paragraph [ref=e341]: The Ephermal Orchestrator coordinates a team of specialized AI agents, each one built for a specific part of running your ad operation.
+      - generic [ref=e342]:
+        - generic [ref=e344]:
+          - heading "Orchestrator Agent" [level=4] [ref=e345]
+          - paragraph [ref=e346]: The core intelligence. Analyzes your store, plans strategy and coordinates every specialist agent in sequence.
+        - generic [ref=e348]:
+          - heading "Performance Signals" [level=4] [ref=e349]
+          - paragraph [ref=e350]: Ephermal tracks results across your campaigns and refines its strategy based on what actually converts in your category.
+        - generic [ref=e352]:
+          - heading "Full Transparency" [level=4] [ref=e353]
+          - paragraph [ref=e354]: See exactly what the AI decided and why. Approve creatives before launch. You are always in control.
+    - generic [ref=e355]:
+      - img [ref=e356]
+      - generic [ref=e371]:
+        - img [ref=e372]
+        - text: Orchestrator
+      - generic [ref=e375]:
+        - img [ref=e377]
+        - generic [ref=e379]:
+          - generic [ref=e380]: "01"
+          - generic [ref=e381]: Store Analyzer
+      - generic [ref=e382]:
+        - img [ref=e384]
+        - generic [ref=e386]:
+          - generic [ref=e387]: "02"
+          - generic [ref=e388]: Copy Agent
+      - generic [ref=e389]:
+        - img [ref=e391]
+        - generic [ref=e393]:
+          - generic [ref=e394]: "03"
+          - generic [ref=e395]: UGC Agent
+      - generic [ref=e396]:
+        - img [ref=e398]
+        - generic [ref=e400]:
+          - generic [ref=e401]: "04"
+          - generic [ref=e402]: Meta Agent
+      - generic [ref=e403]:
+        - img [ref=e405]
+        - generic [ref=e407]:
+          - generic [ref=e408]: "05"
+          - generic [ref=e409]: Google Agent
+      - generic [ref=e410]:
+        - img [ref=e412]
+        - generic [ref=e414]:
+          - generic [ref=e415]: "06"
+          - generic [ref=e416]: Audience Agent
+      - generic [ref=e417]:
+        - img [ref=e419]
+        - generic [ref=e421]:
+          - generic [ref=e422]: "07"
+          - generic [ref=e423]: Analytics
+  - generic [ref=e425]:
+    - heading "What you actually get." [level=2] [ref=e427]
+    - generic [ref=e428]:
+      - generic [ref=e429]:
+        - generic [ref=e430]: 3 min
+        - generic [ref=e431]: From Shopify install to first campaign live
+      - generic [ref=e432]:
+        - generic [ref=e433]: $89
+        - generic [ref=e434]: Per month, a fraction of any agency retainer
+      - generic [ref=e435]:
+        - generic [ref=e436]: "2"
+        - generic [ref=e437]: "Ad platforms automated: Meta and Google Ads"
+      - generic [ref=e438]:
+        - generic [ref=e439]: $0
+        - generic [ref=e440]: Hidden fees, long contracts, or agency markups
+  - generic [ref=e442]:
+    - generic [ref=e443]:
+      - generic [ref=e444]:
+        - text: “The store doesn't sleep.
+        - text: Neither should your ads.”
+      - paragraph [ref=e445]: Ephermal
+    - generic [ref=e446]:
+      - generic [ref=e447]: Early access
+      - heading "We just launched. We want to work with you directly." [level=3] [ref=e448]:
+        - text: We just launched.
+        - text: We want to work with you directly.
+      - paragraph [ref=e449]: Ephermal is new. We don't have hundreds of success stories. We have a product we believe in and a small group of Shopify brands testing it in real stores. If your store does $5k–$80k/month and you're tired of agency fees, we'll onboard you personally.
+    - generic [ref=e450]:
+      - generic [ref=e451]:
+        - heading "Locked-in pricing" [level=4] [ref=e452]
+        - paragraph [ref=e453]: Early subscribers get today's prices locked. No increases when we scale up.
+      - generic [ref=e454]:
+        - heading "Direct founder access" [level=4] [ref=e455]
+        - paragraph [ref=e456]: "Questions, setup, feature requests: you reach us directly. Not a support ticket queue."
+      - generic [ref=e457]:
+        - heading "Shape the roadmap" [level=4] [ref=e458]
+        - paragraph [ref=e459]: Your feedback drives what we build next. Early users have real influence on the product.
+    - generic [ref=e460]:
+      - link "Get Early Access" [ref=e461] [cursor=pointer]:
+        - /url: /auth/register.html
+      - paragraph [ref=e462]: Setup in 3 minutes · Founder onboarding included
+  - generic [ref=e464]:
+    - generic [ref=e465]:
+      - generic [ref=e466]: Pricing
+      - heading "Less than one bad ad." [level=2] [ref=e467]
+      - paragraph [ref=e468]: Flat monthly rate. No long-term contracts. Cancel from your dashboard.
+    - generic [ref=e469]:
+      - generic [ref=e470]:
+        - generic [ref=e471]: Starter
+        - generic [ref=e472]:
+          - superscript [ref=e473]: $
+          - text: "89"
+        - generic [ref=e474]: / month, saves $2,911 vs an agency
+        - generic [ref=e475]:
+          - img [ref=e476]
+          - text: 15 UGC credits / month
+        - list [ref=e479]:
+          - listitem [ref=e480]:
+            - img [ref=e481]
+            - text: 1 Shopify store
+          - listitem [ref=e483]:
+            - img [ref=e484]
+            - text: 15 UGC creatives / month
+          - listitem [ref=e486]:
+            - img [ref=e487]
+            - text: Meta Ads automation
+          - listitem [ref=e489]:
+            - img [ref=e490]
+            - text: Live store sync
+          - listitem [ref=e492]:
+            - img [ref=e493]
+            - text: Campaign dashboard
+          - listitem [ref=e495]:
+            - img [ref=e496]
+            - text: Creative approval workflow
+          - listitem [ref=e498]:
+            - img [ref=e499]
+            - text: Basic analytics
+          - listitem [ref=e501]:
+            - img [ref=e502]
+            - text: Google Ads automationGrowth+
+          - listitem [ref=e505]:
+            - img [ref=e506]
+            - text: AI ad strategist chatGrowth+
+          - listitem [ref=e509]:
+            - img [ref=e510]
+            - text: AI UGC script writerGrowth+
+          - listitem [ref=e513]:
+            - img [ref=e514]
+            - text: Store intelligence & audiencesGrowth+
+          - listitem [ref=e517]:
+            - img [ref=e518]
+            - text: Closed-loop ROAS optimizationGrowth+
+          - listitem [ref=e521]:
+            - img [ref=e522]
+            - text: Bulk campaign managementScale
+          - listitem [ref=e525]:
+            - img [ref=e526]
+            - text: Multi-store consolidated viewScale
+          - listitem [ref=e529]:
+            - img [ref=e530]
+            - text: White-label optionScale
+        - link "Get Started" [ref=e533] [cursor=pointer]:
+          - /url: /auth/register.html
+      - generic [ref=e534]:
+        - generic [ref=e535]: Growth
+        - generic [ref=e536]:
+          - superscript [ref=e537]: $
+          - text: "199"
+        - generic [ref=e538]: / month, saves $2,801 vs an agency
+        - generic [ref=e539]:
+          - img [ref=e540]
+          - text: 75 UGC credits / month
+        - list [ref=e543]:
+          - listitem [ref=e544]:
+            - img [ref=e545]
+            - text: 3 Shopify stores
+          - listitem [ref=e547]:
+            - img [ref=e548]
+            - text: 75 UGC creatives / month
+          - listitem [ref=e550]:
+            - img [ref=e551]
+            - text: Meta Ads automation
+          - listitem [ref=e553]:
+            - img [ref=e554]
+            - text: Live store sync
+          - listitem [ref=e556]:
+            - img [ref=e557]
+            - text: Campaign dashboard
+          - listitem [ref=e559]:
+            - img [ref=e560]
+            - text: Creative approval workflow
+          - listitem [ref=e562]:
+            - img [ref=e563]
+            - text: Google Ads automation
+          - listitem [ref=e565]:
+            - img [ref=e566]
+            - text: AI ad strategist chat
+          - listitem [ref=e568]:
+            - img [ref=e569]
+            - text: AI UGC script writer
+          - listitem [ref=e571]:
+            - img [ref=e572]
+            - text: Store intelligence & audiences
+          - listitem [ref=e574]:
+            - img [ref=e575]
+            - text: Full campaign analytics
+          - listitem [ref=e577]:
+            - img [ref=e578]
+            - text: Closed-loop ROAS optimization
+          - listitem [ref=e580]:
+            - img [ref=e581]
+            - text: Priority AI agents
+          - listitem [ref=e583]:
+            - img [ref=e584]
+            - text: Bulk campaign managementScale
+          - listitem [ref=e587]:
+            - img [ref=e588]
+            - text: Multi-store consolidated viewScale
+          - listitem [ref=e591]:
+            - img [ref=e592]
+            - text: White-label optionScale
+          - listitem [ref=e595]:
+            - img [ref=e596]
+            - text: Dedicated AI instanceScale
+        - link "Subscribe now" [ref=e599] [cursor=pointer]:
+          - /url: /auth/register.html
+      - generic [ref=e600]:
+        - generic [ref=e601]: Scale
+        - generic [ref=e602]:
+          - superscript [ref=e603]: $
+          - text: "349"
+        - generic [ref=e604]: / month, white-label available
+        - generic [ref=e605]:
+          - img [ref=e606]
+          - text: 350 UGC credits / month
+        - list [ref=e609]:
+          - listitem [ref=e610]:
+            - img [ref=e611]
+            - text: Unlimited stores
+          - listitem [ref=e613]:
+            - img [ref=e614]
+            - text: 350 UGC creatives / month
+          - listitem [ref=e616]:
+            - img [ref=e617]
+            - text: Meta + Google Ads automation
+          - listitem [ref=e619]:
+            - img [ref=e620]
+            - text: Live store sync
+          - listitem [ref=e622]:
+            - img [ref=e623]
+            - text: Campaign dashboard
+          - listitem [ref=e625]:
+            - img [ref=e626]
+            - text: Creative approval workflow
+          - listitem [ref=e628]:
+            - img [ref=e629]
+            - text: AI ad strategist chat
+          - listitem [ref=e631]:
+            - img [ref=e632]
+            - text: AI UGC script writer
+          - listitem [ref=e634]:
+            - img [ref=e635]
+            - text: Store intelligence & audiences
+          - listitem [ref=e637]:
+            - img [ref=e638]
+            - text: Full campaign analytics
+          - listitem [ref=e640]:
+            - img [ref=e641]
+            - text: Closed-loop ROAS optimization
+          - listitem [ref=e643]:
+            - img [ref=e644]
+            - text: Priority AI agents
+          - listitem [ref=e646]:
+            - img [ref=e647]
+            - text: Bulk campaign management
+          - listitem [ref=e649]:
+            - img [ref=e650]
+            - text: Multi-store consolidated view
+          - listitem [ref=e652]:
+            - img [ref=e653]
+            - text: White-label option
+          - listitem [ref=e655]:
+            - img [ref=e656]
+            - text: Dedicated AI instance
+          - listitem [ref=e658]:
+            - img [ref=e659]
+            - text: Custom integrations
+          - listitem [ref=e661]:
+            - img [ref=e662]
+            - text: Slack support
+        - link "Contact Sales" [ref=e664] [cursor=pointer]:
+          - /url: mailto:hello@ephermal.app
+    - generic [ref=e665]:
+      - generic [ref=e666]:
+        - img [ref=e667]
+        - text: No hidden fees or ad account charges
+      - generic [ref=e669]:
+        - img [ref=e670]
+        - text: Setup in under 3 minutes
+      - generic [ref=e673]:
+        - img [ref=e674]
+        - text: Cancel any time, no penalty
+    - paragraph [ref=e676]: Each plan includes monthly UGC credits as shown. Additional credit packs are available from inside your dashboard.
+  - generic [ref=e678]:
+    - generic [ref=e679]:
+      - generic [ref=e680]: FAQ
+      - heading "Common questions" [level=2] [ref=e681]
+    - generic [ref=e682]:
+      - generic [ref=e683]:
+        - generic [ref=e684]:
+          - text: Do I need a Shopify store to use Ephermal?
+          - img [ref=e685]
+        - generic [ref=e687]: Ephermal connects directly to your Shopify store via OAuth - no app store required. You install by authorising access from inside your Ephermal dashboard. Your products, pricing and store data sync instantly.
+      - generic [ref=e688]:
+        - generic [ref=e689]:
+          - text: How does the UGC ad generation work?
+          - img [ref=e690]
+        - generic [ref=e692]: Our AI analyses your products and brand, then uses the Ephermal UGC Engine to generate authentic creator-style video and image ads. These are real UGC-style creatives - not templates or stock footage. You review and approve before anything goes live.
+      - generic [ref=e693]:
+        - generic [ref=e694]:
+          - text: Which ad platforms does Ephermal support?
+          - img [ref=e695]
+        - generic [ref=e697]: Ephermal fully supports Meta Ads - including Facebook and Instagram Feed, Stories, and Reels. Campaigns are created and managed via Meta's official Ads API. Everything runs from a single dashboard.
+      - generic [ref=e698]:
+        - generic [ref=e699]:
+          - text: Can I approve creatives before they launch?
+          - img [ref=e700]
+        - generic [ref=e702]: Yes - every creative generated by Ephermal goes through your approval queue first. You can approve, reject, or request a regeneration before anything is published to your ad accounts. You stay in full control.
+      - generic [ref=e703]:
+        - generic [ref=e704]:
+          - text: What happens if my ad underperforms?
+          - img [ref=e705]
+        - generic [ref=e707]: Ephermal's closed-loop optimization automatically detects underperforming ads and regenerates new creatives to replace them. It learns what works for your store over time and compounds performance - the longer you run it, the smarter it gets.
+      - generic [ref=e708]:
+        - generic [ref=e709]:
+          - text: How is billing handled?
+          - img [ref=e710]
+        - generic [ref=e712]: Billing is handled directly through Ephermal - separate from your Shopify billing. You subscribe monthly and can cancel any time from your dashboard. No agency fees, no hidden costs.
+      - generic [ref=e713]:
+        - generic [ref=e714]:
+          - text: What are UGC credits?
+          - img [ref=e715]
+        - generic [ref=e717]: Each plan includes a monthly UGC credit allocation. One credit generates one UGC creative (video or image). If you need more than your plan includes, you can purchase additional credit packs from within your dashboard at any time.
+  - generic [ref=e719]:
+    - heading "Your next customer is one ad away." [level=2] [ref=e720]:
+      - text: Your next customer
+      - text: is one ad away.
+    - paragraph [ref=e721]: Install once. Your campaigns run 24/7.
+    - link "Get Started" [ref=e722] [cursor=pointer]:
+      - /url: /auth/register.html
+    - paragraph [ref=e723]: Shopify OAuth takes 90 seconds. Cancel from settings.
+  - contentinfo [ref=e724]:
+    - generic [ref=e725]:
+      - img "Ephermal" [ref=e726]
+      - text: Ephermal
+    - generic [ref=e727]:
+      - link "Privacy" [ref=e728] [cursor=pointer]:
+        - /url: /privacy
+      - link "Terms" [ref=e729] [cursor=pointer]:
+        - /url: /terms
+      - link "Contact" [ref=e730] [cursor=pointer]:
+        - /url: mailto:hello@ephermal.app
+    - generic [ref=e731]: © 2026 Ephermal. All rights reserved.

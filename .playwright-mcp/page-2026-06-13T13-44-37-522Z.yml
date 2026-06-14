@@ -1,0 +1,326 @@
+- generic [ref=e2]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button "Main menu" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+        - link "Google Search Console" [ref=e12] [cursor=pointer]:
+          - /url: ./search-console?resource_id=https%3A%2F%2Fephermal.app%2F
+          - img [ref=e13]
+      - generic [ref=e14]:
+        - search [ref=e16]:
+          - generic [ref=e22]:
+            - textbox [disabled] [ref=e23]: Inspect any URL in 'https://ephermal.app/'
+            - combobox "Inspect any URL in https://ephermal.app/" [ref=e24]
+          - button "Search" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+        - generic [ref=e29]:
+          - generic [ref=e31]:
+            - button "Help" [ref=e33] [cursor=pointer]:
+              - generic [ref=e36]: 
+            - button "User settings" [ref=e38] [cursor=pointer]:
+              - img [ref=e41]
+          - 'button "Unread messages: 2" [ref=e45] [cursor=pointer]':
+            - generic [ref=e47]:
+              - generic [ref=e48]: 
+              - generic [ref=e50]: "2"
+      - generic [ref=e52]:
+        - button "Google apps" [ref=e56] [cursor=pointer]:
+          - img [ref=e57]
+        - 'button "Google Account: Jamal Settah (jamalsettah2604@gmail.com)" [ref=e62] [cursor=pointer]':
+          - img [ref=e64]
+  - dialog "navigational drawer" [ref=e68]:
+    - navigation "Primary" [ref=e71]:
+      - button "Search property" [ref=e75] [cursor=pointer]:
+        - img "favicon" [ref=e77]
+        - combobox "https://ephermal.app/" [ref=e84]
+        - generic [ref=e85]: 
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - link "Overview" [ref=e90] [cursor=pointer]:
+              - /url: ./search-console?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e92]: home
+              - generic [ref=e94]: Overview
+            - link "Insights" [ref=e97] [cursor=pointer]:
+              - /url: ./search-console/performance/insights?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e99]: lightbulb_2
+              - generic [ref=e101]: Insights
+            - link "Performance" [ref=e104] [cursor=pointer]:
+              - /url: ./search-console/performance/search-analytics?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e106]: trending_up
+              - generic [ref=e108]: Performance
+            - button "URL inspection" [ref=e111] [cursor=pointer]:
+              - generic [ref=e113]: search
+              - generic [ref=e115]: URL inspection
+          - generic [ref=e119]:
+            - generic [ref=e121]:
+              - generic [ref=e124]: Indexing
+              - button "Indexing report section" [expanded] [ref=e126] [cursor=pointer]:
+                - generic [ref=e128]: keyboard_arrow_up
+            - generic [ref=e132]:
+              - link "Pages" [ref=e134] [cursor=pointer]:
+                - /url: ./search-console/index?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e136]: file_copy
+                - generic [ref=e138]: Pages
+              - link "Sitemaps" [ref=e141] [cursor=pointer]:
+                - /url: ./search-console/sitemaps?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e143]: account_tree
+                - generic [ref=e145]: Sitemaps
+              - link "Removals" [ref=e148] [cursor=pointer]:
+                - /url: ./search-console/removals?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e150]: visibility_off
+                - generic [ref=e152]: Removals
+          - generic [ref=e156]:
+            - generic [ref=e158]:
+              - generic [ref=e161]: Experience
+              - button "Experience report section" [expanded] [ref=e163] [cursor=pointer]:
+                - generic [ref=e165]: keyboard_arrow_up
+            - generic [ref=e169]:
+              - link "Core web vitals" [ref=e171] [cursor=pointer]:
+                - /url: ./search-console/core-web-vitals?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e173]: speed
+                - generic [ref=e175]: Core web vitals
+              - link "HTTPS" [ref=e178] [cursor=pointer]:
+                - /url: ./search-console/https?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e180]: lock
+                - generic [ref=e182]: HTTPS
+          - generic [ref=e186]:
+            - generic [ref=e188]:
+              - generic [ref=e191]: Enhancements
+              - button "Enhancements report section" [expanded] [ref=e193] [cursor=pointer]:
+                - generic [ref=e195]: keyboard_arrow_up
+            - generic [ref=e199]:
+              - link "FAQ" [ref=e201] [cursor=pointer]:
+                - /url: ./search-console/r/faq?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e203]: layers
+                - generic [ref=e205]: FAQ
+              - link "Review snippets" [ref=e208] [cursor=pointer]:
+                - /url: ./search-console/r/review-snippet?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e210]: layers
+                - generic [ref=e212]: Review snippets
+          - generic [ref=e218]:
+            - generic [ref=e221]: Security & Manual Actions
+            - button "Security & Manual Actions report section" [ref=e223] [cursor=pointer]:
+              - generic [ref=e225]: keyboard_arrow_down
+          - generic [ref=e226]:
+            - link "Links report" [ref=e228] [cursor=pointer]:
+              - /url: ./search-console/links?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e230]: link_2
+              - generic [ref=e232]: Links
+            - link "Achievements" [ref=e235] [cursor=pointer]:
+              - /url: ./search-console/achievements?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e237]: trophy
+              - generic [ref=e239]: Achievements
+            - link "Settings" [ref=e242] [cursor=pointer]:
+              - /url: ./search-console/settings?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e244]: settings
+              - generic [ref=e246]: Settings
+        - generic [ref=e248]:
+          - generic [ref=e250]:
+            - button "Submit feedback" [ref=e252] [cursor=pointer]:
+              - generic [ref=e254]: feedback
+              - generic [ref=e256]: Submit feedback
+            - button "About Search Console" [ref=e259] [cursor=pointer]:
+              - generic [ref=e261]: info
+              - generic [ref=e263]: About Search Console
+          - generic [ref=e267]:
+            - link "Privacy" [ref=e268] [cursor=pointer]:
+              - /url: https://myaccount.google.com/privacypolicy?hl=en-GB
+            - link "Terms" [ref=e269] [cursor=pointer]:
+              - /url: https://myaccount.google.com/termsofservice?hl=en-GB
+  - generic [ref=e270]:
+    - generic [ref=e272]:
+      - generic [ref=e273]:
+        - generic [ref=e275]:
+          - navigation "Breadcrumbs" [ref=e277]:
+            - heading "Performance" [level=1] [ref=e280]
+          - button "EXPORT" [ref=e284] [cursor=pointer]:
+            - generic [ref=e287]:
+              - generic [ref=e288]: 
+              - generic [ref=e289]: EXPORT
+        - generic [ref=e292]:
+          - generic [ref=e293]:
+            - generic [ref=e294]:
+              - radiogroup "Select time range" [ref=e295]:
+                - generic [ref=e297]:
+                  - radio "24 hours" [ref=e298] [cursor=pointer]:
+                    - generic [ref=e299]:
+                      - generic [ref=e301]: 24 hours
+                      - img [ref=e303]
+                  - radio "7 days" [ref=e306] [cursor=pointer]:
+                    - generic [ref=e307]:
+                      - generic [ref=e309]: 7 days
+                      - img [ref=e311]
+                  - radio "28 days" [ref=e314] [cursor=pointer]:
+                    - generic [ref=e315]:
+                      - generic [ref=e317]: 28 days
+                      - img [ref=e319]
+                  - radio "3 months" [checked] [ref=e322] [cursor=pointer]:
+                    - generic [ref=e323]:
+                      - generic [ref=e325]: 3 months
+                      - img [ref=e327]
+              - button "More time ranges" [ref=e332] [cursor=pointer]:
+                - generic [ref=e334]: More
+                - generic [ref=e336]: arrow_drop_down
+            - list [ref=e337]:
+              - generic [ref=e338]:
+                - generic [ref=e342]:
+                  - 'button "Search type: Web" [ref=e344] [cursor=pointer]':
+                    - generic [ref=e346]: "Search type: Web"
+                    - generic [ref=e348]: arrow_drop_down
+                  - tooltip [ref=e349]: "Search type: Web"
+                - generic [ref=e354]:
+                  - button "Add filter" [ref=e356] [cursor=pointer]:
+                    - generic [ref=e359]: add
+                    - generic [ref=e360]: Add filter
+                  - tooltip [ref=e361]: Add filter
+                - generic [ref=e364]:
+                  - button "Customise your performance report using AI" [ref=e365] [cursor=pointer]:
+                    - generic [ref=e367]: filter_list_spark
+                  - tooltip [ref=e369]: Customise your performance report using AI
+          - generic [ref=e370]: "Last update: 3.5 hours ago"
+      - main [ref=e378]:
+        - generic [ref=e381]:
+          - generic [ref=e382]:
+            - generic [ref=e383]:
+              - generic [ref=e384] [cursor=pointer]:
+                - button "Total clicks 1" [ref=e385]:
+                  - generic [ref=e389]:
+                    - generic "Total clicks" [ref=e390]:
+                      - generic [ref=e391]: 
+                      - generic [ref=e392]: Total clicks
+                    - generic "1" [ref=e393]
+                - button "null" [ref=e396]:
+                  - generic [ref=e397]: 
+              - generic [ref=e398] [cursor=pointer]:
+                - button "Total impressions 22" [ref=e399]:
+                  - generic [ref=e403]:
+                    - generic "Total impressions" [ref=e404]:
+                      - generic [ref=e405]: 
+                      - generic [ref=e406]: Total impressions
+                    - generic "22" [ref=e407]
+                - button "null" [ref=e410]:
+                  - generic [ref=e411]: 
+              - generic [ref=e412] [cursor=pointer]:
+                - button "Average CTR 4.5%" [ref=e413]:
+                  - generic [ref=e417]:
+                    - generic "Average CTR" [ref=e418]:
+                      - generic [ref=e420]: Average CTR
+                    - generic "4.5%" [ref=e421]
+                - button "null" [ref=e424]:
+                  - generic [ref=e425]: 
+              - generic [ref=e426] [cursor=pointer]:
+                - button "Average position 5.3" [ref=e427]:
+                  - generic [ref=e431]:
+                    - generic "Average position" [ref=e432]:
+                      - generic [ref=e434]: Average position
+                    - generic "5.3" [ref=e435]
+                - button "null" [ref=e438]:
+                  - generic [ref=e439]: 
+            - 'button "Selected time granularity: Daily" [ref=e444] [cursor=pointer]':
+              - generic [ref=e446]: Daily
+              - img [ref=e448]
+          - generic [ref=e451]:
+            - generic [ref=e452]:
+              - generic [ref=e454]: Clicks
+              - generic [ref=e456]: Impressions
+            - application "chart" [ref=e458]:
+              - img [ref=e459]:
+                - generic [ref=e460]:
+                  - generic [ref=e461]:
+                    - generic [ref=e463]: 25/05/2026
+                    - generic [ref=e465]: 28/05/2026
+                    - generic [ref=e467]: 31/05/2026
+                    - generic [ref=e469]: 03/06/2026
+                    - generic [ref=e471]: 06/06/2026
+                    - generic [ref=e473]: 09/06/2026
+                  - generic [ref=e474]:
+                    - generic [ref=e476]: "3"
+                    - generic [ref=e478]: "2"
+                    - generic [ref=e480]: "1"
+                    - generic [ref=e482]: "0"
+                  - generic [ref=e483]:
+                    - generic [ref=e485]: "3"
+                    - generic [ref=e487]: "2"
+                    - generic [ref=e489]: "1"
+                    - generic [ref=e491]: "0"
+              - generic [ref=e503]: Chart, containing counts of Total clicks, Total impressions, Average CTR and Average position from 25 May 2026 to 11 June 2026
+        - generic [ref=e506]:
+          - tablist [ref=e508]:
+            - tab "Queries" [selected] [ref=e509] [cursor=pointer]:
+              - generic [ref=e511]: Queries
+            - tab "Pages" [ref=e513] [cursor=pointer]:
+              - generic [ref=e515]: Pages
+            - tab "Countries" [ref=e516] [cursor=pointer]:
+              - generic [ref=e518]: Countries
+            - tab "Devices" [ref=e519] [cursor=pointer]:
+              - generic [ref=e521]: Devices
+            - tab "Search appearance" [ref=e522] [cursor=pointer]:
+              - generic [ref=e524]: Search appearance
+            - tab "Days" [ref=e525] [cursor=pointer]:
+              - generic [ref=e527]: Days
+          - tabpanel [ref=e530]:
+            - generic [ref=e534]:
+              - button "Filter table rows" [ref=e541] [cursor=pointer]:
+                - generic [ref=e544]: 
+              - table [ref=e548]:
+                - rowgroup [ref=e549]:
+                  - row "Top queries Sort Top queries Sort Clicks Clicks Sort Impressions Impressions" [ref=e550]:
+                    - columnheader "Top queries Sort Top queries" [ref=e551]:
+                      - generic [ref=e552]:
+                        - generic [ref=e554]: Top queries
+                        - button "Sort Top queries" [ref=e555] [cursor=pointer]:
+                          - img [ref=e557]
+                    - columnheader "Sort Clicks Clicks" [ref=e559]:
+                      - generic [ref=e560]:
+                        - button "Sort Clicks" [ref=e561] [cursor=pointer]:
+                          - img [ref=e563]
+                        - generic [ref=e566]: Clicks
+                    - columnheader "Sort Impressions Impressions" [ref=e567]:
+                      - generic [ref=e568]:
+                        - button "Sort Impressions" [ref=e569] [cursor=pointer]:
+                          - img [ref=e571]
+                        - generic [ref=e574]: Impressions
+                - rowgroup [ref=e575]:
+                  - row "ephermal 0 16" [ref=e576]:
+                    - cell "ephermal" [ref=e577]:
+                      - generic [ref=e579]: ephermal
+                    - cell "0" [ref=e580]:
+                      - generic [ref=e582]: "0"
+                    - cell "16" [ref=e583]:
+                      - generic [ref=e585]: "16"
+              - generic [ref=e588]:
+                - generic [ref=e590]:
+                  - generic [ref=e591]: "Rows per page:"
+                  - listbox "Number of rows per page" [ref=e592] [cursor=pointer]:
+                    - option "5"
+                    - option "10" [selected] [ref=e593]
+                    - option "25"
+                    - option "50"
+                    - option "100"
+                    - option "250"
+                    - option "500"
+                - generic [ref=e594]:
+                  - generic [ref=e595]: 1-1 of 1
+                  - generic [ref=e596]:
+                    - generic [ref=e598]:
+                      - button "Previous page" [disabled] [ref=e599]:
+                        - img [ref=e602]
+                      - tooltip [ref=e604]: Previous page
+                    - generic [ref=e606]:
+                      - button "Next page" [disabled] [ref=e607]:
+                        - img [ref=e610]
+                      - tooltip [ref=e612]: Next page
+    - generic [ref=e614]:
+      - generic [ref=e615]:
+        - generic [ref=e616]: 
+        - generic [ref=e617]: Performance on Search results
+      - generic [ref=e618]: Explore your property's performance on Google Search, including impressions, position, CTR and top query strings.
+      - generic [ref=e619]:
+        - generic [ref=e622]:
+          - generic [ref=e624]: Learn more
+          - generic "Learn more" [ref=e625]
+        - generic [ref=e628]:
+          - generic [ref=e630]: Got it
+          - generic "Got it" [ref=e631]

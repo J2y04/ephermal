@@ -64,7 +64,11 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
   const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
   const priceId = subscription.items.data[0]?.price.id;
-  const plan = PRICE_TO_PLAN[priceId] ?? 'starter';
+  const plan = PRICE_TO_PLAN[priceId];
+  if (!plan) {
+    console.error(`Unknown price ID "${priceId}" — not in PRICE_TO_PLAN. Check STRIPE_PRICE_* env vars.`);
+    throw new Error(`Unknown price ID: ${priceId}`);
+  }
   const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
 
   await supabase.from('user_plans').upsert({
@@ -118,8 +122,12 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   // For top-ups we stored the price in metadata at checkout creation
   const priceId = paymentIntent.metadata?.price_id;
 
-  // Resolve credit amount — default to 50 if price not found (failsafe)
-  const credits = (priceId && TOPUP_CREDITS[priceId]) ? TOPUP_CREDITS[priceId] : 50;
+  // Resolve credit amount — fail loudly if price not found (misconfigured env vars)
+  const credits = priceId != null ? TOPUP_CREDITS[priceId] : undefined;
+  if (credits === undefined) {
+    console.error(`Unknown top-up price ID "${priceId}" — check STRIPE_PRICE_TOPUP_* env vars.`);
+    throw new Error(`Unknown top-up price ID: ${priceId}`);
+  }
 
   // Current month key YYYY-MM (UTC)
   const month = new Date().toISOString().slice(0, 7);

@@ -1,0 +1,157 @@
+- generic:
+  - generic [ref=e2]:
+    - navigation [ref=e3]:
+      - complementary [ref=e4]:
+        - button "j jamalsettah2604" [ref=e6] [cursor=pointer]:
+          - generic [ref=e8]:
+            - generic [ref=e10]:
+              - img [ref=e11]
+              - text: j
+            - generic [ref=e26]: jamalsettah2604
+          - img [ref=e28]
+        - navigation [ref=e31]:
+          - list [ref=e32]:
+            - listitem [ref=e33]:
+              - link "Emails" [ref=e34] [cursor=pointer]:
+                - /url: /emails
+                - img [ref=e36]
+                - text: Emails
+            - listitem [ref=e42]:
+              - link "Broadcasts" [ref=e43] [cursor=pointer]:
+                - /url: /broadcasts
+                - img [ref=e45]
+                - text: Broadcasts
+            - listitem [ref=e51]:
+              - link "Automations" [ref=e52] [cursor=pointer]:
+                - /url: /automations
+                - img [ref=e54]
+                - text: Automations
+            - listitem [ref=e66]:
+              - link "Templates" [ref=e67] [cursor=pointer]:
+                - /url: /templates
+                - img [ref=e69]
+                - text: Templates
+            - listitem [ref=e75]:
+              - link "Audience" [ref=e76] [cursor=pointer]:
+                - /url: /audience
+                - img [ref=e78]
+                - text: Audience
+            - listitem [ref=e94]:
+              - link "Metrics" [ref=e95] [cursor=pointer]:
+                - /url: /metrics
+                - img [ref=e97]
+                - text: Metrics
+            - listitem [ref=e107]:
+              - link "Domains" [active] [ref=e108] [cursor=pointer]:
+                - /url: /domains
+                - img [ref=e110]
+                - text: Domains
+            - listitem [ref=e116]:
+              - link "Logs" [ref=e117] [cursor=pointer]:
+                - /url: /logs
+                - img [ref=e119]
+                - text: Logs
+            - listitem [ref=e129]:
+              - link "API keys" [ref=e130] [cursor=pointer]:
+                - /url: /api-keys
+                - img [ref=e132]
+                - text: API keys
+            - listitem [ref=e140]:
+              - link "Webhooks" [ref=e141] [cursor=pointer]:
+                - /url: /webhooks
+                - img [ref=e143]
+                - text: Webhooks
+            - listitem [ref=e152]:
+              - link "Settings" [ref=e153] [cursor=pointer]:
+                - /url: /settings
+                - img [ref=e155]
+                - text: Settings
+        - button "j jamalsettah2604@gmail.com" [ref=e165] [cursor=pointer]:
+          - generic [ref=e167]:
+            - generic [ref=e169]: j
+            - generic [ref=e170]: jamalsettah2604@gmail.com
+          - img [ref=e172]
+    - generic [ref=e176]:
+      - generic [ref=e177]:
+        - link "Docs" [ref=e179] [cursor=pointer]:
+          - /url: https://resend.com/docs/dashboard/domains/introduction
+        - button "Need help? H" [ref=e180] [cursor=pointer]:
+          - generic [ref=e182]: Need help?
+          - generic [ref=e184]: H
+      - generic [ref=e186]:
+        - generic [ref=e320]:
+          - heading "Domains" [level=1] [ref=e321]
+          - generic [ref=e322]:
+            - button "Add domain" [ref=e323] [cursor=pointer]:
+              - img [ref=e325]
+              - generic [ref=e326]: Add domain
+            - button "Open API drawer" [ref=e327] [cursor=pointer]:
+              - img [ref=e330]
+        - generic [ref=e340]:
+          - generic [ref=e341]:
+            - generic [ref=e342]:
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+              - textbox "Search..." [ref=e343]
+            - generic [ref=e344]:
+              - combobox [ref=e345] [cursor=pointer]:
+                - generic: All statuses
+                - img [ref=e346]
+              - combobox [ref=e348] [cursor=pointer]:
+                - generic: All regions
+                - img [ref=e349]
+            - button [ref=e351] [cursor=pointer]:
+              - img [ref=e354]
+          - generic [ref=e362]:
+            - table [ref=e365]:
+              - rowgroup [ref=e366]:
+                - row "Domain Status Region Created" [ref=e367]:
+                  - columnheader "Domain" [ref=e368]:
+                    - generic [ref=e369]:
+                      - generic [ref=e370]:
+                        - checkbox [ref=e371]
+                        - checkbox [ref=e372]
+                      - text: Domain
+                  - columnheader "Status" [ref=e373]
+                  - columnheader "Region" [ref=e374]
+                  - columnheader "Created" [ref=e375]
+                  - columnheader [ref=e376]
+              - rowgroup [ref=e377]:
+                - row "ephermal.app verified eu-west-1 Ireland (eu-west-1) 12 days ago More actions" [ref=e378]:
+                  - cell "ephermal.app" [ref=e379]:
+                    - generic [ref=e380]:
+                      - generic [ref=e381]:
+                        - checkbox [ref=e382]
+                        - checkbox [ref=e383]
+                      - link [ref=e384] [cursor=pointer]:
+                        - /url: /domains/71558dbb-8a1b-4be4-a0b7-84a01088fd5c
+                        - generic [ref=e385]:
+                          - img [ref=e386]
+                          - img [ref=e417]
+                      - link "ephermal.app" [ref=e420] [cursor=pointer]:
+                        - /url: /domains/71558dbb-8a1b-4be4-a0b7-84a01088fd5c
+                  - cell "verified" [ref=e421]:
+                    - generic [ref=e423]: verified
+                  - cell "eu-west-1 Ireland (eu-west-1)" [ref=e424]:
+                    - generic [ref=e425]:
+                      - img "eu-west-1" [ref=e426]
+                      - generic [ref=e427]:
+                        - text: Ireland
+                        - generic [ref=e428]: (eu-west-1)
+                  - cell "12 days ago" [ref=e429]:
+                    - time [ref=e430]: 12 days ago
+                  - cell "More actions" [ref=e431]:
+                    - button "More actions" [ref=e432] [cursor=pointer]:
+                      - img [ref=e434]
+            - generic [ref=e439]:
+              - text: Page 1 – 1 of 1 domains –
+              - generic [ref=e440]:
+                - combobox "Items per page" [ref=e441] [cursor=pointer]:
+                  - option "40 items" [selected]
+                  - option "80 items"
+                  - option "120 items"
+                - img
+  - region "Notifications alt+T"
+  - alert [ref=e304]: Domains · Resend

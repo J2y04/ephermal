@@ -1,0 +1,231 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - button "Main menu" [ref=e1146] [cursor=pointer]:
+            - img [ref=e8]
+          - link "Google Search Console" [ref=e1147] [cursor=pointer]:
+            - /url: ./search-console?resource_id=https%3A%2F%2Fephermal.app%2F
+            - img [ref=e13]
+        - generic [ref=e14]:
+          - search [ref=e16]:
+            - generic [ref=e22]:
+              - textbox [disabled] [ref=e23]: Inspect any URL in 'https://ephermal.app/'
+              - combobox "Inspect any URL in https://ephermal.app/" [ref=e1148]
+            - button "Search" [ref=e1149] [cursor=pointer]:
+              - img [ref=e26]
+          - generic [ref=e29]:
+            - generic [ref=e31]:
+              - button "Help" [ref=e1150] [cursor=pointer]:
+                - generic [ref=e36]: 
+              - button "User settings" [ref=e1151] [cursor=pointer]:
+                - img [ref=e41]
+            - 'button "Unread messages: 2" [ref=e1152] [cursor=pointer]':
+              - generic [ref=e47]:
+                - generic [ref=e48]: 
+                - generic [ref=e1038]: "2"
+        - generic [ref=e52]:
+          - button "Google apps" [ref=e1153] [cursor=pointer]:
+            - img [ref=e57]
+          - 'button "Google Account: Jamal Settah (jamalsettah2604@gmail.com)" [ref=e1154] [cursor=pointer]':
+            - img [ref=e64]
+    - dialog "navigational drawer" [ref=e1155]:
+      - navigation "Primary" [ref=e1156]:
+        - button "Search property" [ref=e1157] [cursor=pointer]:
+          - img "favicon" [ref=e1158]
+          - combobox "https://ephermal.app/" [ref=e1159]
+          - generic [ref=e85]: 
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - link "Overview" [ref=e1160] [cursor=pointer]:
+                - /url: ./search-console?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e92]: home
+                - generic [ref=e94]: Overview
+              - link "Insights" [ref=e1161] [cursor=pointer]:
+                - /url: ./search-console/performance/insights?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e99]: lightbulb_2
+                - generic [ref=e101]: Insights
+              - link "Performance" [ref=e1162] [cursor=pointer]:
+                - /url: ./search-console/performance/search-analytics?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e106]: trending_up
+                - generic [ref=e108]: Performance
+              - button "URL inspection" [ref=e1163] [cursor=pointer]:
+                - generic [ref=e113]: search
+                - generic [ref=e115]: URL inspection
+            - generic [ref=e119]:
+              - generic [ref=e121]:
+                - generic [ref=e124]: Indexing
+                - button "Indexing report section" [expanded] [ref=e1164] [cursor=pointer]:
+                  - generic [ref=e128]: keyboard_arrow_up
+              - generic [ref=e132]:
+                - link "Pages" [ref=e1165] [cursor=pointer]:
+                  - /url: ./search-console/index?resource_id=https%3A%2F%2Fephermal.app%2F
+                  - generic [ref=e136]: file_copy
+                  - generic [ref=e138]: Pages
+                - link "Sitemaps" [ref=e1166] [cursor=pointer]:
+                  - /url: ./search-console/sitemaps?resource_id=https%3A%2F%2Fephermal.app%2F
+                  - generic [ref=e143]: account_tree
+                  - generic [ref=e145]: Sitemaps
+                - link "Removals" [ref=e1167] [cursor=pointer]:
+                  - /url: ./search-console/removals?resource_id=https%3A%2F%2Fephermal.app%2F
+                  - generic [ref=e150]: visibility_off
+                  - generic [ref=e152]: Removals
+            - generic [ref=e156]:
+              - generic [ref=e158]:
+                - generic [ref=e161]: Experience
+                - button "Experience report section" [expanded] [ref=e1168] [cursor=pointer]:
+                  - generic [ref=e165]: keyboard_arrow_up
+              - generic [ref=e169]:
+                - link "Core web vitals" [ref=e1169] [cursor=pointer]:
+                  - /url: ./search-console/core-web-vitals?resource_id=https%3A%2F%2Fephermal.app%2F
+                  - generic [ref=e173]: speed
+                  - generic [ref=e175]: Core web vitals
+                - link "HTTPS" [ref=e1170] [cursor=pointer]:
+                  - /url: ./search-console/https?resource_id=https%3A%2F%2Fephermal.app%2F
+                  - generic [ref=e180]: lock
+                  - generic [ref=e182]: HTTPS
+            - generic [ref=e186]:
+              - generic [ref=e188]:
+                - generic [ref=e191]: Enhancements
+                - button "Enhancements report section" [expanded] [ref=e1171] [cursor=pointer]:
+                  - generic [ref=e195]: keyboard_arrow_up
+              - generic [ref=e199]:
+                - link "FAQ" [ref=e1172] [cursor=pointer]:
+                  - /url: ./search-console/r/faq?resource_id=https%3A%2F%2Fephermal.app%2F
+                  - generic [ref=e203]: layers
+                  - generic [ref=e205]: FAQ
+                - link "Review snippets" [ref=e1173] [cursor=pointer]:
+                  - /url: ./search-console/r/review-snippet?resource_id=https%3A%2F%2Fephermal.app%2F
+                  - generic [ref=e210]: layers
+                  - generic [ref=e212]: Review snippets
+            - generic [ref=e218]:
+              - generic [ref=e221]: Security & Manual Actions
+              - button "Security & Manual Actions report section" [ref=e1174] [cursor=pointer]:
+                - generic [ref=e225]: keyboard_arrow_down
+            - generic [ref=e226]:
+              - link "Links report" [ref=e1175] [cursor=pointer]:
+                - /url: ./search-console/links?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e230]: link_2
+                - generic [ref=e232]: Links
+              - link "Achievements" [ref=e1176] [cursor=pointer]:
+                - /url: ./search-console/achievements?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e237]: trophy
+                - generic [ref=e239]: Achievements
+              - link "Settings" [ref=e1177] [cursor=pointer]:
+                - /url: ./search-console/settings?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e244]: settings
+                - generic [ref=e246]: Settings
+          - generic [ref=e248]:
+            - generic [ref=e250]:
+              - button "Submit feedback" [ref=e1178] [cursor=pointer]:
+                - generic [ref=e254]: feedback
+                - generic [ref=e256]: Submit feedback
+              - button "About Search Console" [ref=e1179] [cursor=pointer]:
+                - generic [ref=e261]: info
+                - generic [ref=e263]: About Search Console
+            - generic [ref=e267]:
+              - link "Privacy" [ref=e1180] [cursor=pointer]:
+                - /url: https://myaccount.google.com/privacypolicy?hl=en-GB
+              - link "Terms" [ref=e1181] [cursor=pointer]:
+                - /url: https://myaccount.google.com/termsofservice?hl=en-GB
+    - generic [ref=e889]:
+      - generic [ref=e890]:
+        - generic [ref=e898]: https://ephermal.app/terms
+        - generic [ref=e899]:
+          - generic [ref=e901]:
+            - navigation "Breadcrumbs" [ref=e1182]:
+              - heading "URL Inspection" [level=1] [ref=e1183]
+            - button "Test live URL" [ref=e1184] [cursor=pointer]:
+              - generic [ref=e914]: Test live URL
+          - main [ref=e916]:
+            - generic [ref=e917]:
+              - generic [ref=e919]:
+                - generic [ref=e920]:
+                  - generic [ref=e921]: info
+                  - generic [ref=e922]:
+                    - generic [ref=e923]: URL is not on Google
+                    - generic [ref=e924]:
+                      - text: This page is not indexed. Pages that aren't indexed can't be served on Google. See the details below to learn why it wasn't indexed.
+                      - link "Learn more" [ref=e1185] [cursor=pointer]:
+                        - /url: https://support.google.com/webmasters/answer/9012289#url_not_on_google
+                - generic [ref=e928]:
+                  - button "View crawled page" [disabled] [ref=e1186]:
+                    - generic [ref=e937]: View crawled page
+                  - generic [ref=e938]:
+                    - generic [ref=e1187]:
+                      - generic [ref=e1188]: 
+                      - generic [ref=e1189]: Indexing requested
+                    - button "Request indexingRequest again" [active] [ref=e1190] [cursor=pointer]:
+                      - generic [ref=e1191]: Request again
+              - generic [ref=e953]:
+                - 'button "Page indexing Page is not indexed: URL is unknown to Google" [expanded] [ref=e1192] [cursor=pointer]':
+                  - generic [ref=e955]:
+                    - generic [ref=e957]:
+                      - generic [ref=e959]: info
+                      - generic [ref=e960]:
+                        - generic [ref=e961]: Page indexing
+                        - generic [ref=e962]: "Page is not indexed: URL is unknown to Google"
+                    - generic [ref=e965]: 
+                - generic [ref=e969]:
+                  - generic [ref=e970]:
+                    - generic [ref=e971]:
+                      - generic [ref=e972]: Discovery
+                      - generic [ref=e973]:
+                        - generic [ref=e974]: Sitemaps
+                        - generic [ref=e976]: No referring sitemaps detected
+                      - generic [ref=e977]:
+                        - generic [ref=e978]: Referring page
+                        - generic [ref=e980]: None detected
+                      - generic [ref=e982]: URL might be known from other sources that are currently not reported
+                    - generic [ref=e983]:
+                      - generic [ref=e984]: Crawl
+                      - generic [ref=e985]:
+                        - generic [ref=e986]: Last crawl
+                        - generic [ref=e988]: N/A
+                      - generic [ref=e989]:
+                        - generic [ref=e990]: Crawled as
+                        - generic [ref=e992]: N/A
+                      - generic [ref=e993]:
+                        - generic [ref=e994]: Crawl allowed?
+                        - generic [ref=e996]: N/A
+                      - generic [ref=e997]:
+                        - generic [ref=e998]: Page fetch
+                        - generic [ref=e1000]: N/A
+                      - generic [ref=e1001]:
+                        - generic [ref=e1002]: Indexing allowed?
+                        - generic [ref=e1004]: info
+                        - generic [ref=e1006]: N/A
+                    - generic [ref=e1007]:
+                      - generic [ref=e1008]: Indexing
+                      - generic [ref=e1009]:
+                        - generic [ref=e1010]: User-declared canonical
+                        - generic [ref=e1012]: N/A
+                      - generic [ref=e1013]:
+                        - generic [ref=e1015]:
+                          - generic [ref=e1016]: Google-selected canonical
+                          - button "null" [ref=e1193] [cursor=pointer]:
+                            - generic [ref=e1020]: 
+                        - generic [ref=e1022]: N/A
+                  - link "Link to more extensive documentation" [ref=e1194] [cursor=pointer]:
+                    - /url: https://support.google.com/webmasters/answer/9012289#url_unknown
+                    - generic [ref=e1031]: Learn More
+              - generic [ref=e1032]: Enhancements and experience
+              - generic [ref=e1036]: Only indexed URLs can have enhancements
+      - generic [ref=e1049]:
+        - generic [ref=e1050]:
+          - generic [ref=e1051]: 
+          - generic [ref=e1052]: URL inspection
+        - generic [ref=e1053]: Find out how the Google Index sees your page. Use this to troubleshoot if your page isn't appearing, or isn't appearing properly, in Google Search results.
+        - generic [ref=e1054]:
+          - generic [ref=e1057]:
+            - generic [ref=e1059]: Learn more
+            - generic "Learn more" [ref=e1195]
+          - generic [ref=e1063]:
+            - generic [ref=e1065]: Got it
+            - generic "Got it" [ref=e1196]
+  - iframe [ref=e828]:
+    - generic [ref=f15e6]:
+      - text: protected by
+      - strong [ref=f15e7]: reCAPTCHA

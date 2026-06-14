@@ -1,0 +1,298 @@
+- generic [ref=e2]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button "Main menu" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+        - link "Google Search Console" [ref=e12] [cursor=pointer]:
+          - /url: ./search-console?resource_id=https%3A%2F%2Fephermal.app%2F
+          - img [ref=e13]
+      - generic [ref=e14]:
+        - search [ref=e16]:
+          - generic [ref=e22]:
+            - textbox [disabled] [ref=e23]: Inspect any URL in 'https://ephermal.app/'
+            - combobox "Inspect any URL in https://ephermal.app/" [expanded] [active] [ref=e24]
+          - button "Search" [ref=e25] [cursor=pointer]:
+            - img [ref=e26]
+        - generic [ref=e29]:
+          - generic [ref=e31]:
+            - button "Help" [ref=e33] [cursor=pointer]:
+              - generic [ref=e36]: 
+            - button "User settings" [ref=e38] [cursor=pointer]:
+              - img [ref=e41]
+          - 'button "Unread messages: 2" [ref=e45] [cursor=pointer]':
+            - generic [ref=e47]:
+              - generic [ref=e48]: 
+              - generic [ref=e50]: "2"
+      - generic [ref=e52]:
+        - button "Google apps" [ref=e56] [cursor=pointer]:
+          - img [ref=e57]
+        - 'button "Google Account: Jamal Settah (jamalsettah2604@gmail.com)" [ref=e62] [cursor=pointer]':
+          - img [ref=e64]
+  - dialog "navigational drawer" [ref=e68]:
+    - navigation "Primary" [ref=e71]:
+      - button "Search property" [ref=e75] [cursor=pointer]:
+        - img "favicon" [ref=e77]
+        - combobox "https://ephermal.app/" [ref=e84]
+        - generic [ref=e85]: 
+      - generic [ref=e86]:
+        - generic [ref=e87]:
+          - generic [ref=e88]:
+            - link "Overview" [ref=e90] [cursor=pointer]:
+              - /url: ./search-console?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e92]: home
+              - generic [ref=e94]: Overview
+            - link "Insights" [ref=e97] [cursor=pointer]:
+              - /url: ./search-console/performance/insights?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e99]: lightbulb_2
+              - generic [ref=e101]: Insights
+            - link "Performance" [ref=e104] [cursor=pointer]:
+              - /url: ./search-console/performance/search-analytics?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e106]: trending_up
+              - generic [ref=e108]: Performance
+            - button "URL inspection" [ref=e111] [cursor=pointer]:
+              - generic [ref=e113]: search
+              - generic [ref=e115]: URL inspection
+          - generic [ref=e119]:
+            - generic [ref=e121]:
+              - generic [ref=e124]: Indexing
+              - button "Indexing report section" [expanded] [ref=e126] [cursor=pointer]:
+                - generic [ref=e128]: keyboard_arrow_up
+            - generic [ref=e132]:
+              - link "Pages" [ref=e134] [cursor=pointer]:
+                - /url: ./search-console/index?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e136]: file_copy
+                - generic [ref=e138]: Pages
+              - link "Sitemaps" [ref=e141] [cursor=pointer]:
+                - /url: ./search-console/sitemaps?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e143]: account_tree
+                - generic [ref=e145]: Sitemaps
+              - link "Removals" [ref=e148] [cursor=pointer]:
+                - /url: ./search-console/removals?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e150]: visibility_off
+                - generic [ref=e152]: Removals
+          - generic [ref=e156]:
+            - generic [ref=e158]:
+              - generic [ref=e161]: Experience
+              - button "Experience report section" [expanded] [ref=e163] [cursor=pointer]:
+                - generic [ref=e165]: keyboard_arrow_up
+            - generic [ref=e169]:
+              - link "Core web vitals" [ref=e171] [cursor=pointer]:
+                - /url: ./search-console/core-web-vitals?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e173]: speed
+                - generic [ref=e175]: Core web vitals
+              - link "HTTPS" [ref=e178] [cursor=pointer]:
+                - /url: ./search-console/https?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e180]: lock
+                - generic [ref=e182]: HTTPS
+          - generic [ref=e186]:
+            - generic [ref=e188]:
+              - generic [ref=e191]: Enhancements
+              - button "Enhancements report section" [expanded] [ref=e193] [cursor=pointer]:
+                - generic [ref=e195]: keyboard_arrow_up
+            - generic [ref=e199]:
+              - link "FAQ" [ref=e201] [cursor=pointer]:
+                - /url: ./search-console/r/faq?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e203]: layers
+                - generic [ref=e205]: FAQ
+              - link "Review snippets" [ref=e208] [cursor=pointer]:
+                - /url: ./search-console/r/review-snippet?resource_id=https%3A%2F%2Fephermal.app%2F
+                - generic [ref=e210]: layers
+                - generic [ref=e212]: Review snippets
+          - generic [ref=e218]:
+            - generic [ref=e221]: Security & Manual Actions
+            - button "Security & Manual Actions report section" [ref=e223] [cursor=pointer]:
+              - generic [ref=e225]: keyboard_arrow_down
+          - generic [ref=e226]:
+            - link "Links report" [ref=e228] [cursor=pointer]:
+              - /url: ./search-console/links?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e230]: link_2
+              - generic [ref=e232]: Links
+            - link "Achievements" [ref=e235] [cursor=pointer]:
+              - /url: ./search-console/achievements?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e237]: trophy
+              - generic [ref=e239]: Achievements
+            - link "Settings" [ref=e242] [cursor=pointer]:
+              - /url: ./search-console/settings?resource_id=https%3A%2F%2Fephermal.app%2F
+              - generic [ref=e244]: settings
+              - generic [ref=e246]: Settings
+        - generic [ref=e248]:
+          - generic [ref=e250]:
+            - button "Submit feedback" [ref=e252] [cursor=pointer]:
+              - generic [ref=e254]: feedback
+              - generic [ref=e256]: Submit feedback
+            - button "About Search Console" [ref=e259] [cursor=pointer]:
+              - generic [ref=e261]: info
+              - generic [ref=e263]: About Search Console
+          - generic [ref=e267]:
+            - link "Privacy" [ref=e268] [cursor=pointer]:
+              - /url: https://myaccount.google.com/privacypolicy?hl=en-GB
+            - link "Terms" [ref=e269] [cursor=pointer]:
+              - /url: https://myaccount.google.com/termsofservice?hl=en-GB
+  - generic [ref=e270]:
+    - generic [ref=e271]:
+      - navigation "Breadcrumbs" [ref=e276]:
+        - heading "Overview" [level=1] [ref=e279]
+      - main [ref=e283]:
+        - generic [ref=e284]:
+          - generic [ref=e289]:
+            - generic [ref=e290]:
+              - generic [ref=e291]: lightbulb_outline
+              - generic [ref=e292]: Get insights into your site's Search performance
+            - generic [ref=e295]:
+              - generic [ref=e297]: chevron_right
+              - generic [ref=e298]: Explore your insights
+              - link "Explore your insights" [ref=e299] [cursor=pointer]:
+                - /url: ./search-console/performance/insights?resource_id=https%3A%2F%2Fephermal.app%2F
+          - generic [ref=e301]:
+            - generic [ref=e302]:
+              - generic [ref=e303]: Performance
+              - generic [ref=e306]:
+                - generic [ref=e308]: chevron_right
+                - generic [ref=e309]: Full report
+                - link "Full report" [ref=e310] [cursor=pointer]:
+                  - /url: ./search-console/performance/search-analytics?resource_id=https%3A%2F%2Fephermal.app%2F
+            - generic [ref=e313]:
+              - generic [ref=e318]: 1 total web search click
+              - img [ref=e322]:
+                - generic [ref=e323]:
+                  - generic [ref=e324]:
+                    - generic [ref=e326]: 25/05/2026
+                    - generic [ref=e328]: 28/05/2026
+                    - generic [ref=e330]: 31/05/2026
+                    - generic [ref=e332]: 03/06/2026
+                    - generic [ref=e334]: 06/06/2026
+                    - generic [ref=e336]: 09/06/2026
+                  - generic [ref=e337]:
+                    - generic [ref=e339]: "3"
+                    - generic [ref=e341]: "2"
+                    - generic [ref=e343]: "1"
+                    - generic [ref=e345]: "0"
+          - generic [ref=e354]:
+            - generic [ref=e355]:
+              - generic [ref=e356]: Indexing
+              - generic [ref=e359]:
+                - generic [ref=e361]: chevron_right
+                - generic [ref=e362]: Full report
+                - link "Full report" [ref=e363] [cursor=pointer]:
+                  - /url: ./search-console/index?resource_id=https%3A%2F%2Fephermal.app%2F
+            - generic [ref=e366]:
+              - generic [ref=e368]:
+                - generic [ref=e371]: 3 not indexed pages
+                - generic [ref=e374]: 1 indexed page
+              - img [ref=e378]:
+                - generic [ref=e379]:
+                  - generic [ref=e380]:
+                    - generic [ref=e382]: 15/03/2026
+                    - generic [ref=e384]: 30/03/2026
+                    - generic [ref=e386]: 13/04/2026
+                    - generic [ref=e388]: 28/04/2026
+                    - generic [ref=e390]: 12/05/2026
+                    - generic [ref=e392]: 27/05/2026
+                  - generic [ref=e393]:
+                    - generic [ref=e395]: "3"
+                    - generic [ref=e397]: "2"
+                    - generic [ref=e399]: "1"
+                    - generic [ref=e401]: "0"
+          - generic [ref=e422]:
+            - generic [ref=e424]: Experience
+            - table [ref=e428]:
+              - rowgroup [ref=e429]:
+                - row "Type Good Needs improvement Poor Trend" [ref=e430]:
+                  - columnheader "Type" [ref=e431]
+                  - columnheader [ref=e432]
+                  - columnheader "Good" [ref=e433]
+                  - columnheader "Needs improvement" [ref=e434]
+                  - columnheader "Poor" [ref=e435]
+                  - columnheader "Trend" [ref=e436]
+                  - columnheader [ref=e437]
+              - rowgroup [ref=e438]:
+                - row "Core web vitals Mobile Desktop No data No data No data No data No data No data" [ref=e439]:
+                  - cell "Core web vitals" [ref=e440]:
+                    - generic [ref=e442]: Core web vitals
+                  - cell "Mobile Desktop" [ref=e443]:
+                    - generic [ref=e445]:
+                      - generic [ref=e446]: Mobile
+                      - generic [ref=e447]: Desktop
+                  - cell "No data No data" [ref=e448]:
+                    - generic [ref=e449]:
+                      - generic [ref=e450]: No data
+                      - generic [ref=e451]: No data
+                  - cell "No data No data" [ref=e452]:
+                    - generic [ref=e453]:
+                      - generic [ref=e454]: No data
+                      - generic [ref=e455]: No data
+                  - cell "No data No data" [ref=e456]:
+                    - generic [ref=e457]:
+                      - generic [ref=e458]: No data
+                      - generic [ref=e459]: No data
+                  - cell [ref=e460]
+                - row "HTTPS Non-HTTPS" [ref=e461]:
+                  - columnheader [ref=e462]
+                  - columnheader [ref=e463]
+                  - columnheader "HTTPS" [ref=e464]
+                  - columnheader [ref=e465]
+                  - columnheader "Non-HTTPS" [ref=e466]
+                  - columnheader [ref=e467]
+                  - columnheader [ref=e468]
+                - row "HTTPS 1 0 Open report" [ref=e469]:
+                  - cell "HTTPS" [ref=e470]:
+                    - generic [ref=e472]: HTTPS
+                  - cell [ref=e473]
+                  - cell "1" [ref=e474]:
+                    - generic [ref=e476]: "1"
+                  - cell [ref=e477]
+                  - cell "0" [ref=e478]:
+                    - generic [ref=e480]: "0"
+                  - cell [ref=e481]:
+                    - img [ref=e484]
+                  - cell "Open report" [ref=e485]:
+                    - button "Open report" [ref=e488] [cursor=pointer]:
+                      - generic [ref=e489]: chevron_right
+          - generic [ref=e491]:
+            - generic [ref=e493]: Enhancements
+            - table [ref=e497]:
+              - rowgroup [ref=e498]:
+                - row "Type Valid Invalid Trend" [ref=e499]:
+                  - columnheader "Type" [ref=e500]
+                  - columnheader "Valid" [ref=e501]
+                  - columnheader "Invalid" [ref=e502]
+                  - columnheader "Trend" [ref=e503]
+                  - columnheader [ref=e504]
+              - rowgroup [ref=e505]:
+                - row "FAQ 1 0 Open report" [ref=e506]:
+                  - cell "FAQ" [ref=e507]:
+                    - generic [ref=e509]: FAQ
+                  - cell "1" [ref=e510]:
+                    - generic [ref=e512]: "1"
+                  - cell "0" [ref=e513]:
+                    - generic [ref=e515]: "0"
+                  - cell [ref=e516]:
+                    - img [ref=e519]
+                  - cell "Open report" [ref=e521]:
+                    - button "Open report" [ref=e524] [cursor=pointer]:
+                      - generic [ref=e525]: chevron_right
+                - row "Review snippets 0 0 Open report" [ref=e526]:
+                  - cell "Review snippets" [ref=e527]:
+                    - generic [ref=e529]: Review snippets
+                  - cell "0" [ref=e530]:
+                    - generic [ref=e532]: "0"
+                  - cell "0" [ref=e533]:
+                    - generic [ref=e535]: "0"
+                  - cell [ref=e536]:
+                    - img [ref=e539]
+                  - cell "Open report" [ref=e541]:
+                    - button "Open report" [ref=e544] [cursor=pointer]:
+                      - generic [ref=e545]: chevron_right
+    - generic [ref=e547]:
+      - generic [ref=e548]:
+        - generic [ref=e549]: 
+        - generic [ref=e550]: Overview
+      - generic [ref=e551]: Get an overview of your property's performance, index coverage and enhancement success rate. Open the report to dive deeper.
+      - generic [ref=e552]:
+        - generic [ref=e555]:
+          - generic [ref=e557]: Learn more
+          - generic "Learn more" [ref=e558]
+        - generic [ref=e561]:
+          - generic [ref=e563]: Got it
+          - generic "Got it" [ref=e564]

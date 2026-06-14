@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
     .from('creatives')
     .select('*')
     .eq('user_id', userId)
-    .eq('status', 'launched');
+    .in('status', ['launched', 'approved']);
 
   if (dbErr) return errResponse(dbErr.message, 500, origin);
   if (!creatives?.length) {

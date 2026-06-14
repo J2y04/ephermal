@@ -1,0 +1,197 @@
+- generic [ref=e1]:
+  - region "console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic." [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic.
+      - link "Learn more about how Google uses cookies. Opens in a new tab." [ref=e4] [cursor=pointer]:
+        - /url: https://policies.google.com/technologies/cookies?hl=en-GB
+        - text: Learn more
+    - button "Hide" [ref=e5] [cursor=pointer]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - complementary "Skip links" [ref=e540]:
+        - link "Skip to main content" [ref=e541] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: Skip to main content
+        - button "Keyboard shortcuts" [ref=e542]:
+          - generic [ref=e13]: Keyboard shortcuts
+        - link "Accessibility help external, opens in a new window" [ref=e543] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_GB
+          - generic [ref=e15]:
+            - text: Accessibility help
+            - generic "external, opens in a new window" [ref=e544]:
+              - img "external, opens in a new window" [ref=e545]:
+                - img [ref=e18]
+        - link "Accessibility feedback external, opens in a new window" [ref=e546] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_GB
+          - generic [ref=e21]:
+            - text: Accessibility feedback
+            - generic "external, opens in a new window" [ref=e547]:
+              - img "external, opens in a new window" [ref=e548]:
+                - img [ref=e24]
+      - banner [ref=e27]:
+        - generic [ref=e28]:
+          - navigation [ref=e31]:
+            - button "Navigation menu (.)" [ref=e549] [cursor=pointer]:
+              - img [ref=e34]
+          - link "Google Cloud Platform Home" [ref=e550] [cursor=pointer]:
+            - /url: /
+            - generic:
+              - img
+          - button "You're currently working in Ephermal. Hit enter to switch projects, folders or organisations" [ref=e551]:
+            - generic [ref=e270]:
+              - img [ref=e272]
+              - generic [ref=e275]: Ephermal
+        - search "Google Cloud Platform" [ref=e552]:
+          - combobox [ref=e51]:
+            - searchbox "Enter query to search for resources, docs, products and more" [ref=e553]
+          - button "See all search results" [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - button "Open or close Gemini Cloud Assist chat (Alt G)" [ref=e554] [cursor=pointer]:
+              - img [ref=e281]
+            - button "Free trial status" [ref=e555] [cursor=pointer]:
+              - img [ref=e288]
+            - button "Activate Cloud Shell (G then S)" [ref=e556] [cursor=pointer]:
+              - img [ref=e292]
+            - button "3 unread notifications. Open notifications" [ref=e557] [cursor=pointer]:
+              - generic [ref=e64]: "3"
+            - button "Settings and utilities" [ref=e558] [cursor=pointer]:
+              - img [ref=e71]
+          - 'button "Account: Jamal Settah (jamalsettah2604@gmail.com)" [ref=e559]':
+            - img [ref=e297]
+    - generic [ref=e84]:
+      - navigation "Breadcrumb" [ref=e560]:
+        - link "Google Auth Platform" [ref=e561] [cursor=pointer]:
+          - /url: /auth?project=ephermal-497911
+          - img [ref=e308]
+          - generic [ref=e312]: Google Auth Platform
+        - list [ref=e313]:
+          - listitem [ref=e314]:
+            - generic [ref=e315]: /
+            - link "Audience" [ref=e562] [cursor=pointer]:
+              - /url: /auth/audience?project=ephermal-497911
+              - generic [ref=e320]: Audience
+      - generic [ref=e95]:
+        - navigation "Google Auth Platform" [ref=e563]:
+          - generic [ref=e103]:
+            - list "Overview, 1 of 7 More options Branding, 2 of 7 More options Audience, 3 of 7 More options Clients, 4 of 7 More options Data access, 5 of 7 More options Verification centre, 6 of 7 More options Settings, 7 of 7 More options" [ref=e564]:
+              - listitem [ref=e118]:
+                - generic [ref=e121]:
+                  - link "Overview, 1 of 7" [ref=e565] [cursor=pointer]:
+                    - /url: /auth/overview
+                    - generic [ref=e123]:
+                      - img [ref=e126]
+                      - generic [ref=e128]: Overview
+                  - button "More options" [ref=e566] [cursor=pointer]:
+                    - img [ref=e132]
+              - listitem [ref=e134]:
+                - generic [ref=e137]:
+                  - link "Branding, 2 of 7" [ref=e567] [cursor=pointer]:
+                    - /url: /auth/branding
+                    - generic [ref=e139]:
+                      - img [ref=e142]
+                      - generic [ref=e148]: Branding
+                  - button "More options" [ref=e568] [cursor=pointer]:
+                    - img [ref=e152]
+              - listitem [ref=e154]:
+                - generic [ref=e157]:
+                  - link "Audience, 3 of 7" [ref=e569] [cursor=pointer]:
+                    - /url: /auth/audience
+                    - generic [ref=e159]:
+                      - img [ref=e162]
+                      - generic [ref=e164]: Audience
+                  - button "More options" [ref=e570] [cursor=pointer]:
+                    - img [ref=e168]
+              - listitem [ref=e170]:
+                - generic [ref=e173]:
+                  - link "Clients, 4 of 7" [ref=e571] [cursor=pointer]:
+                    - /url: /auth/clients
+                    - generic [ref=e175]:
+                      - img [ref=e178]
+                      - generic [ref=e180]: Clients
+                  - button "More options" [ref=e572] [cursor=pointer]:
+                    - img [ref=e184]
+              - listitem [ref=e186]:
+                - generic [ref=e189]:
+                  - link "Data access, 5 of 7" [ref=e573] [cursor=pointer]:
+                    - /url: /auth/scopes
+                    - generic [ref=e191]:
+                      - img [ref=e194]
+                      - generic [ref=e197]: Data access
+                  - button "More options" [ref=e574] [cursor=pointer]:
+                    - img [ref=e201]
+              - listitem [ref=e203]:
+                - generic [ref=e206]:
+                  - link "Verification centre, 6 of 7" [ref=e575] [cursor=pointer]:
+                    - /url: /auth/verification
+                    - generic [ref=e208]:
+                      - img [ref=e211]
+                      - generic [ref=e214]: Verification centre
+                  - button "More options" [ref=e576] [cursor=pointer]:
+                    - img [ref=e218]
+              - listitem [ref=e220]:
+                - generic [ref=e223]:
+                  - link "Settings, 7 of 7" [ref=e577] [cursor=pointer]:
+                    - /url: /auth/settings
+                    - generic [ref=e225]:
+                      - img [ref=e228]
+                      - generic [ref=e230]: Settings
+                  - button "More options" [ref=e578] [cursor=pointer]:
+                    - img [ref=e234]
+            - button "Toggle Google Auth Platform navigation menu" [pressed] [ref=e579] [cursor=pointer]:
+              - img [ref=e240]
+        - main [ref=e243]:
+          - generic [ref=e331]:
+            - heading "Audience" [level=1] [ref=e580]:
+              - generic [ref=e338]: Audience
+            - generic [ref=e340]:
+              - status [ref=e583]:
+                - img "Warning" [ref=e584]:
+                  - img [ref=e585]
+                - generic [ref=e587]:
+                  - generic [ref=e589]: Your app requires verification. When you have finished configuring your information, please submit your app for review.
+                  - link "Go to verification centre" [ref=e591] [cursor=pointer]:
+                    - /url: /auth/verification?project=ephermal-497911
+                    - generic [ref=e592]: Go to verification centre
+              - generic [ref=e341]:
+                - generic [ref=e343]:
+                  - text: Publishing status
+                  - button "Help pop-up" [ref=e593] [cursor=pointer]:
+                    - img [ref=e347]
+                - paragraph [ref=e594]: In production
+                - button "Back to testing" [active] [ref=e595]:
+                  - generic [ref=e352]: Back to testing
+              - generic [ref=e353]:
+                - generic [ref=e354]: User type
+                - paragraph [ref=e355]:
+                  - text: External
+                  - button "Help pop-up" [ref=e597] [cursor=pointer]:
+                    - img [ref=e599]
+                - button "Make internal" [disabled] [ref=e601]:
+                  - generic [ref=e363]: Make internal
+              - generic [ref=e364]:
+                - text: OAuth user cap
+                - button "Help with OAuth user cap" [ref=e602] [cursor=pointer]:
+                  - img [ref=e368]
+              - generic [ref=e371]:
+                - group "Expanded group contents" [ref=e603]:
+                  - paragraph [ref=e604]:
+                    - text: The user cap limits the number of users that can grant permission to your app when requesting unapproved sensitive or restricted scopes. The user cap applies over the entire lifetime of the project, and it cannot be reset or changed. Verified apps will still display the user cap on this page, but the user cap does not apply if you are only requesting approved sensitive or restricted scopes. If your users are seeing the
+                    - link "unverified app screen external, opens new window" [ref=e605] [cursor=pointer]:
+                      - /url: https://support.google.com/cloud/answer/7454865?hl=en_GB
+                      - text: "'unverified app' screen"
+                      - img "external, opens new window" [ref=e606]:
+                        - img [ref=e607]
+                    - text: ", it is because your OAuth request includes additional scopes that haven't been approved."
+                  - generic [ref=e622]: 1 user / 100 user cap
+                - button "Show less" [expanded] [ref=e623]:
+                  - generic [ref=e449]:
+                    - img [ref=e451]
+                    - text: Show less
+  - iframe [ref=e267]:
+    
+  - iframe [ref=e454]:
+    

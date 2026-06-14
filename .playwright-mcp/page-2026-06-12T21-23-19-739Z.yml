@@ -1,0 +1,287 @@
+- generic [ref=e1]:
+  - region "console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic." [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: console.cloud.google.com uses cookies from Google to deliver and enhance the quality of its services and to analyse traffic.
+      - link "Learn more about how Google uses cookies. Opens in a new tab." [ref=e4] [cursor=pointer]:
+        - /url: https://policies.google.com/technologies/cookies?hl=en-GB
+        - text: Learn more
+    - button "Hide" [ref=e5] [cursor=pointer]
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - complementary "Skip links" [ref=e540]:
+        - link "Skip to main content" [ref=e541] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e11]: Skip to main content
+        - button "Keyboard shortcuts" [ref=e542]:
+          - generic [ref=e13]: Keyboard shortcuts
+        - link "Accessibility help external, opens in a new window" [ref=e543] [cursor=pointer]:
+          - /url: https://cloud.google.com/docs/accessibility?hl=en_GB
+          - generic [ref=e15]:
+            - text: Accessibility help
+            - generic "external, opens in a new window" [ref=e544]:
+              - img "external, opens in a new window" [ref=e545]:
+                - img [ref=e18]
+        - link "Accessibility feedback external, opens in a new window" [ref=e546] [cursor=pointer]:
+          - /url: https://support.google.com/accessibility/contact/feedback?hl=en_GB
+          - generic [ref=e21]:
+            - text: Accessibility feedback
+            - generic "external, opens in a new window" [ref=e547]:
+              - img "external, opens in a new window" [ref=e548]:
+                - img [ref=e24]
+      - banner [ref=e27]:
+        - generic [ref=e28]:
+          - navigation [ref=e31]:
+            - button "Navigation menu (.)" [ref=e549] [cursor=pointer]:
+              - img [ref=e34]
+          - link "Google Cloud Platform Home" [ref=e550] [cursor=pointer]:
+            - /url: /?project=ephermal-497911
+            - generic:
+              - img
+          - button "You're currently working in Ephermal. Hit enter to switch projects, folders or organisations" [ref=e551]:
+            - generic [ref=e270]:
+              - img [ref=e272]
+              - generic [ref=e275]: Ephermal
+        - search "Google Cloud Platform" [ref=e552]:
+          - combobox [ref=e51]:
+            - searchbox "Enter query to search for resources, docs, products and more" [ref=e553]
+          - button "See all search results" [disabled]:
+            - generic:
+              - img
+            - generic: Search
+        - generic [ref=e53]:
+          - generic [ref=e54]:
+            - button "Open or close Gemini Cloud Assist chat (Alt G)" [ref=e554] [cursor=pointer]:
+              - img [ref=e281]
+            - button "Free trial status" [ref=e555] [cursor=pointer]:
+              - img [ref=e288]
+            - button "Activate Cloud Shell (G then S)" [ref=e556] [cursor=pointer]:
+              - img [ref=e292]
+            - button "4 unread notifications. Open notifications" [ref=e624] [cursor=pointer]:
+              - generic [ref=e64]: "4"
+            - button "Settings and utilities" [ref=e558] [cursor=pointer]:
+              - img [ref=e71]
+          - 'button "Account: Jamal Settah (jamalsettah2604@gmail.com)" [ref=e559]':
+            - img [ref=e297]
+    - generic [ref=e84]:
+      - navigation "Breadcrumb" [ref=e560]:
+        - link "Google Auth Platform" [ref=e561] [cursor=pointer]:
+          - /url: /auth?project=ephermal-497911
+          - img [ref=e308]
+          - generic [ref=e312]: Google Auth Platform
+        - list [ref=e313]:
+          - listitem [ref=e681]:
+            - generic [ref=e682]: /
+            - link "Branding" [ref=e685] [cursor=pointer]:
+              - /url: /auth/branding?project=ephermal-497911
+              - generic [ref=e687]: Branding
+      - generic [ref=e95]:
+        - navigation "Google Auth Platform" [ref=e563]:
+          - generic [ref=e103]:
+            - list "Overview, 1 of 7 More options Branding, 2 of 7 More options Audience, 3 of 7 More options Clients, 4 of 7 More options Data access, 5 of 7 More options Verification centre, 6 of 7 More options Settings, 7 of 7 More options" [ref=e564]:
+              - listitem [ref=e118]:
+                - generic [ref=e121]:
+                  - link "Overview, 1 of 7" [ref=e565] [cursor=pointer]:
+                    - /url: /auth/overview?project=ephermal-497911
+                    - generic [ref=e123]:
+                      - img [ref=e126]
+                      - generic [ref=e128]: Overview
+                  - button "More options" [ref=e566] [cursor=pointer]:
+                    - img [ref=e132]
+              - listitem [ref=e134]:
+                - generic [ref=e137]:
+                  - link "Branding, 2 of 7" [ref=e567] [cursor=pointer]:
+                    - /url: /auth/branding?project=ephermal-497911
+                    - generic [ref=e139]:
+                      - img [ref=e142]
+                      - generic [ref=e148]: Branding
+                  - button "More options" [ref=e568] [cursor=pointer]:
+                    - img [ref=e152]
+              - listitem [ref=e154]:
+                - generic [ref=e157]:
+                  - link "Audience, 3 of 7" [ref=e569] [cursor=pointer]:
+                    - /url: /auth/audience?project=ephermal-497911
+                    - generic [ref=e159]:
+                      - img [ref=e162]
+                      - generic [ref=e164]: Audience
+                  - button "More options" [ref=e570] [cursor=pointer]:
+                    - img [ref=e168]
+              - listitem [ref=e170]:
+                - generic [ref=e173]:
+                  - link "Clients, 4 of 7" [ref=e571] [cursor=pointer]:
+                    - /url: /auth/clients?project=ephermal-497911
+                    - generic [ref=e175]:
+                      - img [ref=e178]
+                      - generic [ref=e180]: Clients
+                  - button "More options" [ref=e572] [cursor=pointer]:
+                    - img [ref=e184]
+              - listitem [ref=e186]:
+                - generic [ref=e189]:
+                  - link "Data access, 5 of 7" [ref=e573] [cursor=pointer]:
+                    - /url: /auth/scopes?project=ephermal-497911
+                    - generic [ref=e191]:
+                      - img [ref=e194]
+                      - generic [ref=e197]: Data access
+                  - button "More options" [ref=e574] [cursor=pointer]:
+                    - img [ref=e201]
+              - listitem [ref=e203]:
+                - generic [ref=e206]:
+                  - link "Verification centre, 6 of 7" [ref=e575] [cursor=pointer]:
+                    - /url: /auth/verification?project=ephermal-497911
+                    - generic [ref=e208]:
+                      - img [ref=e211]
+                      - generic [ref=e214]: Verification centre
+                  - button "More options" [ref=e576] [cursor=pointer]:
+                    - img [ref=e218]
+              - listitem [ref=e220]:
+                - generic [ref=e223]:
+                  - link "Settings, 7 of 7" [ref=e577] [cursor=pointer]:
+                    - /url: /auth/settings?project=ephermal-497911
+                    - generic [ref=e225]:
+                      - img [ref=e228]
+                      - generic [ref=e230]: Settings
+                  - button "More options" [ref=e578] [cursor=pointer]:
+                    - img [ref=e234]
+            - button "Toggle Google Auth Platform navigation menu" [pressed] [ref=e579] [cursor=pointer]:
+              - img [ref=e240]
+        - main [ref=e243]:
+          - generic [ref=e693]:
+            - generic [ref=e696]:
+              - heading "Branding" [level=1] [ref=e699]:
+                - generic [ref=e700]: Branding
+              - button "Information and summary" [ref=e706] [cursor=pointer]:
+                - img [ref=e708]
+            - generic [ref=e715]:
+              - generic [ref=e717]:
+                - text: App information
+                - paragraph [ref=e718]: This shows in the consent screen, and helps end users know who you are and contact you
+                - generic [ref=e719]:
+                  - generic [ref=e721] [cursor=pointer]:
+                    - generic [ref=e722]:
+                      - text: App name
+                      - generic [ref=e723]: "*"
+                    - textbox "App name" [ref=e725]: Ephermal
+                  - generic [ref=e728]: The name of the app asking for consent
+                - generic [ref=e730]:
+                  - generic [ref=e732] [cursor=pointer]:
+                    - generic [ref=e733]:
+                      - text: User support email
+                      - generic [ref=e734]: "*"
+                    - generic [ref=e735]:
+                      - combobox "User support email" [expanded] [ref=e736]:
+                        - generic [ref=e737]:
+                          - generic [ref=e739]: jamalsettah2604@gmail.com
+                          - img [ref=e741]
+                      - listbox "Options" [ref=e903]:
+                        - option "jamalsettah2604@gmail.com" [active] [selected] [ref=e904]:
+                          - generic [ref=e905]: jamalsettah2604@gmail.com
+                        - group "Google Groups managed by you" [ref=e907]:
+                          - generic [ref=e908]: Google Groups managed by you
+                          - option "No groups" [disabled] [ref=e909]:
+                            - generic [ref=e910]: No groups
+                  - generic [ref=e745]:
+                    - text: For users to contact you with questions about their consent.
+                    - link "Learn more about the user support email external, opens new window" [ref=e746] [cursor=pointer]:
+                      - /url: https://support.google.com/cloud/answer/10311615?hl=en_GB#user-support-email
+                      - text: Learn more
+                      - img "external, opens new window" [ref=e747]:
+                        - img [ref=e748]
+                - generic [ref=e751]:
+                  - heading "App logo" [level=3] [ref=e752]
+                  - paragraph [ref=e753]:
+                    - text: This is your logo. It helps people to recognise your app and is displayed on the OAuth consent screen.
+                    - text: After you upload a logo, you will need to submit your app for verification unless the app is configured for internal use only or has a publishing status of 'Testing'.
+                    - link "FAQ to learn more about OAuth app verification external, opens new window" [ref=e754] [cursor=pointer]:
+                      - /url: https://support.google.com/cloud/answer/9110914?hl=en_GB
+                      - text: Learn more
+                      - img "external, opens new window" [ref=e755]:
+                        - img [ref=e756]
+                  - generic [ref=e759]:
+                    - generic [ref=e761] [cursor=pointer]:
+                      - generic [ref=e762]: Logo file to upload
+                      - textbox "Selected files" [ref=e765]
+                      - button "Browse files" [ref=e768]:
+                        - generic [ref=e769]: Browse
+                    - generic [ref=e772]: Upload an image, not larger than 1 MB on the consent screen that will help users recognise your app. Allowed image formats are JPG, PNG and BMP. Logos should be square and 120px by 120px for the best results.
+                - text: App domain
+                - paragraph [ref=e774]: To protect you and your users, Google only allows apps using OAuth to use Authorised Domains. The following information will be shown to your users on the consent screen.
+                - generic [ref=e777]:
+                  - generic [ref=e779] [cursor=pointer]:
+                    - generic [ref=e780]: Application home page
+                    - textbox "Application home page" [ref=e782]: https://ephermal.app
+                  - generic [ref=e785]: Provide users a link to your home page
+                - generic [ref=e789]:
+                  - generic [ref=e791] [cursor=pointer]:
+                    - generic [ref=e792]: Application privacy policy link
+                    - textbox "Application privacy policy link" [ref=e794]: https://ephermal.app/privacy.html
+                  - generic [ref=e797]: Provide users a link to your public privacy policy
+                - generic [ref=e801]:
+                  - generic [ref=e803] [cursor=pointer]:
+                    - generic [ref=e804]: Application Terms of Service link
+                    - textbox "Application Terms of Service link" [ref=e806]: https://ephermal.app/terms.html
+                  - generic [ref=e809]: Provide users a link to your public Terms of Service
+                - group "Authorised domains" [ref=e813]:
+                  - generic "Authorised domains" [ref=e815]:
+                    - heading "Authorised domains" [level=2] [ref=e817]
+                    - button "Help with authorised domains" [ref=e819] [cursor=pointer]:
+                      - img [ref=e821]
+                  - generic [ref=e824]:
+                    - text: When a domain is used on the consent screen or in an OAuth client's configuration, it must be pre-registered here. If your app needs to go through verification, please go to the
+                    - link "Google Search Console" [ref=e825] [cursor=pointer]:
+                      - /url: https://search.google.com/search-console/about
+                    - text: to check if your domains are authorised.
+                    - link "Learn more about the OAuth authorised domain limit external, opens new window" [ref=e826] [cursor=pointer]:
+                      - /url: https://support.google.com/cloud/answer/7650096?hl=en_GB
+                      - text: Learn more
+                      - img "external, opens new window" [ref=e827]:
+                        - img [ref=e828]
+                    - text: about the authorised domain limit.
+                  - group [ref=e831]:
+                    - generic [ref=e832]:
+                      - group "Item 1" [ref=e833]:
+                        - generic [ref=e837] [cursor=pointer]:
+                          - generic [ref=e838]:
+                            - generic [ref=e839]: Authorised domain 1
+                            - generic [ref=e840]: "*"
+                          - textbox "Authorised domain 1" [ref=e842]:
+                            - /placeholder: example.com
+                            - text: ephermal.app
+                        - button "Delete item. Item 1" [disabled] [ref=e844]:
+                          - img [ref=e846]
+                      - group "Item 2" [ref=e848]:
+                        - generic [ref=e852] [cursor=pointer]:
+                          - generic [ref=e853]:
+                            - generic [ref=e854]: Authorised domain 2
+                            - generic [ref=e855]: "*"
+                          - textbox "Authorised domain 2" [ref=e857]:
+                            - /placeholder: example.com
+                            - text: twfgnqddoqeqrjhgioxd.supabase.co
+                        - button "Delete item. Item 2" [disabled] [ref=e859]:
+                          - img [ref=e861]
+                    - button "Add domain" [ref=e864]:
+                      - generic [ref=e866]:
+                        - img [ref=e868]
+                        - text: Add domain
+                - text: Developer contact information
+                - generic [ref=e872]:
+                  - generic [ref=e874] [cursor=pointer]:
+                    - generic [ref=e875]:
+                      - text: Email addresses
+                      - generic [ref=e876]: "*"
+                    - grid [ref=e878]:
+                      - row "jamalsettah2604@gmail.com Click to remove email" [ref=e879]:
+                        - gridcell "jamalsettah2604@gmail.com" [ref=e880]:
+                          - generic [ref=e881]: jamalsettah2604@gmail.com
+                        - gridcell "Click to remove email" [ref=e882]:
+                          - button "Click to remove email" [ref=e883]:
+                            - img [ref=e884]:
+                              - img [ref=e885]
+                      - textbox "Text field for emails" [ref=e887]
+                  - generic [ref=e890]: These email addresses are for Google to notify you about any changes to your project.
+              - button "Save" [disabled] [ref=e894]:
+                - generic [ref=e895]: Save
+              - button "Discard changes" [disabled] [ref=e896]:
+                - generic [ref=e897]: Discard changes
+  - iframe [ref=e267]:
+    
+  - iframe [ref=e454]:
+    

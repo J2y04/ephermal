@@ -1,0 +1,27 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img "Ephermal" [ref=e4]
+    - generic [ref=e5]: Ephermal
+  - generic [ref=e6]:
+    - heading "Welcome, Jamal — let's set up your account" [level=1] [ref=e7]
+    - paragraph [ref=e8]: Connect your store and ad accounts to start automating
+  - generic [ref=e9]:
+    - generic [ref=e11]: ✓1
+    - generic [ref=e14]: ✓2
+    - generic [ref=e17]: "3"
+  - generic [ref=e18]:
+    - generic [ref=e19]: Shopify
+    - generic [ref=e20]: Meta Ads
+    - generic [ref=e21]: Google Ads
+  - generic [ref=e53]:
+    - img [ref=e55]
+    - heading "Connect Google Ads" [level=2] [ref=e60]
+    - paragraph [ref=e61]: Sign in with Google to link your Google Ads account — no API keys needed
+    - button "Continue with Google" [ref=e63] [cursor=pointer]:
+      - img [ref=e64]
+      - text: Continue with Google
+    - paragraph [ref=e69]:
+      - text: You'll be taken to Google to authorise access.
+      - text: Ephermal only requests Google Ads permissions.
+    - link "Skip for now →" [ref=e70] [cursor=pointer]:
+      - /url: "#"

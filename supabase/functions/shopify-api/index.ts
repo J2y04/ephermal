@@ -157,20 +157,32 @@ Deno.serve(async (req) => {
         const products = await fetchAllProducts(shop, token);
 
         if (products.length > 0) {
-          const rows = products.map(p => ({
-            shopify_id:   String(p.id),
-            user_id:      userId,
-            shop,
-            title:        String(p.title ?? ''),
-            handle:       String(p.handle ?? ''),
-            vendor:       String(p.vendor ?? ''),
-            product_type: String(p.product_type ?? ''),
-            status:       String(p.status ?? 'active'),
-            image_url:    ((p.images as { src?: string }[])?.[0]?.src) ?? null,
-            variants:     p.variants ?? [],
-            meta_data:    p,
-            synced_at:    new Date().toISOString(),
-          }));
+          const rows = products.map(p => {
+            const variants = (p.variants as { price?: string; inventory_quantity?: number }[]) ?? [];
+            const firstVariant = variants[0];
+            const priceCents   = firstVariant?.price
+              ? Math.round(parseFloat(firstVariant.price) * 100)
+              : 0;
+            const inventoryCount = variants.reduce(
+              (sum, v) => sum + (v.inventory_quantity ?? 0), 0,
+            );
+            return {
+              shopify_id:      String(p.id),
+              user_id:         userId,
+              shop,
+              title:           String(p.title ?? ''),
+              handle:          String(p.handle ?? ''),
+              vendor:          String(p.vendor ?? ''),
+              product_type:    String(p.product_type ?? ''),
+              status:          String(p.status ?? 'active'),
+              image_url:       ((p.images as { src?: string }[])?.[0]?.src) ?? null,
+              variants:        p.variants ?? [],
+              meta_data:       p,
+              price_cents:     priceCents,
+              inventory_count: inventoryCount,
+              synced_at:       new Date().toISOString(),
+            };
+          });
 
           await supabase.from('shopify_products').upsert(rows, { onConflict: 'shopify_id,user_id' });
         }

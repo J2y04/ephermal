@@ -1,0 +1,45 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - img "Ephermal" [ref=e4]
+    - generic [ref=e5]: Ephermal
+  - generic [ref=e8]:
+    - generic [ref=e9]:
+      - generic [ref=e11]:
+        - heading "Sign in to Ephermal" [level=1] [ref=e12]
+        - paragraph [ref=e13]: Welcome back! Please sign in to continue
+      - generic [ref=e14]:
+        - button "Sign in with Google Continue with Google" [ref=e17] [cursor=pointer]:
+          - generic [ref=e18]:
+            - img "Sign in with Google" [ref=e20]
+            - generic [ref=e21]: Continue with Google
+        - paragraph [ref=e24]: or
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e30]:
+              - generic [ref=e32]: Email address
+              - textbox "Email address" [ref=e33]:
+                - /placeholder: Enter your email address
+            - generic:
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: Password
+                  - generic:
+                    - textbox "Password":
+                      - /placeholder: Enter your password
+                    - button "Show password":
+                      - img
+          - button "Continue" [ref=e36] [cursor=pointer]:
+            - generic [ref=e37]:
+              - text: Continue
+              - img [ref=e38]
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e42]: Don’t have an account?
+        - link "Sign up" [ref=e43] [cursor=pointer]:
+          - /url: https://ephermal.app/auth/register.html
+      - generic [ref=e47]:
+        - paragraph [ref=e48]: Secured by
+        - link "Clerk logo" [ref=e49] [cursor=pointer]:
+          - /url: https://go.clerk.com/components
+          - img [ref=e50]

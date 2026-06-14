@@ -1,0 +1,194 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - paragraph [ref=e3]:
+      - text: We use essential cookies for authentication (Clerk) and session management. No tracking cookies without your consent.
+      - link "Privacy Policy" [ref=e4] [cursor=pointer]:
+        - /url: /privacy.html
+      - text: ·
+      - link "Impressum" [ref=e5] [cursor=pointer]:
+        - /url: /impressum.html
+    - button "Decline non-essential" [ref=e6] [cursor=pointer]
+    - button "Accept & Continue" [ref=e7] [cursor=pointer]
+  - complementary [ref=e8]:
+    - generic [ref=e9]:
+      - img "Ephermal" [ref=e10]
+      - generic [ref=e11]: Ephermal
+    - generic [ref=e12]:
+      - generic [ref=e13]: Overview
+      - generic [ref=e14] [cursor=pointer]:
+        - img [ref=e15]
+        - text: Dashboard
+      - generic [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+        - text: Analytics
+    - generic [ref=e23]:
+      - generic [ref=e24]: Advertising
+      - generic [ref=e25] [cursor=pointer]:
+        - img [ref=e26]
+        - text: Campaigns
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e30]
+        - text: Creatives
+      - generic [ref=e33] [cursor=pointer]:
+        - img [ref=e34]
+        - text: Audience Intel
+      - generic [ref=e39] [cursor=pointer]:
+        - img [ref=e40]
+        - text: Bulk Manager
+      - generic [ref=e42] [cursor=pointer]:
+        - img [ref=e43]
+        - text: Budget AI
+      - generic [ref=e45] [cursor=pointer]:
+        - img [ref=e46]
+        - text: Launch Campaign
+    - generic [ref=e51]:
+      - generic [ref=e52]: Store
+      - generic [ref=e53] [cursor=pointer]:
+        - img [ref=e54]
+        - text: Store Products
+    - generic [ref=e57]:
+      - generic [ref=e58]: Account
+      - generic [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+        - text: Multi-Store
+      - generic [ref=e63] [cursor=pointer]:
+        - img [ref=e64]
+        - text: White-label
+      - generic [ref=e66] [cursor=pointer]:
+        - img [ref=e67]
+        - text: Settings
+      - generic [ref=e70] [cursor=pointer]:
+        - img [ref=e71]
+        - text: Billing
+      - generic [ref=e73] [cursor=pointer]:
+        - img [ref=e74]
+        - text: Dev Tools
+    - generic [ref=e77]:
+      - generic [ref=e79]:
+        - generic [ref=e80]: UGC Credits
+        - strong [ref=e81]: 349 / 350
+      - generic [ref=e84]:
+        - generic [ref=e85]: J
+        - generic [ref=e86]:
+          - generic [ref=e87]: Jamal Settah
+          - generic [ref=e89]: 👑 CEO
+          - generic [ref=e90]: jamalsettah2604@gmail.com
+        - generic [ref=e91]: SCALE
+  - generic [ref=e92]:
+    - generic [ref=e93]:
+      - generic [ref=e95]: ⚡ Dev Tools
+      - generic [ref=e96]:
+        - button "Generate UGC" [ref=e97] [cursor=pointer]:
+          - img [ref=e98]
+          - generic [ref=e99]: Generate UGC
+        - generic [ref=e100] [cursor=pointer]: Sign out
+    - generic [ref=e996]:
+      - generic [ref=e998]: ⚡ Dev Tools ADMIN
+      - generic [ref=e999]:
+        - generic [ref=e1000]:
+          - generic [ref=e1001]: Session Info
+          - generic [ref=e1002]:
+            - generic [ref=e1003]:
+              - generic [ref=e1004]: Clerk ID
+              - generic [ref=e1005]: user_3EH26KeoJKXqRhbIvLrAMkWCkvi
+            - generic [ref=e1006]:
+              - generic [ref=e1007]: Email
+              - generic [ref=e1008]: jamalsettah2604@gmail.com
+            - generic [ref=e1009]:
+              - generic [ref=e1010]: Full Name
+              - generic [ref=e1011]: Jamal Settah
+            - generic [ref=e1012]:
+              - generic [ref=e1013]: Role
+              - generic [ref=e1014]: admin
+            - generic [ref=e1015]:
+              - generic [ref=e1016]: Plan (metadata)
+              - generic [ref=e1017]: scale
+            - generic [ref=e1018]:
+              - generic [ref=e1019]: Plan (local)
+              - generic [ref=e1020]: scale
+            - generic [ref=e1021]:
+              - generic [ref=e1022]: Session ID
+              - generic [ref=e1023]: sess_3EuoUwNPVrIokbkBfyXfBWg303y
+        - generic [ref=e1024]:
+          - generic [ref=e1025]: Plan Override (local test only, resets on reload)
+          - generic [ref=e1026]:
+            - button "Starter" [ref=e1027] [cursor=pointer]
+            - button "Growth" [ref=e1028] [cursor=pointer]
+            - button "Scale" [ref=e1029] [cursor=pointer]
+            - button "Reset" [ref=e1030] [cursor=pointer]
+        - generic [ref=e1031]:
+          - generic [ref=e1032]: n8n Webhook Tester
+          - generic [ref=e1033]:
+            - combobox [ref=e1034]:
+              - option "AI (/ephermal/ai)" [selected]
+              - option "Meta Read (/ephermal/meta/read)"
+              - option "Meta Write (/ephermal/meta/write)"
+              - option "Google Ads (/ephermal/google/ads)"
+              - option "UGC Generate (/ephermal/ugc/generate)"
+              - option "Creatives (/ephermal/creatives)"
+              - option "ROAS Optimizer (/ephermal/roas/optimize)"
+              - option "Bulk Campaigns (/ephermal/bulk/campaigns)"
+              - option "Shopify Products (/ephermal/shopify/products)"
+            - button "Ping" [ref=e1035] [cursor=pointer]
+        - generic [ref=e1037]:
+          - generic [ref=e1038]:
+            - generic [ref=e1039]: LocalStorage
+            - button "Refresh ↺" [ref=e1040] [cursor=pointer]
+          - generic [ref=e1041]:
+            - generic [ref=e1042]:
+              - generic [ref=e1043]: __clerk_environment
+              - generic [ref=e1044]: "{\"value\":{\"object\":\"environment\",\"auth_config\":{\"claimed_at\":null,\"id\":\"\",\"objec…"
+            - generic [ref=e1045]:
+              - generic [ref=e1046]: ai_topup_2026-05
+              - generic [ref=e1047]: "0"
+            - generic [ref=e1048]:
+              - generic [ref=e1049]: ai_topup_2026-06
+              - generic [ref=e1050]: "0"
+            - generic [ref=e1051]:
+              - generic [ref=e1052]: cookie_consent
+              - generic [ref=e1053]: accepted
+            - generic [ref=e1054]:
+              - generic [ref=e1055]: ephermal_plan
+              - generic [ref=e1056]: starter
+            - generic [ref=e1057]:
+              - generic [ref=e1058]: meta_account
+              - generic [ref=e1059]: act_1502188198016437
+            - generic [ref=e1060]:
+              - generic [ref=e1061]: meta_token
+              - generic [ref=e1062]: EAAVYfeyidfYBRsXSDG7VZB5wYYuTZATJyzsAl3kZB1sA7FOJW5hD1ZBRis2ZBVk2oXOApsZB4zXXpZA…
+            - generic [ref=e1063]:
+              - generic [ref=e1064]: setup_complete
+              - generic [ref=e1065]: "1"
+            - generic [ref=e1066]:
+              - generic [ref=e1067]: shopify_domain
+              - generic [ref=e1068]: ephermal-test.myshopify.com
+            - generic [ref=e1069]:
+              - generic [ref=e1070]: shopify_token
+              - generic [ref=e1071]: shpua_5977337f8cf34c7760a3d69e42b4bb3e
+            - generic [ref=e1072]:
+              - generic [ref=e1073]: ugc_used_2026-06
+              - generic [ref=e1074]: "1"
+        - generic [ref=e1075]:
+          - generic [ref=e1076]: Danger Zone
+          - generic [ref=e1077]:
+            - button "Clear LocalStorage" [ref=e1078] [cursor=pointer]
+            - button "Hard Reload" [ref=e1079] [cursor=pointer]
+  - generic [ref=e207]:
+    - generic [ref=e208]:
+      - generic [ref=e209]:
+        - img [ref=e210]
+        - generic [ref=e212]:
+          - text: Ephermal AI
+          - generic [ref=e213]: Your advertising co-pilot
+      - button "×" [ref=e214] [cursor=pointer]
+    - generic [ref=e216]: Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?
+    - generic [ref=e217]:
+      - button "Improve ROAS" [ref=e218] [cursor=pointer]
+      - button "Write UGC script" [ref=e219] [cursor=pointer]
+      - button "Audience ideas" [ref=e220] [cursor=pointer]
+      - button "Fix low CTR" [ref=e221] [cursor=pointer]
+      - button "Budget advice" [ref=e222] [cursor=pointer]
+    - generic [ref=e223]:
+      - textbox "Ask anything about your ads…" [ref=e224]
+      - button [ref=e225] [cursor=pointer]:
+        - img [ref=e226]

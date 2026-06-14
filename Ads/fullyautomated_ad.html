@@ -1,0 +1,274 @@
+
+<!doctype html>
+<html data-src-ver="a9df980e" lang="en" data-om-id="a9df980e:0">
+<head data-om-id="a9df980e:1">
+<style data-omelette-injected>html,body{background:transparent}</style><script data-omelette-injected>(()=>{var j=["https://claude.ai","https://preview.claude.ai"];var x=true;var S=30000;var f=3000;document.addEventListener("DOMContentLoaded",()=>{const H=window.Babel;const G="om-src-id";if(H&&H.registerPlugin&&!(H.availablePlugins&&H.availablePlugins[G])){H.registerPlugin(G,({types:Y})=>({visitor:{JSXOpeningElement(U,Q){const J=U.node;if(J.name&&J.name.type==="JSXMemberExpression")return;for(let V=0;V<J.attributes.length;V++){const L=J.attributes[V];if(L.type==="JSXAttribute"&&L.name&&L.name.name==="data-om-id")return}const W=Q.file&&Q.file.opts&&Q.file.opts.filename||"?";const Z=J.loc&&J.loc.start;const z=`jsx:${W}:${J.start??0}:${Z?Z.line:0}:${Z?Z.column+1:0}`;J.attributes.push(Y.jsxAttribute(Y.jsxIdentifier("data-om-id"),Y.stringLiteral(z)))}}}))}const k="om-text-extract";let A=false;if(x&&H&&H.registerPlugin&&!(H.availablePlugins&&H.availablePlugins[k])){const Y=window.React;if(Y&&Y.useSyncExternalStore&&Y.createElement){A=true;const U={};const Q=new Set;let J=0;window.__omTextO=U;window.__omTextSet=(z)=>{for(const V in z){const L=z[V];if(L==null)delete U[V];else U[V]=L}J++;Q.forEach((V)=>V())};const W=(z)=>{Q.add(z);return()=>Q.delete(z)};const Z=()=>J;window.__OmT=function z(V){Y.useSyncExternalStore(W,Z,Z);return Y.createElement("span",{"data-om-text":V.i,className:"__om-t"},V.i in U?U[V.i]:V.children)};H.registerPlugin(k,({types:z})=>{const V={style:1,script:1,noscript:1,textarea:1,title:1,option:1,text:1,tspan:1,textPath:1};const L={placeholder:1,alt:1,title:1,label:1,"aria-label":1,"aria-description":1,"aria-placeholder":1};const _=($,C)=>z.logicalExpression("??",z.memberExpression(z.logicalExpression("||",z.memberExpression(z.identifier("window"),z.identifier("__omTextO")),z.objectExpression([])),z.stringLiteral($),true),C);const E=($)=>$.file&&$.file.opts&&$.file.opts.filename||"?";const B=($)=>$.file&&$.file.code||"";const b=($,C)=>{const X=(F)=>F&&F.start!=null&&F.end!=null&&(F.type==="StringLiteral"||F.type==="TemplateLiteral"&&F.expressions.length===0)?[F.start,F.end]:null;const N=X(C);if(N)return N;if(C&&C.type==="Identifier"){const F=$.scope.getBinding(C.name);if(F&&F.constant&&F.path.node.type==="VariableDeclarator"){return X(F.path.node.init)}}return null};const M=($,C,X)=>{const N=$.node;let F=false;const w=(K,q)=>{F=true;return z.jsxElement(z.jsxOpeningElement(z.jsxIdentifier("__OmT"),[z.jsxAttribute(z.jsxIdentifier("i"),z.stringLiteral(K))],false),z.jsxClosingElement(z.jsxIdentifier("__OmT")),[q],false)};const D=N.children.map((K)=>{if(K.type==="JSXText"){if(K.start==null||K.end==null)return K;const q=X.slice(K.start,K.end);const R=q.length-q.trimStart().length;const m=q.length-q.trimEnd().length;if(R+m>=q.length)return K;return w(`txt:${C}:${K.start+R}:${K.end-m}`,K)}if(K.type==="JSXExpressionContainer"){const q=b($,K.expression);if(q)return w(`str:${C}:${q[0]}:${q[1]}`,K)}return K});if(F)N.children=D};return{visitor:{JSXOpeningElement($,C){const X=$.node;const N=E(C);const F={};for(let w=0;w<X.attributes.length;w++){const D=X.attributes[w];if(D.type!=="JSXAttribute"||!D.name)continue;const K=D.name.name;if(!L[K])continue;if(!D.value||D.value.type!=="StringLiteral")continue;if(D.value.start==null||D.value.end==null)continue;const q=`txt:${N}:${D.value.start}:${D.value.end}`;F[K]=q;D.value=z.jsxExpressionContainer(_(q,z.stringLiteral(D.value.value)))}if(Object.keys(F).length){X.attributes.push(z.jsxAttribute(z.jsxIdentifier("data-om-text-attrs"),z.stringLiteral(JSON.stringify(F))))}},JSXElement($,C){const X=$.node.openingElement;const N=X&&X.name&&X.name.name;if(N==="__OmT")return;if(typeof N==="string"&&V[N])return;M($,E(C),B(C))},JSXFragment($,C){M($,E(C),B(C))}}}})}}const u=A?["transform-react-jsx-source",G,k]:["transform-react-jsx-source",G];document.querySelectorAll('script[type="text/babel"],script[type="text/jsx"]').forEach((Y,U)=>{const Q=Y.getAttribute("data-plugins")||"";const J=u.filter((W)=>Q.indexOf(W)<0);if(J.length){Y.setAttribute("data-plugins",Q?`${Q},${J.join(",")}`:J.join(","))}if(!Y.hasAttribute("data-filename")){Y.setAttribute("data-filename",Y.getAttribute("src")||`inline-${U}`)}})});var y=window.parent;if(y&&y!==window){const H=(Q,J)=>{try{y.postMessage({__omelette_log:true,type:Q,data:J},"*")}catch{}};["log","warn","error"].forEach((Q)=>{const J=console[Q];console[Q]=(...W)=>{const Z=W.map((z)=>{try{return typeof z==="object"?JSON.stringify(z):String(z)}catch{try{return String(z)}catch{return"[unstringifiable]"}}}).join(" ");H(Q,Z);J.apply(console,W)}});window.addEventListener("error",(Q)=>{const J=Q.target;if(J&&J!==window&&J.tagName){const W=J.src||J.href||"";H("resource_error",`${J.tagName} failed to load: ${W}`)}else{H("error",`${Q.message||"Unknown error"} at ${Q.filename||"?"}:${Q.lineno||0}:${Q.colno||0}`)}},true);window.addEventListener("unhandledrejection",(Q)=>{const J=Q.reason;const W=J instanceof Error?`${J.message} ${J.stack}`:String(J);H("error",`Unhandled rejection: ${W}`)});const G=()=>{try{y.postMessage({type:"omelette:height",height:document.documentElement.scrollHeight},"*")}catch{}};if(document.readyState==="complete")G();else window.addEventListener("load",G);if(window.ResizeObserver)new ResizeObserver(G).observe(document.documentElement);const k={};let A=0;window.claude={complete(Q){return new Promise((J,W)=>{if(!j.length){W(new Error("claude.complete: no parent origin"));return}const Z=`c${++A}`;const z=()=>setTimeout(()=>{delete k[Z];W(new Error(`claude.complete: no data for ${S/1000}s`))},S);const V=z();k[Z]={resolve:J,reject:W,text:"",t:V,arm:z};try{for(const L of j){y.postMessage({__om_api:true,id:Z,body:Q},L)}}catch(L){clearTimeout(V);delete k[Z];W(L)}})}};const u={};let Y=0;window.omelette={writeFile:(Q,J)=>new Promise((W,Z)=>{if(!j.length){W();return}const z=`f${++Y}`;const V=setTimeout(()=>{delete u[z];W()},f);u[z]={resolve:W,reject:Z,t:V};try{for(const L of j){y.postMessage({__om_file:true,id:z,op:"write",path:Q,content:J},L)}}catch{clearTimeout(V);delete u[z];W()}})};const U=(Q)=>{try{return JSON.stringify(Q)}catch{return JSON.stringify(String(Q))}};window.addEventListener("message",(Q)=>{if(j.indexOf(Q.origin)<0)return;if(Q.source!==y)return;const J=Q.data;if(!J)return;if(J.type==="omelette-preview-refresh"){if(typeof J.token!=="string"||!/^[0-9a-f.-]+(\.(rc|pr-[0-9]+))?(\.[0-9]+\.[0-9a-f]{16})?$/.test(J.token))return;const z=Math.max(1,Math.floor((J.expiresAt||0)-Date.now()/1000));document.cookie="__Host-omelette-preview="+J.token+"; Path=/; Secure; SameSite=None; Partitioned; Max-Age="+z;return}if(J.__om_file_r){const z=u[J.id];if(!z)return;clearTimeout(z.t);delete u[J.id];if(J.ok)z.resolve();else z.reject(new Error(J.error||"write failed"));return}if(J.__om_api_r){const z=k[J.id];if(!z)return;if(J.error!=null){clearTimeout(z.t);delete k[J.id];z.reject(new Error(J.error));return}if(J.chunk!=null){clearTimeout(z.t);z.t=z.arm();z.text+=J.chunk;return}if(J.done){clearTimeout(z.t);delete k[J.id];z.resolve(J.text!=null?J.text:z.text);return}return}if(!J.__om_eval)return;const W=J;const Z=(z)=>{Q.source.postMessage({...z,__om_eval_r:1,id:W.id},Q.origin)};try{const z=(0,eval)(W.code);if(z&&typeof z.then==="function"){z.then((V)=>Z({ok:1,v:U(V)}),(V)=>Z({ok:0,e:String(V)}))}else{Z({ok:1,v:U(z)})}}catch(z){Z({ok:0,e:String(z)})}})}})();
+</script>
+
+<meta charset="utf-8" data-om-id="a9df980e:2" />
+<title>Ephermal — Automation Ad</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" data-om-id="a9df980e:3" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%; height: 100%; background: #000;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .stage {
+    width: 3840px; height: 2160px;
+    background: #04050f;
+    position: relative; overflow: hidden;
+    transform-origin: center center;
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    color: #fff;
+    flex-shrink: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    backface-visibility: hidden;
+  }
+  @media screen {
+    .stage { transform: scale(min(calc(100vw / 3840), calc(100vh / 2160))); }
+  }
+
+  .bg-glow {
+    position: absolute; top: 0; right: 0;
+    width: 2200px; height: 2160px;
+    background: radial-gradient(ellipse at 70% 50%, rgba(6,214,199,0.04), transparent 60%);
+    pointer-events: none;
+  }
+  .divider {
+    position: absolute; left: 40%; top: 0; bottom: 0; width: 2px;
+    background: linear-gradient(180deg, transparent, rgba(6,214,199,0.15) 15%, rgba(6,214,199,0.15) 85%, transparent);
+    pointer-events: none; z-index: 10;
+  }
+
+  /* LEFT */
+  .text-block {
+    position: absolute; left: 9%; top: 55%;
+    display: flex; flex-direction: column; align-items: flex-start;
+  }
+  .pill {
+    position: absolute; top: -236px; left: 0;
+    display: inline-block;
+    background: rgba(6,214,199,0.08);
+    border: 1px solid rgba(6,214,199,0.20);
+    border-radius: 40px; padding: 10px 28px;
+    font-size: 22px; font-weight: 600;
+    color: #06d6c7; letter-spacing: 1.5px;
+    text-transform: uppercase; white-space: nowrap;
+  }
+  .l1 { font-size: 176px; font-weight: 900; color: #f0f2ff; letter-spacing:-0.046em; line-height:1.0; white-space:nowrap; }
+  .l2 {
+    font-size: 176px; font-weight: 900; color: #06d6c7;
+    letter-spacing:-0.046em; line-height:1.0; white-space:nowrap;
+    text-shadow: 0 0 36px rgba(6,214,199,0.25), 0 0 110px rgba(6,214,199,0.10);
+  }
+  .l3 { font-size: 80px; font-weight: 600; color: rgba(240,242,255,0.4); letter-spacing:-0.02em; margin-top: 28px; white-space:nowrap; }
+
+  /* RIGHT PANEL */
+  .panel-zone {
+    position: absolute; left: 42%; right: 3%;
+    top: 0; bottom: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding-top: 40px; z-index: 5;
+  }
+  .panel-glow {
+    position: absolute; inset: -120px;
+    background: radial-gradient(ellipse at 50% 50%, rgba(6,214,199,0.08), transparent 65%);
+    filter: blur(36px); pointer-events: none; z-index: 0;
+  }
+  .panel {
+    width: 1480px;
+    background: #0a0d1f;
+    border: 1px solid rgba(6,214,199,0.15);
+    border-radius: 40px;
+    box-shadow: 0 120px 360px rgba(0,0,0,0.72), 0 0 160px rgba(6,214,199,0.05), inset 0 2px 0 rgba(255,255,255,0.04);
+    padding: 52px 60px;
+    transform: perspective(4800px) rotateY(-5deg);
+    transform-origin: left center;
+    position: relative; z-index: 2;
+  }
+  .panel::before {
+    content: '';
+    position: absolute; top: 0; left: 20%; right: 20%; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(6,214,199,0.35), transparent);
+  }
+
+  /* Panel header */
+  .p-header {
+    display: flex; align-items: center; gap: 20px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 32px;
+  }
+  .p-logo { width: 56px; height: 56px; border-radius: 14px; }
+  .p-title { font-size: 28px; font-weight: 700; color: rgba(255,255,255,0.88); letter-spacing:-0.01em; }
+  .p-sub   { font-size: 20px; color: rgba(255,255,255,0.28); letter-spacing:0.08em; text-transform:uppercase; white-space:nowrap; }
+  .p-refresh {
+    margin-left: auto;
+    background: rgba(99,102,241,0.14);
+    border: 1px solid rgba(99,102,241,0.28);
+    border-radius: 16px; padding: 10px 24px;
+    font-size: 22px; font-weight: 600; color: #818cf8;
+    white-space: nowrap; cursor: default;
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  /* Campaign table */
+  .table-head {
+    display: grid;
+    grid-template-columns: 48px 1fr 136px 160px 144px;
+    gap: 16px; padding: 0 16px 16px 16px;
+    font-size: 20px; font-weight: 700;
+    color: rgba(136,146,176,0.5); letter-spacing: 0.14em;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    margin-bottom: 8px;
+  }
+  .camp-row {
+    display: grid;
+    grid-template-columns: 48px 1fr 136px 160px 144px;
+    gap: 16px; padding: 22px 16px;
+    border-radius: 16px; align-items: center;
+  }
+  .camp-row + .camp-row { border-top: 1px solid rgba(255,255,255,0.04); }
+  .platform-dot { width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; justify-self: center; }
+  .camp-n { font-size: 26px; font-weight: 500; color: rgba(255,255,255,0.80); letter-spacing:-0.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .camp-roas { font-size: 26px; font-weight: 700; color: #34d399; text-align: right; }
+  .camp-spend { font-size: 24px; color: rgba(255,255,255,0.55); text-align: right; }
+  .live-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(52,211,153,0.09);
+    border: 1px solid rgba(52,211,153,0.22);
+    border-radius: 40px; padding: 6px 16px;
+    font-size: 18px; font-weight: 700; color: #34d399;
+    white-space: nowrap; justify-self: end;
+  }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #34d399; box-shadow: 0 0 8px #34d399;
+    animation: ldot 2.2s ease-in-out infinite;
+  }
+  @keyframes ldot { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+
+  /* Bottom summary strip */
+  .summary {
+    margin-top: 28px; padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex; gap: 0;
+  }
+  .sum-item { flex: 1; text-align: center; }
+  .sum-item + .sum-item { border-left: 1px solid rgba(255,255,255,0.05); }
+  .sum-lbl { font-size: 18px; font-weight: 600; color: rgba(136,146,176,0.55); letter-spacing:0.14em; text-transform:uppercase; margin-bottom: 8px; }
+  .sum-val { font-size: 40px; font-weight: 800; color: #fff; letter-spacing:-0.025em; }
+  .sum-val.cyan { color: #06d6c7; }
+  .sum-val.green { color: #34d399; }
+
+  /* Brand */
+  .brand { position:absolute; right:4%; bottom:18%; display:flex; align-items:center; gap:18px; z-index:20; }
+  .brand img { width:48px; height:48px; border-radius:12px; opacity:0.75; filter:drop-shadow(0 0 10px rgba(99,102,241,0.5)); }
+  .brand span { font-size:30px; font-weight:600; color:rgba(240,242,255,0.5); letter-spacing:-0.01em; }
+
+  .vignette { position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 50% 50%, transparent 36%, rgba(0,0,0,0.62) 100%); }
+  .grain { position:absolute; inset:0; pointer-events:none; opacity:0.45; mix-blend-mode:overlay; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='256' height='256'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E"); background-size:256px 256px; }
+</style>
+</head>
+<body data-om-id="a9df980e:4">
+<div class="stage" data-screen-label="01 Ephermal Automation Ad" data-om-id="a9df980e:5">
+
+  <div class="bg-glow" data-om-id="a9df980e:6"></div>
+  <div class="divider" data-om-id="a9df980e:7"></div>
+
+  <!-- LEFT -->
+  <div class="text-block" data-om-id="a9df980e:8">
+    <div class="pill" data-om-id="a9df980e:9">Shopify × Ephermal</div>
+    <div class="l1" data-om-id="a9df980e:10">Your Store.</div>
+    <div class="l2" data-om-id="a9df980e:11">Fully Automated.</div>
+    <div class="l3" data-om-id="a9df980e:12">Zero agency.</div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="panel-zone" data-om-id="a9df980e:13">
+    <div class="panel-glow" data-om-id="a9df980e:14"></div>
+    <div class="panel" data-om-id="a9df980e:15">
+      <div class="p-header" data-om-id="a9df980e:16">
+        <img src="../web/public/ephermal.png" alt="" class="p-logo" data-om-id="a9df980e:17" />
+        <div data-om-id="a9df980e:18">
+          <div class="p-title" data-om-id="a9df980e:19">Ephermal</div>
+          <div class="p-sub" data-om-id="a9df980e:20">Campaigns · Live</div>
+        </div>
+        <div class="p-refresh" data-om-id="a9df980e:21">↺ Refresh</div>
+      </div>
+
+      <!-- Table header -->
+      <div class="table-head" data-om-id="a9df980e:22">
+        <span data-om-id="a9df980e:23"></span>
+        <span data-om-id="a9df980e:24">Campaign</span>
+        <span style="text-align:right" data-om-id="a9df980e:25">ROAS</span>
+        <span style="text-align:right" data-om-id="a9df980e:26">Spend</span>
+        <span style="text-align:right" data-om-id="a9df980e:27">Status</span>
+      </div>
+
+      <!-- Campaign rows -->
+      <div class="camp-row" data-om-id="a9df980e:28">
+        <div class="platform-dot" style="background:#1877F2;box-shadow:0 0 5px #1877F2;" data-om-id="a9df980e:29"></div>
+        <span class="camp-n" data-om-id="a9df980e:30">Meta · Prospecting</span>
+        <span class="camp-roas" data-om-id="a9df980e:31">5.1×</span>
+        <span class="camp-spend" data-om-id="a9df980e:32">$1,240</span>
+        <div class="live-pill" data-om-id="a9df980e:33"><div class="live-dot" data-om-id="a9df980e:34"></div>Live</div>
+      </div>
+      <div class="camp-row" data-om-id="a9df980e:35">
+        <div class="platform-dot" style="background:conic-gradient(#EA4335 0deg,#FBBC05 90deg,#34A853 180deg,#4285F4 270deg);box-shadow:0 0 5px rgba(66,133,244,0.5);" data-om-id="a9df980e:36"></div>
+        <span class="camp-n" data-om-id="a9df980e:37">Google · PMAX</span>
+        <span class="camp-roas" data-om-id="a9df980e:38">4.8×</span>
+        <span class="camp-spend" data-om-id="a9df980e:39">$890</span>
+        <div class="live-pill" data-om-id="a9df980e:40"><div class="live-dot" data-om-id="a9df980e:41"></div>Live</div>
+      </div>
+      <div class="camp-row" data-om-id="a9df980e:42">
+        <div class="platform-dot" style="background:#1877F2;box-shadow:0 0 5px #1877F2;" data-om-id="a9df980e:43"></div>
+        <span class="camp-n" data-om-id="a9df980e:44">Meta · Retargeting</span>
+        <span class="camp-roas" data-om-id="a9df980e:45">6.2×</span>
+        <span class="camp-spend" data-om-id="a9df980e:46">$420</span>
+        <div class="live-pill" data-om-id="a9df980e:47"><div class="live-dot" data-om-id="a9df980e:48"></div>Live</div>
+      </div>
+      <div class="camp-row" data-om-id="a9df980e:49">
+        <div class="platform-dot" style="background:conic-gradient(#EA4335 0deg,#FBBC05 90deg,#34A853 180deg,#4285F4 270deg);box-shadow:0 0 5px rgba(66,133,244,0.4);" data-om-id="a9df980e:50"></div>
+        <span class="camp-n" data-om-id="a9df980e:51">Google · Brand Search</span>
+        <span class="camp-roas" data-om-id="a9df980e:52">3.9×</span>
+        <span class="camp-spend" data-om-id="a9df980e:53">$340</span>
+        <div class="live-pill" data-om-id="a9df980e:54"><div class="live-dot" data-om-id="a9df980e:55"></div>Live</div>
+      </div>
+
+      <!-- Summary strip -->
+      <div class="summary" data-om-id="a9df980e:56">
+        <div class="sum-item" data-om-id="a9df980e:57">
+          <div class="sum-lbl" data-om-id="a9df980e:58">Total Spend</div>
+          <div class="sum-val" data-om-id="a9df980e:59">$2,890</div>
+        </div>
+        <div class="sum-item" data-om-id="a9df980e:60">
+          <div class="sum-lbl" data-om-id="a9df980e:61">Avg ROAS</div>
+          <div class="sum-val green" data-om-id="a9df980e:62">4.8×</div>
+        </div>
+        <div class="sum-item" data-om-id="a9df980e:63">
+          <div class="sum-lbl" data-om-id="a9df980e:64">Revenue</div>
+          <div class="sum-val cyan" data-om-id="a9df980e:65">$13,872</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="brand" data-om-id="a9df980e:66">
+    <img src="../web/public/ephermal.png" alt="Ephermal" data-om-id="a9df980e:67" />
+    <span data-om-id="a9df980e:68">ephermal.app</span>
+  </div>
+
+  <div class="vignette" data-om-id="a9df980e:69"></div>
+  <div class="grain" data-om-id="a9df980e:70"></div>
+
+</div>
+</body>
+</html>
+<script type="application/json" id="__om_srcmap">{"gen":"a9df980e","entries":[{"id":"a9df980e:0","tag":"html","openStart":16,"attrEnd":31,"openEnd":32,"closeStart":10464,"closeEnd":10471,"textRuns":[[32,33],[7138,7139],[10463,10464]],"parentId":null,"childIds":["a9df980e:1","a9df980e:4"]},{"id":"a9df980e:1","tag":"head","openStart":33,"attrEnd":38,"openEnd":39,"closeStart":7131,"closeEnd":7138,"textRuns":[[39,40],[64,65],[106,107],[238,239],[7130,7131]],"parentId":"a9df980e:0","childIds":["a9df980e:2","a9df980e:3"]},{"id":"a9df980e:2","tag":"meta","openStart":40,"attrEnd":61,"openEnd":64,"closeEnd":64,"textRuns":[],"parentId":"a9df980e:1","childIds":[]},{"id":"a9df980e:3","tag":"link","openStart":107,"attrEnd":235,"openEnd":238,"closeEnd":238,"textRuns":[],"parentId":"a9df980e:1","childIds":[]},{"id":"a9df980e:4","tag":"body","openStart":7139,"attrEnd":7144,"openEnd":7145,"closeStart":10456,"closeEnd":10463,"textRuns":[[7145,7146],[10455,10456]],"parentId":"a9df980e:0","childIds":["a9df980e:5"]},{"id":"a9df980e:5","tag":"div","openStart":7146,"attrEnd":7210,"openEnd":7211,"closeStart":10449,"closeEnd":10455,"textRuns":[[7211,7215],[7242,7245],[7272,7276],[7289,7292],[7493,7497],[7511,7514],[10274,10278],[10387,10391],[10419,10422],[10447,10449]],"parentId":"a9df980e:4","childIds":["a9df980e:6","a9df980e:7","a9df980e:8","a9df980e:13","a9df980e:66","a9df980e:69","a9df980e:70"]},{"id":"a9df980e:6","tag":"div","openStart":7215,"attrEnd":7235,"openEnd":7236,"closeStart":7236,"closeEnd":7242,"textRuns":[],"parentId":"a9df980e:5","childIds":[]},{"id":"a9df980e:7","tag":"div","openStart":7245,"attrEnd":7265,"openEnd":7266,"closeStart":7266,"closeEnd":7272,"textRuns":[],"parentId":"a9df980e:5","childIds":[]},{"id":"a9df980e:8","tag":"div","openStart":7292,"attrEnd":7315,"openEnd":7316,"closeStart":7487,"closeEnd":7493,"textRuns":[[7316,7321],[7364,7369],[7402,7407],[7445,7450],[7484,7487]],"parentId":"a9df980e:5","childIds":["a9df980e:9","a9df980e:10","a9df980e:11","a9df980e:12"]},{"id":"a9df980e:9","tag":"div","openStart":7321,"attrEnd":7338,"openEnd":7339,"closeStart":7358,"closeEnd":7364,"textRuns":[[7339,7358]],"parentId":"a9df980e:8","childIds":[]},{"id":"a9df980e:10","tag":"div","openStart":7369,"attrEnd":7384,"openEnd":7385,"closeStart":7396,"closeEnd":7402,"textRuns":[[7385,7396]],"parentId":"a9df980e:8","childIds":[]},{"id":"a9df980e:11","tag":"div","openStart":7407,"attrEnd":7422,"openEnd":7423,"closeStart":7439,"closeEnd":7445,"textRuns":[[7423,7439]],"parentId":"a9df980e:8","childIds":[]},{"id":"a9df980e:12","tag":"div","openStart":7450,"attrEnd":7465,"openEnd":7466,"closeStart":7478,"closeEnd":7484,"textRuns":[[7466,7478]],"parentId":"a9df980e:8","childIds":[]},{"id":"a9df980e:13","tag":"div","openStart":7514,"attrEnd":7537,"openEnd":7538,"closeStart":10268,"closeEnd":10274,"textRuns":[[7538,7543],[7573,7578],[10265,10268]],"parentId":"a9df980e:5","childIds":["a9df980e:14","a9df980e:15"]},{"id":"a9df980e:14","tag":"div","openStart":7543,"attrEnd":7566,"openEnd":7567,"closeStart":7567,"closeEnd":7573,"textRuns":[],"parentId":"a9df980e:13","childIds":[]},{"id":"a9df980e:15","tag":"div","openStart":7578,"attrEnd":7596,"openEnd":7597,"closeStart":10259,"closeEnd":10265,"textRuns":[[7597,7604],[7878,7886],[7907,7914],[8159,8167],[8189,8196],[8545,8552],[8972,8979],[9326,9333],[9761,9769],[9791,9798],[10253,10259]],"parentId":"a9df980e:13","childIds":["a9df980e:16","a9df980e:22","a9df980e:28","a9df980e:35","a9df980e:42","a9df980e:49","a9df980e:56"]},{"id":"a9df980e:16","tag":"div","openStart":7604,"attrEnd":7625,"openEnd":7626,"closeStart":7872,"closeEnd":7878,"textRuns":[[7626,7635],[7688,7697],[7816,7825],[7865,7872]],"parentId":"a9df980e:15","childIds":["a9df980e:17","a9df980e:18","a9df980e:21"]},{"id":"a9df980e:17","tag":"img","openStart":7635,"attrEnd":7685,"openEnd":7688,"closeEnd":7688,"textRuns":[],"parentId":"a9df980e:16","childIds":[]},{"id":"a9df980e:18","tag":"div","openStart":7697,"attrEnd":7701,"openEnd":7702,"closeStart":7810,"closeEnd":7816,"textRuns":[[7702,7713],[7748,7759],[7801,7810]],"parentId":"a9df980e:16","childIds":["a9df980e:19","a9df980e:20"]},{"id":"a9df980e:19","tag":"div","openStart":7713,"attrEnd":7733,"openEnd":7734,"closeStart":7742,"closeEnd":7748,"textRuns":[[7734,7742]],"parentId":"a9df980e:18","childIds":[]},{"id":"a9df980e:20","tag":"div","openStart":7759,"attrEnd":7777,"openEnd":7778,"closeStart":7795,"closeEnd":7801,"textRuns":[[7778,7795]],"parentId":"a9df980e:18","childIds":[]},{"id":"a9df980e:21","tag":"div","openStart":7825,"attrEnd":7847,"openEnd":7848,"closeStart":7859,"closeEnd":7865,"textRuns":[[7848,7859]],"parentId":"a9df980e:16","childIds":[]},{"id":"a9df980e:22","tag":"div","openStart":7914,"attrEnd":7937,"openEnd":7938,"closeStart":8153,"closeEnd":8159,"textRuns":[[7938,7947],[7960,7969],[7990,7999],[8041,8050],[8093,8102],[8146,8153]],"parentId":"a9df980e:15","childIds":["a9df980e:23","a9df980e:24","a9df980e:25","a9df980e:26","a9df980e:27"]},{"id":"a9df980e:23","tag":"span","openStart":7947,"attrEnd":7952,"openEnd":7953,"closeStart":7953,"closeEnd":7960,"textRuns":[],"parentId":"a9df980e:22","childIds":[]},{"id":"a9df980e:24","tag":"span","openStart":7969,"attrEnd":7974,"openEnd":7975,"closeStart":7983,"closeEnd":7990,"textRuns":[[7975,7983]],"parentId":"a9df980e:22","childIds":[]},{"id":"a9df980e:25","tag":"span","openStart":7999,"attrEnd":8029,"openEnd":8030,"closeStart":8034,"closeEnd":8041,"styleAttr":[8012,8028],"textRuns":[[8030,8034]],"parentId":"a9df980e:22","childIds":[]},{"id":"a9df980e:26","tag":"span","openStart":8050,"attrEnd":8080,"openEnd":8081,"closeStart":8086,"closeEnd":8093,"styleAttr":[8063,8079],"textRuns":[[8081,8086]],"parentId":"a9df980e:22","childIds":[]},{"id":"a9df980e:27","tag":"span","openStart":8102,"attrEnd":8132,"openEnd":8133,"closeStart":8139,"closeEnd":8146,"styleAttr":[8115,8131],"textRuns":[[8133,8139]],"parentId":"a9df980e:22","childIds":[]},{"id":"a9df980e:28","tag":"div","openStart":8196,"attrEnd":8217,"openEnd":8218,"closeStart":8539,"closeEnd":8545,"textRuns":[[8218,8227],[8314,8323],[8370,8379],[8415,8424],[8462,8471],[8532,8539]],"parentId":"a9df980e:15","childIds":["a9df980e:29","a9df980e:30","a9df980e:31","a9df980e:32","a9df980e:33"]},{"id":"a9df980e:29","tag":"div","openStart":8227,"attrEnd":8307,"openEnd":8308,"closeStart":8308,"closeEnd":8314,"styleAttr":[8260,8306],"textRuns":[],"parentId":"a9df980e:28","childIds":[]},{"id":"a9df980e:30","tag":"span","openStart":8323,"attrEnd":8343,"openEnd":8344,"closeStart":8363,"closeEnd":8370,"textRuns":[[8344,8363]],"parentId":"a9df980e:28","childIds":[]},{"id":"a9df980e:31","tag":"span","openStart":8379,"attrEnd":8402,"openEnd":8403,"closeStart":8408,"closeEnd":8415,"textRuns":[[8403,8408]],"parentId":"a9df980e:28","childIds":[]},{"id":"a9df980e:32","tag":"span","openStart":8424,"attrEnd":8448,"openEnd":8449,"closeStart":8455,"closeEnd":8462,"textRuns":[[8449,8455]],"parentId":"a9df980e:28","childIds":[]},{"id":"a9df980e:33","tag":"div","openStart":8471,"attrEnd":8493,"openEnd":8494,"closeStart":8526,"closeEnd":8532,"textRuns":[[8522,8526]],"parentId":"a9df980e:28","childIds":["a9df980e:34"]},{"id":"a9df980e:34","tag":"div","openStart":8494,"attrEnd":8515,"openEnd":8516,"closeStart":8516,"closeEnd":8522,"textRuns":[],"parentId":"a9df980e:33","childIds":[]},{"id":"a9df980e:35","tag":"div","openStart":8552,"attrEnd":8573,"openEnd":8574,"closeStart":8966,"closeEnd":8972,"textRuns":[[8574,8583],[8748,8757],[8799,8808],[8844,8853],[8889,8898],[8959,8966]],"parentId":"a9df980e:15","childIds":["a9df980e:36","a9df980e:37","a9df980e:38","a9df980e:39","a9df980e:40"]},{"id":"a9df980e:36","tag":"div","openStart":8583,"attrEnd":8741,"openEnd":8742,"closeStart":8742,"closeEnd":8748,"styleAttr":[8616,8740],"textRuns":[],"parentId":"a9df980e:35","childIds":[]},{"id":"a9df980e:37","tag":"span","openStart":8757,"attrEnd":8777,"openEnd":8778,"closeStart":8792,"closeEnd":8799,"textRuns":[[8778,8792]],"parentId":"a9df980e:35","childIds":[]},{"id":"a9df980e:38","tag":"span","openStart":8808,"attrEnd":8831,"openEnd":8832,"closeStart":8837,"closeEnd":8844,"textRuns":[[8832,8837]],"parentId":"a9df980e:35","childIds":[]},{"id":"a9df980e:39","tag":"span","openStart":8853,"attrEnd":8877,"openEnd":8878,"closeStart":8882,"closeEnd":8889,"textRuns":[[8878,8882]],"parentId":"a9df980e:35","childIds":[]},{"id":"a9df980e:40","tag":"div","openStart":8898,"attrEnd":8920,"openEnd":8921,"closeStart":8953,"closeEnd":8959,"textRuns":[[8949,8953]],"parentId":"a9df980e:35","childIds":["a9df980e:41"]},{"id":"a9df980e:41","tag":"div","openStart":8921,"attrEnd":8942,"openEnd":8943,"closeStart":8943,"closeEnd":8949,"textRuns":[],"parentId":"a9df980e:40","childIds":[]},{"id":"a9df980e:42","tag":"div","openStart":8979,"attrEnd":9000,"openEnd":9001,"closeStart":9320,"closeEnd":9326,"textRuns":[[9001,9010],[9097,9106],[9153,9162],[9198,9207],[9243,9252],[9313,9320]],"parentId":"a9df980e:15","childIds":["a9df980e:43","a9df980e:44","a9df980e:45","a9df980e:46","a9df980e:47"]},{"id":"a9df980e:43","tag":"div","openStart":9010,"attrEnd":9090,"openEnd":9091,"closeStart":9091,"closeEnd":9097,"styleAttr":[9043,9089],"textRuns":[],"parentId":"a9df980e:42","childIds":[]},{"id":"a9df980e:44","tag":"span","openStart":9106,"attrEnd":9126,"openEnd":9127,"closeStart":9146,"closeEnd":9153,"textRuns":[[9127,9146]],"parentId":"a9df980e:42","childIds":[]},{"id":"a9df980e:45","tag":"span","openStart":9162,"attrEnd":9185,"openEnd":9186,"closeStart":9191,"closeEnd":9198,"textRuns":[[9186,9191]],"parentId":"a9df980e:42","childIds":[]},{"id":"a9df980e:46","tag":"span","openStart":9207,"attrEnd":9231,"openEnd":9232,"closeStart":9236,"closeEnd":9243,"textRuns":[[9232,9236]],"parentId":"a9df980e:42","childIds":[]},{"id":"a9df980e:47","tag":"div","openStart":9252,"attrEnd":9274,"openEnd":9275,"closeStart":9307,"closeEnd":9313,"textRuns":[[9303,9307]],"parentId":"a9df980e:42","childIds":["a9df980e:48"]},{"id":"a9df980e:48","tag":"div","openStart":9275,"attrEnd":9296,"openEnd":9297,"closeStart":9297,"closeEnd":9303,"textRuns":[],"parentId":"a9df980e:47","childIds":[]},{"id":"a9df980e:49","tag":"div","openStart":9333,"attrEnd":9354,"openEnd":9355,"closeStart":9755,"closeEnd":9761,"textRuns":[[9355,9364],[9529,9538],[9588,9597],[9633,9642],[9678,9687],[9748,9755]],"parentId":"a9df980e:15","childIds":["a9df980e:50","a9df980e:51","a9df980e:52","a9df980e:53","a9df980e:54"]},{"id":"a9df980e:50","tag":"div","openStart":9364,"attrEnd":9522,"openEnd":9523,"closeStart":9523,"closeEnd":9529,"styleAttr":[9397,9521],"textRuns":[],"parentId":"a9df980e:49","childIds":[]},{"id":"a9df980e:51","tag":"span","openStart":9538,"attrEnd":9558,"openEnd":9559,"closeStart":9581,"closeEnd":9588,"textRuns":[[9559,9581]],"parentId":"a9df980e:49","childIds":[]},{"id":"a9df980e:52","tag":"span","openStart":9597,"attrEnd":9620,"openEnd":9621,"closeStart":9626,"closeEnd":9633,"textRuns":[[9621,9626]],"parentId":"a9df980e:49","childIds":[]},{"id":"a9df980e:53","tag":"span","openStart":9642,"attrEnd":9666,"openEnd":9667,"closeStart":9671,"closeEnd":9678,"textRuns":[[9667,9671]],"parentId":"a9df980e:49","childIds":[]},{"id":"a9df980e:54","tag":"div","openStart":9687,"attrEnd":9709,"openEnd":9710,"closeStart":9742,"closeEnd":9748,"textRuns":[[9738,9742]],"parentId":"a9df980e:49","childIds":["a9df980e:55"]},{"id":"a9df980e:55","tag":"div","openStart":9710,"attrEnd":9731,"openEnd":9732,"closeStart":9732,"closeEnd":9738,"textRuns":[],"parentId":"a9df980e:54","childIds":[]},{"id":"a9df980e:56","tag":"div","openStart":9798,"attrEnd":9818,"openEnd":9819,"closeStart":10247,"closeEnd":10253,"textRuns":[[9819,9828],[9958,9967],[10099,10108],[10240,10247]],"parentId":"a9df980e:15","childIds":["a9df980e:57","a9df980e:60","a9df980e:63"]},{"id":"a9df980e:57","tag":"div","openStart":9828,"attrEnd":9849,"openEnd":9850,"closeStart":9952,"closeEnd":9958,"textRuns":[[9850,9861],[9899,9910],[9943,9952]],"parentId":"a9df980e:56","childIds":["a9df980e:58","a9df980e:59"]},{"id":"a9df980e:58","tag":"div","openStart":9861,"attrEnd":9881,"openEnd":9882,"closeStart":9893,"closeEnd":9899,"textRuns":[[9882,9893]],"parentId":"a9df980e:57","childIds":[]},{"id":"a9df980e:59","tag":"div","openStart":9910,"attrEnd":9930,"openEnd":9931,"closeStart":9937,"closeEnd":9943,"textRuns":[[9931,9937]],"parentId":"a9df980e:57","childIds":[]},{"id":"a9df980e:60","tag":"div","openStart":9967,"attrEnd":9988,"openEnd":9989,"closeStart":10093,"closeEnd":10099,"textRuns":[[9989,10000],[10035,10046],[10084,10093]],"parentId":"a9df980e:56","childIds":["a9df980e:61","a9df980e:62"]},{"id":"a9df980e:61","tag":"div","openStart":10000,"attrEnd":10020,"openEnd":10021,"closeStart":10029,"closeEnd":10035,"textRuns":[[10021,10029]],"parentId":"a9df980e:60","childIds":[]},{"id":"a9df980e:62","tag":"div","openStart":10046,"attrEnd":10072,"openEnd":10073,"closeStart":10078,"closeEnd":10084,"textRuns":[[10073,10078]],"parentId":"a9df980e:60","childIds":[]},{"id":"a9df980e:63","tag":"div","openStart":10108,"attrEnd":10129,"openEnd":10130,"closeStart":10234,"closeEnd":10240,"textRuns":[[10130,10141],[10175,10186],[10225,10234]],"parentId":"a9df980e:56","childIds":["a9df980e:64","a9df980e:65"]},{"id":"a9df980e:64","tag":"div","openStart":10141,"attrEnd":10161,"openEnd":10162,"closeStart":10169,"closeEnd":10175,"textRuns":[[10162,10169]],"parentId":"a9df980e:63","childIds":[]},{"id":"a9df980e:65","tag":"div","openStart":10186,"attrEnd":10211,"openEnd":10212,"closeStart":10219,"closeEnd":10225,"textRuns":[[10212,10219]],"parentId":"a9df980e:63","childIds":[]},{"id":"a9df980e:66","tag":"div","openStart":10278,"attrEnd":10296,"openEnd":10297,"closeStart":10381,"closeEnd":10387,"textRuns":[[10297,10302],[10348,10353],[10378,10381]],"parentId":"a9df980e:5","childIds":["a9df980e:67","a9df980e:68"]},{"id":"a9df980e:67","tag":"img","openStart":10302,"attrEnd":10345,"openEnd":10348,"closeEnd":10348,"textRuns":[],"parentId":"a9df980e:66","childIds":[]},{"id":"a9df980e:68","tag":"span","openStart":10353,"attrEnd":10358,"openEnd":10359,"closeStart":10371,"closeEnd":10378,"textRuns":[[10359,10371]],"parentId":"a9df980e:66","childIds":[]},{"id":"a9df980e:69","tag":"div","openStart":10391,"attrEnd":10412,"openEnd":10413,"closeStart":10413,"closeEnd":10419,"textRuns":[],"parentId":"a9df980e:5","childIds":[]},{"id":"a9df980e:70","tag":"div","openStart":10422,"attrEnd":10440,"openEnd":10441,"closeStart":10441,"closeEnd":10447,"textRuns":[],"parentId":"a9df980e:5","childIds":[]}]}</script>

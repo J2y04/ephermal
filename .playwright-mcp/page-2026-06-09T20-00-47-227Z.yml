@@ -1,0 +1,32 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "Shopify Ecommerce - Shopping Cart & Software":
+        - /url: https://www.shopify.com
+        - strong [ref=e6] [cursor=pointer]: Shopify Ecommerce - Shopping Cart & Software
+    - generic [ref=e7]:
+      - navigation:
+        - list [ref=e8]:
+          - listitem [ref=e9]:
+            - link "Want to setup an online store?" [ref=e10] [cursor=pointer]:
+              - /url: https://www.shopify.com/?utm_source=ExpiredDomainLink&utm_medium=textlink&utm_campaign=ExpiredDomainLink
+          - listitem [ref=e11]:
+            - link "Sign up for Shopify" [ref=e12] [cursor=pointer]:
+              - /url: https://www.shopify.com/?utm_source=ExpiredDomainLink&utm_medium=textlink&utm_campaign=ExpiredDomainLink
+          - listitem [ref=e13]:
+            - link "Buy a store" [ref=e14] [cursor=pointer]:
+              - /url: https://exchangemarketplace.com/?utm_source=ExpiredDomainLink&utm_medium=textlink&utm_campaign=ExpiredDomainLink&utm_content=header
+  - heading "Did you mean dev.myshopify.com?" [level=1] [ref=e20]:
+    - text: Did you mean
+    - link "dev.myshopify.com" [ref=e21] [cursor=pointer]:
+      - /url: https://dev.myshopify.com/dashboard/218332705/apps/363710414849/configuration
+    - text: "?"
+  - contentinfo [ref=e22]:
+    - list [ref=e23]:
+      - listitem [ref=e24]:
+        - link "Start a store" [ref=e25] [cursor=pointer]:
+          - /url: https://www.shopify.com?utm_source=ExpiredDomainLink&utm_medium=textlink&utm_campaign=ExpiredDomainLink
+        - text: "|"
+      - listitem [ref=e26]:
+        - link "Buy an existing online store" [ref=e27] [cursor=pointer]:
+          - /url: https://exchangemarketplace.com/?utm_source=ExpiredDomainLink&utm_medium=textlink&utm_campaign=ExpiredDomainLink&utm_content=footer

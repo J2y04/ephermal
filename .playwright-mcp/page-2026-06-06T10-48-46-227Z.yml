@@ -1,0 +1,441 @@
+- generic [active]:
+  - generic:
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic:
+      - iframe
+    - generic [ref=e10]:
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - link "Meta logo" [ref=e16] [cursor=pointer]:
+            - /url: /?no_redirect=true
+            - img "Meta logo" [ref=e18]
+          - tablist [ref=e27]:
+            - link "My Apps" [ref=e28] [cursor=pointer]:
+              - /url: /apps/
+              - generic [ref=e31]: My Apps
+            - link "Required actions" [ref=e32] [cursor=pointer]:
+              - /url: /required-actions/
+              - generic [ref=e35]: Required actions
+            - tab "Docs" [ref=e36] [cursor=pointer]:
+              - generic [ref=e39]: Docs
+            - tab "Tools" [ref=e41] [cursor=pointer]:
+              - generic [ref=e44]: Tools
+            - tab "Support" [ref=e46] [cursor=pointer]:
+              - generic [ref=e49]: Support
+        - generic [ref=e51]:
+          - generic [ref=e52]:
+            - generic [ref=e58]: Search input
+            - textbox "Search input" [ref=e69]:
+              - /placeholder: Search...
+          - link [ref=e72] [cursor=pointer]:
+            - /url: "#"
+          - link "Facebook" [ref=e77] [cursor=pointer]:
+            - /url: "#"
+            - img "Facebook" [ref=e82]
+      - generic [ref=e83]:
+        - generic [ref=e85]:
+          - generic [ref=e88]:
+            - generic [ref=e91]:
+              - generic [ref=e97]: Searchable selector for all apps
+              - combobox "Searchable selector for all apps Ephermal" [ref=e102] [cursor=pointer]:
+                - generic [ref=e112]: Ephermal
+            - navigation [ref=e115]:
+              - list [ref=e116]:
+                - listitem [ref=e117]:
+                  - button "Dashboard" [ref=e119] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Dashboard
+                - listitem [ref=e125]:
+                  - button "Required actions" [ref=e127] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Required actions
+                - listitem [ref=e133]:
+                  - button "Use cases" [ref=e135] [cursor=pointer]
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Use cases
+                - listitem [ref=e141]:
+                  - generic [ref=e142]:
+                    - button "Facebook Login for Business" [expanded] [ref=e144] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Facebook Login for Business
+                          - button "Toggle group" [ref=e150] [cursor=pointer]:
+                            - generic [ref=e153]: Toggle group
+                  - list [ref=e156]:
+                    - generic [ref=e157]:
+                      - button "Settings" [ref=e159] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Settings
+                    - generic [ref=e164]:
+                      - button "Quickstart" [ref=e166] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Quickstart
+                    - generic [ref=e171]:
+                      - button "Configurations" [ref=e173] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Configurations
+                - listitem [ref=e178]:
+                  - generic [ref=e179]:
+                    - button "Review" [ref=e181] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Review
+                          - button "Toggle group" [ref=e187] [cursor=pointer]:
+                            - generic [ref=e190]: Toggle group
+                  - list [ref=e193]:
+                    - generic [ref=e194]:
+                      - button "Testing" [ref=e196] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Testing
+                    - generic [ref=e201]:
+                      - button "Verification" [ref=e203] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Verification
+                    - generic [ref=e208]:
+                      - button "App Review" [ref=e210] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: App Review
+                - listitem [ref=e215]:
+                  - button "Publish" [ref=e217] [cursor=pointer]:
+                    - generic [ref=e220]:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Unpublished
+                          - status: App Publish Status
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Publish
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Unpublished
+                            - status: App Publish Status
+          - generic [ref=e223]:
+            - navigation [ref=e224]:
+              - list [ref=e225]:
+                - listitem [ref=e226]:
+                  - generic [ref=e227]:
+                    - button "App settings" [ref=e229] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: App settings
+                          - button "Toggle group" [ref=e235] [cursor=pointer]:
+                            - generic [ref=e238]: Toggle group
+                  - list [ref=e241]:
+                    - generic [ref=e242]:
+                      - button "Basic" [ref=e244] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Basic
+                    - generic [ref=e249]:
+                      - button "Advanced" [ref=e251] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Advanced
+                - listitem [ref=e256]:
+                  - generic [ref=e257]:
+                    - button "App roles" [ref=e259] [cursor=pointer]
+                    - generic:
+                      - listitem:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: App roles
+                          - button "Toggle group" [ref=e265] [cursor=pointer]:
+                            - generic [ref=e268]: Toggle group
+                  - list [ref=e271]:
+                    - generic [ref=e272]:
+                      - button "Roles" [ref=e274] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Roles
+                    - generic [ref=e279]:
+                      - button "Test users" [ref=e281] [cursor=pointer]
+                      - generic:
+                        - listitem:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Test users
+                - listitem [ref=e286]:
+                  - button "Alert Inbox" [ref=e288] [cursor=pointer]:
+                    - generic [ref=e291]:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: "1"
+                          - status: 1 unread alerts
+                  - generic:
+                    - listitem:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Alert Inbox
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: "1"
+                            - status: 1 unread alerts
+            - separator [ref=e294]
+            - generic [ref=e295]:
+              - button "Activity Log" [ref=e296] [cursor=pointer]:
+                - generic [ref=e299]: Activity Log
+              - button "Help" [ref=e303] [cursor=pointer]:
+                - generic [ref=e306]: Help
+              - button "Open/close side nav" [ref=e311] [cursor=pointer]:
+                - generic [ref=e314]: Open/close side nav
+        - generic [ref=e508]:
+          - generic [ref=e509]:
+            - generic [ref=e512]: Redirect URI Validator
+            - generic [ref=e514]:
+              - generic [ref=e515]:
+                - generic [ref=e516]: Redirect URI to check
+                - textbox "https://example.com/oauth.php" [ref=e519]
+              - button "Check URI" [ref=e520] [cursor=pointer]
+          - generic [ref=e521]:
+            - generic [ref=e522]:
+              - generic [ref=e525]: Client OAuth settings
+              - table [ref=e527]:
+                - rowgroup [ref=e528]:
+                  - row "Yes No Client OAuth login Enables the standard OAuth client token flow. Secure your application and prevent abuse by locking down which token redirect URIs are allowed with the options below. Disable globally if not used." [ref=e529]:
+                    - cell "Yes No Client OAuth login Enables the standard OAuth client token flow. Secure your application and prevent abuse by locking down which token redirect URIs are allowed with the options below. Disable globally if not used." [ref=e530]:
+                      - table [ref=e531]:
+                        - rowgroup [ref=e532]:
+                          - row "Yes No Client OAuth login Enables the standard OAuth client token flow. Secure your application and prevent abuse by locking down which token redirect URIs are allowed with the options below. Disable globally if not used." [ref=e533]:
+                            - cell "Yes No Client OAuth login Enables the standard OAuth client token flow. Secure your application and prevent abuse by locking down which token redirect URIs are allowed with the options below. Disable globally if not used." [ref=e534]:
+                              - generic:
+                                - generic [ref=e537]:
+                                  - checkbox "Yes No" [checked] [ref=e538]
+                                  - generic [ref=e539] [cursor=pointer]:
+                                    - generic [ref=e540]: "Yes"
+                                    - generic [ref=e542]: "No"
+                                - generic [ref=e543]:
+                                  - generic [ref=e544]: Client OAuth login
+                                  - generic [ref=e545]:
+                                    - text: Enables the standard OAuth client token flow. Secure your application and prevent abuse by locking down which token redirect URIs are allowed with the options below. Disable globally if not used.
+                                    - link [ref=e546] [cursor=pointer]:
+                                      - /url: /docs/facebook-login/security/#surfacearea
+                  - row "Yes No Web OAuth login Enables web-based Client OAuth Login. Yes No Enforce HTTPS Enforce the use of HTTPS for redirect URIs and the JavaScript SDK. Strongly recommended." [ref=e547]:
+                    - cell "Yes No Web OAuth login Enables web-based Client OAuth Login." [ref=e548]:
+                      - table [ref=e549]:
+                        - rowgroup [ref=e550]:
+                          - row "Yes No Web OAuth login Enables web-based Client OAuth Login." [ref=e551]:
+                            - cell "Yes No Web OAuth login Enables web-based Client OAuth Login." [ref=e552]:
+                              - generic:
+                                - generic [ref=e555]:
+                                  - checkbox "Yes No" [checked] [ref=e556]
+                                  - generic [ref=e557] [cursor=pointer]:
+                                    - generic [ref=e558]: "Yes"
+                                    - generic [ref=e560]: "No"
+                                - generic [ref=e561]:
+                                  - generic [ref=e562]: Web OAuth login
+                                  - generic [ref=e563]:
+                                    - text: Enables web-based Client OAuth Login.
+                                    - link [ref=e564] [cursor=pointer]:
+                                      - /url: /docs/facebook-login/security/#surfacearea
+                    - cell "Yes No Enforce HTTPS Enforce the use of HTTPS for redirect URIs and the JavaScript SDK. Strongly recommended." [ref=e565]:
+                      - table [ref=e566]:
+                        - rowgroup [ref=e567]:
+                          - row "Yes No Enforce HTTPS Enforce the use of HTTPS for redirect URIs and the JavaScript SDK. Strongly recommended." [ref=e568]:
+                            - cell "Yes No Enforce HTTPS Enforce the use of HTTPS for redirect URIs and the JavaScript SDK. Strongly recommended." [ref=e569]:
+                              - generic:
+                                - generic [ref=e572]:
+                                  - checkbox "Yes No" [checked] [disabled] [ref=e573]
+                                  - generic:
+                                    - generic: "Yes"
+                                    - generic: "No"
+                                - generic [ref=e574]:
+                                  - generic [ref=e575]: Enforce HTTPS
+                                  - generic [ref=e576]:
+                                    - text: Enforce the use of HTTPS for redirect URIs and the JavaScript SDK. Strongly recommended.
+                                    - link [ref=e577] [cursor=pointer]:
+                                      - /url: /docs/facebook-login/security/#surfacearea
+                  - row "Yes No Force Web OAuth reauthentication When on, prompts people to enter their Facebook password in order to log in on the web. Yes No Embedded browser OAuth login Enable webview Redirect URIs for Client OAuth Login." [ref=e578]:
+                    - cell "Yes No Force Web OAuth reauthentication When on, prompts people to enter their Facebook password in order to log in on the web." [ref=e579]:
+                      - table [ref=e580]:
+                        - rowgroup [ref=e581]:
+                          - row "Yes No Force Web OAuth reauthentication When on, prompts people to enter their Facebook password in order to log in on the web." [ref=e582]:
+                            - cell "Yes No Force Web OAuth reauthentication When on, prompts people to enter their Facebook password in order to log in on the web." [ref=e583]:
+                              - generic:
+                                - generic [ref=e586]:
+                                  - checkbox "Yes No" [ref=e587]
+                                  - generic [ref=e588] [cursor=pointer]:
+                                    - generic [ref=e589]: "Yes"
+                                    - generic [ref=e591]: "No"
+                                - generic [ref=e592]:
+                                  - generic [ref=e593]: Force Web OAuth reauthentication
+                                  - generic [ref=e594]:
+                                    - text: When on, prompts people to enter their Facebook password in order to log in on the web.
+                                    - link [ref=e595] [cursor=pointer]:
+                                      - /url: /docs/facebook-login/reauthentication/
+                    - cell "Yes No Embedded browser OAuth login Enable webview Redirect URIs for Client OAuth Login." [ref=e596]:
+                      - table [ref=e597]:
+                        - rowgroup [ref=e598]:
+                          - row "Yes No Embedded browser OAuth login Enable webview Redirect URIs for Client OAuth Login." [ref=e599]:
+                            - cell "Yes No Embedded browser OAuth login Enable webview Redirect URIs for Client OAuth Login." [ref=e600]:
+                              - generic:
+                                - generic [ref=e603]:
+                                  - checkbox "Yes No" [checked] [ref=e604]
+                                  - generic [ref=e605] [cursor=pointer]:
+                                    - generic [ref=e606]: "Yes"
+                                    - generic [ref=e608]: "No"
+                                - generic [ref=e609]:
+                                  - generic [ref=e610]: Embedded browser OAuth login
+                                  - generic [ref=e611]:
+                                    - text: Enable webview Redirect URIs for Client OAuth Login.
+                                    - link [ref=e612] [cursor=pointer]:
+                                      - /url: /docs/facebook-login/security/#surfacearea
+                  - row "Yes No Use Strict Mode for redirect URIs Only allow redirects that exactly match the Valid OAuth Redirect URIs. Strongly recommended." [ref=e613]:
+                    - cell "Yes No Use Strict Mode for redirect URIs Only allow redirects that exactly match the Valid OAuth Redirect URIs. Strongly recommended." [ref=e614]:
+                      - table [ref=e615]:
+                        - rowgroup [ref=e616]:
+                          - row "Yes No Use Strict Mode for redirect URIs Only allow redirects that exactly match the Valid OAuth Redirect URIs. Strongly recommended." [ref=e617]:
+                            - cell "Yes No Use Strict Mode for redirect URIs Only allow redirects that exactly match the Valid OAuth Redirect URIs. Strongly recommended." [ref=e618]:
+                              - generic:
+                                - generic [ref=e621]:
+                                  - checkbox "Yes No" [checked] [disabled] [ref=e622]
+                                  - generic:
+                                    - generic: "Yes"
+                                    - generic: "No"
+                                - generic [ref=e623]:
+                                  - generic [ref=e624]: Use Strict Mode for redirect URIs
+                                  - generic [ref=e625]:
+                                    - text: Only allow redirects that exactly match the Valid OAuth Redirect URIs. Strongly recommended.
+                                    - link [ref=e626] [cursor=pointer]:
+                                      - /url: /docs/facebook-login/security/#surfacearea
+                  - row "Valid OAuth Redirect URIs A manually specified redirect_uri used with Login on the web must exactly match one of the URIs listed here. This list is also used by the JavaScript SDK for in-app browsers that suppress popups. https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback Remove https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback Copy to clipboard" [ref=e627]:
+                    - cell "Valid OAuth Redirect URIs A manually specified redirect_uri used with Login on the web must exactly match one of the URIs listed here. This list is also used by the JavaScript SDK for in-app browsers that suppress popups. https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback Remove https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback Copy to clipboard" [ref=e628]:
+                      - generic [ref=e629]:
+                        - generic [ref=e630]: Valid OAuth Redirect URIs
+                        - generic [ref=e632]:
+                          - text: A manually specified redirect_uri used with Login on the web must exactly match one of the URIs listed here. This list is also used by the JavaScript SDK for in-app browsers that suppress popups.
+                          - link [ref=e633] [cursor=pointer]:
+                            - /url: /docs/facebook-login/security/#strict_mode
+                        - generic [ref=e636]:
+                          - generic [ref=e640]:
+                            - generic [ref=e641]:
+                              - generic "https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback" [ref=e642]
+                              - button "Remove https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/meta-oauth-callback" [ref=e643] [cursor=pointer]: Remove
+                            - combobox "Valid OAuth redirect URIs." [ref=e646]
+                          - button "Copy to clipboard" [ref=e648] [cursor=pointer]:
+                            - generic [ref=e650]: Copy to clipboard
+                  - row "Yes No Login from devices Enables the OAuth client login flow for devices like a smart TV Yes No Login with the JavaScript SDK Enables Login and signed-in functionality with the JavaScript SDK." [ref=e651]:
+                    - cell "Yes No Login from devices Enables the OAuth client login flow for devices like a smart TV" [ref=e652]:
+                      - table [ref=e653]:
+                        - rowgroup [ref=e654]:
+                          - row "Yes No Login from devices Enables the OAuth client login flow for devices like a smart TV" [ref=e655]:
+                            - cell "Yes No Login from devices Enables the OAuth client login flow for devices like a smart TV" [ref=e656]:
+                              - generic:
+                                - generic [ref=e659]:
+                                  - checkbox "Yes No" [ref=e660]
+                                  - generic [ref=e661] [cursor=pointer]:
+                                    - generic [ref=e662]: "Yes"
+                                    - generic [ref=e664]: "No"
+                                - generic [ref=e665]:
+                                  - generic [ref=e666]: Login from devices
+                                  - generic [ref=e667]:
+                                    - text: Enables the OAuth client login flow for devices like a smart TV
+                                    - link [ref=e668] [cursor=pointer]:
+                                      - /url: /docs/facebook-login/using-login-with-devices/
+                    - cell "Yes No Login with the JavaScript SDK Enables Login and signed-in functionality with the JavaScript SDK." [ref=e669]:
+                      - table [ref=e670]:
+                        - rowgroup [ref=e671]:
+                          - row "Yes No Login with the JavaScript SDK Enables Login and signed-in functionality with the JavaScript SDK." [ref=e672]:
+                            - cell "Yes No Login with the JavaScript SDK Enables Login and signed-in functionality with the JavaScript SDK." [ref=e673]:
+                              - generic:
+                                - generic [ref=e676]:
+                                  - checkbox "Yes No" [ref=e677]
+                                  - generic [ref=e678] [cursor=pointer]:
+                                    - generic [ref=e679]: "Yes"
+                                    - generic [ref=e681]: "No"
+                                - generic [ref=e682]:
+                                  - generic [ref=e683]: Login with the JavaScript SDK
+                                  - generic [ref=e684]:
+                                    - text: Enables Login and signed-in functionality with the JavaScript SDK.
+                                    - link [ref=e685] [cursor=pointer]:
+                                      - /url: /docs/facebook-login/security/#enablejssdk
+                  - row "Allowed Domains for the JavaScript SDK Login and signed-in functionality of the JavaScript SDK will only be available on these domains." [ref=e686]:
+                    - cell "Allowed Domains for the JavaScript SDK Login and signed-in functionality of the JavaScript SDK will only be available on these domains." [ref=e687]:
+                      - generic [ref=e688]:
+                        - generic [ref=e689]: Allowed Domains for the JavaScript SDK
+                        - generic [ref=e691]:
+                          - text: Login and signed-in functionality of the JavaScript SDK will only be available on these domains.
+                          - link [ref=e692] [cursor=pointer]:
+                            - /url: /docs/facebook-login/security/#enablejssdk
+                        - combobox "Allowed Domains for the JavaScript SDK" [ref=e701]
+            - generic [ref=e702]:
+              - generic [ref=e705]: Deauthorize
+              - generic [ref=e707]:
+                - generic [ref=e708]: Deauthorize callback URL
+                - textbox "What should we ping when a user deauthorizes your app?" [ref=e711]
+            - generic [ref=e712]:
+              - generic [ref=e715]: Data Deletion Requests
+              - generic [ref=e717]:
+                - generic [ref=e718]: Data Deletion Request URL
+                - textbox "What should we ping when someone requests you delete their data?" [ref=e721]
+            - generic [ref=e724]:
+              - button "Save changes" [ref=e725] [cursor=pointer]
+              - button "Discard" [ref=e726] [cursor=pointer]

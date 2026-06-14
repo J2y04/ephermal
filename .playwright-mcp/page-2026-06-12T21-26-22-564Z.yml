@@ -1,0 +1,56 @@
+- generic [ref=e2]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button "Main menu" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+        - link "Google Search Console" [ref=e12] [cursor=pointer]:
+          - /url: ./search-console/welcome
+          - img [ref=e13]
+      - generic [ref=e17]:
+        - button "Help" [ref=e19] [cursor=pointer]:
+          - generic [ref=e22]: 
+        - button "User settings" [ref=e24] [cursor=pointer]:
+          - img [ref=e27]
+      - generic [ref=e30]:
+        - button "Google apps" [ref=e34] [cursor=pointer]:
+          - img [ref=e35]
+        - 'button "Google Account: Jamal Settah (jamalsettah2604@gmail.com)" [ref=e40] [cursor=pointer]':
+          - img [ref=e42]
+  - generic [ref=e45]:
+    - generic [ref=e47]:
+      - generic [ref=e48]: Welcome to Google Search Console
+      - generic [ref=e49]: To start, select property type
+      - generic [ref=e51]:
+        - generic [ref=e52]:
+          - img [ref=e54]
+          - generic [ref=e64]: Domain
+          - generic [ref=e65]:
+            - listitem [ref=e66]: All URLs across all subdomains (m., www. ...)
+            - listitem [ref=e67]: All URLs across https or http
+            - listitem [ref=e68]: Requires DNS verification
+          - generic "Domain" [ref=e70]:
+            - generic [ref=e73]:
+              - textbox "example.com" [active] [ref=e74]
+              - generic: example.com
+            - generic [ref=e76]:
+              - generic: Enter domain or subdomain
+          - button "Continue" [disabled] [ref=e77]:
+            - generic [ref=e80]: Continue
+        - generic [ref=e81]: or
+        - generic [ref=e82] [cursor=pointer]:
+          - img [ref=e84]
+          - generic [ref=e94]: URL prefix
+          - generic [ref=e95]:
+            - listitem [ref=e96]: Only URLs under entered address
+            - listitem [ref=e97]: Only URLs under specified protocol
+            - listitem [ref=e98]: Allows multiple verification methods
+          - generic "URL prefix" [ref=e100]:
+            - generic [ref=e103]:
+              - textbox "https://www.example.com" [ref=e104]
+              - generic: https://www.example.com
+            - generic [ref=e106]:
+              - generic: Enter URL
+          - button "Continue" [disabled] [ref=e107]:
+            - generic [ref=e110]: Continue
+    - generic [ref=e111] [cursor=pointer]: Already started? Finish verification
