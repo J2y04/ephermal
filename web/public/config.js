@@ -31,9 +31,9 @@
 
   // Stripe payment links — fallback if Edge Function checkout is unavailable
   window.STRIPE_LINKS = {
-    starter:   'https://buy.stripe.com/REPLACE_STARTER',
-    growth:    'https://buy.stripe.com/REPLACE_GROWTH',
-    scale:     'https://buy.stripe.com/REPLACE_SCALE',
+    starter:   'https://buy.stripe.com/test_aFabJ3dxU5Wt5ikeS19R600',
+    growth:    'https://buy.stripe.com/test_9B6cN7alIesZ9yA39j9R601',
+    scale:     'https://buy.stripe.com/test_6oU9AV3Xk84B9yA6lv9R602',
     ai_topup:  'https://buy.stripe.com/REPLACE_AI_TOPUP',  // $5 = 50 AI messages
   };
 
