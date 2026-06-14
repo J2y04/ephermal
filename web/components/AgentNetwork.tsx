@@ -48,8 +48,8 @@ export default function AgentNetwork() {
       <svg className="an-svg" viewBox="0 0 460 460" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <radialGradient id="hubGrad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stopColor="#5558e8" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#5558e8" stopOpacity="0" />
+            <stop offset="0%"   stopColor="#06d6c7" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#06d6c7" stopOpacity="0" />
           </radialGradient>
           <filter id="glow">
             <feGaussianBlur stdDeviation="4" result="blur" />
@@ -68,7 +68,7 @@ export default function AgentNetwork() {
               key={i}
               className="an-line"
               x1={CX} y1={CY} x2={x} y2={y}
-              stroke="rgba(85,88,232,0.18)"
+              stroke="rgba(6,214,199,0.15)"
               strokeWidth="1"
               strokeDasharray="5 6"
             />
@@ -79,7 +79,7 @@ export default function AgentNetwork() {
         {AGENTS.map((_, i) => {
           const { x, y } = nodePos(i);
           return (
-            <circle key={i} className="an-dot" r="3" fill="#5558e8" filter="url(#glow)">
+            <circle key={i} className="an-dot" r="3" fill="#06d6c7" filter="url(#glow)">
               <animateMotion
                 dur="0.95s"
                 repeatCount="indefinite"

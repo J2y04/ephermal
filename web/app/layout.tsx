@@ -78,8 +78,8 @@ export const metadata: Metadata = {
   },
   metadataBase: new URL('https://ephermal.app'),
   icons: {
-    icon: '/ephermal_transparent.ico',
-    shortcut: '/ephermal_transparent.ico',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
     apple: '/ephermal.png',
   },
   verification: {

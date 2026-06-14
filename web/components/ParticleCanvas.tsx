@@ -62,7 +62,7 @@ export default function ParticleCanvas() {
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(85,88,232,${0.12 * (1 - d / 120)})`;
+            ctx.strokeStyle = `rgba(6,214,199,${0.1 * (1 - d / 120)})`;
             ctx.lineWidth = 0.5;
             ctx.stroke();
           }

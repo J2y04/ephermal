@@ -67,22 +67,10 @@ export default function Home() {
                 <div className="change">↑ 12 this week</div>
               </div>
             </div>
-            <div className="progress-bars">
-              <div className="pbar-row">
-                <span style={{ width: '110px' }}>Meta Ads</span>
-                <div className="pbar-track"><div className="pbar-fill" style={{ width: '84%' }} /></div>
-                <span>84% efficiency</span>
-              </div>
-              <div className="pbar-row">
-                <span style={{ width: '110px' }}>Google Ads</span>
-                <div className="pbar-track"><div className="pbar-fill" style={{ width: '81%', background: 'linear-gradient(90deg, #4285F4, #34A853)' }} /></div>
-                <span>81% efficiency</span>
-              </div>
-              <div className="pbar-row">
-                <span style={{ width: '110px' }}>UGC Quality</span>
-                <div className="pbar-track"><div className="pbar-fill" style={{ width: '96%' }} /></div>
-                <span>96% approval rate</span>
-              </div>
+            <div className="hero-metrics">
+              <div className="hero-metric-item"><span className="metric-platform">Meta</span><span className="metric-val">84%</span><span className="metric-sub">efficiency</span></div>
+              <div className="hero-metric-item"><span className="metric-platform">Google</span><span className="metric-val">81%</span><span className="metric-sub">efficiency</span></div>
+              <div className="hero-metric-item"><span className="metric-platform">UGC</span><span className="metric-val">96%</span><span className="metric-sub">approval</span></div>
             </div>
           </div>
         </div>
@@ -142,26 +130,34 @@ export default function Home() {
             <h2 className="section-title">From store to live ads<br />in under 60 seconds.</h2>
             <p className="section-sub">No agency. No brief. No guesswork. Ephermal reads your store and builds the entire ad operation for you.</p>
           </div>
-          <div className="steps">
-            <div className="step">
-              <div className="step-num">01</div>
-              <h3>Connect Your Store</h3>
-              <p>Connect your Shopify store via OAuth. Link Meta Ads (all plans) or Google Ads (Growth+). Under 3 minutes from zero to ready.</p>
+          <div className="timeline">
+            <div className="tl-step" data-reveal data-delay="1">
+              <div className="tl-node">1</div>
+              <div className="tl-content">
+                <h3>Connect Your Store</h3>
+                <p>Connect your Shopify store via OAuth. Link Meta Ads (all plans) or Google Ads (Growth+). Under 3 minutes from zero to ready.</p>
+              </div>
             </div>
-            <div className="step">
-              <div className="step-num">02</div>
-              <h3>AI Reads Everything</h3>
-              <p>Ephermal scans your products, pricing, bestsellers and brand voice, building a complete advertising strategy automatically.</p>
+            <div className="tl-step" data-reveal data-delay="2">
+              <div className="tl-node">2</div>
+              <div className="tl-content">
+                <h3>AI Reads Everything</h3>
+                <p>Ephermal scans your products, pricing, bestsellers and brand voice, building a complete advertising strategy automatically.</p>
+              </div>
             </div>
-            <div className="step">
-              <div className="step-num">03</div>
-              <h3>AI Ad Content Built</h3>
-              <p>Creator-style scripts, hooks, headlines, and copy generated from your actual products. Not a template library. Every creative is specific to your store and audience.</p>
+            <div className="tl-step" data-reveal data-delay="3">
+              <div className="tl-node">3</div>
+              <div className="tl-content">
+                <h3>AI Ad Content Built</h3>
+                <p>Creator-style scripts, hooks, headlines, and copy generated from your actual products. Not a template library. Every creative is specific to your store and audience.</p>
+              </div>
             </div>
-            <div className="step">
-              <div className="step-num">04</div>
-              <h3>Launch &amp; Optimise</h3>
-              <p>Campaigns go live across Meta and Google Ads. The AI monitors ROAS across placements, surfaces what&apos;s working, and tells you exactly where to scale.</p>
+            <div className="tl-step" data-reveal data-delay="4">
+              <div className="tl-node">4</div>
+              <div className="tl-content">
+                <h3>Launch &amp; Optimise</h3>
+                <p>Campaigns go live across Meta and Google Ads. The AI monitors ROAS across placements, surfaces what&apos;s working, and tells you exactly where to scale.</p>
+              </div>
             </div>
           </div>
           {/* Agent summary */}
@@ -175,7 +171,6 @@ export default function Home() {
       <section className="section" id="services" style={{ paddingTop: 0 }}>
         <div className="container">
           <div data-reveal>
-            <div className="section-label">What Ephermal does</div>
             <h2 className="section-title">Every part of marketing.<br />Handled.</h2>
           </div>
           <div className="services-grid">
@@ -268,10 +263,9 @@ export default function Home() {
           <div className="meta-inner">
             <div className="meta-logo-block" data-reveal="left">
               <h2>Powered by</h2>
-              <img src="https://static.xx.fbcdn.net/rsrc.php/y3/r/y6QsbGgc866.svg" alt="Meta" width={300} height={200} style={{ filter: 'drop-shadow(0 0 32px rgba(0,132,255,0.5)) drop-shadow(0 0 64px rgba(0,132,255,0.25))', transition: 'filter 0.3s ease' }} />
+              <img src="https://static.xx.fbcdn.net/rsrc.php/y3/r/y6QsbGgc866.svg" alt="Meta" width={300} height={200} />
             </div>
             <div className="meta-content" data-reveal="right" data-delay="1">
-              <div className="section-label">Powered by Meta</div>
               <h2 className="section-title">Facebook &amp; Instagram,<br />natively integrated.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
                 Ephermal connects directly to Meta&apos;s official Ads API, the same infrastructure used by the world&apos;s largest advertisers. No scraping, no third-party middleware. Your campaigns run natively inside Meta&apos;s ad platform.
@@ -321,7 +315,6 @@ export default function Home() {
         <div className="container">
           <div className="meta-inner">
             <div className="meta-content" data-reveal="left" data-delay="1">
-              <div className="section-label">Growth &amp; Scale Plans</div>
               <h2 className="section-title">Google Ads,<br />fully automated.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
                 Unlock Google Search, Shopping and Performance Max campaigns on Growth and Scale. Ephermal connects to the official Google Ads API, selects keywords from your product catalog, allocates budget intelligently, and optimises bids in real time.
@@ -365,14 +358,14 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(85,88,232,0.1)', border: '1px solid rgba(85,88,232,0.25)', borderRadius: '10px', fontSize: '13px', color: 'var(--primary, #5558e8)', fontWeight: 600 }}>
+              <div style={{ marginTop: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(6,214,199,0.08)', border: '1px solid rgba(6,214,199,0.2)', borderRadius: '10px', fontSize: '13px', color: 'var(--primary)', fontWeight: 600 }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 Available on Growth &amp; Scale plans
               </div>
             </div>
             <div className="meta-logo-block" data-reveal="right">
               <h2>Also powered by</h2>
-              <svg viewBox="0 0 272 92" width="240" height="80" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 0 28px rgba(66,133,244,0.55)) drop-shadow(0 0 56px rgba(52,168,83,0.25))', transition: 'filter 0.3s ease' }}>
+              <svg viewBox="0 0 272 92" width="240" height="80" xmlns="http://www.w3.org/2000/svg">
                 <path d="M115.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18C71.25 34.32 81.24 25 93.5 25s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44S80.99 39.2 80.99 47.18c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z" fill="#EA4335"/>
                 <path d="M163.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18c0-12.85 9.99-22.18 22.25-22.18s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44s-12.51 5.46-12.51 13.44c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z" fill="#FBBC05"/>
                 <path d="M209.75 26.34v39.82c0 16.38-9.66 23.07-21.08 23.07-10.75 0-17.22-7.19-19.66-13.07l8.48-3.53c1.51 3.61 5.21 7.87 11.17 7.87 7.31 0 11.84-4.51 11.84-13v-3.19h-.34c-2.18 2.69-6.38 5.04-11.68 5.04-11.09 0-21.25-9.66-21.25-22.09 0-12.52 10.16-22.26 21.25-22.26 5.29 0 9.49 2.35 11.68 4.96h.34v-3.61h9.25zm-8.56 20.92c0-7.81-5.21-13.52-11.84-13.52-6.72 0-12.35 5.71-12.35 13.52 0 7.73 5.63 13.36 12.35 13.36 6.63 0 11.84-5.63 11.84-13.36z" fill="#4285F4"/>
@@ -386,7 +379,7 @@ export default function Home() {
       </section>
 
       {/* ── Competitor Radar Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(85,88,232,0.07) 0%, rgba(6,214,199,0.04) 100%)' }}>
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(6,214,199,0.05) 0%, rgba(255,255,255,0.02) 100%)' }}>
         <div className="container">
           <div className="meta-inner">
             <div className="meta-content" data-reveal="left" data-delay="1">
@@ -412,24 +405,24 @@ export default function Home() {
               </div>
             </div>
             <div className="meta-logo-block" data-reveal="right">
-              <div style={{ background: 'rgba(85,88,232,0.08)', border: '1px solid rgba(85,88,232,0.2)', borderRadius: '20px', padding: '32px' }}>
+              <div style={{ background: 'rgba(6,214,199,0.06)', border: '1px solid rgba(6,214,199,0.18)', borderRadius: '20px', padding: '32px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
-                    <circle cx="24" cy="24" r="20" stroke="#5558e8" strokeWidth="1.5" opacity="0.3"/>
-                    <circle cx="24" cy="24" r="13" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
-                    <circle cx="24" cy="24" r="6" stroke="#5558e8" strokeWidth="1.5" opacity="0.8"/>
-                    <circle cx="24" cy="24" r="2.5" fill="#5558e8"/>
-                    <line x1="24" y1="4" x2="24" y2="10" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
-                    <line x1="24" y1="38" x2="24" y2="44" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
-                    <line x1="4" y1="24" x2="10" y2="24" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
-                    <line x1="38" y1="24" x2="44" y2="24" stroke="#5558e8" strokeWidth="1.5" opacity="0.5"/>
+                    <circle cx="24" cy="24" r="20" stroke="#06d6c7" strokeWidth="1.5" opacity="0.3"/>
+                    <circle cx="24" cy="24" r="13" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
+                    <circle cx="24" cy="24" r="6" stroke="#06d6c7" strokeWidth="1.5" opacity="0.8"/>
+                    <circle cx="24" cy="24" r="2.5" fill="#06d6c7"/>
+                    <line x1="24" y1="4" x2="24" y2="10" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="24" y1="38" x2="24" y2="44" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="4" y1="24" x2="10" y2="24" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="38" y1="24" x2="44" y2="24" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
                   </svg>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '5px 10px', background: 'rgba(85,88,232,0.15)', borderRadius: '8px' }}>
-                    <div style={{ width: '7px', height: '7px', background: '#5558e8', borderRadius: '50%', boxShadow: '0 0 6px #5558e8' }} />
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#8b8ef0', letterSpacing: '0.05em', textTransform: 'uppercase' }}>New ad detected · FitFuel Co.</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '5px 10px', background: 'rgba(6,214,199,0.12)', borderRadius: '8px' }}>
+                    <div style={{ width: '7px', height: '7px', background: '#06d6c7', borderRadius: '50%' }} />
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#06d6c7', letterSpacing: '0.05em', textTransform: 'uppercase' }}>New ad detected · FitFuel Co.</span>
                   </div>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px 14px', marginBottom: '14px', fontSize: '12px', color: 'var(--muted)', lineHeight: 1.65, fontStyle: 'italic', borderLeft: '2px solid rgba(85,88,232,0.5)' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px 14px', marginBottom: '14px', fontSize: '12px', color: 'var(--muted)', lineHeight: 1.65, fontStyle: 'italic', borderLeft: '2px solid rgba(6,214,199,0.4)' }}>
                   &ldquo;Tired of pre-workouts that don&apos;t deliver? FitFuel gives you 4-hour clean energy — no crash, no jitters. Try it today.&rdquo;
                 </div>
                 {[
@@ -452,7 +445,7 @@ export default function Home() {
       </section>
 
       {/* ── Creative Brief Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(6,214,199,0.05) 0%, rgba(85,88,232,0.04) 100%)' }}>
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(6,214,199,0.05) 0%, rgba(6,214,199,0.01) 100%)' }}>
         <div className="container">
           <div className="meta-inner" style={{ direction: 'rtl' }}>
             <div className="meta-content" data-reveal="right" data-delay="1" style={{ direction: 'ltr' }}>
@@ -503,7 +496,7 @@ export default function Home() {
       </section>
 
       {/* ── Profit Tracker Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(150,191,72,0.06) 0%, rgba(85,88,232,0.03) 100%)' }}>
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(150,191,72,0.06) 0%, rgba(150,191,72,0.01) 100%)' }}>
         <div className="container">
           <div className="meta-inner">
             <div className="meta-content" data-reveal="left" data-delay="1">
@@ -538,7 +531,7 @@ export default function Home() {
                 {[
                   { product: 'Protein Powder 1kg', margin: '68%', color: '#96BF48' },
                   { product: 'Shaker Bottle', margin: '51%', color: '#06d6c7' },
-                  { product: 'Resistance Bands', margin: '43%', color: '#5558e8' },
+                  { product: 'Resistance Bands', margin: '43%', color: '#fbbf24' },
                   { product: 'Pre-Workout 300g', margin: '22%', color: '#EA4335' },
                 ].map((r, i) => (
                   <div key={i} style={{ marginBottom: '12px' }}>
@@ -564,7 +557,6 @@ export default function Home() {
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
           <div data-reveal style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <div className="section-label">The full picture</div>
             <h2 className="section-title">How many tabs are<br />open in your browser<br />right now?</h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>
               Most Shopify brands are paying for 4–6 disconnected tools, switching between dashboards, and still missing the full picture. Ephermal runs the entire marketing loop — brief, launch, attribution, profit — in one place.
@@ -681,7 +673,6 @@ export default function Home() {
             <p className="quote-attr">Ephermal</p>
           </div>
           <div data-reveal style={{ maxWidth: '680px', margin: '0 auto 40px', textAlign: 'center' }}>
-            <div className="section-label" style={{ marginBottom: '16px' }}>Early access</div>
             <h3 style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '16px' }}>
               We just launched.<br />We want to work with you directly.
             </h3>
@@ -758,7 +749,7 @@ export default function Home() {
                       ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{flexShrink:0,marginTop:'1px'}}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                       : <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                     }
-                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:badge==='Scale'?'#06d6c7':'#5558e8',fontWeight:700}}>{badge}</span>}
+                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:'#06d6c7',fontWeight:700}}>{badge}</span>}
                   </li>
                 ))}
               </ul>

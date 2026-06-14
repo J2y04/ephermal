@@ -5,12 +5,7 @@ import { motion } from 'framer-motion';
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const GRADIENT: React.CSSProperties = {
-  background: 'linear-gradient(135deg, #5558e8 0%, #8b5cf6 45%, #06d6c7 100%)',
-  backgroundSize: '200% 200%',
-  WebkitBackgroundClip: 'text',
-  WebkitTextFillColor: 'transparent',
-  backgroundClip: 'text',
-  animation: 'gradientDrift 7s ease-in-out infinite alternate',
+  color: '#06d6c7',
 };
 
 interface HeroMotionProps {

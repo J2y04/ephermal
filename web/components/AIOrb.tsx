@@ -118,7 +118,7 @@ export default function AIOrb() {
             key={`e-${a.id}`}
             x1={core.x} y1={core.y}
             x2={a.x}    y2={a.y}
-            stroke="rgba(85,88,232,0.18)"
+            stroke="rgba(6,214,199,0.15)"
             strokeWidth="1"
             strokeDasharray="5 5"
           />
@@ -136,8 +136,8 @@ export default function AIOrb() {
             >
               <circle
                 cx={a.x} cy={a.y} r={26}
-                fill="rgba(4,5,15,0.85)"
-                stroke="rgba(85,88,232,0.3)"
+                fill="rgba(8,8,12,0.85)"
+                stroke="rgba(6,214,199,0.2)"
                 strokeWidth="1"
               />
               {parts.map((word, wi) => (
@@ -169,14 +169,14 @@ export default function AIOrb() {
           <circle
             cx={core.x} cy={core.y} r={42}
             fill="none"
-            stroke="rgba(85,88,232,0.12)"
+            stroke="rgba(6,214,199,0.12)"
             strokeWidth="1"
           />
           {/* inner fill */}
           <circle
             cx={core.x} cy={core.y} r={36}
-            fill="rgba(4,5,15,0.92)"
-            stroke="rgba(85,88,232,0.45)"
+            fill="rgba(8,8,12,0.92)"
+            stroke="rgba(6,214,199,0.4)"
             strokeWidth="1.5"
           />
           <text
@@ -195,7 +195,7 @@ export default function AIOrb() {
             x={core.x} y={core.y + 8}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill="rgba(85,88,232,0.75)"
+            fill="rgba(6,214,199,0.6)"
             fontSize="7.5"
             fontFamily="Inter, system-ui, sans-serif"
           >
