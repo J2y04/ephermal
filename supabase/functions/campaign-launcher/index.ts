@@ -181,7 +181,7 @@ async function gAdsPost(customerId: string, accessToken: string, devToken: strin
   return res.json() as Promise<Record<string, unknown>>;
 }
 
-async function launchToGoogle(userId: string, campaignId: string): Promise<Record<string, unknown>> {
+async function launchToGoogle(userId: string, campaignId: string, autoEnable = false): Promise<Record<string, unknown>> {
   const { data: row } = await supabase.from('launched_campaigns').select('*').eq('id', campaignId).eq('user_id', userId).single();
   if (!row) throw new Error('Campaign not found');
 
@@ -211,7 +211,7 @@ async function launchToGoogle(userId: string, campaignId: string): Promise<Recor
 
   // 2. Campaign
   const campRes    = await gAdsPost(rawCid, accessToken, devToken, 'campaigns:mutate', {
-    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: 'PAUSED', campaignBudget: budgetRn, biddingStrategyType: 'MAXIMIZE_CONVERSIONS', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
+    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, biddingStrategyType: 'MAXIMIZE_CONVERSIONS', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
   }) as { results: { resourceName: string }[] };
   const campaignRn = (campRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!campaignRn) throw new Error('Failed to create Google Ads campaign');
@@ -239,11 +239,11 @@ async function launchToGoogle(userId: string, campaignId: string): Promise<Recor
 
   await supabase.from('launched_campaigns').update({ google_campaign_id: googleCampaignId, status: 'active', launched_at: new Date().toISOString() }).eq('id', campaignId).eq('user_id', userId);
 
-  return { campaign_id: campaignId, google_campaign_id: googleCampaignId, status: 'active', note: 'Google Search campaign created as PAUSED. Enable in Google Ads Manager.' };
+  return { campaign_id: campaignId, google_campaign_id: googleCampaignId, status: 'active', enabled: autoEnable, note: autoEnable ? 'Google Search campaign is LIVE.' : 'Google Search campaign created as PAUSED. Enable in Google Ads Manager.' };
 }
 
 /** Launch prepared campaign to Meta */
-async function launchToMeta(userId: string, campaignId: string): Promise<Record<string, unknown>> {
+async function launchToMeta(userId: string, campaignId: string, autoEnable = false): Promise<Record<string, unknown>> {
   const { data: row } = await supabase
     .from('launched_campaigns')
     .select('*')
@@ -263,11 +263,13 @@ async function launchToMeta(userId: string, campaignId: string): Promise<Record<
   const targeting = metaCopy?.targeting as Record<string, unknown> ?? { geo_locations: { countries: ['US'] } };
   const budget    = Math.round((row.budget_daily ?? 20) * 100); // Meta uses cents
 
+  const adStatus = autoEnable ? 'ACTIVE' : 'PAUSED';
+
   // 1. Create campaign
   const campaign = await metaPost<{ id: string }>(`/${accountId}/campaigns`, {
     name:                   String(metaCopy.campaign_name ?? row.name),
     objective:              String(row.objective ?? 'OUTCOME_TRAFFIC'),
-    status:                 'PAUSED',
+    status:                 adStatus,
     special_ad_categories: [],
   }, token);
 
@@ -279,7 +281,7 @@ async function launchToMeta(userId: string, campaignId: string): Promise<Record<
     billing_event:     'IMPRESSIONS',
     optimization_goal: row.objective === 'OUTCOME_SALES' ? 'OFFSITE_CONVERSIONS' : 'REACH',
     targeting,
-    status:            'PAUSED',
+    status:            adStatus,
   }, token);
 
   // 3. Update DB with Meta campaign ID
@@ -294,11 +296,12 @@ async function launchToMeta(userId: string, campaignId: string): Promise<Record<
     .eq('user_id', userId);
 
   return {
-    campaign_id:    campaignId,
+    campaign_id:      campaignId,
     meta_campaign_id: campaign.id,
-    meta_adset_id:  adSet.id,
-    status:         'active',
-    note:           'Campaign created as PAUSED. Enable in Meta Ads Manager or via Campaigns tab.',
+    meta_adset_id:    adSet.id,
+    status:           'active',
+    enabled:          autoEnable,
+    note:             autoEnable ? 'Campaign is LIVE on Meta.' : 'Campaign created as PAUSED. Enable in Meta Ads Manager when ready.',
   };
 }
 
@@ -336,7 +339,8 @@ Deno.serve(async (req) => {
         }
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
-        return okResponse(await launchToMeta(userId, campaignId), origin);
+        const autoEnable = body.auto_enable === true;
+        return okResponse(await launchToMeta(userId, campaignId, autoEnable), origin);
       }
 
       case 'launch_google': {
@@ -345,7 +349,8 @@ Deno.serve(async (req) => {
         }
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
-        return okResponse(await launchToGoogle(userId, campaignId), origin);
+        const autoEnable = body.auto_enable === true;
+        return okResponse(await launchToGoogle(userId, campaignId, autoEnable), origin);
       }
 
       case 'launch': {
@@ -354,14 +359,15 @@ Deno.serve(async (req) => {
         }
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
-        const platforms = (body.platforms as string[] | undefined) ?? ['meta'];
+        const platforms  = (body.platforms as string[] | undefined) ?? ['meta'];
+        const autoEnable = body.auto_enable === true;
 
         const results: Record<string, unknown> = {};
         if (platforms.includes('meta')) {
-          results.meta = await launchToMeta(userId, campaignId);
+          results.meta = await launchToMeta(userId, campaignId, autoEnable);
         }
         if (platforms.includes('google') && plan === 'scale') {
-          results.google = await launchToGoogle(userId, campaignId);
+          results.google = await launchToGoogle(userId, campaignId, autoEnable);
         }
         return okResponse(results, origin);
       }

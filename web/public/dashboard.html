@@ -570,10 +570,6 @@ select.form-input{cursor:pointer}
       <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Budget AI
       <svg class="lock-icon" id="lock-budget" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </div>
-    <div class="nav-item" data-page="launch" id="nav-launch" onclick="handleNavClick('launch')">
-      <svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>Launch Campaign
-      <svg class="lock-icon" id="lock-launch" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    </div>
   </div>
   <div class="nav-section" style="display:none"><!-- AI Tools hidden until re-enabled -->
     <div class="nav-label">AI Tools</div>
@@ -781,10 +777,119 @@ select.form-input{cursor:pointer}
     <!-- CAMPAIGNS -->
     <div class="page" id="page-campaigns">
       <div class="panel fade-in">
-        <div class="panel-head"><div class="panel-title">All Campaigns</div><div style="display:flex;gap:8px;align-items:center"><button class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:#06d6c7;font-weight:700" onclick="openLaunchModal()">+ Launch Campaign</button><button id="btn-roas-optimize" class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:var(--primary);font-weight:700" onclick="runROASOptimizer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="vertical-align:-1px;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS</button><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div></div>
+        <div class="panel-head"><div class="panel-title">All Campaigns</div><div style="display:flex;gap:8px;align-items:center"><button class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:#06d6c7;font-weight:700" onclick="openLaunchWizard()">+ New Campaign</button><button id="btn-roas-optimize" class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:var(--primary);font-weight:700" onclick="runROASOptimizer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="vertical-align:-1px;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS</button><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div></div>
         <div class="campaign-table">
           <div class="campaign-row header"><span>Campaign</span><span>ROAS</span><span>Spend</span><span>CTR</span><span>Status</span><span>On/Off</span></div>
           <div id="campaigns-body-full"><div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div></div>
+        </div>
+      </div>
+
+      <!-- Campaign Builder + Launched Campaigns (merged from Launch tab) -->
+      <div class="paywall-wrap" id="launch-paywall-wrap" style="margin-top:20px">
+        <!-- Launch Wizard -->
+        <div id="launch-wizard" style="display:none">
+          <div class="panel fade-in" style="margin-bottom:20px">
+            <div class="panel-head"><div class="panel-title">Campaign Builder</div><button class="panel-action" onclick="closeLaunchWizard()">✕ Close</button></div>
+            <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+              <div class="launch-step">
+                <div class="launch-step-num active" id="lstep-1">1</div>
+                <div class="launch-step-body">
+                  <div class="launch-step-title">Product</div>
+                  <div class="launch-step-sub">Select or describe the product you want to advertise.</div>
+                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                    <select class="form-input" id="launch-product-select" onchange="fillLaunchProductFromSelect(this.value)" style="color:var(--muted)">
+                      <option value="">— Pick a synced product or fill manually —</option>
+                    </select>
+                    <input class="form-input" id="launch-product-name" placeholder="Product name (e.g. Blue Wireless Earbuds)">
+                    <input class="form-input" id="launch-product-desc" placeholder="What problem does it solve? What's the key benefit?">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                      <input class="form-input" id="launch-product-price" type="number" placeholder="Price ($)" min="1">
+                      <select class="form-input" id="launch-objective">
+                        <option value="OUTCOME_SALES">Sales / Conversions</option>
+                        <option value="OUTCOME_TRAFFIC">Traffic</option>
+                        <option value="OUTCOME_AWARENESS">Brand Awareness</option>
+                        <option value="OUTCOME_LEADS">Lead Generation</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="launch-step">
+                <div class="launch-step-num" id="lstep-2">2</div>
+                <div class="launch-step-body">
+                  <div class="launch-step-title">Target Audience</div>
+                  <div class="launch-step-sub">AI suggests targeting based on your product - or customise below.</div>
+                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                    <input class="form-input" id="launch-audience-desc" placeholder="Describe your target audience (e.g. women 25-45 interested in fitness)">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                      <input class="form-input" id="launch-age-min" type="number" placeholder="Min age (e.g. 18)" min="13" max="65">
+                      <input class="form-input" id="launch-age-max" type="number" placeholder="Max age (e.g. 55)" min="18" max="65">
+                    </div>
+                    <input class="form-input" id="launch-countries" placeholder="Target countries (e.g. US, CA, UK) - comma separated">
+                  </div>
+                </div>
+              </div>
+              <div class="launch-step">
+                <div class="launch-step-num" id="lstep-3">3</div>
+                <div class="launch-step-body">
+                  <div class="launch-step-title">Budget & Platform</div>
+                  <div class="launch-step-sub">Daily budget and where to run the ads.</div>
+                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                      <input class="form-input" id="launch-budget" type="number" placeholder="Daily budget ($)" min="5">
+                      <select class="form-input" id="launch-platforms">
+                        <option value="meta">Meta Only (Facebook + Instagram)</option>
+                        <option value="google">Google Only</option>
+                        <option value="both">Meta + Google</option>
+                      </select>
+                    </div>
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--muted);padding:10px 14px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:10px">
+                      <input type="checkbox" id="launch-auto-enable" style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary)">
+                      <span><strong style="color:var(--text)">Auto-enable campaign</strong> — goes live immediately instead of PAUSED. Make sure billing is set up in your Ads Manager first.</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:flex-end">
+                <button class="btn-save" onclick="generateCampaignCopy()" id="launch-gen-btn" style="display:inline-flex;align-items:center;gap:8px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate AI Copy
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Generated Copy Preview -->
+          <div id="launch-copy-preview" style="display:none" class="fade-in">
+            <div class="panel" style="margin-bottom:20px">
+              <div class="panel-head"><div class="panel-title">AI-Generated Ad Copy</div><button class="panel-action" onclick="generateCampaignCopy()">Regenerate</button></div>
+              <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
+                <div class="form-group"><label class="form-label">Meta Headline</label><input class="form-input" id="lcp-headline"></div>
+                <div class="form-group"><label class="form-label">Meta Primary Text</label><textarea class="form-input" id="lcp-primary" style="height:80px;resize:vertical"></textarea></div>
+                <div class="form-group"><label class="form-label">UGC Hook</label><input class="form-input" id="lcp-hook"></div>
+              </div>
+              <div style="padding:0 20px 20px;display:flex;gap:10px;justify-content:flex-end">
+                <button class="btn-secondary" onclick="closeLaunchWizard()">Cancel</button>
+                <button class="btn-save" onclick="doLaunchCampaign()" id="launch-exec-btn" style="display:inline-flex;align-items:center;gap:8px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Launch Campaign
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Launched Campaigns Table -->
+        <div class="panel fade-in">
+          <div class="panel-head"><div class="panel-title">Launched Campaigns</div><button class="panel-action" onclick="loadLaunchedCampaigns()">Refresh ↺</button></div>
+          <div style="padding:10px 22px 0;font-size:12px;color:var(--muted)">Campaigns launch as <strong style="color:var(--warning)">PAUSED</strong> by default — check "Auto-enable" above to go live immediately, or enable them directly in Meta/Google Ads Manager.</div>
+          <div id="launched-campaigns-content">
+            <div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg><p>No campaigns launched yet. Click "+ New Campaign" to start.</p></div>
+          </div>
+        </div>
+        <div class="paywall-lock" id="launch-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Campaign Launcher - Growth Plan</strong>
+          <span>AI writes the copy, picks the audience and launches to Meta with zero ad manager. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('launch')">Upgrade to Growth →</button>
         </div>
       </div>
     </div>
@@ -1249,126 +1354,6 @@ select.form-input{cursor:pointer}
       </div>
     </div>
 
-    <!-- CAMPAIGN LAUNCHER -->
-    <div class="page" id="page-launch">
-      <div class="paywall-wrap" id="launch-paywall-wrap">
-        <div class="fade-in" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:44px;height:44px;background:rgba(6,214,199,0.18);border:1px solid rgba(6,214,199,0.25);border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg>
-            </div>
-            <div>
-              <div style="font-size:18px;font-weight:800;letter-spacing:-.3px">Launch Campaign</div>
-              <div style="font-size:13px;color:var(--muted);margin-top:2px">AI writes the copy, picks the audience, and launches to Meta - zero ad manager.</div>
-            </div>
-          </div>
-          <button class="btn-save" onclick="openLaunchWizard()" style="display:inline-flex;align-items:center;gap:8px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New Campaign
-          </button>
-        </div>
-
-        <!-- Launch Wizard -->
-        <div id="launch-wizard" style="display:none">
-          <div class="panel fade-in" style="margin-bottom:20px">
-            <div class="panel-head"><div class="panel-title">Campaign Builder</div></div>
-            <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
-              <div class="launch-step">
-                <div class="launch-step-num active" id="lstep-1">1</div>
-                <div class="launch-step-body">
-                  <div class="launch-step-title">Product</div>
-                  <div class="launch-step-sub">Select or describe the product you want to advertise.</div>
-                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
-                    <select class="form-input" id="launch-product-select" onchange="fillLaunchProductFromSelect(this.value)" style="color:var(--muted)">
-                      <option value="">— Pick a synced product or fill manually —</option>
-                    </select>
-                    <input class="form-input" id="launch-product-name" placeholder="Product name (e.g. Blue Wireless Earbuds)">
-                    <input class="form-input" id="launch-product-desc" placeholder="What problem does it solve? What's the key benefit?">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                      <input class="form-input" id="launch-product-price" type="number" placeholder="Price ($)" min="1">
-                      <select class="form-input" id="launch-objective">
-                        <option value="OUTCOME_SALES">Sales / Conversions</option>
-                        <option value="OUTCOME_TRAFFIC">Traffic</option>
-                        <option value="OUTCOME_AWARENESS">Brand Awareness</option>
-                        <option value="OUTCOME_LEADS">Lead Generation</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="launch-step">
-                <div class="launch-step-num" id="lstep-2">2</div>
-                <div class="launch-step-body">
-                  <div class="launch-step-title">Target Audience</div>
-                  <div class="launch-step-sub">AI suggests targeting based on your product - or customise below.</div>
-                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
-                    <input class="form-input" id="launch-audience-desc" placeholder="Describe your target audience (e.g. women 25-45 interested in fitness)">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                      <input class="form-input" id="launch-age-min" type="number" placeholder="Min age (e.g. 18)" min="13" max="65">
-                      <input class="form-input" id="launch-age-max" type="number" placeholder="Max age (e.g. 55)" min="18" max="65">
-                    </div>
-                    <input class="form-input" id="launch-countries" placeholder="Target countries (e.g. US, CA, UK) - comma separated">
-                  </div>
-                </div>
-              </div>
-              <div class="launch-step">
-                <div class="launch-step-num" id="lstep-3">3</div>
-                <div class="launch-step-body">
-                  <div class="launch-step-title">Budget & Platform</div>
-                  <div class="launch-step-sub">Daily budget and where to run the ads.</div>
-                  <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                    <input class="form-input" id="launch-budget" type="number" placeholder="Daily budget ($)" min="5">
-                    <select class="form-input" id="launch-platforms">
-                      <option value="meta">Meta Only (Facebook + Instagram)</option>
-                      <option value="google">Google Only</option>
-                      <option value="both">Meta + Google</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div style="display:flex;justify-content:flex-end">
-                <button class="btn-save" onclick="generateCampaignCopy()" id="launch-gen-btn" style="display:inline-flex;align-items:center;gap:8px">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate AI Copy
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Generated Copy Preview -->
-          <div id="launch-copy-preview" style="display:none" class="fade-in">
-            <div class="panel" style="margin-bottom:20px">
-              <div class="panel-head"><div class="panel-title">AI-Generated Ad Copy</div><button class="panel-action" onclick="generateCampaignCopy()">Regenerate</button></div>
-              <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
-                <div class="form-group"><label class="form-label">Meta Headline</label><input class="form-input" id="lcp-headline"></div>
-                <div class="form-group"><label class="form-label">Meta Primary Text</label><textarea class="form-input" id="lcp-primary" style="height:80px;resize:vertical"></textarea></div>
-                <div class="form-group"><label class="form-label">UGC Hook</label><input class="form-input" id="lcp-hook"></div>
-              </div>
-              <div style="padding:0 20px 20px;display:flex;gap:10px;justify-content:flex-end">
-                <button class="btn-secondary" onclick="closeLaunchWizard()">Cancel</button>
-                <button class="btn-save" onclick="doLaunchCampaign()" id="launch-exec-btn" style="display:inline-flex;align-items:center;gap:8px">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Launch to Meta
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Launched Campaigns Table -->
-        <div class="panel fade-in">
-          <div class="panel-head"><div class="panel-title">Launched Campaigns</div><button class="panel-action" onclick="loadLaunchedCampaigns()">Refresh ↺</button></div>
-          <div style="padding:10px 22px 0;font-size:12px;color:var(--muted)">Campaigns are created in Meta Ads Manager as <strong style="color:var(--warning)">PAUSED</strong> — enable them in Meta to start spending. UGC video creatives are separate and live in the <em>Creatives</em> tab.</div>
-          <div id="launched-campaigns-content">
-            <div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg><p>No campaigns launched yet. Click "New Campaign" to start.</p></div>
-          </div>
-        </div>
-        <div class="paywall-lock" id="launch-paywall" style="display:none">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <strong>Campaign Launcher - Growth Plan</strong>
-          <span>AI writes the copy, picks the audience and launches to Meta with zero ad manager. Available on Growth and Scale plans.</span>
-          <button class="btn-upgrade" onclick="showUpgradeModal('launch')">Upgrade to Growth →</button>
-        </div>
-      </div>
-    </div>
-
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="panel fade-in">
@@ -1814,46 +1799,6 @@ select.form-input{cursor:pointer}
 </div>
 
 <!-- LAUNCH CAMPAIGN MODAL -->
-<div class="modal-overlay" id="launch-modal">
-  <div class="modal" style="max-width:540px">
-    <button class="modal-close" onclick="closeLaunchModal()">×</button>
-    <div class="modal-title">Launch New Campaign</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:20px">Creates a Meta campaign + ad set (starts paused - activate when ready)</div>
-    <div class="settings-form" style="gap:14px">
-      <div class="form-group">
-        <label class="form-label">Campaign Name <span style="color:#f87171">*</span></label>
-        <input class="form-input" id="lc-name" placeholder="e.g. Summer Sale - Retargeting" type="text">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Objective</label>
-        <select class="form-input" id="lc-objective" style="cursor:pointer">
-          <option value="OUTCOME_SALES">Sales (Conversions)</option>
-          <option value="OUTCOME_TRAFFIC">Traffic (Link Clicks)</option>
-          <option value="OUTCOME_LEADS">Lead Generation</option>
-          <option value="OUTCOME_AWARENESS">Brand Awareness</option>
-          <option value="OUTCOME_ENGAGEMENT">Engagement</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Daily Budget (USD)</label>
-        <input class="form-input" id="lc-budget" placeholder="e.g. 50" type="number" min="1" step="1" value="50">
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Minimum $1/day. Budget is in USD - enter whole numbers.</div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Target Countries</label>
-        <input class="form-input" id="lc-countries" placeholder="US, GB, CA" value="US">
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Comma-separated ISO 2-letter country codes.</div>
-      </div>
-      <div style="display:flex;gap:12px;padding-top:4px">
-        <button class="btn-save" id="lc-submit-btn" onclick="launchCampaign()">
-          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;margin-right:5px;vertical-align:-2px"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Launch Campaign
-        </button>
-        <button class="panel-action" style="padding:9px 18px" onclick="closeLaunchModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- AI FLOATING BUTTON - hidden until re-enabled -->
 <button class="ai-fab" id="ai-fab" onclick="openAIPanel()" title="Ephermal AI" style="display:none">
@@ -2170,7 +2115,7 @@ function renderPlanUI() {
     if (lockEl) lockEl.style.display = locked ? 'block' : 'none';
   });
   // Show/hide page paywall overlays
-  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', launch: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall' };
+  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall' };
   Object.entries(pagePaywalls).forEach(([feature, id]) => {
     const pw = document.getElementById(id);
     if (pw) pw.style.display = !canAccess(feature) ? 'flex' : 'none';
@@ -2377,9 +2322,8 @@ function navigate(page) {
     }
     if (page === 'billing') renderBillingPage();
     if (page === 'creatives') { loadAllCreatives(); runFatigueAnalysis(); }
-    if (page === 'launch')  { loadLaunchedCampaigns(); }
     if (page === 'budget')  { /* ready to use on load */ }
-    if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } }
+    if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } loadLaunchedCampaigns(); }
     if (page === 'settings') loadSettingsFields();
     if (page === 'audience') { loadPixelStatus(); loadAudiences(); }
     if (page === 'bulk') loadBulkCampaigns();
@@ -2940,50 +2884,6 @@ async function loadCampaigns() {
 }
 
 // ── LAUNCH CAMPAIGN ───────────────────────────────────────────────────────────
-function openLaunchModal() {
-  const mt = localStorage.getItem('meta_token');
-  const ma = localStorage.getItem('meta_account');
-  if (!mt || !ma) { showToast('Connect your Meta account in Settings first', 'error'); return; }
-  document.getElementById('launch-modal').classList.add('open');
-  setTimeout(() => document.getElementById('lc-name').focus(), 200);
-}
-function closeLaunchModal() {
-  document.getElementById('launch-modal').classList.remove('open');
-}
-async function launchCampaign() {
-  const name = document.getElementById('lc-name').value.trim();
-  if (!name) { showToast('Campaign name is required', 'error'); return; }
-  const objective = document.getElementById('lc-objective').value;
-  const budgetDollars = parseFloat(document.getElementById('lc-budget').value) || 50;
-  const daily_budget = Math.round(budgetDollars * 100); // Meta expects cents
-  const rawCountries = document.getElementById('lc-countries').value;
-  const countries = rawCountries.split(',').map(c => c.trim().toUpperCase()).filter(c => c.length === 2);
-  if (!countries.length) { showToast('Enter at least one valid country code', 'error'); return; }
-  const btn = document.getElementById('lc-submit-btn');
-  btn.disabled = true; btn.textContent = 'Launching…';
-  try {
-    const r = await authFetch('/meta/write', {
-      method: 'POST',
-      body: JSON.stringify({ action: 'create_campaign', name, objective, daily_budget, countries })
-    });
-    if (!r) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;margin-right:5px;vertical-align:-2px"><polygon points="5 3 19 12 5 21 5 3"/></svg>Launch Campaign'; return; }
-    const d = await r.json();
-    if (d.success) {
-      invalidateCache('campaigns');
-      showToast(`"${name}" created - activate it from the campaigns list`, 'success');
-      closeLaunchModal();
-      document.getElementById('lc-name').value = '';
-      await loadCampaigns();
-    } else {
-      showToast(d.error || 'Campaign creation failed', 'error');
-    }
-  } catch(e) {
-    showToast('Network error - check your connection', 'error');
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;margin-right:5px;vertical-align:-2px"><polygon points="5 3 19 12 5 21 5 3"/></svg>Launch Campaign';
-}
-
 // ── ROAS OPTIMIZER ────────────────────────────────────────────────────────────
 async function runROASOptimizer() {
   if (!canAccess('analytics')) { showUpgradeModal('analytics'); return; }
@@ -4731,16 +4631,17 @@ async function doLaunchCampaign() {
 
   try {
     const platforms = document.getElementById('launch-platforms')?.value || 'meta';
+    const autoEnable = document.getElementById('launch-auto-enable')?.checked || false;
     let action, launchBody;
     if (platforms === 'meta') {
       action = 'launch_meta';
-      launchBody = { action, campaign_id: _launchCampaignId };
+      launchBody = { action, campaign_id: _launchCampaignId, auto_enable: autoEnable };
     } else if (platforms === 'google') {
       action = 'launch_google';
-      launchBody = { action, campaign_id: _launchCampaignId };
+      launchBody = { action, campaign_id: _launchCampaignId, auto_enable: autoEnable };
     } else {
       action = 'launch';
-      launchBody = { action, campaign_id: _launchCampaignId, platforms: ['meta', 'google'] };
+      launchBody = { action, campaign_id: _launchCampaignId, platforms: ['meta', 'google'], auto_enable: autoEnable };
     }
 
     const launchRes = await authFetch('/launch', { method: 'POST', body: JSON.stringify(launchBody) });
@@ -4751,7 +4652,8 @@ async function doLaunchCampaign() {
     }
 
     const platformLabel = platforms === 'both' ? 'Meta + Google' : platforms === 'google' ? 'Google Ads' : 'Meta Ads';
-    showToast(`Campaign created on ${platformLabel} as PAUSED — enable it in your Ads Manager.`, 'success');
+    const statusLabel = autoEnable ? 'ACTIVE — your ads are live!' : 'PAUSED — enable it in your Ads Manager when ready.';
+    showToast(`Campaign created on ${platformLabel} as ${statusLabel}`, 'success');
     closeLaunchWizard();
     loadLaunchedCampaigns();
   } catch(e) {
