@@ -1278,6 +1278,9 @@ select.form-input{cursor:pointer}
                   <div class="launch-step-title">Product</div>
                   <div class="launch-step-sub">Select or describe the product you want to advertise.</div>
                   <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+                    <select class="form-input" id="launch-product-select" onchange="fillLaunchProductFromSelect(this.value)" style="color:var(--muted)">
+                      <option value="">— Pick a synced product or fill manually —</option>
+                    </select>
                     <input class="form-input" id="launch-product-name" placeholder="Product name (e.g. Blue Wireless Earbuds)">
                     <input class="form-input" id="launch-product-desc" placeholder="What problem does it solve? What's the key benefit?">
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -1352,6 +1355,7 @@ select.form-input{cursor:pointer}
         <!-- Launched Campaigns Table -->
         <div class="panel fade-in">
           <div class="panel-head"><div class="panel-title">Launched Campaigns</div><button class="panel-action" onclick="loadLaunchedCampaigns()">Refresh ↺</button></div>
+          <div style="padding:10px 22px 0;font-size:12px;color:var(--muted)">Campaigns are created in Meta Ads Manager as <strong style="color:var(--warning)">PAUSED</strong> — enable them in Meta to start spending. UGC video creatives are separate and live in the <em>Creatives</em> tab.</div>
           <div id="launched-campaigns-content">
             <div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg><p>No campaigns launched yet. Click "New Campaign" to start.</p></div>
           </div>
@@ -1927,6 +1931,25 @@ select.form-input{cursor:pointer}
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeUGCModal()">Cancel</button>
       <button class="btn-save" onclick="submitUGC()" id="btn-ugc-submit">Generate Video</button>
+    </div>
+  </div>
+</div>
+
+<!-- ASSIGN CREATIVE TO CAMPAIGN MODAL -->
+<div class="modal-overlay" id="assign-campaign-modal">
+  <div class="modal" style="max-width:440px">
+    <button class="modal-close" onclick="closeAssignCampaignModal()">×</button>
+    <div class="modal-title">Assign to Campaign</div>
+    <div class="modal-sub">Link this UGC creative to one of your launched campaigns — or skip to leave it unassigned.</div>
+    <div class="form-group" style="margin:20px 0 24px">
+      <label class="form-label">Campaign</label>
+      <select class="form-input" id="assign-campaign-select">
+        <option value="">— None (keep unassigned) —</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeAssignCampaignModal()">Skip</button>
+      <button class="btn-save" onclick="confirmAssignCampaign()" id="btn-assign-campaign">Assign Creative</button>
     </div>
   </div>
 </div>
@@ -3147,6 +3170,8 @@ async function submitUGC() {
       aspect_ratio: ratio,
     })});
     if (r && r.ok) {
+      const d = await r.json();
+      const creativeId = d.result?.creative_id;
       consumeUGCCredit();
       syncUGCCreditToSupabase();
       renderPlanUI();
@@ -3154,12 +3179,59 @@ async function submitUGC() {
       document.getElementById('ugc-description').value = '';
       showToast('UGC video generation started - check Creatives in ~60s');
       setTimeout(() => loadCreatives('pending_review','creatives-body'), 8000);
+      if (creativeId) openAssignCampaignModal(creativeId);
     } else {
       const d = r ? await r.json().catch(()=>({})) : {};
       showToast(d.detail || d.message || 'Generation failed', 'error');
     }
   } catch(e){ showToast('Request failed - please try again', 'error'); }
   finally { btn.disabled=false; btn.textContent='Generate Video'; }
+}
+
+// ── ASSIGN CREATIVE → CAMPAIGN ───────────────────────────────────────────────
+let _assignCreativeId = null;
+
+async function openAssignCampaignModal(creativeId) {
+  _assignCreativeId = creativeId;
+  const sel = document.getElementById('assign-campaign-select');
+  if (sel) {
+    sel.innerHTML = '<option value="">— None (keep unassigned) —</option>';
+    // Load campaigns from backend
+    try {
+      const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'list' }) });
+      if (r && r.ok) {
+        const data = await r.json();
+        (data.campaigns || []).forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = `${c.name} (${c.platform || 'meta'}) — ${c.status}`;
+          sel.appendChild(opt);
+        });
+      }
+    } catch(e) { /* use empty list */ }
+  }
+  document.getElementById('assign-campaign-modal').classList.add('open');
+}
+
+function closeAssignCampaignModal() {
+  document.getElementById('assign-campaign-modal').classList.remove('open');
+  _assignCreativeId = null;
+}
+
+async function confirmAssignCampaign() {
+  const campaignId = document.getElementById('assign-campaign-select').value;
+  const btn = document.getElementById('btn-assign-campaign');
+  if (!_assignCreativeId) { closeAssignCampaignModal(); return; }
+  btn.disabled = true; btn.textContent = 'Assigning…';
+  try {
+    const r = await authFetch('/ugc/generate', { method: 'POST', body: JSON.stringify({ action: 'assign_campaign', creative_id: _assignCreativeId, campaign_id: campaignId || null }) });
+    if (r && r.ok) {
+      showToast(campaignId ? 'Creative assigned to campaign' : 'Creative left unassigned', 'success');
+    } else {
+      showToast('Assignment failed', 'error');
+    }
+  } catch(e) { showToast('Assignment failed', 'error'); }
+  finally { btn.disabled = false; btn.textContent = 'Assign Creative'; closeAssignCampaignModal(); }
 }
 
 // ── STORE ANALYSIS ────────────────────────────────────────────────────────────
@@ -4011,7 +4083,7 @@ function loadProducts() {
   if (warning) warning.style.display = 'none';
   const cached = localStorage.getItem('products_cache');
   if (cached) {
-    try { renderProducts(JSON.parse(cached)); } catch(e) {}
+    try { const p = JSON.parse(cached); window._cachedProducts = p; renderProducts(p); } catch(e) {}
   } else {
     // No cache yet - auto-sync on first visit to products tab
     syncProducts();
@@ -4036,6 +4108,8 @@ async function syncProducts() {
     const data = r.json ? await r.json() : r;
     const products = Array.isArray(data) ? data : (data.products || []);
     localStorage.setItem('products_cache', JSON.stringify(products));
+    window._cachedProducts = products;
+    const isFirstSync = !localStorage.getItem('known_product_ids');
     _pendingNewProducts = [];
     products.forEach(p => {
       const id = String(p.id || p.title || Math.random());
@@ -4044,8 +4118,8 @@ async function syncProducts() {
     localStorage.setItem('known_product_ids', JSON.stringify([..._knownProductIds]));
     renderProducts(products);
     if (status) status.textContent = `${products.length} products · synced just now`;
-    showToast(`Synced ${products.length} products${_pendingNewProducts.length ? ` · ${_pendingNewProducts.length} new!` : ''}`, 'success');
-    if (_pendingNewProducts.length > 0) { _currentNewProductIdx = 0; setTimeout(showNextNewProduct, 600); }
+    showToast(`Synced ${products.length} products${(!isFirstSync && _pendingNewProducts.length) ? ` · ${_pendingNewProducts.length} new!` : ''}`, 'success');
+    if (!isFirstSync && _pendingNewProducts.length > 0) { _currentNewProductIdx = 0; setTimeout(showNextNewProduct, 600); }
   } catch(e) {
     showToast('Sync failed - check Shopify connection in Settings', 'error');
     if (status) status.textContent = 'Sync failed';
@@ -4100,14 +4174,11 @@ function showNextNewProduct() {
 
 function promptUGCForProduct(id, title, img, price) {
   if (!requireSubscription()) return;
-  const modal = document.getElementById('new-product-modal');
-  if (!modal) return;
-  document.getElementById('new-product-title').textContent = title;
-  document.getElementById('new-product-price').textContent = price || '';
-  const imgEl = document.getElementById('new-product-img');
-  imgEl.src = img; imgEl.style.display = img ? 'block' : 'none';
-  document.getElementById('btn-create-product-ugc').dataset.product = JSON.stringify({ id, title, image: img, price });
-  modal.classList.add('open');
+  // Pre-fill the full UGC config modal with product details
+  const descEl = document.getElementById('ugc-description');
+  if (descEl) descEl.value = title + (price ? ` - $${price}` : '');
+  const ugcModal = document.getElementById('ugc-modal');
+  if (ugcModal) { renderPlanUI(); ugcModal.classList.add('open'); }
 }
 
 async function createUGCForNewProduct() {
@@ -4560,11 +4631,42 @@ function openLaunchWizard() {
   document.getElementById('launch-wizard').style.display = '';
   document.getElementById('launch-copy-preview').style.display = 'none';
   _launchCampaignId = null;
+  populateLaunchProductSelect();
 }
 
 function closeLaunchWizard() {
   document.getElementById('launch-wizard').style.display = 'none';
   document.getElementById('launch-copy-preview').style.display = 'none';
+}
+
+function populateLaunchProductSelect() {
+  const sel = document.getElementById('launch-product-select');
+  if (!sel) return;
+  const products = window._cachedProducts || JSON.parse(localStorage.getItem('products_cache') || '[]');
+  if (!products.length) return;
+  sel.innerHTML = '<option value="">— Pick a synced product or fill manually —</option>';
+  products.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = p.title || p.product_id || 'Untitled';
+    sel.appendChild(opt);
+  });
+}
+
+function fillLaunchProductFromSelect(idx) {
+  if (idx === '') return;
+  const products = window._cachedProducts || JSON.parse(localStorage.getItem('products_cache') || '[]');
+  const p = products[parseInt(idx, 10)];
+  if (!p) return;
+  const nameEl  = document.getElementById('launch-product-name');
+  const descEl  = document.getElementById('launch-product-desc');
+  const priceEl = document.getElementById('launch-product-price');
+  if (nameEl)  nameEl.value  = p.title || '';
+  if (descEl)  descEl.value  = p.body_html ? p.body_html.replace(/<[^>]*>/g, '').slice(0, 200) : '';
+  if (priceEl) priceEl.value = parseFloat(p.variants?.[0]?.price || p.price || '0') || '';
+  // Keep select color readable after selection
+  const sel = document.getElementById('launch-product-select');
+  if (sel) sel.style.color = 'var(--text)';
 }
 
 async function generateCampaignCopy() {
@@ -4629,14 +4731,27 @@ async function doLaunchCampaign() {
 
   try {
     const platforms = document.getElementById('launch-platforms')?.value || 'meta';
-    const action = platforms === 'meta' ? 'launch_meta' : 'launch';
-    const launchBody = { action, campaign_id: _launchCampaignId };
-    if (platforms !== 'meta') launchBody.platforms = platforms.split('+').map(s => s.trim());
+    let action, launchBody;
+    if (platforms === 'meta') {
+      action = 'launch_meta';
+      launchBody = { action, campaign_id: _launchCampaignId };
+    } else if (platforms === 'google') {
+      action = 'launch_google';
+      launchBody = { action, campaign_id: _launchCampaignId };
+    } else {
+      action = 'launch';
+      launchBody = { action, campaign_id: _launchCampaignId, platforms: ['meta', 'google'] };
+    }
 
     const launchRes = await authFetch('/launch', { method: 'POST', body: JSON.stringify(launchBody) });
-    if (!launchRes || !launchRes.ok) { showToast('Launch failed', 'error'); return; }
+    if (!launchRes || !launchRes.ok) {
+      const errData = launchRes ? await launchRes.json().catch(()=>({})) : {};
+      showToast(errData.error || 'Launch failed - check your ad platform connection', 'error');
+      return;
+    }
 
-    showToast('Campaign launched! Created as PAUSED - enable in Campaigns tab.', 'success');
+    const platformLabel = platforms === 'both' ? 'Meta + Google' : platforms === 'google' ? 'Google Ads' : 'Meta Ads';
+    showToast(`Campaign created on ${platformLabel} as PAUSED — enable it in your Ads Manager.`, 'success');
     closeLaunchWizard();
     loadLaunchedCampaigns();
   } catch(e) {

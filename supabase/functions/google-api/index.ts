@@ -325,6 +325,107 @@ Deno.serve(async (req: Request) => {
         return okResponse({ success: true, campaign_id: campaignId, budget_usd: budgetUsd }, origin)
       }
 
+      // ── create: build a PAUSED Search campaign from AI-generated copy ────────
+      case 'create': {
+        const campaignName   = String(postBody.campaign_name   ?? 'Ephermal Campaign')
+        const budgetUsd      = Number(postBody.budget_daily    ?? 20)
+        const keywords       = (postBody.keywords       as string[] | undefined) ?? []
+        const headlines      = (postBody.headlines      as string[] | undefined) ?? []
+        const descriptions   = (postBody.descriptions   as string[] | undefined) ?? []
+        const adGroupName    = String(postBody.ad_group_name ?? `${campaignName} — Ad Group`)
+
+        // 1. Campaign budget
+        const budgetResult = await gadsPost(customerId, accessToken, devToken, 'campaignBudgets:mutate', {
+          operations: [{
+            create: {
+              name:           `${campaignName} Budget`,
+              amountMicros:   String(Math.round(budgetUsd * 1_000_000)),
+              deliveryMethod: 'STANDARD',
+            },
+          }],
+        }) as { results: { resourceName: string }[] }
+
+        const budgetRn = budgetResult.results?.[0]?.resourceName
+        if (!budgetRn) throw new Error('Failed to create campaign budget')
+
+        // 2. Campaign
+        const campaignResult = await gadsPost(customerId, accessToken, devToken, 'campaigns:mutate', {
+          operations: [{
+            create: {
+              name:                   campaignName,
+              advertisingChannelType: 'SEARCH',
+              status:                 'PAUSED',
+              campaignBudget:         budgetRn,
+              biddingStrategyType:    'MAXIMIZE_CONVERSIONS',
+              networkSettings: {
+                targetGoogleSearch:   true,
+                targetSearchNetwork:  true,
+                targetContentNetwork: false,
+              },
+            },
+          }],
+        }) as { results: { resourceName: string }[] }
+
+        const campaignRn = campaignResult.results?.[0]?.resourceName
+        if (!campaignRn) throw new Error('Failed to create campaign')
+        const googleCampaignId = campaignRn.split('/').pop()!
+
+        // 3. Ad group
+        const adGroupResult = await gadsPost(customerId, accessToken, devToken, 'adGroups:mutate', {
+          operations: [{
+            create: {
+              name:         adGroupName,
+              campaign:     campaignRn,
+              status:       'ENABLED',
+              type:         'SEARCH_STANDARD',
+              cpcBidMicros: '1000000',
+            },
+          }],
+        }) as { results: { resourceName: string }[] }
+
+        const adGroupRn = adGroupResult.results?.[0]?.resourceName
+
+        // 4. Keywords
+        if (adGroupRn && keywords.length > 0) {
+          await gadsPost(customerId, accessToken, devToken, 'adGroupCriteria:mutate', {
+            operations: keywords.slice(0, 20).map((kw: string) => ({
+              create: {
+                adGroup: adGroupRn,
+                keyword: { text: kw.slice(0, 80), matchType: 'BROAD' },
+                status:  'ENABLED',
+              },
+            })),
+          })
+        }
+
+        // 5. Responsive Search Ad
+        if (adGroupRn && headlines.length >= 3 && descriptions.length >= 2) {
+          await gadsPost(customerId, accessToken, devToken, 'adGroupAds:mutate', {
+            operations: [{
+              create: {
+                adGroup: adGroupRn,
+                status:  'PAUSED',
+                ad: {
+                  responsiveSearchAd: {
+                    headlines:    headlines.slice(0, 15).map((h: string) => ({ text: h.slice(0, 30) })),
+                    descriptions: descriptions.slice(0, 4).map((d: string) => ({ text: d.slice(0, 90) })),
+                  },
+                },
+              },
+            }],
+          })
+        }
+
+        return okResponse({
+          google_campaign_id: googleCampaignId,
+          campaign_resource:  campaignRn,
+          budget_resource:    budgetRn,
+          ad_group_resource:  adGroupRn,
+          status:             'PAUSED',
+          note:               'Google Search campaign created as PAUSED. Enable in Google Ads Manager.',
+        }, origin)
+      }
+
       default:
         return errResponse(`Unknown action: ${action}`, 400, origin)
     }

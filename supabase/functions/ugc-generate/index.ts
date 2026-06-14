@@ -96,6 +96,21 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
 
   const action = String(body.action ?? 'script');
+
+  // assign_campaign bypasses credit check — it just updates a DB record
+  if (action === 'assign_campaign') {
+    const creativeId = String(body.creative_id ?? '').trim();
+    const campaignId = String(body.campaign_id ?? '').trim() || null;
+    if (!creativeId) return errResponse('creative_id is required', 400, origin);
+    const { error } = await supabase
+      .from('creatives')
+      .update({ campaign_id: campaignId })
+      .eq('id', creativeId)
+      .eq('user_id', userId);
+    if (error) return errResponse(error.message, 500, origin);
+    return okResponse({ success: true }, origin);
+  }
+
   const { used, limit } = await getUsage(userId);
   if (used >= limit) {
     return errResponse(`AI message limit reached (${limit}/month). Top up in billing.`, 429, origin);

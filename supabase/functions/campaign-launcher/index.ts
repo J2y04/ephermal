@@ -152,6 +152,96 @@ Make headlines benefit-focused and scroll-stopping. Keep Meta primary text under
   return { campaign_id: saved?.id, copy, status: 'draft' };
 }
 
+const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v17';
+
+async function getGoogleAccessToken(refreshToken: string): Promise<string> {
+  const clientId     = Deno.env.get('GOOGLE_CLIENT_ID');
+  const clientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+  if (!clientId || !clientSecret) throw new Error('Google OAuth credentials not configured');
+  const res = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ refresh_token: refreshToken, client_id: clientId, client_secret: clientSecret, grant_type: 'refresh_token' }).toString(),
+  });
+  const data = await res.json() as { error?: string; error_description?: string; access_token?: string };
+  if (data.error || !data.access_token) throw new Error(`Google token refresh failed: ${data.error_description ?? data.error ?? 'unknown'}`);
+  return data.access_token;
+}
+
+async function gAdsPost(customerId: string, accessToken: string, devToken: string, endpoint: string, body: unknown): Promise<Record<string, unknown>> {
+  const res = await fetch(`${GOOGLE_ADS_API}/customers/${customerId}/${endpoint}`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${accessToken}`, 'developer-token': devToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({})) as Record<string, unknown>;
+    throw new Error(JSON.stringify(err.error ?? err));
+  }
+  return res.json() as Promise<Record<string, unknown>>;
+}
+
+async function launchToGoogle(userId: string, campaignId: string): Promise<Record<string, unknown>> {
+  const { data: row } = await supabase.from('launched_campaigns').select('*').eq('id', campaignId).eq('user_id', userId).single();
+  if (!row) throw new Error('Campaign not found');
+
+  const integrations = await getIntegrations(userId);
+  const refreshToken = integrations?.google_refresh_token;
+  const rawCid       = String(integrations?.google_ads_customer_id ?? '').replace(/-/g, '');
+  if (!refreshToken || !rawCid) throw new Error('Google Ads not connected — connect in Settings');
+
+  const devToken = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN');
+  if (!devToken) throw new Error('Google Ads developer token not configured');
+
+  const accessToken = await getGoogleAccessToken(refreshToken);
+  const copy        = row.copy as Record<string, unknown>;
+  const gCopy       = copy?.google as Record<string, unknown> ?? {};
+  const budget      = Number(row.budget_daily ?? 20);
+  const name        = String(gCopy.campaign_name ?? row.name);
+  const keywords    = (gCopy.keywords     as string[] | undefined) ?? [];
+  const headlines   = (gCopy.headlines    as string[] | undefined) ?? [];
+  const descriptions= (gCopy.descriptions as string[] | undefined) ?? [];
+
+  // 1. Budget
+  const budgetRes  = await gAdsPost(rawCid, accessToken, devToken, 'campaignBudgets:mutate', {
+    operations: [{ create: { name: `${name} Budget`, amountMicros: String(Math.round(budget * 1_000_000)), deliveryMethod: 'STANDARD' } }],
+  }) as { results: { resourceName: string }[] };
+  const budgetRn   = (budgetRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
+  if (!budgetRn) throw new Error('Failed to create Google Ads budget');
+
+  // 2. Campaign
+  const campRes    = await gAdsPost(rawCid, accessToken, devToken, 'campaigns:mutate', {
+    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: 'PAUSED', campaignBudget: budgetRn, biddingStrategyType: 'MAXIMIZE_CONVERSIONS', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
+  }) as { results: { resourceName: string }[] };
+  const campaignRn = (campRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
+  if (!campaignRn) throw new Error('Failed to create Google Ads campaign');
+  const googleCampaignId = campaignRn.split('/').pop()!;
+
+  // 3. Ad group
+  const agRes      = await gAdsPost(rawCid, accessToken, devToken, 'adGroups:mutate', {
+    operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} — Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD', cpcBidMicros: '1000000' } }],
+  }) as { results: { resourceName: string }[] };
+  const adGroupRn  = (agRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
+
+  // 4. Keywords
+  if (adGroupRn && keywords.length > 0) {
+    await gAdsPost(rawCid, accessToken, devToken, 'adGroupCriteria:mutate', {
+      operations: keywords.slice(0, 20).map(kw => ({ create: { adGroup: adGroupRn, keyword: { text: kw.slice(0, 80), matchType: 'BROAD' }, status: 'ENABLED' } })),
+    });
+  }
+
+  // 5. Responsive Search Ad
+  if (adGroupRn && headlines.length >= 3 && descriptions.length >= 2) {
+    await gAdsPost(rawCid, accessToken, devToken, 'adGroupAds:mutate', {
+      operations: [{ create: { adGroup: adGroupRn, status: 'PAUSED', ad: { responsiveSearchAd: { headlines: headlines.slice(0,15).map(h => ({ text: h.slice(0,30) })), descriptions: descriptions.slice(0,4).map(d => ({ text: d.slice(0,90) })) } } } }],
+    });
+  }
+
+  await supabase.from('launched_campaigns').update({ google_campaign_id: googleCampaignId, status: 'active', launched_at: new Date().toISOString() }).eq('id', campaignId).eq('user_id', userId);
+
+  return { campaign_id: campaignId, google_campaign_id: googleCampaignId, status: 'active', note: 'Google Search campaign created as PAUSED. Enable in Google Ads Manager.' };
+}
+
 /** Launch prepared campaign to Meta */
 async function launchToMeta(userId: string, campaignId: string): Promise<Record<string, unknown>> {
   const { data: row } = await supabase
@@ -253,7 +343,9 @@ Deno.serve(async (req) => {
         if (plan !== 'scale') {
           return errResponse('Upgrade to Scale to launch Google campaigns directly from Ephermal', 403, origin);
         }
-        return errResponse('Google launch coming soon — connect your developer token first', 503, origin);
+        const campaignId = String(body.campaign_id ?? '');
+        if (!campaignId) return errResponse('campaign_id required', 400, origin);
+        return okResponse(await launchToGoogle(userId, campaignId), origin);
       }
 
       case 'launch': {
@@ -269,7 +361,7 @@ Deno.serve(async (req) => {
           results.meta = await launchToMeta(userId, campaignId);
         }
         if (platforms.includes('google') && plan === 'scale') {
-          results.google = { note: 'Google launch coming soon' };
+          results.google = await launchToGoogle(userId, campaignId);
         }
         return okResponse(results, origin);
       }
