@@ -2358,10 +2358,17 @@ async function authFetch(path, opts = {}) {
   let token;
   if (window.__clerk?.session) {
     token = await window.__clerk.session.getToken();
+    if (!token) {
+      // Session expired or revoked — try a forced refresh once
+      try {
+        await window.__clerk.session.touch();
+        token = await window.__clerk.session.getToken();
+      } catch { /* will fall through to null guard */ }
+    }
   } else {
     token = localStorage.getItem('access_token');
-    if (!token) return null; // Boot IIFE handles auth - never redirect from API calls
   }
+  if (!token) return null;
 
   // Build integration headers (passed to n8n / cache-proxy)
   const extraHeaders = {};
@@ -4590,7 +4597,13 @@ async function generateCampaignCopy() {
     const audience = { description: audDesc, age_min: ageMin, age_max: ageMax, countries, geo_locations: { countries } };
 
     const r2 = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'prepare', product, audience, budget, objective }) });
-    if (!r2 || !r2.ok) { showToast('Campaign generation failed', 'error'); return; }
+    if (!r2) { showToast('Session expired — please refresh the page and try again', 'error'); return; }
+    if (!r2.ok) {
+      let errMsg = 'Campaign generation failed';
+      try { const e = await r2.json(); errMsg = e.error || errMsg; } catch { /* ignore */ }
+      showToast(errMsg, 'error');
+      return;
+    }
     const data = await r2.json();
     _launchCampaignId = data.campaign_id;
     const copy = data.copy || {};
