@@ -752,6 +752,7 @@ select.form-input{cursor:pointer}
 
     <!-- ANALYTICS -->
     <div class="page" id="page-analytics">
+      <div class="paywall-wrap" id="analytics-paywall-wrap">
       <div class="stat-row">
         <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div><div class="stat-value" id="a-roas">—</div><div class="stat-label">Avg ROAS</div></div>
         <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div></div><div class="stat-value" id="a-impressions">—</div><div class="stat-label">Impressions</div></div>
@@ -766,6 +767,13 @@ select.form-input{cursor:pointer}
         <div style="display:flex;flex-direction:column;gap:20px">
           <div class="panel"><div class="panel-head"><div class="panel-title">Spend by Platform</div></div><div id="spend-donut"><div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data</p></div></div></div></div>
           <div class="panel"><div class="panel-head"><div class="panel-title">Campaign Status</div></div><div id="status-donut"><div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No data</p></div></div></div></div>
+        </div>
+      </div>
+        <div class="paywall-lock" id="analytics-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Analytics - Growth Plan</strong>
+          <span>Full ROAS charts, spend analysis and campaign performance insights. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('analytics')">Upgrade to Growth →</button>
         </div>
       </div>
     </div>
@@ -1232,6 +1240,12 @@ select.form-input{cursor:pointer}
           <div class="panel-head"><div class="panel-title">Recommendation History</div><button class="panel-action" onclick="loadBudgetHistory()">Refresh</button></div>
           <div id="budget-history-content" style="padding:16px"></div>
         </div>
+        <div class="paywall-lock" id="budget-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Budget AI - Growth Plan</strong>
+          <span>AI-powered budget recommendations and 30-day revenue forecasts. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('budget')">Upgrade to Growth →</button>
+        </div>
       </div>
     </div>
 
@@ -1341,6 +1355,12 @@ select.form-input{cursor:pointer}
           <div id="launched-campaigns-content">
             <div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg><p>No campaigns launched yet. Click "New Campaign" to start.</p></div>
           </div>
+        </div>
+        <div class="paywall-lock" id="launch-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Campaign Launcher - Growth Plan</strong>
+          <span>AI writes the copy, picks the audience and launches to Meta with zero ad manager. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('launch')">Upgrade to Growth →</button>
         </div>
       </div>
     </div>
@@ -1573,6 +1593,7 @@ select.form-input{cursor:pointer}
 
     <!-- ── COMPETITOR RADAR ──────────────────────────────────────────────── -->
     <div class="page" id="page-competitorradar">
+      <div class="paywall-wrap" id="competitorradar-paywall-wrap">
       <div class="page-header">
         <div>
           <div class="page-title">Competitor Radar</div>
@@ -1609,10 +1630,18 @@ select.form-input{cursor:pointer}
         <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px" id="radar-results-title"></div>
         <div id="radar-results-body"></div>
       </div>
+        <div class="paywall-lock" id="competitorradar-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Competitor Radar - Growth Plan</strong>
+          <span>See what competitors are running on Meta Ads and get AI counter-strategies. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('competitorradar')">Upgrade to Growth →</button>
+        </div>
+      </div>
     </div>
 
     <!-- ── CREATIVE BRIEF AI ──────────────────────────────────────────────── -->
     <div class="page" id="page-creativebrief">
+      <div class="paywall-wrap" id="creativebrief-paywall-wrap">
       <div class="page-header">
         <div>
           <div class="page-title">Creative Brief AI</div>
@@ -1655,10 +1684,18 @@ select.form-input{cursor:pointer}
           <div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><p>No briefs generated yet</p></div>
         </div>
       </div>
+        <div class="paywall-lock" id="creativebrief-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Creative Brief AI - Growth Plan</strong>
+          <span>Generate full ad creative strategies from your live catalog in seconds. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('creativebrief')">Upgrade to Growth →</button>
+        </div>
+      </div>
     </div>
 
     <!-- ── PROFIT TRACKER ────────────────────────────────────────────────── -->
     <div class="page" id="page-profittracker">
+      <div class="paywall-wrap" id="profittracker-paywall-wrap">
       <div class="page-header">
         <div>
           <div class="page-title">Profit Tracker</div>
@@ -1671,6 +1708,13 @@ select.form-input{cursor:pointer}
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px">Products &amp; cost of goods</div>
         <div id="profit-table-body">
           <div class="empty-state"><svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><p>Loading products…</p></div>
+        </div>
+      </div>
+        <div class="paywall-lock" id="profittracker-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Profit Tracker - Growth Plan</strong>
+          <span>Track true margin behind every campaign with COGS tracking and profit analysis. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('profittracker')">Upgrade to Growth →</button>
         </div>
       </div>
     </div>
@@ -2103,7 +2147,7 @@ function renderPlanUI() {
     if (lockEl) lockEl.style.display = locked ? 'block' : 'none';
   });
   // Show/hide page paywall overlays
-  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall' };
+  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', launch: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall' };
   Object.entries(pagePaywalls).forEach(([feature, id]) => {
     const pw = document.getElementById(id);
     if (pw) pw.style.display = !canAccess(feature) ? 'flex' : 'none';
@@ -3510,15 +3554,21 @@ function renderCharts() {
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────────────────
+let _toastOffset = 0;
 function showToast(msg, type='success') {
-  const col=type==='error'?'rgba(248,113,113,.15)':type==='warn'?'rgba(251,191,36,.15)':'rgba(52,211,153,.15)';
-  const brd=type==='error'?'rgba(248,113,113,.4)':type==='warn'?'rgba(251,191,36,.4)':'rgba(52,211,153,.4)';
-  const txt=type==='error'?'#f87171':type==='warn'?'#fbbf24':'#34d399';
+  const isErr=type==='error', isWarn=type==='warn';
+  const col=isErr?'rgba(248,113,113,.12)':isWarn?'rgba(251,191,36,.12)':'rgba(52,211,153,.12)';
+  const brd=isErr?'rgba(248,113,113,.35)':isWarn?'rgba(251,191,36,.35)':'rgba(52,211,153,.35)';
+  const txt=isErr?'#f87171':isWarn?'#fbbf24':'#34d399';
+  const iconPath=isErr?'<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>':isWarn?'<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>':'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
   const t=document.createElement('div');
-  t.style.cssText=`position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-8px);z-index:9999;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.4);white-space:nowrap;background:${col};border:1px solid ${brd};color:${txt};transition:all 0.3s cubic-bezier(0.22,1,0.36,1);opacity:0`;
-  t.textContent=msg; document.body.appendChild(t);
-  requestAnimationFrame(()=>{t.style.opacity='1';t.style.transform='translateX(-50%) translateY(0)';});
-  setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(-50%) translateY(-8px)';setTimeout(()=>t.remove(),300);},4000);
+  _toastOffset+=62;
+  const offset=_toastOffset;
+  t.style.cssText=`position:fixed;bottom:${offset}px;right:24px;z-index:9999;display:flex;align-items:center;gap:10px;padding:13px 18px;border-radius:12px;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;max-width:340px;box-shadow:0 8px 32px rgba(0,0,0,.5),0 0 0 1px ${brd};background:rgba(13,13,18,0.95);border-left:3px solid ${txt};color:var(--text);transform:translateX(110%);transition:transform 0.35s cubic-bezier(0.22,1,0.36,1),opacity 0.35s;opacity:0;backdrop-filter:blur(12px)`;
+  t.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${txt}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0">${iconPath}</svg><span style="flex:1;line-height:1.4">${msg}</span><button onclick="this.parentElement.remove();_toastOffset=Math.max(0,_toastOffset-62)" style="background:none;border:none;color:rgba(136,146,176,.5);cursor:pointer;padding:0;line-height:1;font-size:16px;margin-left:4px;flex-shrink:0">×</button>`;
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>{t.style.transform='translateX(0)';t.style.opacity='1';});
+  setTimeout(()=>{t.style.transform='translateX(110%)';t.style.opacity='0';setTimeout(()=>{t.remove();_toastOffset=Math.max(0,_toastOffset-62);},350);},4500);
 }
 
 // ── EPHERMAL AI ──────────────────────────────────────────────────────────────
@@ -4413,9 +4463,10 @@ async function calculateBudget() {
   if (btn) { btn.disabled = true; btn.textContent = 'Calculating…'; }
 
   try {
-    const plan = localStorage.getItem('ephermal_plan') || 'starter';
-    const data = await authFetch('/budget', 'POST', { action: 'calculate', revenue_goal: goal, aov, current_roas: roas, days, platforms: ['meta','google'] });
-    if (!data) { showToast('Budget AI not available - check GROQ_API_KEY', 'error'); return; }
+    const plan = getUserPlan();
+    const res = await authFetch('/budget', { method: 'POST', body: JSON.stringify({ action: 'calculate', revenue_goal: goal, aov, current_roas: roas, days, platforms: ['meta','google'] }) });
+    if (!res || !res.ok) { showToast('Budget AI not available - check GROQ_API_KEY', 'error'); return; }
+    const data = await res.json();
 
     _budgetRecId = data.recommendation_id;
     _budgetDailyBudget = data.daily_budget_total || (goal / days / (data.expected_roas || 2.5));
@@ -4449,13 +4500,14 @@ async function calculateBudget() {
 }
 
 async function loadBudgetForecast() {
-  const plan = localStorage.getItem('ephermal_plan') || 'starter';
+  const plan = getUserPlan();
   if (plan === 'starter') { showToast('Upgrade to Growth for forecasting', 'warn'); return; }
   if (!_budgetDailyBudget) { showToast('Calculate a budget first', 'warn'); return; }
 
   const roas = parseFloat(document.getElementById('budget-roas')?.value || '2.5');
-  const data = await authFetch('/budget', 'POST', { action: 'forecast', daily_budget: _budgetDailyBudget, current_roas: roas, days: 30 });
-  if (!data) return;
+  const r = await authFetch('/budget', { method: 'POST', body: JSON.stringify({ action: 'forecast', daily_budget: _budgetDailyBudget, current_roas: roas, days: 30 }) });
+  if (!r || !r.ok) { showToast('Forecast failed', 'error'); return; }
+  const data = await r.json();
 
   const cells = document.getElementById('forecast-cells');
   if (!cells) return;
@@ -4472,15 +4524,16 @@ async function loadBudgetForecast() {
 
 async function applyBudgetRec() {
   if (!_budgetRecId) return;
-  const data = await authFetch('/budget', 'POST', { action: 'apply', recommendation_id: _budgetRecId });
-  if (data) showToast('Budget recommendation applied', 'success');
+  const r = await authFetch('/budget', { method: 'POST', body: JSON.stringify({ action: 'apply', recommendation_id: _budgetRecId }) });
+  if (r && r.ok) showToast('Budget recommendation applied', 'success');
 }
 
 async function loadBudgetHistory() {
-  const plan = localStorage.getItem('ephermal_plan') || 'starter';
+  const plan = getUserPlan();
   if (plan === 'starter') return;
-  const data = await authFetch('/budget', 'POST', { action: 'history' });
-  if (!data) return;
+  const r = await authFetch('/budget', { method: 'POST', body: JSON.stringify({ action: 'history' }) });
+  if (!r || !r.ok) return;
+  const data = await r.json();
   const el = document.getElementById('budget-history-content');
   if (!el) return;
   const recs = data.recommendations || [];
@@ -4534,9 +4587,9 @@ async function generateCampaignCopy() {
     const product  = { name: productName, description: productDesc, price: productPrice };
     const audience = { description: audDesc, age_min: ageMin, age_max: ageMax, countries, geo_locations: { countries } };
 
-    const data = await authFetch('/launch', 'POST', { action: 'prepare', product, audience, budget, objective });
-    if (!data) { showToast('Campaign generation failed', 'error'); return; }
-
+    const r2 = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'prepare', product, audience, budget, objective }) });
+    if (!r2 || !r2.ok) { showToast('Campaign generation failed', 'error'); return; }
+    const data = await r2.json();
     _launchCampaignId = data.campaign_id;
     const copy = data.copy || {};
     const meta = copy.meta || {};
@@ -4568,7 +4621,7 @@ async function generateCampaignCopy() {
 
 async function doLaunchCampaign() {
   if (!_launchCampaignId) { showToast('Generate copy first', 'warn'); return; }
-  const plan = localStorage.getItem('ephermal_plan') || 'starter';
+  const plan = getUserPlan();
   if (plan === 'starter') { showToast('Upgrade to Growth to launch campaigns', 'warn'); navigate('billing'); return; }
 
   const btn = document.getElementById('launch-exec-btn');
@@ -4577,11 +4630,11 @@ async function doLaunchCampaign() {
   try {
     const platforms = document.getElementById('launch-platforms')?.value || 'meta';
     const action = platforms === 'meta' ? 'launch_meta' : 'launch';
-    const body = { action, campaign_id: _launchCampaignId };
-    if (platforms !== 'meta') body.platforms = platforms.split('+').map(s => s.trim());
+    const launchBody = { action, campaign_id: _launchCampaignId };
+    if (platforms !== 'meta') launchBody.platforms = platforms.split('+').map(s => s.trim());
 
-    const data = await authFetch('/launch', 'POST', body);
-    if (!data) { showToast('Launch failed', 'error'); return; }
+    const launchRes = await authFetch('/launch', { method: 'POST', body: JSON.stringify(launchBody) });
+    if (!launchRes || !launchRes.ok) { showToast('Launch failed', 'error'); return; }
 
     showToast('Campaign launched! Created as PAUSED - enable in Campaigns tab.', 'success');
     closeLaunchWizard();
@@ -4594,7 +4647,8 @@ async function doLaunchCampaign() {
 }
 
 async function loadLaunchedCampaigns() {
-  const data = await authFetch('/launch', 'POST', { action: 'list' });
+  const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'list' }) });
+  const data = (r && r.ok) ? await r.json() : null;
   const el = document.getElementById('launched-campaigns-content');
   if (!el) return;
 
