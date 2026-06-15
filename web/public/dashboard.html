@@ -1987,20 +1987,19 @@ const PLANS = {
 const GATED = { analytics: 'growth', ai: 'growth', analysis: 'growth', googleads: 'growth', audience: 'growth', budget: 'growth', launch: 'growth', abtest: 'scale', bulk: 'scale', multistore: 'scale', whitelabel: 'scale', competitorradar: 'growth', creativebrief: 'growth', profittracker: 'growth' };
 const PLAN_RANK = { starter: 0, growth: 1, scale: 2 };
 function getUserPlan() {
-  // Clerk publicMetadata is the authoritative source (set server-side by Stripe webhook).
-  // localStorage cache is only used as a fallback when Clerk hasn't loaded yet,
-  // and is validated against the allowed set so it can't be self-upgraded.
+  // Clerk publicMetadata is the ONLY source of truth (written server-side by Stripe webhook).
+  // localStorage is never read here — it is only written as a display cache and must not
+  // be used for access decisions (it is user-writable via DevTools).
   const clerkPlan = window.__clerk?.user?.publicMetadata?.plan;
   if (clerkPlan) return String(clerkPlan).toLowerCase();
-  const cached = (localStorage.getItem('ephermal_plan') || '').toLowerCase();
-  return ['starter','growth','scale'].includes(cached) ? cached : 'starter';
+  // Clerk not yet loaded — fail closed (most restrictive). Never fall back to localStorage.
+  return 'starter';
 }
 function canAccess(feature) { const req = GATED[feature]; if (!req) return true; return PLAN_RANK[getUserPlan()] >= PLAN_RANK[req]; }
 function isSubscribed() {
+  // Only Clerk publicMetadata determines subscription state.
   const clerkPlan = window.__clerk?.user?.publicMetadata?.plan;
-  if (clerkPlan && ['starter','growth','scale'].includes(String(clerkPlan).toLowerCase())) return true;
-  const cached = (localStorage.getItem('ephermal_plan') || '').toLowerCase();
-  return ['starter','growth','scale'].includes(cached);
+  return !!(clerkPlan && ['starter','growth','scale'].includes(String(clerkPlan).toLowerCase()));
 }
 function requireSubscription() { if (isSubscribed()) return true; showSubModal(); return false; }
 function planInfo() { return PLANS[getUserPlan()] || PLANS.starter; }
@@ -2058,15 +2057,22 @@ async function loadPlanFromSupabase() {
   try {
     const { data, error } = await sb
       .from('user_plans')
-      .select('plan, period_end')
+      .select('period_end')
       .eq('user_id', clerkUserId)
       .single();
     if (error || !data) return;
-    // Only cache validated plan values
-    const plan = String(data.plan || '').toLowerCase();
-    if (['starter','growth','scale'].includes(plan)) localStorage.setItem('ephermal_plan', plan);
+    // Only read period_end from DB — plan is always sourced from Clerk publicMetadata
     if (data.period_end) localStorage.setItem('ephermal_period_end', data.period_end);
   } catch(e) {}
+}
+
+function syncPlanToStorage() {
+  // Write Clerk's authoritative plan to localStorage so DevTools display stays in sync.
+  // This is a display-only cache — getUserPlan() never reads it back.
+  const clerkPlan = window.__clerk?.user?.publicMetadata?.plan;
+  if (clerkPlan && ['starter','growth','scale'].includes(String(clerkPlan).toLowerCase())) {
+    localStorage.setItem('ephermal_plan', String(clerkPlan).toLowerCase());
+  }
 }
 
 async function loadCreditsFromSupabase() {
@@ -4223,7 +4229,9 @@ async function createUGCForNewProduct() {
   }
 
   window.__clerk = window.Clerk;
-  // Load server-side data from Supabase (plan, credits, integrations)
+  // Sync Clerk plan to localStorage display cache immediately (before any Supabase calls)
+  syncPlanToStorage();
+  // Load server-side data from Supabase (period_end, credits, integrations)
   await Promise.all([loadPlanFromSupabase(), loadCreditsFromSupabase(), loadIntegrationsFromSupabase()]);
 
   // ── Setup check: only redirect new users who have never connected anything ─
@@ -4251,8 +4259,10 @@ async function createUGCForNewProduct() {
   const _qs = new URLSearchParams(window.location.search);
   if (_qs.get('checkout') === 'success') {
     history.replaceState({}, '', window.location.pathname);
-    // Reload plan from Supabase - webhook may have updated it
+    // Reload Clerk user so publicMetadata reflects the upgraded plan (set by Stripe webhook)
     setTimeout(async () => {
+      try { await window.__clerk?.user?.reload(); } catch(e) {}
+      syncPlanToStorage();
       await loadPlanFromSupabase();
       renderPlanUI();
       renderBillingPage();
