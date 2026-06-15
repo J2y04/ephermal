@@ -43,6 +43,7 @@ const TEMPLATES: Record<string, { subject: string }> = {
   fatigue_alert:             { subject: '⚠️ Ad fatigue detected — take action now' },
   ai_limit_80:               { subject: 'You\'re running low on AI messages' },
   ai_limit_hit:              { subject: 'AI message limit reached — top up to continue' },
+  ai_topup_receipt:          { subject: 'AI top-up confirmed — your messages are ready' },
 };
 
 function escapeHtml(s: string): string {

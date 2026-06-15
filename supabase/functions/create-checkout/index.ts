@@ -37,8 +37,10 @@ const TOPUP_PRICES = new Set([
   Deno.env.get('STRIPE_PRICE_TOPUP_20')  ?? 'price_REPLACE_TOPUP20',
 ]);
 
-// Combined allowlist
-const ALL_ALLOWED = new Set([...ALLOWED_PRICES, ...TOPUP_PRICES]);
+// Combined allowlist — strip placeholder values so invalid IDs never reach Stripe
+const ALL_ALLOWED = new Set(
+  [...ALLOWED_PRICES, ...TOPUP_PRICES].filter(p => !p.startsWith('price_REPLACE_'))
+);
 
 // RFC-5321 email guard
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;

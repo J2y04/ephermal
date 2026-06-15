@@ -161,7 +161,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
           'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
         },
         body: JSON.stringify({
-          template: 'ai_limit_hit',
+          template: 'ai_topup_receipt',
           to: userEmail,
           vars: { name: 'there', credits: String(credits) },
         }),
@@ -196,11 +196,17 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   // Validate before writing
   if (!VALID_PLANS.has(effectivePlan)) effectivePlan = 'starter';
 
+  // If active but cancel_at_period_end is set, record the pending cancellation date
+  const cancellingAt = (status === 'active' || status === 'trialing') && subscription.cancel_at_period_end
+    ? periodEnd
+    : null;
+
   await supabase.from('user_plans').upsert({
     user_id: clerkUserId,
     plan: effectivePlan,
     stripe_sub_id: subscription.id,
     period_end: periodEnd,
+    ...(cancellingAt !== null ? { cancelling_at: cancellingAt } : { cancelling_at: null }),
   }, { onConflict: 'user_id' });
 
   await updateClerkMetadata(clerkUserId, effectivePlan);

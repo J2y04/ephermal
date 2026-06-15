@@ -233,7 +233,7 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
   // 5. Responsive Search Ad
   if (adGroupRn && headlines.length >= 3 && descriptions.length >= 2) {
     await gAdsPost(rawCid, accessToken, devToken, 'adGroupAds:mutate', {
-      operations: [{ create: { adGroup: adGroupRn, status: 'PAUSED', ad: { responsiveSearchAd: { headlines: headlines.slice(0,15).map(h => ({ text: h.slice(0,30) })), descriptions: descriptions.slice(0,4).map(d => ({ text: d.slice(0,90) })) } } } }],
+      operations: [{ create: { adGroup: adGroupRn, status: autoEnable ? 'ENABLED' : 'PAUSED', ad: { responsiveSearchAd: { headlines: headlines.slice(0,15).map(h => ({ text: h.slice(0,30) })), descriptions: descriptions.slice(0,4).map(d => ({ text: d.slice(0,90) })) } } } }],
     });
   }
 
@@ -289,6 +289,7 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     .from('launched_campaigns')
     .update({
       platform_campaign_id: campaign.id,
+      meta_adset_id:        adSet.id,
       status:               'active',
       launched_at:          new Date().toISOString(),
     })

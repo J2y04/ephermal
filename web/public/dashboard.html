@@ -1542,8 +1542,10 @@ select.form-input{cursor:pointer}
             <div class="camp-stat-box"><div class="label">Credits Remaining</div><div class="val" id="b-credits-left">15</div></div>
             <div class="camp-stat-box"><div class="label">Resets</div><div class="val" style="font-size:14px;font-weight:700" id="b-resets">1st of month</div></div>
           </div>
-          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
-            <a href="mailto:billing@ephermal.app?subject=Cancel%20my%20Ephermal%20subscription&body=Hi%2C%20I%20would%20like%20to%20cancel%20my%20Ephermal%20subscription." style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);text-decoration:none;background:var(--surface2);transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Cancel subscription</a>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap" id="billing-cancel-row">
+            <button id="btn-cancel-sub" onclick="openCancelSubModal()" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);background:var(--surface2);cursor:pointer;font-family:'Inter',sans-serif;transition:border-color .2s,color .2s" onmouseover="this.style.borderColor='#ef4444';this.style.color='#ef4444'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Cancel subscription</button>
+            <button id="btn-reactivate-sub" onclick="reactivateSubscription()" style="display:none;align-items:center;gap:6px;padding:8px 16px;border:1px solid rgba(52,211,153,.4);border-radius:10px;font-size:13px;font-weight:600;color:var(--success);background:rgba(52,211,153,.08);cursor:pointer;font-family:'Inter',sans-serif">Reactivate</button>
+            <span id="billing-cancelling-badge" style="display:none;font-size:12px;color:#ef4444;font-weight:600;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:4px 10px"></span>
             <span style="font-size:13px;color:var(--muted)">Invoices &amp; billing questions → <a href="mailto:billing@ephermal.app" style="color:var(--primary)">billing@ephermal.app</a></span>
           </div>
         </div>
@@ -1906,6 +1908,25 @@ select.form-input{cursor:pointer}
   </div>
 </div>
 
+<!-- CANCEL SUBSCRIPTION MODAL -->
+<div class="modal-overlay" id="cancel-sub-modal" style="display:none" onclick="if(event.target===this)closeCancelSubModal()">
+  <div class="modal-box" style="max-width:440px">
+    <button class="modal-close" onclick="closeCancelSubModal()">×</button>
+    <div style="text-align:center;padding:8px 0 4px">
+      <div style="width:52px;height:52px;border-radius:50%;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      </div>
+      <div class="modal-title" style="margin-bottom:8px">Cancel subscription?</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0 0 8px">Your access continues until the end of the current billing period. After that, your account moves to the free Starter tier.</p>
+      <p id="cancel-sub-date" style="font-size:13px;font-weight:700;color:var(--text);display:none;margin:0 0 20px"></p>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px">
+      <button class="btn-secondary" onclick="closeCancelSubModal()" style="flex:1;padding:11px">Keep subscription</button>
+      <button onclick="confirmCancelSubscription()" id="confirm-cancel-btn" style="flex:1;padding:11px;border-radius:10px;background:#ef4444;color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Yes, cancel</button>
+    </div>
+  </div>
+</div>
+
 <!-- UGC MODAL -->
 <div class="modal-overlay" id="ugc-modal">
   <div class="modal" style="max-width:520px">
@@ -2057,12 +2078,14 @@ async function loadPlanFromSupabase() {
   try {
     const { data, error } = await sb
       .from('user_plans')
-      .select('period_end')
+      .select('period_end, cancelling_at')
       .eq('user_id', clerkUserId)
       .single();
     if (error || !data) return;
-    // Only read period_end from DB — plan is always sourced from Clerk publicMetadata
+    // Only read period_end and cancelling_at from DB — plan is always sourced from Clerk publicMetadata
     if (data.period_end) localStorage.setItem('ephermal_period_end', data.period_end);
+    if (data.cancelling_at) localStorage.setItem('ephermal_cancelling_at', data.cancelling_at);
+    else localStorage.removeItem('ephermal_cancelling_at');
   } catch(e) {}
 }
 
@@ -2103,11 +2126,11 @@ async function loadCreditsFromSupabase() {
     // Load AI top-up pool for this month
     const { data: topupData } = await sb
       .from('ai_topups')
-      .select('messages')
+      .select('credits')
       .eq('user_id', clerkUserId)
       .eq('month', month);
     if (topupData) {
-      const totalTopup = topupData.reduce((sum, r) => sum + (r.messages || 0), 0);
+      const totalTopup = topupData.reduce((sum, r) => sum + (r.credits || 0), 0);
       localStorage.setItem('ai_topup_' + month, String(totalTopup));
     }
   } catch(e) {}
@@ -2292,6 +2315,73 @@ async function startCheckout(priceId) {
   finally { if (btn) { btn.disabled = false; btn.textContent = 'Upgrade'; } }
 }
 
+// ── SUBSCRIPTION CANCELLATION ─────────────────────────────────────────────────
+function openCancelSubModal() {
+  const cancellingAt = localStorage.getItem('ephermal_cancelling_at');
+  const periodEnd = localStorage.getItem('ephermal_period_end');
+  const dateEl = document.getElementById('cancel-sub-date');
+  const date = cancellingAt || periodEnd;
+  if (date && dateEl) {
+    const formatted = new Date(date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    dateEl.textContent = `You will retain full access until ${formatted}.`;
+    dateEl.style.display = 'block';
+  }
+  document.getElementById('cancel-sub-modal').style.display = 'flex';
+}
+function closeCancelSubModal() {
+  document.getElementById('cancel-sub-modal').style.display = 'none';
+}
+async function confirmCancelSubscription() {
+  const btn = document.getElementById('confirm-cancel-btn');
+  btn.disabled = true; btn.textContent = 'Cancelling…';
+  try {
+    const token = await window.__clerk?.session?.getToken();
+    if (!token) { showToast('Not signed in', 'error'); return; }
+    const fnBase = window.SUPABASE_FN || `${window.SUPABASE_URL}/functions/v1`;
+    const res = await fetch(`${fnBase}/cancel-subscription`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': window.SUPABASE_ANON || '' },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showToast(data.error || 'Cancellation failed — contact support', 'error'); return; }
+    // Persist cancellation date locally
+    if (data.cancel_at) localStorage.setItem('ephermal_cancelling_at', data.cancel_at);
+    closeCancelSubModal();
+    renderBillingPage();
+    const dateStr = data.cancel_at ? new Date(data.cancel_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+    showToast(`Subscription cancelled. Access continues until ${dateStr}.`, 'success');
+  } catch(e) {
+    console.error('cancel-subscription error:', e);
+    showToast('Cancellation failed — contact support', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Yes, cancel';
+  }
+}
+async function reactivateSubscription() {
+  const btn = document.getElementById('btn-reactivate-sub');
+  btn.disabled = true; btn.textContent = 'Reactivating…';
+  try {
+    const token = await window.__clerk?.session?.getToken();
+    if (!token) { showToast('Not signed in', 'error'); return; }
+    const fnBase = window.SUPABASE_FN || `${window.SUPABASE_URL}/functions/v1`;
+    const res = await fetch(`${fnBase}/cancel-subscription/reactivate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': window.SUPABASE_ANON || '' },
+    });
+    if (!res.ok) {
+      showToast('Reactivation failed — contact billing@ephermal.app', 'error');
+      return;
+    }
+    localStorage.removeItem('ephermal_cancelling_at');
+    renderBillingPage();
+    showToast('Subscription reactivated — thank you!', 'success');
+  } catch(e) {
+    showToast('Reactivation failed — contact billing@ephermal.app', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Reactivate';
+  }
+}
+
 function renderBillingPage() {
   const plan = getUserPlan();
   const info = planInfo();
@@ -2306,6 +2396,23 @@ function renderBillingPage() {
   el('b-credits-used', used); el('b-credits-left', left);
   const nextReset = new Date(); nextReset.setMonth(nextReset.getMonth() + 1, 1); nextReset.setHours(0,0,0,0);
   el('b-resets', nextReset.toLocaleDateString('en-US', {month:'short',day:'numeric'}));
+  // Cancellation state
+  const cancellingAt = localStorage.getItem('ephermal_cancelling_at');
+  const btnCancel = document.getElementById('btn-cancel-sub');
+  const btnReactivate = document.getElementById('btn-reactivate-sub');
+  const cancelBadge = document.getElementById('billing-cancelling-badge');
+  const isStarterPlan = plan === 'starter';
+  if (btnCancel) btnCancel.style.display = (isStarterPlan || cancellingAt) ? 'none' : 'inline-flex';
+  if (btnReactivate) btnReactivate.style.display = cancellingAt ? 'inline-flex' : 'none';
+  if (cancelBadge) {
+    if (cancellingAt) {
+      const dateStr = new Date(cancellingAt).toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'});
+      cancelBadge.textContent = `Cancels ${dateStr}`;
+      cancelBadge.style.display = 'inline-block';
+    } else {
+      cancelBadge.style.display = 'none';
+    }
+  }
   // Plan cards
   const grid = document.getElementById('billing-plans-grid');
   if (!grid) return;
