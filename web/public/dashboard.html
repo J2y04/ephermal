@@ -1586,10 +1586,51 @@ select.form-input{cursor:pointer}
       <div class="page-header">
         <div>
           <div class="page-title">Competitor Radar</div>
-          <div class="page-subtitle">See what competitors are running on Meta Ads right now</div>
+          <div class="page-subtitle">Track competitors — auto-scanned from Meta Ads Library on every visit</div>
         </div>
       </div>
+
+      <!-- Tracked Competitors Panel -->
       <div class="card" style="margin-bottom:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Tracked Competitors</div>
+          <button onclick="autoScanCompetitors()" id="radar-scan-all-btn" class="btn btn-primary" style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:6px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            Scan All
+          </button>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <input id="radar-add-competitor-input" type="text" placeholder="Brand name or keyword (e.g. NovaBrand, skincare)…" style="flex:1;min-width:180px;padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit" onkeydown="if(event.key==='Enter')addTrackedCompetitor()">
+          <select id="radar-add-country" style="padding:9px 13px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:13px;font-family:inherit">
+            <option value="US">US</option>
+            <option value="GB">UK</option>
+            <option value="DE">DE</option>
+            <option value="FR">FR</option>
+            <option value="AU">AU</option>
+            <option value="CA">CA</option>
+          </select>
+          <button onclick="addTrackedCompetitor()" class="btn btn-primary" style="padding:9px 16px;font-size:13px;flex-shrink:0">+ Add</button>
+        </div>
+        <div id="radar-tracked-list" style="display:flex;flex-wrap:wrap;gap:8px">
+          <div style="font-size:12px;color:var(--muted);padding:4px 0">No competitors tracked yet. Add brands or keywords above to auto-scan on every visit.</div>
+        </div>
+        <div id="radar-no-meta" style="display:none;margin-top:14px;padding:14px 16px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.2);border-radius:10px;font-size:13px;color:#ffb347">
+          <strong>Meta not connected.</strong> Connect your Meta account in Settings to use Competitor Radar.
+        </div>
+      </div>
+
+      <!-- Auto-scan live results -->
+      <div id="radar-autoscan-wrap" style="display:none;margin-bottom:28px">
+        <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px" id="radar-autoscan-title">Live Competitor Ads</div>
+        <div id="radar-autoscan-body"></div>
+      </div>
+
+      <!-- Divider -->
+      <div style="border-top:1px solid var(--border);margin-bottom:24px"></div>
+
+      <!-- Manual search -->
+      <div class="card" style="margin-bottom:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Manual Search</div>
         <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
           <div style="flex:1;min-width:200px">
             <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Keyword or brand</label>
@@ -1611,18 +1652,16 @@ select.form-input{cursor:pointer}
             Search Ads
           </button>
         </div>
-        <div id="radar-no-meta" style="display:none;margin-top:16px;padding:14px 16px;background:rgba(255,179,71,0.08);border:1px solid rgba(255,179,71,0.2);border-radius:10px;font-size:13px;color:#ffb347">
-          <strong>Meta not connected.</strong> Connect your Meta account in Settings to use Competitor Radar.
-        </div>
       </div>
       <div id="radar-results-wrap" style="display:none">
         <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px" id="radar-results-title"></div>
         <div id="radar-results-body"></div>
       </div>
+
         <div class="paywall-lock" id="competitorradar-paywall" style="display:none">
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <strong>Competitor Radar - Growth Plan</strong>
-          <span>See what competitors are running on Meta Ads and get AI counter-strategies. Available on Growth and Scale plans.</span>
+          <span>Track competitors and auto-scan their Meta Ads. Get AI counter-strategies and generated counter-ads. Available on Growth and Scale plans.</span>
           <button class="btn-upgrade" onclick="showUpgradeModal('competitorradar')">Upgrade to Growth →</button>
         </div>
       </div>
@@ -2361,6 +2400,7 @@ function navigate(page) {
     if (page === 'bulk') loadBulkCampaigns();
     if (page === 'products') loadProducts();
     if (page === 'creativebrief') { loadBriefHistory(); _populateBriefProductSelect(); }
+    if (page === 'competitorradar') { renderTrackedCompetitors(); autoScanCompetitors(); }
     if (page === 'profittracker') loadProfitReport();
     if (page === 'multistore') loadMultiStore();
     if (page === 'devtools') loadDevTools();
@@ -4862,14 +4902,177 @@ async function loadLaunchedCampaigns() {
 
 // ── COMPETITOR RADAR ──────────────────────────────────────────────────────────
 let _radarAds = [];
+let _radarAutoAds = {}; // { competitorName: [ads] }
+const _radarAdStore = {}; // uid → ad object (avoids unsafe inline JSON)
 
+// ── Tracked competitors (persisted in localStorage) ────────────────────────
+function _loadTrackedCompetitors() {
+  try { return JSON.parse(localStorage.getItem('ephermal_competitors') || '[]'); } catch { return []; }
+}
+function _saveTrackedCompetitors(list) {
+  localStorage.setItem('ephermal_competitors', JSON.stringify(list));
+}
+
+function renderTrackedCompetitors() {
+  const list = _loadTrackedCompetitors();
+  const el = document.getElementById('radar-tracked-list');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<div style=”font-size:12px;color:var(--muted);padding:4px 0”>No competitors tracked yet. Add brands or keywords above to auto-scan on every visit.</div>';
+    return;
+  }
+  el.innerHTML = list.map((c, i) =>
+    '<div style=”display:inline-flex;align-items:center;gap:6px;padding:5px 10px 5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:20px;font-size:12px;font-weight:600;color:var(--text)”>' +
+    escHtml(c.name) + '<span style=”font-size:10px;color:var(--muted);margin-left:2px”>' + escHtml(c.country) + '</span>' +
+    '<button onclick=”removeTrackedCompetitor(' + i + ')” style=”background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 0 0 4px;font-family:inherit” title=”Remove”>×</button>' +
+    '</div>'
+  ).join('');
+}
+
+function addTrackedCompetitor() {
+  const input = document.getElementById('radar-add-competitor-input');
+  const name = (input.value || '').trim();
+  if (!name) { showToast('Enter a brand name or keyword', 'error'); return; }
+  const country = document.getElementById('radar-add-country').value;
+  const list = _loadTrackedCompetitors();
+  if (list.some(c => c.name.toLowerCase() === name.toLowerCase() && c.country === country)) {
+    showToast('Already tracking “' + name + '” (' + country + ')', 'error'); return;
+  }
+  if (list.length >= 10) { showToast('Max 10 tracked competitors', 'error'); return; }
+  list.push({ name, country });
+  _saveTrackedCompetitors(list);
+  input.value = '';
+  renderTrackedCompetitors();
+  showToast('”' + name + '” added — scanning now…', 'success');
+  // Scan just this new competitor
+  _scanSingleCompetitor({ name, country }, list.length - 1);
+}
+
+function removeTrackedCompetitor(idx) {
+  const list = _loadTrackedCompetitors();
+  const removed = list.splice(idx, 1)[0];
+  _saveTrackedCompetitors(list);
+  renderTrackedCompetitors();
+  if (removed) {
+    delete _radarAutoAds[removed.name];
+    renderAutoScanResults();
+  }
+}
+
+async function _scanSingleCompetitor(competitor, idx) {
+  const r = await authFetch('/competitor-radar?action=search', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'search', search_terms: competitor.name, countries: [competitor.country] })
+  });
+  if (!r || !r.ok) return;
+  const data = await r.json();
+  if (data.code === 'NO_META_TOKEN') {
+    document.getElementById('radar-no-meta').style.display = 'block'; return;
+  }
+  _radarAutoAds[competitor.name] = (data.ads || []).slice(0, 6);
+  renderAutoScanResults();
+}
+
+async function autoScanCompetitors() {
+  const list = _loadTrackedCompetitors();
+  renderTrackedCompetitors();
+  if (!list.length) return;
+  const btn = document.getElementById('radar-scan-all-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Scanning…'; }
+  document.getElementById('radar-no-meta').style.display = 'none';
+  _radarAutoAds = {};
+  // Scan all competitors (up to 5 in parallel, rest sequentially)
+  const first = list.slice(0, 5);
+  const rest  = list.slice(5);
+  await Promise.all(first.map((c, i) => _scanSingleCompetitor(c, i)));
+  for (const c of rest) await _scanSingleCompetitor(c, list.indexOf(c));
+  if (btn) {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width=”12” height=”12” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2.5” stroke-linecap=”round” stroke-linejoin=”round”><circle cx=”12” cy=”12” r=”10”/><circle cx=”12” cy=”12” r=”6”/><circle cx=”12” cy=”12” r=”2”/></svg> Scan All';
+  }
+}
+
+function renderAutoScanResults() {
+  const wrap = document.getElementById('radar-autoscan-wrap');
+  const body = document.getElementById('radar-autoscan-body');
+  if (!wrap || !body) return;
+  const competitors = Object.keys(_radarAutoAds);
+  if (!competitors.length) { wrap.style.display = 'none'; return; }
+  const totalAds = competitors.reduce((sum, k) => sum + _radarAutoAds[k].length, 0);
+  document.getElementById('radar-autoscan-title').textContent = totalAds + ' live ads across ' + competitors.length + ' competitor' + (competitors.length > 1 ? 's' : '');
+  body.innerHTML = competitors.map(name => {
+    const ads = _radarAutoAds[name];
+    if (!ads.length) return '<div style=”margin-bottom:16px;padding:12px 16px;border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--muted)”>No active ads found for <strong style=”color:var(--text)”>' + escHtml(name) + '</strong></div>';
+    return '<div style=”margin-bottom:20px”>' +
+      '<div style=”font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px”>' + escHtml(name) + ' · ' + ads.length + ' ad' + (ads.length > 1 ? 's' : '') + '</div>' +
+      ads.map((ad, i) => renderRadarAdCard(ad, 'auto_' + name + '_' + i)).join('') +
+    '</div>';
+  }).join('');
+  wrap.style.display = 'block';
+}
+
+function renderRadarAdCard(ad, uid) {
+  _radarAdStore[uid] = ad;
+  const page = escHtml(ad.page_name || 'Unknown advertiser');
+  const bodyText = (ad.ad_creative_bodies || [])[0] || '';
+  const preview = escHtml(bodyText.slice(0, 240));
+  return '<div style=”border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px”>' +
+    '<div style=”display:flex;justify-content:space-between;align-items:flex-start' + (preview ? ';margin-bottom:10px' : '') + '”>' +
+    '<span style=”font-size:13px;font-weight:700;color:var(--text)”>' + page + '</span>' +
+    '<button onclick=”analyzeRadarAd(\'' + uid + '\',this)” style=”font-size:11px;padding:5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:7px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0;margin-left:12px;white-space:nowrap”>Analyze with AI →</button>' +
+    '</div>' +
+    (preview ? '<p style=”font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.65;font-style:italic”>”' + preview + (bodyText.length > 240 ? '…' : '') + '”</p>' : '') +
+    '<div id=”radar-analysis-' + uid + '”></div>' +
+    '</div>';
+}
+
+function _renderAnalysisResult(d, elId) {
+  const el = document.getElementById('radar-analysis-' + elId);
+  if (!el) return;
+  const ca = d.counter_ad || {};
+  el.innerHTML =
+    '<div style=”margin-top:8px;padding:14px;background:rgba(6,214,199,0.05);border-radius:10px;border-left:2px solid var(--primary)”>' +
+      '<div style=”display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px”>' +
+        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Hook type</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.hook_type || '—') + '</div></div>' +
+        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Emotion</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.emotion || '—') + '</div></div>' +
+        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Their CTA</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.cta || '—') + '</div></div>' +
+      '</div>' +
+      '<div style=”font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:' + (ca.headline ? '12px' : '0') + '”>' +
+        (d.counter_strategy ? '<span style=”color:var(--warning);font-weight:600”>Strategy: </span>' + escHtml(d.counter_strategy) : '') +
+      '</div>' +
+      (ca.headline ?
+        '<div style=”background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.18);border-radius:8px;padding:12px 14px”>' +
+          '<div style=”font-size:10px;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px”>Your Counter Ad</div>' +
+          '<div style=”font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px”>' + escHtml(ca.headline) + '</div>' +
+          '<div style=”font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:8px”>' + escHtml(ca.body || '') + '</div>' +
+          '<div style=”font-size:11px;font-weight:700;color:var(--primary)”>' + escHtml(ca.cta || '') + '</div>' +
+        '</div>'
+      : '') +
+    '</div>';
+}
+
+async function analyzeRadarAd(uid, btn) {
+  const ad = _radarAdStore[uid] || {};
+  const adText = [(ad.ad_creative_bodies || [])[0], (ad.ad_creative_link_titles || [])[0]].filter(Boolean).join(' ').trim();
+  if (!adText) { showToast('No ad text available to analyze', 'error'); return; }
+  btn.disabled = true; btn.textContent = 'Analyzing…';
+  const r = await authFetch('/competitor-radar?action=analyze', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'analyze', ad_text: adText })
+  });
+  btn.disabled = true; btn.textContent = 'Analyzed ✓';
+  if (!r || !r.ok) { showToast('Analysis failed', 'error'); return; }
+  const d = await r.json();
+  _renderAnalysisResult(d, uid);
+}
+
+// ── Manual search (keeps existing UX) ────────────────────────────────────────
 async function searchCompetitorAds() {
   const terms = (document.getElementById('radar-search-terms').value || '').trim();
   if (!terms) { showToast('Enter a keyword or brand name', 'error'); return; }
   const country = document.getElementById('radar-country').value;
   const btn = document.getElementById('radar-search-btn');
   btn.disabled = true; btn.textContent = 'Searching…';
-  document.getElementById('radar-no-meta').style.display = 'none';
 
   const r = await authFetch('/competitor-radar?action=search', {
     method: 'POST',
@@ -4877,7 +5080,7 @@ async function searchCompetitorAds() {
   });
 
   btn.disabled = false;
-  btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Search Ads';
+  btn.innerHTML = '<svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2.5” stroke-linecap=”round” stroke-linejoin=”round”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg> Search Ads';
   if (!r || !r.ok) { showToast('Search failed', 'error'); return; }
   const data = await r.json();
 
@@ -4888,53 +5091,21 @@ async function searchCompetitorAds() {
   _radarAds = (data.ads || []).slice(0, 10);
   const wrap = document.getElementById('radar-results-wrap');
   const body = document.getElementById('radar-results-body');
-  document.getElementById('radar-results-title').textContent = _radarAds.length + ' ads · "' + terms + '"';
+  document.getElementById('radar-results-title').textContent = _radarAds.length + ' ads · “' + terms + '”';
 
   if (!_radarAds.length) {
-    body.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No active ads found. Try a different keyword or country.</p></div>';
+    body.innerHTML = '<div class=”empty-state”><svg viewBox=”0 0 24 24”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg><p>No active ads found. Try a different keyword or country.</p></div>';
   } else {
-    body.innerHTML = _radarAds.map((ad, i) => {
-      const page = escHtml(ad.page_name || 'Unknown advertiser');
-      const bodyText = (ad.ad_creative_bodies || [])[0] || '';
-      const preview = escHtml(bodyText.slice(0, 220));
-      return '<div style="border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px">' +
-        '<div style="display:flex;justify-content:space-between;align-items:flex-start' + (preview ? ';margin-bottom:10px' : '') + '">' +
-        '<span style="font-size:13px;font-weight:700;color:var(--text)">' + page + '</span>' +
-        '<button onclick="analyzeCompetitorAd(' + i + ',this)" style="font-size:11px;padding:5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:7px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0;margin-left:12px">Analyze →</button>' +
-        '</div>' +
-        (preview ? '<p style="font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.65;font-style:italic">“' + preview + (bodyText.length > 220 ? '…' : '') + '”</p>' : '') +
-        '<div id="radar-ad-analysis-' + i + '"></div>' +
-        '</div>';
-    }).join('');
+    body.innerHTML = _radarAds.map((ad, i) => renderRadarAdCard(ad, 'manual_' + i)).join('');
   }
   wrap.style.display = 'block';
 }
 
-async function analyzeCompetitorAd(idx, btn) {
-  const ad = _radarAds[idx];
-  if (!ad) return;
-  const adText = [(ad.ad_creative_bodies || [])[0], (ad.ad_creative_link_titles || [])[0]].filter(Boolean).join(' ').trim();
-  if (!adText) { showToast('No ad text available to analyze', 'error'); return; }
-  btn.disabled = true; btn.textContent = 'Analyzing…';
-
-  const r = await authFetch('/competitor-radar?action=analyze', {
-    method: 'POST',
-    body: JSON.stringify({ action: 'analyze', ad_text: adText })
-  });
-
-  btn.disabled = true; btn.textContent = 'Analyzed ✓';
-  if (!r || !r.ok) { showToast('Analysis failed', 'error'); return; }
-  const d = await r.json();
-  const el = document.getElementById('radar-ad-analysis-' + idx);
-  if (el) el.innerHTML =
-    '<div style="margin-top:8px;padding:14px;background:rgba(6,214,199,0.05);border-radius:10px;border-left:2px solid var(--primary)">' +
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px">' +
-        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Hook type</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.hook_type || '—') + '</div></div>' +
-        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Emotion</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.emotion || '—') + '</div></div>' +
-        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">CTA</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.cta || '—') + '</div></div>' +
-      '</div>' +
-      '<div style="font-size:12px;color:var(--accent);font-weight:600;line-height:1.6">' + (d.counter_strategy ? '<span style="color:var(--muted);font-weight:500">Counter: </span>' + escHtml(d.counter_strategy) : '—') + '</div>' +
-    '</div>';
+// Legacy shim so any remaining inline calls still work
+function analyzeCompetitorAd(idx, btn) {
+  const uid = 'manual_' + idx;
+  _radarAdStore[uid] = _radarAds[idx];
+  analyzeRadarAd(uid, btn);
 }
 
 // ── CREATIVE BRIEF AI ─────────────────────────────────────────────────────────

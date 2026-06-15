@@ -106,9 +106,9 @@ async function handleSearch(
 }
 
 async function handleAnalyze(adText: string): Promise<Record<string, unknown>> {
-  const system = `You are an expert ad copywriter and marketing strategist. Analyze the competitor ad copy provided and return structured insights. Return JSON only.`;
+  const system = `You are an expert ad copywriter and marketing strategist. Analyze competitor ad copy and generate a winning counter-ad. Return JSON only — no markdown, no explanation outside JSON.`;
 
-  const userMsg = `Analyze this competitor ad copy:
+  const userMsg = `Analyze this competitor ad copy and create a counter-ad:
 
 "${adText}"
 
@@ -118,12 +118,17 @@ Return a JSON object with this exact structure:
   "emotion": "string — primary emotion targeted (e.g. fear of missing out, aspiration, frustration, desire)",
   "cta": "string — call to action used or implied",
   "strengths": ["strength1", "strength2", "strength3"],
-  "counter_strategy": "string — how to position against this ad to win the same audience"
+  "counter_strategy": "string — positioning strategy to win the same audience",
+  "counter_ad": {
+    "headline": "string — compelling counter headline that beats theirs (max 40 chars)",
+    "body": "string — 2-3 sentence ad body copy that outperforms the competitor",
+    "cta": "string — your stronger call to action"
+  }
 }
 
 Return ONLY valid JSON.`;
 
-  const raw = await callGroq(system, userMsg, 800);
+  const raw = await callGroq(system, userMsg, 1400);
 
   let analysis: Record<string, unknown>;
   try {
