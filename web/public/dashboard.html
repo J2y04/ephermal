@@ -5082,7 +5082,10 @@ async function searchCompetitorAds() {
   if (!terms) { showToast('Enter a keyword or brand name', 'error'); return; }
   const country = document.getElementById('radar-country').value;
   const btn = document.getElementById('radar-search-btn');
-  btn.disabled = true; btn.textContent = 'Searching…';
+  const SVG_SEARCH = '<svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2.5” stroke-linecap=”round” stroke-linejoin=”round”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg>';
+  btn.disabled = true;
+  btn.innerHTML = SVG_SEARCH + '<span>Searching…</span>';
+  document.getElementById('radar-no-meta').style.display = 'none';
 
   const r = await authFetch('/competitor-radar?action=search', {
     method: 'POST',
@@ -5090,7 +5093,7 @@ async function searchCompetitorAds() {
   });
 
   btn.disabled = false;
-  btn.innerHTML = '<svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2.5” stroke-linecap=”round” stroke-linejoin=”round”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg> Search Ads';
+  btn.innerHTML = SVG_SEARCH + '<span>Search Ads</span>';
   if (!r || !r.ok) { showToast('Search failed', 'error'); return; }
   const data = await r.json();
 

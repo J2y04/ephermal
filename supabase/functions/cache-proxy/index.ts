@@ -82,8 +82,8 @@ const CACHE_TTL: Record<string, number> = {
   'google-api:analytics':       300,
   'creative-fatigue:analyze':   300,
   'roas-optimizer:analyze':     300,
-  'competitor-radar:search':    600,
-  'competitor-radar:analyze':   600,
+  // competitor-radar intentionally NOT cached — cache key excludes search_terms body,
+  // so caching would return the first competitor's ads for all subsequent searches.
   'ugc-generate:script':        300,
   'profit-tracker:get_report':  120,
   'creative-brief:generate':    300,
