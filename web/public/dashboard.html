@@ -2084,6 +2084,7 @@ async function loadPlanFromSupabase() {
     if (error || !data) return;
     // Only read period_end and cancelling_at from DB — plan is always sourced from Clerk publicMetadata
     if (data.period_end) localStorage.setItem('ephermal_period_end', data.period_end);
+    else localStorage.removeItem('ephermal_period_end');
     if (data.cancelling_at) localStorage.setItem('ephermal_cancelling_at', data.cancelling_at);
     else localStorage.removeItem('ephermal_cancelling_at');
   } catch(e) {}
@@ -2364,9 +2365,10 @@ async function reactivateSubscription() {
     const token = await window.__clerk?.session?.getToken();
     if (!token) { showToast('Not signed in', 'error'); return; }
     const fnBase = window.SUPABASE_FN || `${window.SUPABASE_URL}/functions/v1`;
-    const res = await fetch(`${fnBase}/cancel-subscription/reactivate`, {
+    const res = await fetch(`${fnBase}/cancel-subscription`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'apikey': window.SUPABASE_ANON || '' },
+      body: JSON.stringify({ action: 'reactivate' }),
     });
     if (!res.ok) {
       showToast('Reactivation failed — contact billing@ephermal.app', 'error');
