@@ -72,12 +72,11 @@ async function loadRules(userId: string): Promise<OptimizerRules> {
   return { ...DEFAULT_RULES, ...data } as OptimizerRules;
 }
 
-/** Load Meta access token for user */
-async function getMetaToken(userId: string, headerToken: string | null): Promise<string> {
-  if (headerToken) return headerToken;
+/** Load Meta access token for user — always from DB, never from request headers */
+async function getMetaToken(userId: string): Promise<string> {
   const { data } = await supabase
     .from('user_integrations')
-    .select('meta_token, meta_account')
+    .select('meta_token')
     .eq('user_id', userId)
     .single();
   return data?.meta_token ?? '';
@@ -214,7 +213,7 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'analyze': {
-        const token   = await getMetaToken(userId, req.headers.get('x-meta-token'));
+        const token   = await getMetaToken(userId);
         if (!token)   return errResponse('Meta not connected', 403, origin);
         const rules   = await loadRules(userId);
         const actions = await analyzeCampaigns(userId, token, rules);
@@ -230,7 +229,7 @@ Deno.serve(async (req) => {
       }
 
       case 'apply': {
-        const token   = await getMetaToken(userId, req.headers.get('x-meta-token'));
+        const token   = await getMetaToken(userId);
         if (!token)   return errResponse('Meta not connected', 403, origin);
         const rules   = await loadRules(userId);
         const planned = await analyzeCampaigns(userId, token, rules);
@@ -242,7 +241,7 @@ Deno.serve(async (req) => {
             try {
               if (a.action === 'pause') {
                 await metaPost(`/${a.campaign_id}`, { status: 'PAUSED' }, token);
-                await supabase.from('campaigns').update({ status: 'PAUSED' })
+                await supabase.from('campaigns').update({ status: 'paused' })
                   .eq('id', a.campaign_id).eq('user_id', userId);
               } else if (a.action === 'scale' && a.new_budget) {
                 await metaPost(`/${a.campaign_id}`, { daily_budget: String(a.new_budget) }, token);

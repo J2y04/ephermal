@@ -52,9 +52,7 @@ async function callGroq(system: string, user: string, maxTokens = 1500): Promise
   return data.choices[0]?.message?.content ?? '';
 }
 
-async function getMetaToken(userId: string, headerToken?: string | null): Promise<string | null> {
-  // Prefer token passed via x-meta-token header (same pattern as meta-api)
-  if (headerToken) return headerToken;
+async function getMetaToken(userId: string): Promise<string | null> {
   const { data } = await supabase
     .from('user_integrations')
     .select('meta_token')
@@ -67,9 +65,8 @@ async function handleSearch(
   userId: string,
   searchTerms: string,
   countries: string[],
-  headerToken?: string | null,
 ): Promise<Record<string, unknown>> {
-  const token = await getMetaToken(userId, headerToken);
+  const token = await getMetaToken(userId);
   if (!token) {
     return {
       error: 'Connect Meta Ads first to use Competitor Radar',
@@ -171,8 +168,7 @@ Deno.serve(async (req) => {
         const countries = Array.isArray(body.countries)
           ? (body.countries as unknown[]).map(String).filter(Boolean)
           : [];
-        const headerToken = req.headers.get('x-meta-token');
-        const result = await handleSearch(userId, searchTerms, countries, headerToken);
+        const result = await handleSearch(userId, searchTerms, countries);
         // If no meta token, still return 200 with error payload (client handles it)
         return okResponse(result, origin);
       }

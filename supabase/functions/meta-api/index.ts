@@ -22,9 +22,7 @@
  *   SUPABASE_SERVICE_ROLE_KEY auto-injected
  *   APP_URL                   https://ephermal.app
  *
- * The Meta access token is read from:
- *   1. X-Meta-Token request header (sent by dashboard)
- *   2. user_integrations table (fallback — requires Supabase read)
+ * The Meta access token is always loaded from user_integrations (scoped to userId).
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -52,19 +50,10 @@ function dateRange(days = 30): { since: string; until: string } {
   };
 }
 
-/** Resolve Meta token + account from header or DB */
+/** Resolve Meta token + account — always loaded from DB, scoped to authenticated userId */
 async function resolveCredentials(
-  req: Request,
   userId: string,
 ): Promise<{ token: string; accountId: string } | null> {
-  const headerToken   = req.headers.get('x-meta-token');
-  const headerAccount = req.headers.get('x-meta-account');
-
-  if (headerToken && headerAccount) {
-    return { token: headerToken, accountId: headerAccount };
-  }
-
-  // Fallback: read from user_integrations
   const { data } = await supabase
     .from('user_integrations')
     .select('meta_token, meta_account')
@@ -483,7 +472,7 @@ Deno.serve(async (req) => {
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
-  const creds = await resolveCredentials(req, userId);
+  const creds = await resolveCredentials(userId);
   const { token, accountId } = creds ?? { token: '', accountId: '' };
 
   const url    = new URL(req.url);
