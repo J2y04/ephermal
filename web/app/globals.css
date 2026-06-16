@@ -144,11 +144,10 @@ a { text-decoration: none; color: inherit; }
 /* ── Hero ── */
 .hero {
   position: relative; z-index: 2;
-  min-height: 100dvh;
   display: flex; flex-direction: column;
   align-items: center; justify-content: flex-start;
   text-align: center;
-  padding: 168px 24px 100px;
+  padding: 148px 24px 120px;
   overflow: hidden;
 }
 /* Subtle teal glow from below — no purple */
@@ -171,6 +170,19 @@ a { text-decoration: none; color: inherit; }
   font-size: clamp(42px, 7vw, 88px);
   font-weight: 900; line-height: 1.05;
   letter-spacing: -3px; margin-bottom: 24px;
+}
+/* Single-line variant — bigger, nowrap on desktop */
+.hero h1.hero-h1-single {
+  white-space: nowrap;
+  font-size: clamp(44px, 6.8vw, 92px);
+  letter-spacing: -3.5px;
+}
+@media (max-width: 740px) {
+  .hero h1.hero-h1-single {
+    white-space: normal;
+    font-size: clamp(36px, 8.5vw, 56px);
+    letter-spacing: -2px;
+  }
 }
 .hero h1 .line2 {
   display: block;

@@ -23,13 +23,13 @@ function Word({ word, index, gradient }: { word: string; index: number; gradient
       <motion.span
         initial={gradient
           ? { y: '100%' }
-          : { y: '100%', opacity: 0, filter: 'blur(8px)' }
+          : { y: '100%', opacity: 0 }
         }
         animate={gradient
           ? { y: 0 }
-          : { y: 0, opacity: 1, filter: 'blur(0px)' }
+          : { y: 0, opacity: 1 }
         }
-        transition={{ duration: 0.82, ease: EASE, delay: index * 0.055 }}
+        transition={{ duration: 0.72, ease: EASE, delay: index * 0.05 }}
         style={{ display: 'inline-block', ...(gradient ? GRADIENT : {}) }}
       >
         {word}
@@ -41,7 +41,7 @@ function Word({ word, index, gradient }: { word: string; index: number; gradient
 export default function HeroMotion({ line1, line2, sub, cta, oneLine }: HeroMotionProps) {
   return (
     <>
-      <h1 style={oneLine ? { whiteSpace: 'nowrap', fontSize: 'clamp(32px,4.2vw,60px)' } : undefined}>
+      <h1 className={oneLine ? 'hero-h1-single' : undefined}>
         <span style={{ display: oneLine ? 'inline' : 'block' }}>
           {line1.map((w, i) => <Word key={i} word={w} index={i} />)}
         </span>
@@ -52,9 +52,9 @@ export default function HeroMotion({ line1, line2, sub, cta, oneLine }: HeroMoti
 
       <motion.p
         className="hero-sub"
-        initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
-        animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-        transition={{ duration: 0.9, ease: EASE, delay: 0.48 }}
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, ease: EASE, delay: 0.44 }}
       >
         {sub}
       </motion.p>
