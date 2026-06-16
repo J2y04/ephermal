@@ -51,41 +51,18 @@ nav:hover{border-color:rgba(6,214,199,0.3)}
 .orb3{width:250px;height:250px;background:rgba(6,214,199,.06);bottom:15%;left:10%;animation-delay:-5s}
 @keyframes orbFloat{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(20px,-30px) scale(1.05)}66%{transform:translate(-15px,20px) scale(.95)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-h1{font-size:clamp(44px,7.5vw,88px);font-weight:900;letter-spacing:-3px;line-height:1.02;margin-bottom:24px;animation:fadeUp .7s .1s ease both}
+h1{font-size:clamp(34px,4.8vw,64px);font-weight:900;letter-spacing:-2px;line-height:1.05;margin-bottom:24px;animation:fadeUp .7s .1s ease both;white-space:nowrap}
 .h1-gradient{color:var(--primary)}
 .hero-sub{font-size:19px;color:var(--muted);max-width:580px;margin:0 auto 40px;line-height:1.65;animation:fadeUp .7s .2s ease both}
-.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:80px;animation:fadeUp .7s .3s ease both}
+.hero-actions{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:0;animation:fadeUp .7s .3s ease both}
+/* ── Floor glow ── */
+.hero-floor-glow{position:absolute;bottom:0;left:0;right:0;height:380px;background:radial-gradient(ellipse 70% 100% at 50% 100%,rgba(6,214,199,.22) 0%,rgba(6,214,199,.07) 50%,transparent 72%);pointer-events:none}
+.hero-floor-glow::after{content:'';position:absolute;bottom:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(6,214,199,.65) 25%,rgba(6,214,199,.65) 75%,transparent);box-shadow:0 0 24px 3px rgba(6,214,199,.25)}
 .btn-primary{background:var(--primary);color:#08080c;padding:15px 32px;border-radius:12px;font-size:15px;font-weight:700;border:none;cursor:pointer;transition:all .25s;box-shadow:0 4px 24px var(--glow)}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(6,214,199,.4)}
 .btn-ghost{background:transparent;color:var(--text);padding:15px 28px;border-radius:12px;font-size:15px;font-weight:600;border:1px solid var(--border);cursor:pointer;transition:all .25s}
 .btn-ghost:hover{border-color:var(--primary);background:rgba(6,214,199,.06);transform:translateY(-2px)}
 
-/* ── Hero Mockup ── */
-.mockup-wrap{animation:fadeUp .8s .4s ease both;width:100%;max-width:520px;margin:0 auto;position:relative}
-.mockup-wrap::before{content:'';position:absolute;inset:-2px;border-radius:22px;background:linear-gradient(135deg,var(--primary),var(--accent));opacity:.2;z-index:-1;filter:blur(8px)}
-.budget-mockup{background:rgba(15,15,19,.95);border:1px solid rgba(6,214,199,.18);border-radius:20px;padding:28px;text-align:left;position:relative;overflow:hidden;backdrop-filter:blur(20px)}
-.budget-mockup::before{content:'';position:absolute;top:-60px;right:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(6,214,199,.08),transparent 60%)}
-.mock-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
-.mock-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
-.mock-live{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;color:var(--accent);background:rgba(6,214,199,.1);border:1px solid rgba(6,214,199,.25);padding:3px 9px;border-radius:20px}
-.mock-live::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
-.mock-goal{font-size:40px;font-weight:900;letter-spacing:-2px;margin-bottom:6px;background:linear-gradient(90deg,var(--text),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.mock-goal-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
-.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-.bar-label{font-size:12px;font-weight:600;color:var(--muted);width:76px;flex-shrink:0}
-.bar-track{flex:1;height:9px;background:rgba(255,255,255,.06);border-radius:5px;overflow:hidden;position:relative}
-.bar-fill{height:100%;border-radius:5px;width:0;transition:width 1.8s cubic-bezier(.22,1,.36,1)}
-.bar-fill.meta{background:var(--primary)}
-.bar-fill.google{background:linear-gradient(90deg,#4285F4,var(--accent))}
-.bar-pct{font-size:12px;font-weight:700;width:32px;text-align:right}
-.mock-bottom{margin-top:20px;padding-top:20px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.mock-stat{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
-.mock-stat .s-lbl{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
-.mock-stat .s-val{font-size:22px;font-weight:800;letter-spacing:-.5px}
-.mock-ai-badge{position:absolute;bottom:-14px;right:24px;background:var(--primary);color:#08080c;font-size:11px;font-weight:700;padding:5px 14px;border-radius:20px;display:flex;align-items:center;gap:5px;box-shadow:0 4px 16px var(--glow);animation:float 3s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
-.mock-tick{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--accent);margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-weight:600}
-.mock-tick::before{content:'↑';font-size:14px}
 
 section{padding:96px 24px}
 .container{max-width:1100px;margin:0 auto}
@@ -184,7 +161,7 @@ footer{border-top:1px solid var(--border);padding:48px 24px;display:flex;flex-di
 .footer-links a:hover{color:var(--text)}
 .footer-copy{font-size:12px;color:rgba(136,146,176,.5)}
 
-@media(max-width:680px){.nav-links{display:none}.calc-results{grid-template-columns:1fr 1fr}.calc-results .calc-result:last-child{grid-column:1/-1}.hero-actions{flex-direction:column;align-items:center}.stats-row{grid-template-columns:1fr 1fr}.cta-banner{padding:40px 24px}}
+@media(max-width:680px){.nav-links{display:none}.calc-results{grid-template-columns:1fr 1fr}.calc-results .calc-result:last-child{grid-column:1/-1}.hero-actions{flex-direction:column;align-items:center}.stats-row{grid-template-columns:1fr 1fr}.cta-banner{padding:40px 24px}h1{white-space:normal;font-size:clamp(28px,8vw,44px);letter-spacing:-1px}}
 </style>
 </head>
 <body>
@@ -205,45 +182,14 @@ footer{border-top:1px solid var(--border);padding:48px 24px;display:flex;flex-di
   <div class="hero-glow2"></div>
   <div class="hero-orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
 
-  <h1><span class="h1-gradient">Your AI Ad CFO.</span></h1>
+  <h1>You Build it. <span class="h1-gradient">We scale it.</span></h1>
   <p class="hero-sub">Set a revenue goal. Ephermal reverse-engineers the budget, allocates across Meta and Google, and auto-scales winning campaigns, without you touching a single ad manager.</p>
   <div class="hero-actions">
     <a href="/auth/register.html"><button class="btn-primary">Get Started</button></a>
     <a href="#how-it-works"><button class="btn-ghost">See How It Works</button></a>
   </div>
 
-  <div class="mockup-wrap">
-    <div class="budget-mockup">
-      <div class="mock-header">
-        <div class="mock-title">Budget Allocation</div>
-        <div class="mock-live">Live</div>
-      </div>
-      <div class="mock-goal" id="animGoal">$0</div>
-      <div class="mock-goal-sub">Monthly revenue goal</div>
-      <div class="bar-row">
-        <div class="bar-label">Meta Ads</div>
-        <div class="bar-track"><div class="bar-fill meta" id="metaBar"></div></div>
-        <div class="bar-pct" style="color:var(--primary)">65%</div>
-      </div>
-      <div class="bar-row">
-        <div class="bar-label">Google</div>
-        <div class="bar-track"><div class="bar-fill google" id="googleBar"></div></div>
-        <div class="bar-pct" style="color:var(--accent)">35%</div>
-      </div>
-      <div class="mock-bottom">
-        <div class="mock-stat">
-          <div class="s-lbl">Daily Budget</div>
-          <div class="s-val" id="animDaily">$0</div>
-        </div>
-        <div class="mock-stat">
-          <div class="s-lbl">Est. ROAS</div>
-          <div class="s-val" style="color:var(--accent)">2.5×</div>
-        </div>
-      </div>
-      <div class="mock-tick">Budget scales automatically when ROAS exceeds 3×</div>
-    </div>
-    <div class="mock-ai-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="vertical-align:-1px;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>AI Calculated</div>
-  </div>
+  <div class="hero-floor-glow"></div>
 </div>
 
 <!-- ── STATS ── -->
@@ -487,30 +433,6 @@ const countObserver = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.5 });
 document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
-
-// ── Hero mockup animation ──────────────────────────────────────────────────────
-function animateMockup() {
-  const goal = 15000, daily = Math.round(goal / 30 / 2.5);
-  let g = 0, d = 0, start = null;
-  const run = (ts) => {
-    if (!start) start = ts;
-    const p = Math.min((ts - start) / 1200, 1);
-    const e = 1 - Math.pow(1 - p, 3);
-    g = Math.round(goal * e);
-    d = Math.round(daily * e);
-    document.getElementById('animGoal').textContent = '$' + g.toLocaleString();
-    document.getElementById('animDaily').textContent = '$' + d.toLocaleString();
-    if (p < 1) requestAnimationFrame(run);
-    else {
-      setTimeout(() => {
-        document.getElementById('metaBar').style.width = '65%';
-        document.getElementById('googleBar').style.width = '35%';
-      }, 200);
-    }
-  };
-  setTimeout(() => requestAnimationFrame(run), 600);
-}
-animateMockup();
 
 // ── Budget calculator ──────────────────────────────────────────────────────────
 function updateCalc(val) {
