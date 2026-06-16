@@ -16,7 +16,7 @@ export default function Home() {
       {/* ── Navigation ── */}
       <nav className="nav" id="main-nav">
         <a href="/" className="nav-logo">
-          <img src="/ephermal.png" alt="Ephermal logo" />
+          <img src="/ephermal.png" alt="Ephermal logo" width={32} height={32} />
           Ephermal
         </a>
         <div className="nav-links">
@@ -38,6 +38,7 @@ export default function Home() {
           line2={['We', 'Scale', 'It.']}
           sub={<>Stop paying $3,000/month for an agency that doesn&apos;t understand your store. Ephermal reads your Shopify catalog, writes AI-powered ads, and launches across Meta and Google, set up in minutes, not months.</>}
           cta={<><a href="/auth/register.html" className="btn-primary">Get Started</a><a href="#how-it-works" className="btn-secondary">See how it works</a></>}
+          oneLine
         />
         <p className="hero-proof" data-reveal data-delay="3">
           <span>Meta &amp; Google Ads automated</span>
@@ -47,33 +48,7 @@ export default function Home() {
           <span>No agency needed</span>
         </p>
 
-        {/* Hero visual */}
-        <div className="hero-visual" data-reveal="scale" data-delay="3">
-          <div className="hero-card">
-            <div className="dashboard-row">
-              <div className="dash-stat">
-                <div className="label">ROAS</div>
-                <div className="value">4.8×</div>
-                <div className="change">↑ 127% vs last month</div>
-              </div>
-              <div className="dash-stat">
-                <div className="label">Ad Spend</div>
-                <div className="value">$12,400</div>
-                <div className="change">↑ Optimized by AI</div>
-              </div>
-              <div className="dash-stat">
-                <div className="label">UGC Ads Created</div>
-                <div className="value">34</div>
-                <div className="change">↑ 12 this week</div>
-              </div>
-            </div>
-            <div className="hero-metrics">
-              <div className="hero-metric-item"><span className="metric-platform">Meta</span><span className="metric-val">84%</span><span className="metric-sub">efficiency</span></div>
-              <div className="hero-metric-item"><span className="metric-platform">Google</span><span className="metric-val">81%</span><span className="metric-sub">efficiency</span></div>
-              <div className="hero-metric-item"><span className="metric-platform">UGC</span><span className="metric-val">96%</span><span className="metric-sub">approval</span></div>
-            </div>
-          </div>
-        </div>
+        <div className="hero-floor-glow" />
       </section>
 
       {/* ── Ticker ── */}
@@ -523,16 +498,16 @@ export default function Home() {
             </div>
             <div className="meta-logo-block" data-reveal="right">
               <div style={{ background: 'rgba(150,191,72,0.06)', border: '1px solid rgba(150,191,72,0.2)', borderRadius: '20px', padding: '32px' }}>
-                <div style={{ marginBottom: '20px', padding: '11px 14px', background: 'rgba(234,67,53,0.08)', borderRadius: '10px', border: '1px solid rgba(234,67,53,0.15)' }}>
-                  <div style={{ fontSize: '10px', color: '#EA4335', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>ROAS 4.1× · looks great</div>
+                <div style={{ marginBottom: '20px', padding: '11px 14px', background: 'rgba(6,214,199,0.05)', borderRadius: '10px', border: '1px solid rgba(6,214,199,0.12)' }}>
+                  <div style={{ fontSize: '10px', color: '#06d6c7', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>ROAS 4.1× · looks great</div>
                   <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>Pre-Workout 300g · $59 retail, $46 landed cost = 22% margin. Losing $3.20/order after fees.</div>
                 </div>
                 <div style={{ fontSize: '11px', fontWeight: 700, color: '#96BF48', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '14px' }}>Real margin by product</div>
                 {[
-                  { product: 'Protein Powder 1kg', margin: '68%', color: '#96BF48' },
+                  { product: 'Protein Powder 1kg', margin: '68%', color: '#06d6c7' },
                   { product: 'Shaker Bottle', margin: '51%', color: '#06d6c7' },
-                  { product: 'Resistance Bands', margin: '43%', color: '#fbbf24' },
-                  { product: 'Pre-Workout 300g', margin: '22%', color: '#EA4335' },
+                  { product: 'Resistance Bands', margin: '43%', color: 'rgba(6,214,199,0.6)' },
+                  { product: 'Pre-Workout 300g', margin: '22%', color: 'rgba(6,214,199,0.35)' },
                 ].map((r, i) => (
                   <div key={i} style={{ marginBottom: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
@@ -572,7 +547,7 @@ export default function Home() {
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>Billed to: Your Shopify store</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '10px', fontWeight: 800, color: '#EA4335', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(234,67,53,0.12)', border: '1px solid rgba(234,67,53,0.25)', padding: '4px 10px', borderRadius: '6px', marginBottom: '6px' }}>Past Due</div>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: '#06d6c7', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(6,214,199,0.12)', border: '1px solid rgba(6,214,199,0.25)', padding: '4px 10px', borderRadius: '6px', marginBottom: '6px' }}>Outstanding</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Auto-renews monthly</div>
               </div>
             </div>
@@ -592,18 +567,18 @@ export default function Home() {
               ].map((item, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center' }}>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{item.desc}</span>
-                  <span style={{ fontSize: '13px', color: 'rgba(234,67,53,0.9)', fontWeight: 600, fontFamily: 'monospace', textAlign: 'right' }}>{item.amount}</span>
+                  <span style={{ fontSize: '13px', color: 'rgba(6,214,199,0.85)', fontWeight: 600, fontFamily: 'monospace', textAlign: 'right' }}>{item.amount}</span>
                 </div>
               ))}
               {/* Total row */}
-              <div style={{ marginTop: '16px', padding: '16px 20px', background: 'rgba(234,67,53,0.07)', border: '1px solid rgba(234,67,53,0.15)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginTop: '16px', padding: '16px 20px', background: 'rgba(6,214,199,0.05)', border: '1px solid rgba(6,214,199,0.15)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>Monthly total</div>
-                  <div style={{ fontSize: '28px', fontWeight: 900, color: '#EA4335', fontFamily: 'monospace', letterSpacing: '-1px' }}>$3,455.00</div>
+                  <div style={{ fontSize: '28px', fontWeight: 900, color: '#06d6c7', fontFamily: 'monospace', letterSpacing: '-1px' }}>$3,455.00</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>That&apos;s per year</div>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(234,67,53,0.7)', fontFamily: 'monospace' }}>$41,460.00</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(6,214,199,0.65)', fontFamily: 'monospace' }}>$41,460.00</div>
                 </div>
               </div>
             </div>

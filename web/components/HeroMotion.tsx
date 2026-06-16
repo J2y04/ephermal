@@ -13,6 +13,7 @@ interface HeroMotionProps {
   line2: string[];
   sub: React.ReactNode;
   cta: React.ReactNode;
+  oneLine?: boolean;
 }
 
 function Word({ word, index, gradient }: { word: string; index: number; gradient?: boolean }) {
@@ -37,14 +38,14 @@ function Word({ word, index, gradient }: { word: string; index: number; gradient
   );
 }
 
-export default function HeroMotion({ line1, line2, sub, cta }: HeroMotionProps) {
+export default function HeroMotion({ line1, line2, sub, cta, oneLine }: HeroMotionProps) {
   return (
     <>
-      <h1>
-        <span style={{ display: 'block' }}>
+      <h1 style={oneLine ? { whiteSpace: 'nowrap', fontSize: 'clamp(32px,4.2vw,60px)' } : undefined}>
+        <span style={{ display: oneLine ? 'inline' : 'block' }}>
           {line1.map((w, i) => <Word key={i} word={w} index={i} />)}
         </span>
-        <span className="line2" style={{ display: 'block' }}>
+        <span className="line2" style={{ display: oneLine ? 'inline' : 'block' }}>
           {line2.map((w, i) => <Word key={i} word={w} index={line1.length + i} gradient />)}
         </span>
       </h1>
