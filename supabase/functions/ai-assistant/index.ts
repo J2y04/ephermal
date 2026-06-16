@@ -102,9 +102,9 @@ async function atomicIncrementUsage(userId: string, limit: number): Promise<numb
   });
 
   if (error) {
-    // Fallback: allow the request but log — better than breaking prod
+    // Fail closed — if usage tracking is broken, block the request rather than give free access
     console.error('atomicIncrementUsage error:', error);
-    return 1;
+    return null;
   }
 
   return data as number | null; // null = limit already hit; number = new count

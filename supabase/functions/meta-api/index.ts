@@ -27,6 +27,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
+import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import {
   metaGet, metaPost, metaDelete,
   CAMPAIGN_FIELDS, CAMPAIGN_INSIGHT_FIELDS,
@@ -471,6 +472,12 @@ Deno.serve(async (req) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
+
+  const rl = await rateLimitTiered(userId, 'meta', [
+    { max: 30,  window: 60   },
+    { max: 300, window: 3600 },
+  ]);
+  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
 
   const creds = await resolveCredentials(userId);
   const { token, accountId } = creds ?? { token: '', accountId: '' };

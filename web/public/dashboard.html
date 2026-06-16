@@ -2866,6 +2866,7 @@ function loadDevTools() {
   devRefreshStorage();
 }
 function devSetPlan(plan) {
+  if (!isAdmin()) return; // admin-only — guard against direct JS console calls
   if (plan) { localStorage.setItem('ephermal_plan_override', plan); showToast(`Plan set to ${plan} (local only)`, 'success'); }
   else { localStorage.removeItem('ephermal_plan_override'); showToast('Plan override cleared', 'success'); }
   renderPlanUI();
@@ -3372,9 +3373,10 @@ async function analyzeStore() {
     document.getElementById('ar-colors').innerHTML = swatchDefs.map(({key,label}) => {
       const hex = palette[key] || '';
       if (!hex || hex === '—') return '';
-      const display = hex.startsWith('#') ? hex : hex;
+      // Validate hex before CSS injection — only allow #RGB / #RRGGBB / #RRGGBBAA
+      const safeHex = /^#[0-9A-Fa-f]{3,8}$/.test(hex) ? hex : '#888888';
       return `<div class="color-swatch">
-        <div class="color-swatch-circle" style="background:${escHtml(hex)}"></div>
+        <div class="color-swatch-circle" style="background:${safeHex}"></div>
         <div class="color-swatch-label">${label}</div>
         <div class="color-swatch-hex">${escHtml(hex.length > 9 ? hex.slice(0,9) : hex)}</div>
       </div>`;
@@ -3826,7 +3828,7 @@ function aiShowTopupBanner(limit, plan) {
   div.style.cssText = 'margin:8px 0;padding:14px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:12px;text-align:center;font-size:13px;color:var(--warning)';
   div.innerHTML = `<strong style="display:block;margin-bottom:6px">Monthly limit reached (${limit} messages)</strong>
     <span style="color:var(--muted);font-size:12px">Top up for $5 = 200 extra messages this month</span><br>
-    <button onclick="startCheckout(window.STRIPE_PRICES?.topup_5||'price_REPLACE_TOPUP5')" style="display:inline-block;margin-top:10px;padding:8px 20px;background:var(--primary);color:#08080c;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Get 50 more messages →</button>`;
+    <button onclick="if(!window.STRIPE_PRICES?.topup_5){showToast('Billing not configured — contact support','error');return;}startCheckout(window.STRIPE_PRICES.topup_5)" style="display:inline-block;margin-top:10px;padding:8px 20px;background:var(--primary);color:#08080c;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Get 50 more messages →</button>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
