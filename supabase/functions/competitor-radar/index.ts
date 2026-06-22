@@ -30,8 +30,9 @@ const GROQ_KEY   = Deno.env.get('GROQ_API_KEY') ?? '';
 const GROQ_URL   = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
-const META_GRAPH_URL = 'https://graph.facebook.com/v21.0';
-const META_AD_FIELDS = 'id,ad_creative_bodies,ad_creative_link_titles,ad_snapshot_url,page_name,spend,impressions';
+const META_GRAPH_URL = 'https://graph.facebook.com/v25.0';
+// spend/impressions are restricted to political/issue ads only — exclude them for regular ad searches
+const META_AD_FIELDS = 'id,ad_creation_time,ad_delivery_start_time,ad_delivery_stop_time,ad_snapshot_url,page_id,page_name,ad_creative_bodies,ad_creative_link_captions,ad_creative_link_descriptions,ad_creative_link_titles,publisher_platforms,languages';
 
 async function callGroq(system: string, user: string, maxTokens = 1500): Promise<string> {
   if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');
@@ -65,6 +66,12 @@ async function handleSearch(
   userId: string,
   searchTerms: string,
   countries: string[],
+  options: {
+    mediaType?: string;
+    platforms?: string[];
+    limit?: number;
+    after?: string; // pagination cursor
+  } = {},
 ): Promise<Record<string, unknown>> {
   const token = await getMetaToken(userId);
   if (!token) {
@@ -75,30 +82,67 @@ async function handleSearch(
   }
 
   const reachedCountries = countries.length > 0 ? countries.join(',') : 'US';
+  const limit = Math.min(Math.max(options.limit ?? 20, 1), 50);
+
   const params = new URLSearchParams({
     search_terms:         searchTerms,
     ad_type:              'ALL',
     ad_reached_countries: reachedCountries,
     fields:               META_AD_FIELDS,
-    limit:                '20',
+    limit:                String(limit),
     access_token:         token,
   });
+
+  // Optional: filter by media type (image, video, meme, none, all)
+  if (options.mediaType && options.mediaType !== 'all') {
+    params.set('media_type', options.mediaType.toUpperCase());
+  }
+
+  // Optional: filter by publisher platform (facebook, instagram, audience_network, messenger)
+  if (options.platforms && options.platforms.length > 0) {
+    params.set('publisher_platforms', options.platforms.join(','));
+  }
+
+  // Pagination cursor
+  if (options.after) {
+    params.set('after', options.after);
+  }
 
   const url = `${META_GRAPH_URL}/ads_archive?${params.toString()}`;
   const res = await fetch(url);
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({})) as Record<string, unknown>;
-    const metaErr = (err?.error as Record<string, unknown>)?.message ?? `Meta API error ${res.status}`;
-    throw new Error(String(metaErr));
+    const metaErrObj = err?.error as Record<string, unknown> | undefined;
+    const metaMsg = String(metaErrObj?.message ?? `Meta API error ${res.status}`);
+    // Surface permission errors with a clear message
+    if (res.status === 403 || String(metaErrObj?.code) === '200') {
+      throw new Error('Your Meta token does not have Ad Library access. Reconnect Meta Ads and ensure ads_read permission is granted.');
+    }
+    throw new Error(metaMsg);
   }
 
-  const data = await res.json() as { data?: unknown[]; paging?: unknown };
+  const data = await res.json() as {
+    data?: Record<string, unknown>[];
+    paging?: { cursors?: { before?: string; after?: string }; next?: string };
+  };
+
+  const ads = (data.data ?? []).map(ad => ({
+    ...ad,
+    // Normalise creation time to ISO string for consistent UI rendering
+    ad_creation_time: ad.ad_creation_time ?? null,
+  }));
+
   return {
-    ads:    data.data ?? [],
-    paging: data.paging ?? null,
+    ads,
+    paging: {
+      cursors:  data.paging?.cursors ?? null,
+      has_more: !!data.paging?.next,
+      next_cursor: data.paging?.cursors?.after ?? null,
+    },
     search_terms: searchTerms,
     countries: reachedCountries.split(','),
+    total: ads.length,
   };
 }
 
@@ -168,7 +212,14 @@ Deno.serve(async (req) => {
         const countries = Array.isArray(body.countries)
           ? (body.countries as unknown[]).map(String).filter(Boolean)
           : [];
-        const result = await handleSearch(userId, searchTerms, countries);
+        const result = await handleSearch(userId, searchTerms, countries, {
+          mediaType: body.media_type ? String(body.media_type) : undefined,
+          platforms: Array.isArray(body.platforms)
+            ? (body.platforms as unknown[]).map(String).filter(Boolean)
+            : undefined,
+          limit: body.limit ? Math.min(Number(body.limit), 50) : 20,
+          after:  body.after ? String(body.after) : undefined,
+        });
         // If no meta token, still return 200 with error payload (client handles it)
         return okResponse(result, origin);
       }

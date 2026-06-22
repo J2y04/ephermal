@@ -152,7 +152,7 @@ Make headlines benefit-focused and scroll-stopping. Keep Meta primary text under
   return { campaign_id: saved?.id, copy, status: 'draft' };
 }
 
-const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v17';
+const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v24';
 
 async function getGoogleAccessToken(refreshToken: string): Promise<string> {
   const clientId     = Deno.env.get('GOOGLE_CLIENT_ID');

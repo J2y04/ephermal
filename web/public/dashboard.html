@@ -5021,6 +5021,9 @@ async function loadLaunchedCampaigns() {
 let _radarAds = [];
 let _radarAutoAds = {}; // { competitorName: [ads] }
 const _radarAdStore = {}; // uid → ad object (avoids unsafe inline JSON)
+let _radarNextCursor = null; // pagination cursor for manual search
+let _radarCurrentTerms = '';
+let _radarCurrentCountry = 'US';
 
 // ── Tracked competitors (persisted in localStorage) ────────────────────────
 function _loadTrackedCompetitors() {
@@ -5130,14 +5133,47 @@ function renderAutoScanResults() {
 
 function renderRadarAdCard(ad, uid) {
   _radarAdStore[uid] = ad;
-  const page = escHtml(ad.page_name || 'Unknown advertiser');
-  const bodyText = (ad.ad_creative_bodies || [])[0] || '';
-  const preview = escHtml(bodyText.slice(0, 240));
+  const page      = escHtml(ad.page_name || 'Unknown advertiser');
+  const bodyText  = (ad.ad_creative_bodies || [])[0] || '';
+  const title     = (ad.ad_creative_link_titles || [])[0] || '';
+  const preview   = escHtml(bodyText.slice(0, 240));
+  const titleHtml = title ? '<div style=”font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px”>' + escHtml(title.slice(0, 100)) + '</div>' : '';
+
+  // Platform badges (facebook, instagram, messenger, audience_network)
+  const platforms = Array.isArray(ad.publisher_platforms) ? ad.publisher_platforms : [];
+  const PLATFORM_LABELS = { facebook: 'FB', instagram: 'IG', messenger: 'MSG', audience_network: 'AN' };
+  const platformBadges = platforms.map(p => {
+    const label = PLATFORM_LABELS[p] || escHtml(p.slice(0,3).toUpperCase());
+    return '<span style=”font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(6,214,199,0.1);color:var(--primary);margin-right:4px”>' + label + '</span>';
+  }).join('');
+
+  // Age label from creation time
+  let ageLabel = '';
+  if (ad.ad_creation_time) {
+    const days = Math.round((Date.now() - new Date(ad.ad_creation_time).getTime()) / 86400000);
+    ageLabel = '<span style=”font-size:10px;color:var(--muted);margin-left:6px”>' + (days === 0 ? 'Today' : days + 'd ago') + '</span>';
+  }
+
+  // Ad Library snapshot link
+  const snapshotLink = ad.ad_snapshot_url
+    ? '<a href=”' + escHtml(ad.ad_snapshot_url) + '” target=”_blank” rel=”noopener” style=”font-size:11px;color:var(--primary);opacity:0.8;text-decoration:none;margin-left:auto;flex-shrink:0” title=”View in Meta Ad Library”>View ad ↗</a>'
+    : '';
+
   return '<div style=”border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px”>' +
-    '<div style=”display:flex;justify-content:space-between;align-items:flex-start' + (preview ? ';margin-bottom:10px' : '') + '”>' +
-    '<span style=”font-size:13px;font-weight:700;color:var(--text)”>' + page + '</span>' +
-    '<button onclick=”analyzeRadarAd(\'' + uid + '\',this)” style=”font-size:11px;padding:5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:7px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600;flex-shrink:0;margin-left:12px;white-space:nowrap”>Analyze with AI →</button>' +
+    '<div style=”display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:' + (preview || title ? '10' : '0') + 'px”>' +
+      '<div style=”display:flex;flex-direction:column;gap:4px;min-width:0”>' +
+        '<div style=”display:flex;align-items:center;gap:4px;flex-wrap:wrap”>' +
+          '<span style=”font-size:13px;font-weight:700;color:var(--text)”>' + page + '</span>' +
+          ageLabel +
+        '</div>' +
+        (platformBadges ? '<div>' + platformBadges + '</div>' : '') +
+      '</div>' +
+      '<div style=”display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px”>' +
+        snapshotLink +
+        '<button onclick=”analyzeRadarAd(\'' + uid + '\',this)” style=”font-size:11px;padding:5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:7px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap”>Analyze →</button>' +
+      '</div>' +
     '</div>' +
+    titleHtml +
     (preview ? '<p style=”font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.65;font-style:italic”>”' + preview + (bodyText.length > 240 ? '…' : '') + '”</p>' : '') +
     '<div id=”radar-analysis-' + uid + '”></div>' +
     '</div>';
@@ -5194,31 +5230,80 @@ async function searchCompetitorAds() {
   btn.innerHTML = SVG_SEARCH + '<span>Searching…</span>';
   document.getElementById('radar-no-meta').style.display = 'none';
 
+  // Reset pagination state for new search
+  _radarAds = [];
+  _radarNextCursor = null;
+  _radarCurrentTerms = terms;
+  _radarCurrentCountry = country;
+
   const r = await authFetch('/competitor-radar?action=search', {
     method: 'POST',
-    body: JSON.stringify({ action: 'search', search_terms: terms, countries: [country] })
+    body: JSON.stringify({ action: 'search', search_terms: terms, countries: [country], limit: 20 })
   });
 
   btn.disabled = false;
   btn.innerHTML = SVG_SEARCH + '<span>Search Ads</span>';
-  if (!r || !r.ok) { showToast('Search failed', 'error'); return; }
+  if (!r || !r.ok) { showToast('Search failed — check your Meta connection in Settings', 'error'); return; }
   const data = await r.json();
 
   if (data.code === 'NO_META_TOKEN') {
     document.getElementById('radar-no-meta').style.display = 'block'; return;
   }
+  if (data.error && !data.ads) {
+    showToast(data.error || 'Search failed', 'error'); return;
+  }
 
-  _radarAds = (data.ads || []).slice(0, 10);
+  _radarAds = data.ads || [];
+  _radarNextCursor = data.paging?.next_cursor || null;
+
   const wrap = document.getElementById('radar-results-wrap');
-  const body = document.getElementById('radar-results-body');
+  const bodyEl = document.getElementById('radar-results-body');
   document.getElementById('radar-results-title').textContent = _radarAds.length + ' ads · “' + terms + '”';
 
   if (!_radarAds.length) {
-    body.innerHTML = '<div class=”empty-state”><svg viewBox=”0 0 24 24”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg><p>No active ads found. Try a different keyword or country.</p></div>';
+    bodyEl.innerHTML = '<div class=”empty-state”><svg viewBox=”0 0 24 24”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg><p>No active ads found. Try a different keyword or country.</p></div>';
   } else {
-    body.innerHTML = _radarAds.map((ad, i) => renderRadarAdCard(ad, 'manual_' + i)).join('');
+    bodyEl.innerHTML = _radarAds.map((ad, i) => renderRadarAdCard(ad, 'manual_' + i)).join('');
   }
+  _renderRadarLoadMore(bodyEl);
   wrap.style.display = 'block';
+}
+
+async function loadMoreRadarAds() {
+  if (!_radarNextCursor || !_radarCurrentTerms) return;
+  const btn = document.getElementById('radar-load-more-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading…'; }
+
+  const r = await authFetch('/competitor-radar?action=search', {
+    method: 'POST',
+    body: JSON.stringify({ action: 'search', search_terms: _radarCurrentTerms, countries: [_radarCurrentCountry], limit: 20, after: _radarNextCursor })
+  });
+  if (!r || !r.ok) { showToast('Load more failed', 'error'); if (btn) { btn.disabled = false; btn.textContent = 'Load more'; } return; }
+  const data = await r.json();
+
+  const newAds = data.ads || [];
+  const offset = _radarAds.length;
+  _radarAds = _radarAds.concat(newAds);
+  _radarNextCursor = data.paging?.next_cursor || null;
+
+  const bodyEl = document.getElementById('radar-results-body');
+  // Remove load-more button before appending
+  const old = document.getElementById('radar-load-more-wrap');
+  if (old) old.remove();
+  bodyEl.insertAdjacentHTML('beforeend', newAds.map((ad, i) => renderRadarAdCard(ad, 'manual_' + (offset + i))).join(''));
+  _renderRadarLoadMore(bodyEl);
+  document.getElementById('radar-results-title').textContent = _radarAds.length + ' ads · “' + _radarCurrentTerms + '”';
+}
+
+function _renderRadarLoadMore(bodyEl) {
+  const old = document.getElementById('radar-load-more-wrap');
+  if (old) old.remove();
+  if (!_radarNextCursor) return;
+  const wrap = document.createElement('div');
+  wrap.id = 'radar-load-more-wrap';
+  wrap.style.cssText = 'text-align:center;margin-top:12px';
+  wrap.innerHTML = '<button id=”radar-load-more-btn” onclick=”loadMoreRadarAds()” style=”font-size:12px;padding:8px 20px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:8px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600”>Load more ads</button>';
+  bodyEl.appendChild(wrap);
 }
 
 // Legacy shim so any remaining inline calls still work

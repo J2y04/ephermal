@@ -23,7 +23,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts'
 import { redis, redisAvailable } from '../_shared/redis.ts'
 
-const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v17'
+const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v24'
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
