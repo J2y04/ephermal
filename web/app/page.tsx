@@ -16,15 +16,15 @@ export default function Home() {
       {/* ── Navigation ── */}
       <nav className="nav" id="main-nav">
         <a href="/" className="nav-logo">
-          <img src="/ephermal.png" alt="Ephermal logo" width={32} height={32} />
+          <img src="/ephermal.jpg" alt="Ephermal logo" width={32} height={32} />
           Ephermal
         </a>
         <div className="nav-links">
+          <a href="#goal">Who it&apos;s for</a>
           <a href="#how-it-works">How it works</a>
           <a href="#services">Features</a>
-          <a href="/advertising.html" style={{ color: 'var(--accent)', fontWeight: 600 }}>Budget AI</a>
           <a href="#pricing">Pricing</a>
-          <a href="#about">Results</a>
+          <a href="#faq">FAQ</a>
         </div>
         <div className="nav-actions">
           <NavAuth />
@@ -34,18 +34,18 @@ export default function Home() {
       {/* ── Hero ── */}
       <section className="hero">
         <HeroMotion
-          line1={['You', 'Build', 'It.']}
-          line2={['We', 'Scale', 'It.']}
-          sub={<>Stop paying $3,000/month for an agency that doesn&apos;t understand your store. Ephermal reads your Shopify catalog, writes AI-powered ads, and launches across Meta and Google, set up in minutes, not months.</>}
-          cta={<><a href="/auth/register.html" className="btn-primary">Get Started</a><a href="#how-it-works" className="btn-secondary">See how it works</a></>}
+          line1={['Your', 'First']}
+          line2={['$10K', 'Starts', 'Here.']}
+          sub={<>Built for Shopify stores chasing their first (or next) revenue milestone. Stop paying $3,000/month to an agency that doesn&apos;t know your store. Ephermal reads your catalog, writes your ads, and launches across Meta and Google. No guesswork. Live in 3 minutes.</>}
+          cta={<><a href="/auth/register.html" className="btn-primary">Start Free Trial</a><a href="#how-it-works" className="btn-secondary">See how it works</a></>}
           oneLine
         />
         <p className="hero-proof" data-reveal data-delay="3">
-          <span>Meta &amp; Google Ads automated</span>
-          <span className="dot" />
-          <span>Setup in 3 minutes</span>
-          <span className="dot" />
           <span>No agency needed</span>
+          <span className="dot" />
+          <span>From $89/month</span>
+          <span className="dot" />
+          <span>Any stage, any size</span>
         </p>
 
         <div className="hero-floor-glow" />
@@ -55,12 +55,12 @@ export default function Home() {
       <div className="ticker-wrap">
         <div className="ticker-inner">
           {[
-            ['$89/mo', 'vs $3k agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
-            ['AI-written', 'scripts & copy'], ['Zero', 'agency fees'], ['Live', 'Shopify data sync'],
-            ['No brief', 'no onboarding call'], ['Cancel', 'any time'], ['Shopify', 'native integration'],
-            ['$89/mo', 'vs $3k agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
-            ['AI-written', 'scripts & copy'], ['Zero', 'agency fees'], ['Live', 'Shopify data sync'],
-            ['No brief', 'no onboarding call'], ['Cancel', 'any time'], ['Shopify', 'native integration'],
+            ['$89/mo', 'vs $3K agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
+            ['Your goal:', '$10K/month'], ['3 minutes', 'to first campaign'], ['Zero', 'agency fees'],
+            ['AI-written', 'ad scripts'], ['Cancel', 'any time'], ['Shopify', 'native integration'],
+            ['$89/mo', 'vs $3K agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
+            ['Your goal:', '$10K/month'], ['3 minutes', 'to first campaign'], ['Zero', 'agency fees'],
+            ['AI-written', 'ad scripts'], ['Cancel', 'any time'], ['Shopify', 'native integration'],
           ].map(([val, label], i) => (
             <span key={i} className="tick-item">
               <span className="tick-val">{val}</span> {label}
@@ -70,27 +70,70 @@ export default function Home() {
         </div>
       </div>
 
+      {/* ── Who It's For ── */}
+      <section className="section" id="goal" style={{ paddingTop: '100px', paddingBottom: '20px' }}>
+        <div className="container" style={{ textAlign: 'center' }}>
+          <div className="section-label" data-reveal>Built with a clear goal</div>
+          <h2 className="section-title" data-reveal data-delay="1">
+            Trying to hit your<br />first $10K month?
+          </h2>
+          <p className="section-sub" style={{ margin: '0 auto 56px', maxWidth: '640px' }} data-reveal data-delay="2">
+            Ephermal is built for early-stage Shopify stores: brands doing $0 to $5K a month who want to grow fast without burning budget on trial-and-error. Not yet at $10K? That is exactly who we built this for. Already past it? Ephermal scales with you.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px', maxWidth: '920px', margin: '0 auto' }} data-reveal data-delay="3">
+            {[
+              {
+                stage: 'Just launched',
+                desc: 'Run your first real campaign in 3 minutes. AI picks your best product and writes the ads. You just hit approve.',
+                icon: <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
+              },
+              {
+                stage: '$1K – $5K / month',
+                desc: 'Find what converts. Ephermal analyzes your store and doubles down on the products with the most margin to grow.',
+                icon: <path d="M18 20V10M12 20V4M6 20v-6" />,
+              },
+              {
+                stage: '$5K – $10K / month',
+                desc: 'Scale what works. Profit-aware bidding keeps every ad dollar going to campaigns that actually earn, not just spend.',
+                icon: <><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></>,
+              },
+              {
+                stage: '$10K+ / month',
+                desc: 'Multi-store. Multi-platform. Full analytics. Ephermal runs your entire ad operation while you focus on the brand.',
+                icon: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
+              },
+            ].map((s, i) => (
+              <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '28px 24px', textAlign: 'left' }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="24" height="24" style={{ marginBottom: '16px', display: 'block' }}>{s.icon}</svg>
+                <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', letterSpacing: '-0.2px' }}>{s.stage}</div>
+                <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.7, margin: 0 }}>{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ── Pain vs Gain ── */}
       <div className="compare-bar">
         <div className="compare-grid">
           <div className="compare-card bad">
             <div className="compare-label">The Old Way</div>
             <ul className="compare-list">
-              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>$3,000–$8,000/month agency retainer</li>
-              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>2–4 weeks to launch a campaign</li>
-              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Generic creatives from a template library</li>
-              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Weekly reports, no real-time visibility</li>
-              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>You explain your store to a stranger, again</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>$3,000–$8,000/month to an agency that barely knows your store</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Or $400–$800/month burned on trial-and-error alone</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Generic creatives from a template library nobody clicks</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Weekly agency reports with no real-time visibility</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>You explain your store to a stranger, again and again</li>
             </ul>
           </div>
           <div className="compare-card good">
             <div className="compare-label">The Ephermal Way</div>
             <ul className="compare-list">
-              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>From $89/month, less than one bad ad</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>From $89/month, less than one wasted test campaign</li>
               <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Live campaigns in under 60 seconds</li>
-              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Real UGC-style ads built from your products</li>
-              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Live ROAS dashboard, 24/7</li>
-              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>AI reads your store. You explain nothing.</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Real UGC-style ads built from your actual products</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Profit-aware campaigns. Every ad dollar earns.</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>AI reads your store. You scale what converts.</li>
             </ul>
           </div>
         </div>
@@ -102,40 +145,39 @@ export default function Home() {
         <div className="container">
           <div data-reveal>
             <div className="section-label">How it works</div>
-            <h2 className="section-title">From store to live ads<br />in under 60 seconds.</h2>
-            <p className="section-sub">No agency. No brief. No guesswork. Ephermal reads your store and builds the entire ad operation for you.</p>
+            <h2 className="section-title">First campaign live<br />in under 3 minutes.</h2>
+            <p className="section-sub">No agency. No ad account experience. No guesswork. Ephermal reads your store and builds the entire ad operation for you, from your first campaign to your hundredth.</p>
           </div>
           <div className="timeline">
             <div className="tl-step" data-reveal data-delay="1">
               <div className="tl-node">1</div>
               <div className="tl-content">
                 <h3>Connect Your Store</h3>
-                <p>Connect your Shopify store via OAuth. Link Meta Ads (all plans) or Google Ads (Growth+). Under 3 minutes from zero to ready.</p>
+                <p>Connect your Shopify store via OAuth. Link Meta Ads (all plans) or Google Ads (Growth+). Takes under 3 minutes from zero to ready. No technical knowledge required.</p>
               </div>
             </div>
             <div className="tl-step" data-reveal data-delay="2">
               <div className="tl-node">2</div>
               <div className="tl-content">
                 <h3>AI Reads Everything</h3>
-                <p>Ephermal scans your products, pricing, bestsellers and brand voice, building a complete advertising strategy automatically.</p>
+                <p>Ephermal scans your products, pricing, bestsellers and brand voice, then builds a complete advertising strategy around your store automatically. No briefs. No forms.</p>
               </div>
             </div>
             <div className="tl-step" data-reveal data-delay="3">
               <div className="tl-node">3</div>
               <div className="tl-content">
-                <h3>AI Ad Content Built</h3>
-                <p>Creator-style scripts, hooks, headlines, and copy generated from your actual products. Not a template library. Every creative is specific to your store and audience.</p>
+                <h3>Ad Content Built for You</h3>
+                <p>Creator-style scripts, hooks, headlines, and copy generated from your actual products, not a template library. Every creative is specific to your store, your audience, and what&apos;s in stock.</p>
               </div>
             </div>
             <div className="tl-step" data-reveal data-delay="4">
               <div className="tl-node">4</div>
               <div className="tl-content">
-                <h3>Launch &amp; Optimise</h3>
-                <p>Campaigns go live across Meta and Google Ads. The AI monitors ROAS across placements, surfaces what&apos;s working, and tells you exactly where to scale.</p>
+                <h3>Launch &amp; Scale</h3>
+                <p>Campaigns go live across Meta and Google Ads. The AI monitors ROAS across placements, surfaces what&apos;s converting, and tells you exactly where to put more budget as you grow toward your revenue goal.</p>
               </div>
             </div>
           </div>
-          {/* Agent summary */}
           <div className="hiw-agents">
             <p className="hiw-agents-label">7 specialized agents running on your store around the clock</p>
           </div>
@@ -146,7 +188,8 @@ export default function Home() {
       <section className="section" id="services" style={{ paddingTop: 0 }}>
         <div className="container">
           <div data-reveal>
-            <h2 className="section-title">Every part of marketing.<br />Handled.</h2>
+            <h2 className="section-title">Your full ad engine.<br />One flat price.</h2>
+            <p className="section-sub" style={{ margin: '16px auto 0' }}>Everything a growing Shopify store needs to run real campaigns. No experience required, no agency needed.</p>
           </div>
           <div className="services-grid">
             {[
@@ -165,7 +208,7 @@ export default function Home() {
               {
                 icon: <path d="M18 20V10M12 20V4M6 20v-6" />,
                 title: 'Meta Ads Automation',
-                desc: 'Full campaign creation on your Facebook & Instagram accounts. Copy, audiences, budgets, launch: all autonomous. You just watch the ROAS. Built on the official Meta Marketing API.',
+                desc: 'Full campaign creation on your Facebook & Instagram accounts. Copy, audiences, budgets, launch. All autonomous. You watch the results. Built on the official Meta Marketing API.',
                 tag: 'Powered by Meta Ads API', delay: '3',
                 cite: { label: 'Meta Marketing API', href: 'https://developers.facebook.com/docs/marketing-apis' },
               },
@@ -179,31 +222,31 @@ export default function Home() {
               {
                 icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
                 title: 'Audience Intelligence',
-                desc: 'Ephermal builds custom audiences from your store data, then finds similar buyers across Meta and Google. Lookalike audiences, retargeting, and Pixel + CAPI, all automated.',
+                desc: 'Ephermal builds custom audiences from your store data, then finds similar buyers across Meta and Google. Lookalike audiences, retargeting, and Pixel + CAPI. All automated.',
                 tag: 'Meta Pixel + CAPI · Google Signals', delay: '1',
               },
               {
                 icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
                 title: 'AI Copywriting Agent',
-                desc: 'Every headline, description and CTA is written by a dedicated copywriting AI trained on high-converting DTC copy. Specific to your product. Not a template.',
+                desc: 'Every headline, description and CTA is written by a dedicated copywriting AI trained on high-converting DTC copy. Specific to your product, not a template.',
                 tag: 'Conversion-optimized', delay: '2',
               },
               {
                 icon: <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />,
                 title: 'ROAS Optimisation',
-                desc: "Ephermal monitors performance across your campaigns and flags what's draining budget. Clear signals so you're always allocating spend where it actually converts.",
+                desc: "Ephermal monitors performance across your campaigns and flags what's draining budget. Clear signals so you're always putting spend where it actually converts.",
                 tag: 'Performance-driven', delay: '3',
               },
               {
                 icon: <><path d="M14.5 10c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z"/><path d="M20.5 10H19V8.5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/><path d="M9.5 14c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5S8 21.33 8 20.5v-5c0-.83.67-1.5 1.5-1.5z"/><path d="M3.5 14H5v1.5c0 .83-.67 1.5-1.5 1.5S2 16.33 2 15.5 2.67 14 3.5 14z"/><path d="M14 14.5c0-.83.67-1.5 1.5-1.5h5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-5c-.83 0-1.5-.67-1.5-1.5z"/><path d="M15.5 19H14v1.5c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5-.67-1.5-1.5-1.5z"/><path d="M10 9.5C10 8.67 9.33 8 8.5 8h-5C2.67 8 2 8.67 2 9.5S2.67 11 3.5 11h5c.83 0 1.5-.67 1.5-1.5z"/><path d="M8.5 5H10V3.5C10 2.67 9.33 2 8.5 2S7 2.67 7 3.5 7.67 5 8.5 5z"/></>,
                 title: 'Creative Fatigue Detection',
-                desc: 'Ephermal tracks frequency and CTR decay across your ad sets. When a creative stops converting it flags the drop automatically — so you refresh before performance tanks.',
+                desc: 'Ephermal tracks frequency and CTR decay across your ad sets. When a creative stops converting it flags the drop automatically, so you refresh before performance tanks.',
                 tag: 'Auto-refresh signals', delay: '4',
               },
               {
                 icon: <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></>,
                 title: 'Multi-Platform Reporting',
-                desc: 'One unified view across Meta and Google Ads. Track ROAS, CPM, CTR, and conversions side by side. No tab-switching, no manual exports — all live from the dashboard.',
+                desc: 'One unified view across Meta and Google Ads. Track ROAS, CPM, CTR, and conversions side by side. No tab-switching, no manual exports. All live from the dashboard.',
                 tag: 'Unified analytics', delay: '5',
               },
             ].map((s: { icon: React.ReactNode; title: string; desc: string; tag: string; delay: string; cite?: { label: string; href: string } }, i) => (
@@ -243,7 +286,7 @@ export default function Home() {
             <div className="meta-content" data-reveal="right" data-delay="1">
               <h2 className="section-title">Facebook &amp; Instagram,<br />natively integrated.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                Ephermal connects directly to Meta&apos;s official Ads API, the same infrastructure used by the world&apos;s largest advertisers. No scraping, no third-party middleware. Your campaigns run natively inside Meta&apos;s ad platform.
+                Ephermal connects directly to Meta's official Ads API, the same infrastructure used by the world&apos;s largest advertisers. No scraping, no third-party middleware. Your campaigns run natively inside Meta&apos;s ad platform, even on day one.
               </p>
               <div className="meta-platforms">
                 <div className="meta-platform-card">
@@ -361,7 +404,7 @@ export default function Home() {
               <div className="section-label" style={{ color: 'var(--accent)' }}>Competitor Radar</div>
               <h2 className="section-title">Your competitor just<br />launched a new ad.<br />You already know.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                Thursday morning. Your biggest competitor goes live with a new campaign. By the time you spot their creative in your own feed, they&apos;ve already spent $4,000 and locked the algorithm. Competitor Radar watches the Meta Ad Library around the clock — the moment they go live, you get the full breakdown. Hook decoded. Counter-play ready.
+                Thursday morning. A competing store goes live with a new campaign. By the time you spot their creative in your own feed, they&apos;ve already spent $4,000 and locked the algorithm. Competitor Radar watches the Meta Ad Library around the clock. The moment they go live, you get the full breakdown. Hook decoded. Counter-play ready.
               </p>
               <div className="meta-features">
                 {[
@@ -398,7 +441,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px 14px', marginBottom: '14px', fontSize: '12px', color: 'var(--muted)', lineHeight: 1.65, fontStyle: 'italic', borderLeft: '2px solid rgba(6,214,199,0.4)' }}>
-                  &ldquo;Tired of pre-workouts that don&apos;t deliver? FitFuel gives you 4-hour clean energy — no crash, no jitters. Try it today.&rdquo;
+                  &ldquo;Tired of pre-workouts that don&apos;t deliver? FitFuel gives you 4-hour clean energy with no crash, no jitters. Try it today.&rdquo;
                 </div>
                 {[
                   { label: 'Hook type', value: 'Problem → Solution' },
@@ -411,7 +454,7 @@ export default function Home() {
                   </div>
                 ))}
                 <div style={{ marginTop: '14px', padding: '10px 12px', background: 'rgba(6,214,199,0.08)', borderRadius: '8px', fontSize: '12px', color: '#06d6c7', fontWeight: 600, lineHeight: 1.5 }}>
-                  Counter: Lead with &ldquo;zero compromise&rdquo; — own what they&apos;re promising but can&apos;t prove.
+                  Counter: Lead with &ldquo;zero compromise&rdquo;. Own what they&apos;re promising but can&apos;t prove.
                 </div>
               </div>
             </div>
@@ -427,7 +470,7 @@ export default function Home() {
               <div className="section-label" style={{ color: '#06d6c7' }}>Creative Brief AI</div>
               <h2 className="section-title">From blank page to<br />ready-to-shoot brief.<br />Eight seconds.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                Your creator is asking for direction. The agency wants a brief. You&apos;re staring at a blank doc at 11pm, trying to remember what made last month&apos;s top ad work. Brief AI reads your live catalog, checks what&apos;s actually converting, and hands you a complete creative strategy — hook angle, emotions to hit, headline variants, exact CTA — in the time it takes to pour a coffee.
+                Your creator is asking for direction. You&apos;re staring at a blank doc at 11pm, trying to remember what made last month&apos;s best ad work. Brief AI reads your live catalog, checks what&apos;s actually converting, and hands you a complete creative strategy: hook angle, emotions to hit, headline variants, exact CTA. In the time it takes to pour a coffee.
               </p>
               <div className="meta-features">
                 {[
@@ -457,7 +500,7 @@ export default function Home() {
                   { label: 'Headline 1', value: '"The protein your body actually absorbs."' },
                   { label: 'Headline 2', value: '"Stop guessing. Start building."' },
                   { label: 'Headline 3', value: '"Your gym session deserves better fuel."' },
-                  { label: 'CTA', value: 'Try Risk-Free — 30 Day Returns' },
+                  { label: 'CTA', value: 'Try Risk-Free, 30 Day Returns' },
                 ].map((r, i) => (
                   <div key={i} style={{ display: 'flex', gap: '12px', marginBottom: '9px' }}>
                     <span style={{ color: 'var(--muted)', width: '110px', flexShrink: 0, fontSize: '12px' }}>{r.label}</span>
@@ -478,7 +521,7 @@ export default function Home() {
               <div className="section-label" style={{ color: '#96BF48' }}>Profit Tracker</div>
               <h2 className="section-title">You&apos;re probably<br />optimising the campaign<br />that&apos;s losing you money.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                You spent $8,000 on ads and made $32,000 in revenue. Great ROAS. But your pre-workout costs $46 to make and land on the door. At $59 retail, every 4× ROAS order was bleeding you $3.20 after platform fees. Enter your real COGS and Ephermal shifts every campaign bid to what actually keeps — not what just looks good in the dashboard.
+                You spent $800 on ads and made $3,200 in revenue. Great ROAS. But your pre-workout costs $46 to make and land on the door. At $59 retail, every 4× ROAS order was bleeding you $3.20 after platform fees. Enter your real COGS and Ephermal shifts every campaign bid to what actually keeps, not what just looks good in the dashboard.
               </p>
               <div className="meta-features">
                 {[
@@ -528,57 +571,54 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Replaces 6 Tools Section ── */}
+      {/* ── What It Really Costs to Figure It Out Yourself ── */}
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="container">
           <div data-reveal style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <h2 className="section-title">How many tabs are<br />open in your browser<br />right now?</h2>
+            <h2 className="section-title">How many tools are open<br />in your browser right now?</h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>
-              Most Shopify brands are paying for 4–6 disconnected tools, switching between dashboards, and still missing the full picture. Ephermal runs the entire marketing loop — brief, launch, attribution, profit — in one place.
+              Agencies charge $3,000–$8,000 a month to run your ads. Going it alone means burning budget on guesswork. Ephermal replaces both. AI reads your store and runs the whole operation for $89 a month.
             </p>
           </div>
-          {/* Invoice */}
+          {/* "The DIY cost" invoice */}
           <div data-reveal style={{ maxWidth: '640px', margin: '0 auto 32px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '20px', overflow: 'hidden' }}>
-            {/* Invoice header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '28px 32px 20px', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               <div>
-                <div style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Monthly Statement</div>
-                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', fontFamily: 'monospace' }}>#INV-2026-0041</div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>Billed to: Your Shopify store</div>
+                <div style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px' }}>Monthly Cost Estimate</div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', fontFamily: 'monospace' }}>Figuring It Out Alone</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>Every new Shopify store pays this price</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '10px', fontWeight: 800, color: '#06d6c7', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(6,214,199,0.12)', border: '1px solid rgba(6,214,199,0.25)', padding: '4px 10px', borderRadius: '6px', marginBottom: '6px' }}>Outstanding</div>
-                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Auto-renews monthly</div>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: '#06d6c7', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(6,214,199,0.12)', border: '1px solid rgba(6,214,199,0.25)', padding: '4px 10px', borderRadius: '6px', marginBottom: '6px' }}>Monthly</div>
+                <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Adding up every month</div>
               </div>
             </div>
-            {/* Line items */}
             <div style={{ padding: '8px 32px 20px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '0', marginBottom: '4px', padding: '8px 0 6px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                 <span style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Description</span>
                 <span style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'right' }}>Amount</span>
               </div>
               {[
-                { desc: 'AI ad creative & UGC platform',         amount: '$149.00' },
-                { desc: 'Paid social automation & optimisation', amount: '$49.00'  },
-                { desc: 'Attribution & ROAS analytics',          amount: '$129.00' },
-                { desc: 'Competitor ad intelligence',            amount: '$49.00'  },
-                { desc: 'Profit & margin tracking',              amount: '$79.00'  },
-                { desc: 'Marketing strategy & execution',        amount: '$3,000.00' },
+                { desc: 'Ad spend burned testing wrong audiences',   amount: '$400.00' },
+                { desc: 'Freelance copywriter for ad scripts',       amount: '$300.00' },
+                { desc: 'Ad creative & video editing tools',         amount: '$79.00'  },
+                { desc: 'Analytics & tracking subscriptions',        amount: '$49.00'  },
+                { desc: 'Courses and YouTube ads tutorials',         amount: '$199.00' },
+                { desc: 'Your time: 10 hrs/week figuring it out',   amount: '$1,000.00' },
               ].map((item, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center' }}>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{item.desc}</span>
                   <span style={{ fontSize: '13px', color: 'rgba(6,214,199,0.85)', fontWeight: 600, fontFamily: 'monospace', textAlign: 'right' }}>{item.amount}</span>
                 </div>
               ))}
-              {/* Total row */}
               <div style={{ marginTop: '16px', padding: '16px 20px', background: 'rgba(6,214,199,0.05)', border: '1px solid rgba(6,214,199,0.15)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>Monthly total</div>
-                  <div style={{ fontSize: '28px', fontWeight: 900, color: '#06d6c7', fontFamily: 'monospace', letterSpacing: '-1px' }}>$3,455.00</div>
+                  <div style={{ fontSize: '28px', fontWeight: 900, color: '#06d6c7', fontFamily: 'monospace', letterSpacing: '-1px' }}>$2,027.00</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>That&apos;s per year</div>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(6,214,199,0.65)', fontFamily: 'monospace' }}>$41,460.00</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(6,214,199,0.65)', fontFamily: 'monospace' }}>$24,324.00</div>
                 </div>
               </div>
             </div>
@@ -586,11 +626,11 @@ export default function Home() {
 
           {/* Knockout */}
           <div data-reveal style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'center', padding: '36px 32px', background: 'linear-gradient(135deg, rgba(150,191,72,0.1), rgba(6,214,199,0.07))', border: '1px solid rgba(150,191,72,0.25)', borderRadius: '20px' }}>
-            <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '10px' }}>Everything on that statement. One tool. One tab.</div>
+            <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '10px' }}>No agency. No guesswork. Everything above, one tool.</div>
             <div style={{ fontSize: 'clamp(32px,5vw,48px)', fontWeight: 900, color: 'var(--text)', letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '10px' }}>
               Ephermal. <span style={{ color: 'var(--accent)' }}>$89/month.</span>
             </div>
-            <div style={{ fontSize: '14px', color: 'var(--muted)' }}>No agency. No contracts. Cancel any time.</div>
+            <div style={{ fontSize: '14px', color: 'var(--muted)' }}>No agency fees. No contracts. Cancel any time.</div>
           </div>
         </div>
       </section>
@@ -602,7 +642,7 @@ export default function Home() {
             <div className="agent-text" data-reveal="left">
               <div className="section-label">Under the hood</div>
               <h2 className="section-title">One brain.<br />Seven specialists.</h2>
-              <p className="section-sub">The Ephermal Orchestrator coordinates a team of specialized AI agents, each one built for a specific part of running your ad operation.</p>
+              <p className="section-sub">The Ephermal Orchestrator coordinates a team of specialized AI agents, each one built for a specific part of running your ad operation, so you don't have to learn any of it.</p>
               <div className="feature-list">
                 {[
                   { title: 'Orchestrator Agent', body: 'The core intelligence. Analyzes your store, plans strategy and coordinates every specialist agent in sequence.' },
@@ -632,30 +672,27 @@ export default function Home() {
               { num: '3 min', label: 'From Shopify install to first campaign live' },
               { num: '$89',   label: 'Per month, a fraction of any agency retainer' },
               { num: '2',     label: 'Ad platforms automated: Meta and Google Ads' },
-              { num: '$0',    label: 'Hidden fees, long contracts, or agency markups' },
+              { num: '$0',    label: 'Ad experience or agency contract required' },
             ]} />
           </div>
         </div>
       </section>
 
-      {/* ── Testimonials ── */}
+      {/* ── Who It's For / Trust Section ── */}
       <section className="section quotes-section">
         <div className="container">
           <div data-reveal>
             <div className="big-quote">
-              &ldquo;The store doesn&apos;t sleep.<br />Neither should <span>your ads.</span>&rdquo;
+              &ldquo;Your store doesn&apos;t need<br />an agency. It needs <span>a system.</span>&rdquo;
             </div>
             <p className="quote-attr">Ephermal</p>
           </div>
-          <div data-reveal style={{ maxWidth: '680px', margin: '0 auto 40px', textAlign: 'center' }}>
+          <div data-reveal style={{ maxWidth: '740px', margin: '0 auto 40px', textAlign: 'center' }}>
             <h3 style={{ fontSize: 'clamp(22px,3vw,32px)', fontWeight: 800, letterSpacing: '-0.5px', marginBottom: '16px' }}>
-              We just launched.<br />We want to work with you directly.
+              Built for small stores.<br />Works as you scale.
             </h3>
             <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.75 }}>
-              Ephermal is new. We don&apos;t have hundreds of success stories. We have a product
-              we believe in and a small group of Shopify brands testing it in real stores.
-              If your store does $5k–$80k/month and you&apos;re tired of agency fees, we&apos;ll
-              onboard you personally.
+              Ephermal is designed for Shopify stores in the early stages: brands making their first sales, chasing their first $10K month, figuring out what products the market actually wants. We speak your language. But we also grow with you: stores doing $50K+ a month use Ephermal for the same reason: a smart system beats a full-time agency team at a fraction of the cost. Whatever your stage, if you sell on Shopify, Ephermal runs your ads.
             </p>
           </div>
           <div className="quotes-grid" data-stagger>
@@ -675,7 +712,7 @@ export default function Home() {
               Get Early Access
             </a>
             <p style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)' }}>
-              Setup in 3 minutes · Founder onboarding included
+              First campaign live in 3 minutes · Founder onboarding included
             </p>
           </div>
         </div>
@@ -686,14 +723,14 @@ export default function Home() {
         <div className="container">
           <div data-reveal>
             <div className="section-label">Pricing</div>
-            <h2 className="section-title">Less than one bad ad.</h2>
-            <p className="section-sub" style={{ margin: '0 auto' }}>Flat monthly rate. No long-term contracts. Cancel from your dashboard.</p>
+            <h2 className="section-title">Built for every stage.</h2>
+            <p className="section-sub" style={{ margin: '0 auto' }}>Whether you&apos;re making your first sale or scaling past your tenth thousand. One flat monthly rate, no contracts, cancel any time.</p>
           </div>
           <div className="pricing-grid">
             <div className="price-card" data-spotlight>
               <div className="price-badge">Starter</div>
               <div className="price-amount"><sup>$</sup>89</div>
-              <div className="price-per">/ month, saves $2,911 vs an agency</div>
+              <div className="price-per">/ month, perfect for stores under $5K/month</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 15 UGC credits / month
@@ -733,7 +770,7 @@ export default function Home() {
             <div className="price-card featured" data-spotlight>
               <div className="price-badge">Growth</div>
               <div className="price-amount"><sup>$</sup>199</div>
-              <div className="price-per">/ month, saves $2,801 vs an agency</div>
+              <div className="price-per">/ month, for stores pushing toward $10K+</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 75 UGC credits / month
@@ -775,7 +812,7 @@ export default function Home() {
             <div className="price-card" data-spotlight>
               <div className="price-badge">Scale</div>
               <div className="price-amount"><sup>$</sup>349</div>
-              <div className="price-per">/ month, white-label available</div>
+              <div className="price-per">/ month, for established stores &amp; agencies</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 350 UGC credits / month
@@ -791,7 +828,7 @@ export default function Home() {
           <div className="risk-row" data-reveal data-delay="1">
             {[
               { icon: <polyline points="20 6 9 17 4 12" />, label: 'No hidden fees or ad account charges' },
-              { icon: <><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></>, label: 'Setup in under 3 minutes' },
+              { icon: <><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></>, label: 'First campaign live in under 3 minutes' },
               { icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />, label: 'Cancel any time, no penalty' },
             ].map((r, i) => (
               <div key={i} className="risk-badge">
@@ -812,19 +849,19 @@ export default function Home() {
       {/* ── Final CTA ── */}
       <section className="cta-section">
         <div className="cta-wrap" data-reveal>
-          <h2>Your next customer<br />is one ad away.</h2>
-          <p>Install once. Your campaigns run 24/7.</p>
+          <h2>Your first $10K is<br />one campaign away.</h2>
+          <p>Connect your store. Let AI run the ads. Watch the revenue grow.</p>
           <a href="/auth/register.html" className="btn-primary" style={{ fontSize: '18px', padding: '20px 48px' }}>
-            Get Started
+            Start Free Trial
           </a>
-          <p className="cta-note">Shopify OAuth takes 90 seconds. Cancel from settings.</p>
+          <p className="cta-note">First campaign live in 3 minutes · No experience needed · Cancel from settings</p>
         </div>
       </section>
 
       {/* ── Footer ── */}
       <footer>
         <div className="footer-logo">
-          <img src="/ephermal.png" alt="Ephermal" />
+          <img src="/ephermal.jpg" alt="Ephermal" />
           Ephermal
         </div>
         <div className="footer-links">

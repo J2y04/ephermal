@@ -10,7 +10,7 @@ export default function TermsPage() {
     <>
       <nav className="legal-nav">
         <a href="/" className="legal-nav-logo">
-          <img src="/ephermal.png" alt="Ephermal" />
+          <img src="/ephermal.jpg" alt="Ephermal" />
           Ephermal
         </a>
         <a href="/" className="legal-back">← Back to site</a>
@@ -165,7 +165,7 @@ export default function TermsPage() {
 
       <footer className="legal-footer">
         <div className="legal-footer-logo">
-          <img src="/ephermal.png" alt="Ephermal" />
+          <img src="/ephermal.jpg" alt="Ephermal" />
           Ephermal
         </div>
         <div className="legal-footer-links">

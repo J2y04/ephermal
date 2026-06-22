@@ -49,7 +49,7 @@ export const metadata: Metadata = {
     locale: 'en_US',
     images: [
       {
-        url: 'https://ephermal.app/og-image.png',
+        url: 'https://ephermal.app/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Ephermal: AI Marketing Agent for Shopify',
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     title: 'Ephermal: AI Marketing Agent for Shopify',
     description:
       'Automate Meta Ads, Google Ads, UGC and competitor intelligence for your Shopify store with AI.',
-    images: ['https://ephermal.app/og-image.png'],
+    images: ['https://ephermal.app/og-image.jpg'],
   },
   robots: {
     index: true,
@@ -80,7 +80,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/ephermal.png',
+    apple: '/ephermal.jpg',
   },
   verification: {
     google: 'Ma33K9sWndhjW6Tq7lZ1J22xZfHe9k1RQl5JuI4enU0',
@@ -97,7 +97,7 @@ const jsonLd = {
       url: 'https://ephermal.app',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://ephermal.app/ephermal.png',
+        url: 'https://ephermal.app/ephermal.jpg',
         width: 512,
         height: 512,
       },
