@@ -401,6 +401,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('campaign-launcher error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Launch error', 500, origin);
+    return errResponse('Campaign operation failed', 500, origin);
   }
 });

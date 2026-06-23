@@ -5125,7 +5125,7 @@ function renderAutoScanResults() {
     if (!ads.length) return '<div style=”margin-bottom:16px;padding:12px 16px;border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--muted)”>No active ads found for <strong style=”color:var(--text)”>' + escHtml(name) + '</strong></div>';
     return '<div style=”margin-bottom:20px”>' +
       '<div style=”font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px”>' + escHtml(name) + ' · ' + ads.length + ' ad' + (ads.length > 1 ? 's' : '') + '</div>' +
-      ads.map((ad, i) => renderRadarAdCard(ad, 'auto_' + name + '_' + i)).join('') +
+      ads.map((ad, i) => renderRadarAdCard(ad, 'auto_' + name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + i)).join('') +
     '</div>';
   }).join('');
   wrap.style.display = 'block';
