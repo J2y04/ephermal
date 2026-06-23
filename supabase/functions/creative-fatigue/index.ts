@@ -169,13 +169,13 @@ Deno.serve(async (req) => {
     return okResponse({ results: [], message: 'No launched creatives found' }, origin);
   }
 
-  // Try to get Meta token for live enrichment
-  const metaToken = req.headers.get('x-meta-token') ?? (await supabase
+  // Meta token always from DB — never from request headers
+  const { data: _tokenRow } = await supabase
     .from('user_integrations')
     .select('meta_token')
     .eq('user_id', userId)
-    .single()
-    .then(r => r.data?.meta_token ?? ''));
+    .single();
+  const metaToken = _tokenRow?.meta_token ?? '';
 
   // Enrich with live Meta insights if token available
   const enriched = await enrichFromMeta(creatives as Creative[], metaToken || '');

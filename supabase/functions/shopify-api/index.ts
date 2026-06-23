@@ -17,6 +17,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
+import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 
@@ -114,6 +115,12 @@ Deno.serve(async (req) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
+
+  const rl = await rateLimitTiered(userId, 'shopify', [
+    { max: 20, window: 60   },
+    { max: 120, window: 3600 },
+  ]);
+  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
 
   const creds = await getCredentials(userId);
   if (!creds) return errResponse('Shopify not connected. Connect your store in Settings.', 403, origin);

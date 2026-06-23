@@ -308,7 +308,7 @@ Deno.serve(async (req) => {
               if (!tokenData.access_token) throw new Error(`Token refresh: ${tokenData.error}`);
               const accessToken = tokenData.access_token;
 
-              const GADS = 'https://googleads.googleapis.com/v17';
+              const GADS = 'https://googleads.googleapis.com/v24';
               const headers = {
                 'Authorization':   `Bearer ${accessToken}`,
                 'developer-token': devToken,
