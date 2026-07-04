@@ -100,6 +100,25 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .camp-toggle input:checked+.camp-toggle-slider::before{transform:translateX(16px);background:#fff}
 .campaign-name{display:flex;align-items:center;gap:10px}
 .platform-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+/* ── Launch Ads page ── */
+.platform-toggle-row{display:flex;gap:16px;flex-wrap:wrap}
+.platform-toggle{display:flex;align-items:center;gap:14px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px 18px;flex:1;min-width:220px;transition:opacity .2s}
+.platform-toggle.unavailable{opacity:.45}
+.platform-toggle-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.platform-toggle-label{font-size:14px;font-weight:700}
+.platform-toggle-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.platform-toggle-switch{margin-left:auto}
+.launch-card{background:var(--surface2);border:1px solid var(--border);border-radius:16px;padding:18px 20px;margin-bottom:12px;cursor:pointer;transition:border-color .2s,transform .2s}
+.launch-card:hover{border-color:rgba(6,214,199,.3);transform:translateY(-1px)}
+.launch-card-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.launch-card-name{font-size:15px;font-weight:700;letter-spacing:-.2px}
+.launch-card-meta{display:flex;align-items:center;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.platform-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px}
+.platform-badge.meta{background:rgba(24,119,242,.12);color:#1877F2}
+.platform-badge.google{background:rgba(66,133,244,.12);color:#4285F4}
+.ad-editor-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;position:relative}
+.ad-editor-card .ad-editor-remove{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:4px;border-radius:6px;transition:all .15s}
+.ad-editor-card .ad-editor-remove:hover{color:var(--danger);background:rgba(248,113,113,.1)}
 .camp-title{font-size:14px;font-weight:600}
 .camp-sub{font-size:12px;color:var(--muted)}
 .camp-metric{font-size:14px;font-weight:600}
@@ -568,7 +587,7 @@ select.form-input{cursor:pointer}
   <div class="nav-section">
     <div class="nav-label">Advertising</div>
     <div class="nav-item" data-page="campaigns" id="nav-campaigns" onclick="handleNavClick('campaigns')">
-      <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Campaigns
+      <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>Launch Ads
       <span class="nav-badge" id="nav-campaign-count" style="display:none"></span>
       <svg class="lock-icon" id="lock-campaigns" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </div>
@@ -798,115 +817,53 @@ select.form-input{cursor:pointer}
 
     <!-- CAMPAIGNS -->
     <div class="page" id="page-campaigns">
+      <div class="paywall-wrap" id="launch-paywall-wrap">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Launch Ads</div>
+          <div class="page-subtitle">Build campaigns and ads in Ephermal, review them, then launch to Meta and Google.</div>
+        </div>
+        <button class="btn btn-primary" onclick="openCampaignBuilder()">+ New Campaign</button>
+      </div>
+
+      <!-- Platform toggles -->
+      <div class="panel fade-in" style="margin-bottom:20px">
+        <div style="padding:18px 22px" class="platform-toggle-row">
+          <div class="platform-toggle" id="toggle-meta-wrap">
+            <div class="platform-toggle-icon" style="background:rgba(24,119,242,.12)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" fill="#1877F2"/></svg></div>
+            <div>
+              <div class="platform-toggle-label">Meta Ads</div>
+              <div class="platform-toggle-sub" id="toggle-meta-sub">Checking…</div>
+            </div>
+            <label class="camp-toggle platform-toggle-switch"><input type="checkbox" id="toggle-meta" checked onchange="onPlatformToggle('meta',this.checked)"><span class="camp-toggle-slider"></span></label>
+          </div>
+          <div class="platform-toggle" id="toggle-google-wrap">
+            <div class="platform-toggle-icon" style="background:rgba(66,133,244,.1)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div>
+            <div>
+              <div class="platform-toggle-label">Google Ads</div>
+              <div class="platform-toggle-sub" id="toggle-google-sub">Checking…</div>
+            </div>
+            <label class="camp-toggle platform-toggle-switch"><input type="checkbox" id="toggle-google" checked onchange="onPlatformToggle('google',this.checked)"><span class="camp-toggle-slider"></span></label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Campaigns + ads list -->
+      <div class="panel fade-in" style="margin-bottom:20px">
+        <div class="panel-head"><div class="panel-title">Campaigns</div><button class="panel-action" onclick="loadLaunchAdsCampaigns()">Refresh ↺</button></div>
+        <div id="launchads-list" style="padding:16px 22px">
+          <div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet — click "+ New Campaign" to start.</p></div>
+        </div>
+      </div>
+
+      <!-- Live performance (Meta/Google reported stats for launched campaigns) -->
       <div class="panel fade-in">
-        <div class="panel-head"><div class="panel-title">All Campaigns</div><div style="display:flex;gap:8px;align-items:center"><button class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:#06d6c7;font-weight:700" onclick="openLaunchWizard()">+ New Campaign</button><button id="btn-roas-optimize" class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:var(--primary);font-weight:700" onclick="runROASOptimizer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="vertical-align:-1px;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS</button><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div></div>
+        <div class="panel-head"><div class="panel-title">Live Performance</div><button id="btn-roas-optimize" class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:var(--primary);font-weight:700" onclick="runROASOptimizer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="vertical-align:-1px;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS</button></div>
         <div class="campaign-table">
           <div class="campaign-row header"><span>Campaign</span><span>ROAS</span><span>Spend</span><span>CTR</span><span>Status</span><span>On/Off</span></div>
           <div id="campaigns-body-full"><div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div></div>
         </div>
       </div>
-
-      <!-- Campaign Builder + Launched Campaigns (merged from Launch tab) -->
-      <div class="paywall-wrap" id="launch-paywall-wrap" style="margin-top:20px">
-        <!-- Launch Wizard -->
-        <div id="launch-wizard" style="display:none">
-          <div class="panel fade-in" style="margin-bottom:20px">
-            <div class="panel-head"><div class="panel-title">Campaign Builder</div><button class="panel-action" onclick="closeLaunchWizard()">✕ Close</button></div>
-            <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
-              <div class="launch-step">
-                <div class="launch-step-num active" id="lstep-1">1</div>
-                <div class="launch-step-body">
-                  <div class="launch-step-title">Product</div>
-                  <div class="launch-step-sub">Select or describe the product you want to advertise.</div>
-                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
-                    <select class="form-input" id="launch-product-select" onchange="fillLaunchProductFromSelect(this.value)" style="color:var(--muted)">
-                      <option value="">— Pick a synced product or fill manually —</option>
-                    </select>
-                    <input class="form-input" id="launch-product-name" placeholder="Product name (e.g. Blue Wireless Earbuds)">
-                    <input class="form-input" id="launch-product-desc" placeholder="What problem does it solve? What's the key benefit?">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                      <input class="form-input" id="launch-product-price" type="number" placeholder="Price ($)" min="1">
-                      <select class="form-input" id="launch-objective">
-                        <option value="OUTCOME_SALES">Sales / Conversions</option>
-                        <option value="OUTCOME_TRAFFIC">Traffic</option>
-                        <option value="OUTCOME_AWARENESS">Brand Awareness</option>
-                        <option value="OUTCOME_LEADS">Lead Generation</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="launch-step">
-                <div class="launch-step-num" id="lstep-2">2</div>
-                <div class="launch-step-body">
-                  <div class="launch-step-title">Target Audience</div>
-                  <div class="launch-step-sub">AI suggests targeting based on your product - or customise below.</div>
-                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
-                    <input class="form-input" id="launch-audience-desc" placeholder="Describe your target audience (e.g. women 25-45 interested in fitness)">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                      <input class="form-input" id="launch-age-min" type="number" placeholder="Min age (e.g. 18)" min="13" max="65">
-                      <input class="form-input" id="launch-age-max" type="number" placeholder="Max age (e.g. 55)" min="18" max="65">
-                    </div>
-                    <input class="form-input" id="launch-countries" placeholder="Target countries (e.g. US, CA, UK) - comma separated">
-                  </div>
-                </div>
-              </div>
-              <div class="launch-step">
-                <div class="launch-step-num" id="lstep-3">3</div>
-                <div class="launch-step-body">
-                  <div class="launch-step-title">Budget & Platform</div>
-                  <div class="launch-step-sub">Daily budget and where to run the ads.</div>
-                  <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                      <input class="form-input" id="launch-budget" type="number" placeholder="Daily budget ($)" min="5">
-                      <select class="form-input" id="launch-platforms">
-                        <option value="meta">Meta Only (Facebook + Instagram)</option>
-                        <option value="google">Google Only</option>
-                        <option value="both">Meta + Google</option>
-                      </select>
-                    </div>
-                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--muted);padding:10px 14px;background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:10px">
-                      <input type="checkbox" id="launch-auto-enable" style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary)">
-                      <span><strong style="color:var(--text)">Auto-enable campaign</strong> — goes live immediately instead of PAUSED. Make sure billing is set up in your Ads Manager first.</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-              <div style="display:flex;justify-content:flex-end">
-                <button class="btn-save" onclick="generateCampaignCopy()" id="launch-gen-btn" style="display:inline-flex;align-items:center;gap:8px">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate AI Copy
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Generated Copy Preview -->
-          <div id="launch-copy-preview" style="display:none" class="fade-in">
-            <div class="panel" style="margin-bottom:20px">
-              <div class="panel-head"><div class="panel-title">AI-Generated Ad Copy</div><button class="panel-action" onclick="generateCampaignCopy()">Regenerate</button></div>
-              <div style="padding:20px;display:flex;flex-direction:column;gap:14px">
-                <div class="form-group"><label class="form-label">Meta Headline</label><input class="form-input" id="lcp-headline"></div>
-                <div class="form-group"><label class="form-label">Meta Primary Text</label><textarea class="form-input" id="lcp-primary" style="height:80px;resize:vertical"></textarea></div>
-                <div class="form-group"><label class="form-label">UGC Hook</label><input class="form-input" id="lcp-hook"></div>
-              </div>
-              <div style="padding:0 20px 20px;display:flex;gap:10px;justify-content:flex-end">
-                <button class="btn-secondary" onclick="closeLaunchWizard()">Cancel</button>
-                <button class="btn-save" onclick="doLaunchCampaign()" id="launch-exec-btn" style="display:inline-flex;align-items:center;gap:8px">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>Launch Campaign
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Launched Campaigns Table -->
-        <div class="panel fade-in">
-          <div class="panel-head"><div class="panel-title">Launched Campaigns</div><button class="panel-action" onclick="loadLaunchedCampaigns()">Refresh ↺</button></div>
-          <div style="padding:10px 22px 0;font-size:12px;color:var(--muted)">Campaigns launch as <strong style="color:var(--warning)">PAUSED</strong> by default — check "Auto-enable" above to go live immediately, or enable them directly in Meta/Google Ads Manager.</div>
-          <div id="launched-campaigns-content">
-            <div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg><p>No campaigns launched yet. Click "+ New Campaign" to start.</p></div>
-          </div>
-        </div>
         <div class="paywall-lock" id="launch-paywall" style="display:none">
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <strong>Campaign Launcher - Growth Plan</strong>
@@ -1890,6 +1847,99 @@ select.form-input{cursor:pointer}
   </div>
 </div>
 
+<!-- CAMPAIGN BUILDER MODAL (create / edit draft) -->
+<div class="modal-overlay" id="campaign-builder-modal">
+  <div class="modal" style="max-width:620px;max-height:88vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeCampaignBuilder()">×</button>
+    <div class="modal-title" id="cb-title">New Campaign</div>
+    <div class="modal-sub">Set up the campaign and its ads here. Nothing is sent to Meta or Google until you launch it.</div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Campaign Name</label>
+      <input class="form-input" id="cb-name" placeholder="e.g. Summer Sale — Wireless Earbuds">
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+      <div class="form-group">
+        <label class="form-label">Objective</label>
+        <select class="form-input" id="cb-objective">
+          <option value="OUTCOME_SALES">Sales / Conversions</option>
+          <option value="OUTCOME_TRAFFIC">Traffic</option>
+          <option value="OUTCOME_AWARENESS">Brand Awareness</option>
+          <option value="OUTCOME_LEADS">Lead Generation</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Daily Budget ($)</label>
+        <input class="form-input" id="cb-budget" type="number" min="1" placeholder="20">
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Platform</label>
+      <div style="display:flex;gap:10px">
+        <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px" id="cb-platform-meta-wrap">
+          <input type="checkbox" id="cb-platform-meta" checked style="accent-color:var(--primary)">Meta
+        </label>
+        <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px" id="cb-platform-google-wrap">
+          <input type="checkbox" id="cb-platform-google" style="accent-color:var(--primary)">Google
+        </label>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:10px">
+      <label class="form-label">Product (optional — prefills ad copy)</label>
+      <select class="form-input" id="cb-product-select" onchange="_cbFillFromProduct(this.value)">
+        <option value="">— Pick a synced product —</option>
+      </select>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px">
+      <label class="form-label" style="margin:0">Ads</label>
+      <button class="panel-action" onclick="_cbAddAd()">+ Add Ad</button>
+    </div>
+    <div id="cb-ads-list"></div>
+
+    <div class="form-group" style="margin-top:6px">
+      <label class="form-label">AI-Assisted (optional)</label>
+      <button class="btn-secondary" style="width:100%" onclick="_cbGenerateWithAI()" id="cb-ai-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate ads with AI
+      </button>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeCampaignBuilder()">Cancel</button>
+      <button class="btn-save" onclick="saveCampaignDraft()" id="cb-save-btn">Save Draft</button>
+    </div>
+  </div>
+</div>
+
+<!-- CAMPAIGN REVIEW / LAUNCH MODAL -->
+<div class="modal-overlay" id="campaign-review-modal">
+  <div class="modal" style="max-width:620px;max-height:88vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeCampaignReview()">×</button>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;padding-right:32px">
+      <div class="modal-title" id="cr-name" style="margin-bottom:0">—</div>
+      <span class="status-pill" id="cr-status">—</span>
+    </div>
+    <div class="modal-sub" id="cr-meta">—</div>
+
+    <div id="cr-ads-list" style="margin-bottom:16px"></div>
+
+    <div id="cr-draft-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+      <button class="btn-save" onclick="saveCampaignReviewEdits()" id="cr-save-btn">Save Changes</button>
+      <button class="btn-primary btn" onclick="launchReviewedCampaign('meta')" id="cr-launch-meta-btn">Launch to Meta</button>
+      <button class="btn-primary btn" onclick="launchReviewedCampaign('google')" id="cr-launch-google-btn">Launch to Google</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="cr-launch-note">Launches as PAUSED — enable in the ad platform's manager when ready.</div>
+
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn-secondary" style="color:var(--danger);border-color:rgba(248,113,113,.3)" onclick="deleteCampaignDraft()" id="cr-delete-btn">Delete Draft</button>
+      <button class="btn-secondary" onclick="closeCampaignReview()">Close</button>
+    </div>
+  </div>
+</div>
+
 <!-- UPGRADE MODAL -->
 <div class="modal-overlay" id="upgrade-modal">
   <div class="modal" style="max-width:440px;text-align:center">
@@ -2097,7 +2147,7 @@ select.form-input{cursor:pointer}
 <script>
 let allCampaigns = [];
 let _campaignsLoaded = false;
-const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'Dev Tools',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker',mrrtracker:'MRR Tracker'};
+const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Launch Ads',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'Dev Tools',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker',mrrtracker:'MRR Tracker'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
@@ -2612,7 +2662,7 @@ function navigate(page) {
     if (page === 'creatives') { loadAllCreatives(); runFatigueAnalysis(); }
     if (page === 'budget')  { /* ready to use on load */ }
     if (page === 'analysis') loadStoreIntelligence();
-    if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } loadLaunchedCampaigns(); }
+    if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } loadLaunchAdsCampaigns(); }
     if (page === 'settings') loadSettingsFields();
     if (page === 'audience') { loadPixelStatus(); loadAudiences(); }
     if (page === 'bulk') loadBulkCampaigns();
@@ -5115,27 +5165,108 @@ async function loadBudgetHistory() {
   }).join('');
 }
 
-// ── CAMPAIGN LAUNCHER ─────────────────────────────────────────────────────────
-let _launchCampaignId = null;
+// ── LAUNCH ADS ────────────────────────────────────────────────────────────────
+let _launchAdsCampaigns = [];
+let _cbEditingId = null;   // set when the builder modal is editing an existing draft (vs creating new)
+let _crCampaign  = null;   // currently open review-modal campaign
 
-function openLaunchWizard() {
-  document.getElementById('launch-wizard').style.display = '';
-  document.getElementById('launch-copy-preview').style.display = 'none';
-  _launchCampaignId = null;
-  populateLaunchProductSelect();
+function refreshPlatformToggles() {
+  const metaConnected   = !!(localStorage.getItem('meta_token'));
+  const googleConnected = !!(localStorage.getItem('google_token') && localStorage.getItem('google_account')) && canAccess('googleads');
+
+  const metaWrap = document.getElementById('toggle-meta-wrap');
+  const metaCk   = document.getElementById('toggle-meta');
+  const metaSub  = document.getElementById('toggle-meta-sub');
+  if (metaWrap && metaCk && metaSub) {
+    metaWrap.classList.toggle('unavailable', !metaConnected);
+    metaCk.disabled = !metaConnected;
+    metaCk.checked  = metaConnected;
+    metaSub.textContent = metaConnected ? 'Connected' : 'Not connected — connect in Settings';
+  }
+  const googleWrap = document.getElementById('toggle-google-wrap');
+  const googleCk   = document.getElementById('toggle-google');
+  const googleSub  = document.getElementById('toggle-google-sub');
+  if (googleWrap && googleCk && googleSub) {
+    googleWrap.classList.toggle('unavailable', !googleConnected);
+    googleCk.disabled = !googleConnected;
+    googleCk.checked  = googleConnected;
+    googleSub.textContent = googleConnected ? 'Connected' : (canAccess('googleads') ? 'Not connected — connect in Settings' : 'Available on Growth+');
+  }
+
+  // Reflect availability into the builder modal's platform checkboxes too
+  const cbMeta = document.getElementById('cb-platform-meta'), cbMetaWrap = document.getElementById('cb-platform-meta-wrap');
+  const cbGoogle = document.getElementById('cb-platform-google'), cbGoogleWrap = document.getElementById('cb-platform-google-wrap');
+  if (cbMeta)   { cbMeta.disabled = !metaConnected; if (cbMetaWrap) cbMetaWrap.style.opacity = metaConnected ? '1' : '.45'; }
+  if (cbGoogle) { cbGoogle.disabled = !googleConnected; if (cbGoogleWrap) cbGoogleWrap.style.opacity = googleConnected ? '1' : '.45'; }
 }
 
-function closeLaunchWizard() {
-  document.getElementById('launch-wizard').style.display = 'none';
-  document.getElementById('launch-copy-preview').style.display = 'none';
+function onPlatformToggle(platform, enabled) {
+  // Purely a UI preference toggle — the underlying connection state is unaffected.
+  // Disabled platforms are already unselectable (checkbox itself is .disabled when not connected).
+  showToast(`${platform === 'meta' ? 'Meta' : 'Google'} Ads ${enabled ? 'shown' : 'hidden'} in Launch Ads`, 'success');
 }
 
-function populateLaunchProductSelect() {
-  const sel = document.getElementById('launch-product-select');
+async function loadLaunchAdsCampaigns() {
+  refreshPlatformToggles();
+  const listEl = document.getElementById('launchads-list');
+  if (!listEl) return;
+  try {
+    const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'list' }) });
+    const data = (r && r.ok) ? await r.json() : null;
+    _launchAdsCampaigns = data?.campaigns || [];
+  } catch(e) { _launchAdsCampaigns = []; }
+
+  if (!_launchAdsCampaigns.length) {
+    listEl.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet — click "+ New Campaign" to start.</p></div>';
+    return;
+  }
+
+  listEl.innerHTML = _launchAdsCampaigns.map(c => {
+    const adCount = (c.copy?.meta?.ads?.length || 0);
+    const platforms = c.platform === 'both' ? ['meta','google'] : [c.platform];
+    const badges = platforms.map(p => `<span class="platform-badge ${p}">${p === 'meta' ? 'Meta' : 'Google'}</span>`).join('');
+    const statusClass = c.status === 'active' ? 'live' : c.status;
+    return `<div class="launch-card" onclick="openCampaignReview('${c.id}')">
+      <div class="launch-card-top">
+        <div class="launch-card-name">${escHtml(c.name)}</div>
+        <span class="status-pill ${statusClass}">${escHtml(c.status)}</span>
+      </div>
+      <div class="launch-card-meta">
+        ${badges}
+        <span>$${fmt(c.budget_daily || 0)}/day</span>
+        <span>${adCount} ad${adCount === 1 ? '' : 's'}</span>
+        <span>${escHtml(c.objective || '')}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Campaign Builder (create) ────────────────────────────────────────────────
+function openCampaignBuilder() {
+  if (!canAccess('campaigns')) { showUpgradeModal('launch'); return; }
+  _cbEditingId = null;
+  document.getElementById('cb-title').textContent = 'New Campaign';
+  document.getElementById('cb-name').value = '';
+  document.getElementById('cb-objective').value = 'OUTCOME_SALES';
+  document.getElementById('cb-budget').value = '20';
+  document.getElementById('cb-platform-meta').checked = true;
+  document.getElementById('cb-platform-google').checked = false;
+  document.getElementById('cb-ads-list').innerHTML = '';
+  _cbAddAd();
+  _cbPopulateProductSelect();
+  refreshPlatformToggles();
+  document.getElementById('campaign-builder-modal').classList.add('open');
+}
+
+function closeCampaignBuilder() {
+  document.getElementById('campaign-builder-modal').classList.remove('open');
+}
+
+function _cbPopulateProductSelect() {
+  const sel = document.getElementById('cb-product-select');
   if (!sel) return;
   const products = window._cachedProducts || JSON.parse(localStorage.getItem('products_cache') || '[]');
-  if (!products.length) return;
-  sel.innerHTML = '<option value="">— Pick a synced product or fill manually —</option>';
+  sel.innerHTML = '<option value="">— Pick a synced product —</option>';
   products.forEach((p, i) => {
     const opt = document.createElement('option');
     opt.value = String(i);
@@ -5144,144 +5275,222 @@ function populateLaunchProductSelect() {
   });
 }
 
-function fillLaunchProductFromSelect(idx) {
+function _cbFillFromProduct(idx) {
   if (idx === '') return;
   const products = window._cachedProducts || JSON.parse(localStorage.getItem('products_cache') || '[]');
   const p = products[parseInt(idx, 10)];
   if (!p) return;
-  const nameEl  = document.getElementById('launch-product-name');
-  const descEl  = document.getElementById('launch-product-desc');
-  const priceEl = document.getElementById('launch-product-price');
-  if (nameEl)  nameEl.value  = p.title || '';
-  if (descEl)  descEl.value  = p.body_html ? p.body_html.replace(/<[^>]*>/g, '').slice(0, 200) : '';
-  if (priceEl) priceEl.value = parseFloat(p.variants?.[0]?.price || p.price || '0') || '';
-  // Keep select color readable after selection
-  const sel = document.getElementById('launch-product-select');
-  if (sel) sel.style.color = 'var(--text)';
+  const nameEl = document.getElementById('cb-name');
+  if (nameEl && !nameEl.value) nameEl.value = `${p.title} — Campaign`;
+  window._cbSelectedProduct = p;
 }
 
-async function generateCampaignCopy() {
-  const productName = (document.getElementById('launch-product-name')?.value || '').trim();
-  const productDesc = (document.getElementById('launch-product-desc')?.value || '').trim();
-  const productPrice = parseFloat(document.getElementById('launch-product-price')?.value || '0');
-  const objective    = document.getElementById('launch-objective')?.value || 'OUTCOME_SALES';
-  const audDesc      = (document.getElementById('launch-audience-desc')?.value || '').trim();
-  const ageMin       = parseInt(document.getElementById('launch-age-min')?.value || '18', 10);
-  const ageMax       = parseInt(document.getElementById('launch-age-max')?.value || '55', 10);
-  const countries    = (document.getElementById('launch-countries')?.value || 'US').split(',').map(c => c.trim().toUpperCase()).filter(Boolean);
-  const budget       = parseFloat(document.getElementById('launch-budget')?.value || '20');
+let _cbAdSeq = 0;
+function _cbAddAd(ad) {
+  const list = document.getElementById('cb-ads-list');
+  if (!list) return;
+  const id = 'cbad-' + (_cbAdSeq++);
+  const a = ad || {};
+  const row = document.createElement('div');
+  row.className = 'ad-editor-card';
+  row.id = id;
+  row.innerHTML = `
+    <button class="ad-editor-remove" onclick="document.getElementById('${id}').remove()">×</button>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label">Headline</label><input class="form-input cb-ad-headline" placeholder="Scroll-stopping headline" value="${escHtml(a.headline || '')}"></div>
+    <div class="form-group" style="margin-bottom:10px"><label class="form-label">Primary Text</label><textarea class="form-input cb-ad-primary" style="height:60px;resize:vertical" placeholder="Ad body copy">${escHtml(a.primary_text || '')}</textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group"><label class="form-label">Description</label><input class="form-input cb-ad-description" placeholder="Supporting line" value="${escHtml(a.description || '')}"></div>
+      <div class="form-group"><label class="form-label">CTA</label><input class="form-input cb-ad-cta" placeholder="e.g. Shop Now" value="${escHtml(a.cta || 'Shop Now')}"></div>
+    </div>`;
+  list.appendChild(row);
+}
 
-  if (!productName) { showToast('Enter a product name', 'warn'); return; }
+function _cbCollectAds() {
+  return [...document.querySelectorAll('#cb-ads-list .ad-editor-card')].map(card => ({
+    headline:     card.querySelector('.cb-ad-headline')?.value.trim() || '',
+    primary_text: card.querySelector('.cb-ad-primary')?.value.trim() || '',
+    description:  card.querySelector('.cb-ad-description')?.value.trim() || '',
+    cta:          card.querySelector('.cb-ad-cta')?.value.trim() || 'Shop Now',
+  })).filter(a => a.headline || a.primary_text);
+}
 
-  const btn = document.getElementById('launch-gen-btn');
+async function _cbGenerateWithAI() {
+  const name = document.getElementById('cb-name')?.value.trim();
+  const p = window._cbSelectedProduct || { name: name || 'Product', description: '' };
+  const budget = parseFloat(document.getElementById('cb-budget')?.value || '20');
+  const objective = document.getElementById('cb-objective')?.value || 'OUTCOME_SALES';
+  if (!name && !window._cbSelectedProduct) { showToast('Enter a campaign name or pick a product first', 'warn'); return; }
+
+  const btn = document.getElementById('cb-ai-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
-
   try {
-    const product  = { name: productName, description: productDesc, price: productPrice };
-    const audience = { description: audDesc, age_min: ageMin, age_max: ageMax, countries, geo_locations: { countries } };
-
-    const r2 = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'prepare', product, audience, budget, objective }) });
-    if (!r2) { showToast('Session expired — please refresh the page and try again', 'error'); return; }
-    if (!r2.ok) {
-      let errMsg = 'Campaign generation failed';
-      try { const e = await r2.json(); errMsg = e.error || errMsg; } catch { /* ignore */ }
-      showToast(errMsg, 'error');
-      return;
+    const product = { name: p.title || p.name || name, description: p.body_html ? p.body_html.replace(/<[^>]*>/g,'').slice(0,200) : (p.description || ''), price: parseFloat(p.variants?.[0]?.price || p.price || '0') || 0 };
+    const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'prepare', product, audience: {}, budget, objective }) });
+    if (!r || !r.ok) { showToast('AI generation failed — check GROQ_API_KEY', 'error'); return; }
+    const data = await r.json();
+    const ads = data.copy?.meta?.ads || [];
+    if (ads.length) {
+      document.getElementById('cb-ads-list').innerHTML = '';
+      ads.forEach(a => _cbAddAd(a));
     }
-    const data = await r2.json();
-    _launchCampaignId = data.campaign_id;
-    const copy = data.copy || {};
-    const meta = copy.meta || {};
-
-    document.getElementById('lcp-headline').value  = meta.headline || '';
-    document.getElementById('lcp-primary').value   = meta.primary_text || '';
-    document.getElementById('lcp-hook').value      = copy.ugc_hook || '';
-
-    // Update launch button based on platforms
-    const platforms = document.getElementById('launch-platforms')?.value || 'meta';
-    const launchBtn = document.getElementById('launch-exec-btn');
-    if (launchBtn) {
-      if (platforms === 'google') launchBtn.textContent = 'Launch to Google';
-      else if (platforms === 'both') launchBtn.textContent = 'Launch to Meta + Google';
-      else launchBtn.textContent = 'Launch to Meta';
-    }
-
-    document.getElementById('launch-copy-preview').style.display = '';
-    ['lstep-1','lstep-2','lstep-3'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) { el.classList.remove('active'); el.classList.add('done'); el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>'; }
-    });
+    if (!document.getElementById('cb-name').value) document.getElementById('cb-name').value = data.copy?.campaign_name || '';
+    showToast('AI generated ' + ads.length + ' ad variation(s)', 'success');
   } catch(e) {
-    showToast('Generation failed - ' + (e.message || 'try again'), 'error');
+    showToast('AI generation failed', 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Regenerate'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate ads with AI'; }
   }
 }
 
-async function doLaunchCampaign() {
-  if (!_launchCampaignId) { showToast('Generate copy first', 'warn'); return; }
+async function saveCampaignDraft() {
+  const name = document.getElementById('cb-name')?.value.trim();
+  if (!name) { showToast('Enter a campaign name', 'warn'); return; }
+  const useMeta   = document.getElementById('cb-platform-meta')?.checked && !document.getElementById('cb-platform-meta').disabled;
+  const useGoogle = document.getElementById('cb-platform-google')?.checked && !document.getElementById('cb-platform-google').disabled;
+  if (!useMeta && !useGoogle) { showToast('Enable at least one connected platform', 'warn'); return; }
+  const ads = _cbCollectAds();
+  if (!ads.length) { showToast('Add at least one ad', 'warn'); return; }
+
+  const platform = useMeta && useGoogle ? 'both' : (useMeta ? 'meta' : 'google');
+  const copy = {
+    campaign_name: name,
+    meta: { campaign_name: name, adset_name: `${name} — Ad Set`, targeting: { geo_locations: { countries: ['US'] } }, ads },
+    google: { campaign_name: name, ad_group_name: `${name} — Ad Group`, headlines: ads.map(a=>a.headline).filter(Boolean).slice(0,15), descriptions: ads.map(a=>a.primary_text).filter(Boolean).slice(0,4), keywords: [] },
+  };
+
+  const btn = document.getElementById('cb-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    const body = {
+      action: _cbEditingId ? 'update' : 'save_draft',
+      campaign_id: _cbEditingId || undefined,
+      name, platform, copy,
+      objective: document.getElementById('cb-objective')?.value,
+      budget_daily: parseFloat(document.getElementById('cb-budget')?.value || '20'),
+    };
+    const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify(body) });
+    if (!r || !r.ok) { const e = r ? await r.json().catch(()=>({})) : {}; showToast(e.error || 'Failed to save campaign', 'error'); return; }
+    showToast('Campaign draft saved', 'success');
+    closeCampaignBuilder();
+    loadLaunchAdsCampaigns();
+  } catch(e) {
+    showToast('Failed to save campaign', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Draft'; }
+  }
+}
+
+// ── Campaign Review / Launch ─────────────────────────────────────────────────
+async function openCampaignReview(campaignId) {
+  const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'status', campaign_id: campaignId }) });
+  if (!r || !r.ok) { showToast('Could not load campaign', 'error'); return; }
+  const c = await r.json();
+  _crCampaign = c;
+  refreshPlatformToggles();
+
+  document.getElementById('cr-name').textContent = c.name;
+  document.getElementById('cr-status').textContent = c.status;
+  document.getElementById('cr-status').className = 'status-pill ' + (c.status === 'active' ? 'live' : c.status);
+  document.getElementById('cr-meta').textContent = `${c.objective || ''} · $${fmt(c.budget_daily || 0)}/day · ${c.platform}`;
+
+  const ads = c.copy?.meta?.ads || [];
+  const adsList = document.getElementById('cr-ads-list');
+  const isDraft = c.status === 'draft';
+  adsList.innerHTML = ads.length ? ads.map((a, i) => `
+    <div class="ad-editor-card">
+      ${isDraft ? `<button class="ad-editor-remove" onclick="this.closest('.ad-editor-card').remove()">×</button>` : ''}
+      <div class="form-group" style="margin-bottom:10px"><label class="form-label">Headline</label><input class="form-input cr-ad-headline" value="${escHtml(a.headline||'')}" ${isDraft?'':'disabled'}></div>
+      <div class="form-group" style="margin-bottom:10px"><label class="form-label">Primary Text</label><textarea class="form-input cr-ad-primary" style="height:60px;resize:vertical" ${isDraft?'':'disabled'}>${escHtml(a.primary_text||'')}</textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-group"><label class="form-label">Description</label><input class="form-input cr-ad-description" value="${escHtml(a.description||'')}" ${isDraft?'':'disabled'}></div>
+        <div class="form-group"><label class="form-label">CTA</label><input class="form-input cr-ad-cta" value="${escHtml(a.cta||'')}" ${isDraft?'':'disabled'}></div>
+      </div>
+    </div>`).join('') : '<div class="empty-state" style="padding:20px 0"><p>No ads on this campaign</p></div>';
+
+  const draftActions = document.getElementById('cr-draft-actions');
+  const metaConnected   = !document.getElementById('toggle-meta')?.disabled;
+  const googleConnected = !document.getElementById('toggle-google')?.disabled;
   const plan = getUserPlan();
-  if (plan === 'starter') { showToast('Upgrade to Growth to launch campaigns', 'warn'); navigate('billing'); return; }
+  document.getElementById('cr-save-btn').style.display = isDraft ? '' : 'none';
+  document.getElementById('cr-delete-btn').style.display = isDraft ? '' : 'none';
+  const metaBtn = document.getElementById('cr-launch-meta-btn');
+  const googleBtn = document.getElementById('cr-launch-google-btn');
+  metaBtn.style.display = isDraft && (c.platform === 'meta' || c.platform === 'both') ? '' : 'none';
+  googleBtn.style.display = isDraft && (c.platform === 'google' || c.platform === 'both') ? '' : 'none';
+  metaBtn.disabled = !metaConnected || plan === 'starter';
+  googleBtn.disabled = !googleConnected || plan !== 'scale';
+  metaBtn.title = !metaConnected ? 'Connect Meta Ads in Settings first' : (plan === 'starter' ? 'Upgrade to Growth to launch' : '');
+  googleBtn.title = !googleConnected ? 'Connect Google Ads in Settings first' : (plan !== 'scale' ? 'Upgrade to Scale to launch Google campaigns' : '');
+  document.getElementById('cr-launch-note').textContent = isDraft
+    ? 'Launches as PAUSED — enable in the ad platform\'s manager when ready.'
+    : `Launched ${c.launched_at ? new Date(c.launched_at).toLocaleDateString() : ''} — manage status from the Live Performance table below.`;
 
-  const btn = document.getElementById('launch-exec-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Launching…'; }
-
-  try {
-    const platforms = document.getElementById('launch-platforms')?.value || 'meta';
-    const autoEnable = document.getElementById('launch-auto-enable')?.checked || false;
-    let action, launchBody;
-    if (platforms === 'meta') {
-      action = 'launch_meta';
-      launchBody = { action, campaign_id: _launchCampaignId, auto_enable: autoEnable };
-    } else if (platforms === 'google') {
-      action = 'launch_google';
-      launchBody = { action, campaign_id: _launchCampaignId, auto_enable: autoEnable };
-    } else {
-      action = 'launch';
-      launchBody = { action, campaign_id: _launchCampaignId, platforms: ['meta', 'google'], auto_enable: autoEnable };
-    }
-
-    const launchRes = await authFetch('/launch', { method: 'POST', body: JSON.stringify(launchBody) });
-    if (!launchRes || !launchRes.ok) {
-      const errData = launchRes ? await launchRes.json().catch(()=>({})) : {};
-      showToast(errData.error || 'Launch failed - check your ad platform connection', 'error');
-      return;
-    }
-
-    const platformLabel = platforms === 'both' ? 'Meta + Google' : platforms === 'google' ? 'Google Ads' : 'Meta Ads';
-    const statusLabel = autoEnable ? 'ACTIVE — your ads are live!' : 'PAUSED — enable it in your Ads Manager when ready.';
-    showToast(`Campaign created on ${platformLabel} as ${statusLabel}`, 'success');
-    closeLaunchWizard();
-    loadLaunchedCampaigns();
-  } catch(e) {
-    showToast('Launch failed - ' + (e.message || 'check Meta connection'), 'error');
-  } finally {
-    if (btn) { btn.disabled = false; }
-  }
+  document.getElementById('campaign-review-modal').classList.add('open');
 }
 
+function closeCampaignReview() {
+  document.getElementById('campaign-review-modal').classList.remove('open');
+  _crCampaign = null;
+}
+
+function _crCollectAds() {
+  return [...document.querySelectorAll('#cr-ads-list .ad-editor-card')].map(card => ({
+    headline:     card.querySelector('.cr-ad-headline')?.value.trim() || '',
+    primary_text: card.querySelector('.cr-ad-primary')?.value.trim() || '',
+    description:  card.querySelector('.cr-ad-description')?.value.trim() || '',
+    cta:          card.querySelector('.cr-ad-cta')?.value.trim() || 'Shop Now',
+  })).filter(a => a.headline || a.primary_text);
+}
+
+async function saveCampaignReviewEdits() {
+  if (!_crCampaign) return;
+  const ads = _crCollectAds();
+  const copy = { ..._crCampaign.copy, meta: { ..._crCampaign.copy?.meta, ads }, google: { ..._crCampaign.copy?.google, headlines: ads.map(a=>a.headline).filter(Boolean).slice(0,15), descriptions: ads.map(a=>a.primary_text).filter(Boolean).slice(0,4) } };
+  const btn = document.getElementById('cr-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'update', campaign_id: _crCampaign.id, copy }) });
+    if (!r || !r.ok) { const e = r ? await r.json().catch(()=>({})) : {}; showToast(e.error || 'Failed to save', 'error'); return; }
+    showToast('Changes saved', 'success');
+    loadLaunchAdsCampaigns();
+  } catch(e) { showToast('Failed to save', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; } }
+}
+
+async function launchReviewedCampaign(platform) {
+  if (!_crCampaign) return;
+  if (!confirm(`Launch "${_crCampaign.name}" to ${platform === 'meta' ? 'Meta' : 'Google'} now? It will be created as PAUSED.`)) return;
+  const action = platform === 'meta' ? 'launch_meta' : 'launch_google';
+  const btnId = platform === 'meta' ? 'cr-launch-meta-btn' : 'cr-launch-google-btn';
+  const btn = document.getElementById(btnId);
+  if (btn) { btn.disabled = true; btn.textContent = 'Launching…'; }
+  try {
+    const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action, campaign_id: _crCampaign.id }) });
+    if (!r || !r.ok) { const e = r ? await r.json().catch(()=>({})) : {}; showToast(e.error || 'Launch failed', 'error'); return; }
+    showToast(`Campaign launched to ${platform === 'meta' ? 'Meta' : 'Google'} as PAUSED`, 'success');
+    closeCampaignReview();
+    loadLaunchAdsCampaigns();
+    loadLaunchedCampaigns();
+  } catch(e) { showToast('Launch failed', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = platform === 'meta' ? 'Launch to Meta' : 'Launch to Google'; } }
+}
+
+async function deleteCampaignDraft() {
+  if (!_crCampaign) return;
+  if (!confirm(`Delete draft "${_crCampaign.name}"? This can't be undone.`)) return;
+  try {
+    const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'delete', campaign_id: _crCampaign.id }) });
+    if (!r || !r.ok) { const e = r ? await r.json().catch(()=>({})) : {}; showToast(e.error || 'Failed to delete', 'error'); return; }
+    showToast('Draft deleted', 'success');
+    closeCampaignReview();
+    loadLaunchAdsCampaigns();
+  } catch(e) { showToast('Failed to delete', 'error'); }
+}
+
+// ── Legacy: live-launched campaigns feed used by the Dashboard home panel ─────
 async function loadLaunchedCampaigns() {
-  const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'list' }) });
-  const data = (r && r.ok) ? await r.json() : null;
-  const el = document.getElementById('launched-campaigns-content');
-  if (!el) return;
-
-  const campaigns = data?.campaigns || [];
-  if (!campaigns.length) {
-    el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11"/></svg><p>No campaigns launched yet. Click "New Campaign" to start.</p></div>';
-    return;
-  }
-
-  el.innerHTML = `
-    <div class="launched-campaign-row header"><span>Campaign</span><span>Platform</span><span>Budget</span><span>Status</span></div>
-    ${campaigns.map(c => `
-    <div class="launched-campaign-row">
-      <span style="font-weight:600">${c.name}</span>
-      <span style="text-transform:capitalize;color:var(--muted)">${c.platform}</span>
-      <span>$${c.budget_daily || '—'}/day</span>
-      <span class="status-pill ${c.status === 'active' ? 'live' : c.status}">${c.status}</span>
-    </div>`).join('')}
-  `;
+  // Launched campaigns are now shown as cards in loadLaunchAdsCampaigns(); this
+  // is kept only so older call sites (e.g. after a launch) don't error.
 }
 
 // ── COMPETITOR RADAR ──────────────────────────────────────────────────────────

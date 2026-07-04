@@ -5,6 +5,9 @@
  * Uses llama-3.3-70b-versatile on Groq to generate campaign copy + structure.
  *
  * POST { action: 'prepare',      product, audience, budget, objective?, tone? }
+ * POST { action: 'save_draft',   name, objective, budget_daily, platform, copy }  — manual create, no AI
+ * POST { action: 'update',       campaign_id, name?, objective?, budget_daily?, platform?, copy? }  — draft only
+ * POST { action: 'delete',       campaign_id }  — draft only
  * POST { action: 'launch_meta',  campaign_id }
  * POST { action: 'launch_google', campaign_id }
  * POST { action: 'launch',       campaign_id, platforms? }
@@ -97,10 +100,7 @@ JSON schema:
       "interests": { "id": string, "name": string }[],
       "behaviors": { "id": string, "name": string }[]
     },
-    "headline": string,
-    "primary_text": string,
-    "description": string,
-    "cta": string
+    "ads": [ { "headline": string, "primary_text": string, "description": string, "cta": string } ]
   },
   "google": {
     "campaign_name": string,
@@ -120,6 +120,7 @@ Target audience: ${JSON.stringify(audience)}
 Daily budget: $${budget}
 Objective: ${objective}
 Tone: ${tone}
+Generate 3 distinct ad variations in meta.ads (different hooks/angles) so the campaign has real creative variety.
 Make headlines benefit-focused and scroll-stopping. Keep Meta primary text under 125 chars. Google headlines under 30 chars each.`;
 
   const raw = await callGroq(system, userMsg, 1800);
@@ -262,6 +263,11 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
   const metaCopy  = copy?.meta as Record<string, unknown> ?? {};
   const targeting = metaCopy?.targeting as Record<string, unknown> ?? { geo_locations: { countries: ['US'] } };
   const budget    = Math.round((row.budget_daily ?? 20) * 100); // Meta uses cents
+  // NOTE: creates the campaign + ad set shell only. Individual ad creatives
+  // (metaCopy.ads[]) are stored and editable in Ephermal but not yet pushed as
+  // live Meta ad objects — that requires a connected Facebook Page (pages_show_list
+  // scope) for the ad creative's object_story_spec, which isn't wired up yet.
+  // Enable/finish the ad(s) in Meta Ads Manager after launch.
 
   const adStatus = autoEnable ? 'ACTIVE' : 'PAUSED';
 
@@ -306,6 +312,83 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
   };
 }
 
+/** Manually create a draft campaign — no AI call. Frontend supplies the full copy structure. */
+async function saveDraft(userId: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const name        = String(body.name ?? '').trim();
+  const platform     = String(body.platform ?? 'meta');
+  if (!name) throw new Error('Campaign name is required');
+  if (!['meta', 'google', 'both'].includes(platform)) throw new Error('platform must be meta, google, or both');
+
+  const { data: saved, error } = await supabase
+    .from('launched_campaigns')
+    .insert({
+      user_id:      userId,
+      platform,
+      name,
+      status:       'draft',
+      objective:    String(body.objective ?? 'OUTCOME_SALES'),
+      budget_daily: Number(body.budget_daily ?? 20),
+      audience:     body.audience ?? {},
+      copy:         body.copy ?? {},
+    })
+    .select('*')
+    .single();
+
+  if (error) throw new Error(`Failed to save campaign: ${error.message}`);
+  return saved as Record<string, unknown>;
+}
+
+/** Update a draft campaign's fields. Only allowed while status='draft' — never mutates a launched campaign. */
+async function updateDraft(userId: string, campaignId: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const { data: existing } = await supabase
+    .from('launched_campaigns')
+    .select('status')
+    .eq('id', campaignId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (!existing) throw new Error('Campaign not found');
+  if (existing.status !== 'draft') throw new Error('Only draft campaigns can be edited — this campaign has already been launched');
+
+  const updates: Record<string, unknown> = {};
+  if (body.name !== undefined)         updates.name = String(body.name).trim();
+  if (body.objective !== undefined)    updates.objective = String(body.objective);
+  if (body.budget_daily !== undefined) updates.budget_daily = Number(body.budget_daily);
+  if (body.platform !== undefined)     updates.platform = String(body.platform);
+  if (body.copy !== undefined)         updates.copy = body.copy;
+  if (body.audience !== undefined)     updates.audience = body.audience;
+
+  const { data: saved, error } = await supabase
+    .from('launched_campaigns')
+    .update(updates)
+    .eq('id', campaignId)
+    .eq('user_id', userId)
+    .select('*')
+    .single();
+
+  if (error) throw new Error(`Failed to update campaign: ${error.message}`);
+  return saved as Record<string, unknown>;
+}
+
+/** Delete a draft campaign. Refuses to delete anything already launched — pause it in the ad platform instead. */
+async function deleteDraft(userId: string, campaignId: string): Promise<Record<string, unknown>> {
+  const { data: existing } = await supabase
+    .from('launched_campaigns')
+    .select('status')
+    .eq('id', campaignId)
+    .eq('user_id', userId)
+    .maybeSingle();
+  if (!existing) throw new Error('Campaign not found');
+  if (existing.status !== 'draft') throw new Error('Only draft campaigns can be deleted — pause or remove launched campaigns from the ad platform directly');
+
+  const { error } = await supabase
+    .from('launched_campaigns')
+    .delete()
+    .eq('id', campaignId)
+    .eq('user_id', userId);
+  if (error) throw new Error(`Failed to delete campaign: ${error.message}`);
+  return { deleted: true, campaign_id: campaignId };
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
 
@@ -332,6 +415,21 @@ Deno.serve(async (req) => {
       case 'prepare': {
         if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
         return okResponse(await prepareCampaign(userId, body), origin);
+      }
+
+      case 'save_draft':
+        return okResponse(await saveDraft(userId, body), origin);
+
+      case 'update': {
+        const campaignId = String(body.campaign_id ?? '');
+        if (!campaignId) return errResponse('campaign_id required', 400, origin);
+        return okResponse(await updateDraft(userId, campaignId, body), origin);
+      }
+
+      case 'delete': {
+        const campaignId = String(body.campaign_id ?? '');
+        if (!campaignId) return errResponse('campaign_id required', 400, origin);
+        return okResponse(await deleteDraft(userId, campaignId), origin);
       }
 
       case 'launch_meta': {
@@ -376,7 +474,7 @@ Deno.serve(async (req) => {
       case 'list': {
         const { data } = await supabase
           .from('launched_campaigns')
-          .select('id,name,platform,status,objective,budget_daily,launched_at,created_at')
+          .select('id,name,platform,status,objective,budget_daily,copy,launched_at,created_at')
           .eq('user_id', userId)
           .order('created_at', { ascending: false })
           .limit(50);
