@@ -28,6 +28,7 @@
  *   /optimize*, /roas*                                      → roas-optimizer
  *   /ugc*                                                   → ugc-generate
  *   /shopify*                                               → shopify-api
+ *   /store-intelligence*                                    → store-intelligence
  *
  * Cache keys: ephermal:{userId}:{action}:{scope}
  * Cache TTLs (seconds):
@@ -132,6 +133,7 @@ function resolveFunctionName(path: string): string | null {
   if (/^\/(creative-brief)/.test(path))             return 'creative-brief';
   if (/^\/(competitor-radar)/.test(path))           return 'competitor-radar';
   if (/^\/(profit-tracker)/.test(path))             return 'profit-tracker';
+  if (/^\/(store-intelligence)/.test(path))         return 'store-intelligence';
   return null;
 }
 
