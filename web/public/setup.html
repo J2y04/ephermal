@@ -586,13 +586,13 @@ function saveGoogleAccount() {
 // ── Finish setup ──────────────────────────────────────────────────────────────
 function finishSetup() {
   localStorage.setItem('setup_complete', '1');
-  window.location.href = '/dashboard.html';
+  window.location.href = 'https://dashboard.ephermal.app/';
   return false;
 }
 
 // ── Boot: Clerk auth check ────────────────────────────────────────────────────
 async function boot() {
-  if (localStorage.getItem('setup_complete')) { window.location.replace('/dashboard.html'); return; }
+  if (localStorage.getItem('setup_complete')) { window.location.replace('https://dashboard.ephermal.app/'); return; }
   // Wait for Clerk SDK to load (max 5s)
   await new Promise(resolve => {
     if(window.Clerk) { resolve(); return; }

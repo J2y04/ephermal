@@ -236,6 +236,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('competitor-radar error:', err);
-    return errResponse('Competitor radar error', 500, origin);
+    return errResponse(err instanceof Error ? err.message : 'Competitor radar error', 500, origin);
   }
 });

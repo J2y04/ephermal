@@ -112,8 +112,8 @@ async function initClerk() {
     rateCheck('clerk-init', 10);
     // window.Clerk is already instantiated via data-clerk-publishable-key
     await window.Clerk.load();
-    if (window.Clerk.user) { window.location.replace('/dashboard.html'); return; }
-    window.Clerk.addListener(({ user }) => { if (user) window.location.replace('/dashboard.html'); });
+    if (window.Clerk.user) { window.location.replace('https://dashboard.ephermal.app/'); return; }
+    window.Clerk.addListener(({ user }) => { if (user) window.location.replace('https://dashboard.ephermal.app/'); });
     el.innerHTML = '';
     window.Clerk.mountSignIn(el, {
       appearance: {
@@ -131,7 +131,7 @@ async function initClerk() {
         }
       },
       signUpUrl: '/auth/register.html',
-      afterSignInUrl: '/dashboard.html',
+      afterSignInUrl: 'https://dashboard.ephermal.app/',
     });
   } catch (err) {
     el.innerHTML = `<div class="fallback-msg"><strong>Could not load sign-in</strong>Check your connection and try again.<br><br><a href="/">← Back to home</a></div>`;

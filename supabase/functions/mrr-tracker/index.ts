@@ -16,7 +16,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
-import { metaGet } from '../_shared/meta.ts';
+import { metaGet, parseConversions } from '../_shared/meta.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 const SYNC_DAYS = 90;
@@ -89,8 +89,9 @@ async function fetchShopifyDaily(userId: string): Promise<{ revenue: DailyMap; o
 }
 
 // ── Meta: daily spend ─────────────────────────────────────────────────────────
-async function fetchMetaDaily(userId: string): Promise<DailyMap> {
+async function fetchMetaDaily(userId: string): Promise<{ spend: DailyMap; conversions: DailyMap }> {
   const spend: DailyMap = new Map();
+  const conversions: DailyMap = new Map();
   const { data: creds } = await supabase
     .from('user_integrations')
     .select('meta_token, meta_account')
@@ -98,31 +99,33 @@ async function fetchMetaDaily(userId: string): Promise<DailyMap> {
     .maybeSingle();
   const token     = creds?.meta_token as string | undefined;
   const accountId = creds?.meta_account as string | undefined;
-  if (!token || !accountId) return spend;
+  if (!token || !accountId) return { spend, conversions };
 
   try {
-    const data = await metaGet<{ data: { spend?: string; date_start: string }[] }>(
+    const data = await metaGet<{ data: { spend?: string; date_start: string; actions?: { action_type: string; value: string }[] }[] }>(
       `/${accountId}/insights`,
       {
         time_increment: '1',
         time_range: JSON.stringify({ since: isoDaysAgo(SYNC_DAYS), until: isoDaysAgo(0) }),
-        fields: 'spend,date_start',
+        fields: 'spend,date_start,actions',
         level: 'account',
       },
       token,
     );
     for (const row of data.data ?? []) {
       addTo(spend, row.date_start, Math.round(parseFloat(row.spend ?? '0') * 100));
+      addTo(conversions, row.date_start, parseConversions(row.actions ?? []));
     }
   } catch (e) {
     console.error('mrr-tracker meta fetch error:', e);
   }
-  return spend;
+  return { spend, conversions };
 }
 
 // ── Google Ads: daily spend ───────────────────────────────────────────────────
-async function fetchGoogleDaily(userId: string): Promise<DailyMap> {
+async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conversions: DailyMap }> {
   const spend: DailyMap = new Map();
+  const conversions: DailyMap = new Map();
   const { data: creds } = await supabase
     .from('user_integrations')
     .select('google_refresh_token, google_ads_customer_id')
@@ -131,7 +134,7 @@ async function fetchGoogleDaily(userId: string): Promise<DailyMap> {
   const refreshToken = creds?.google_refresh_token as string | undefined;
   const customerId   = creds?.google_ads_customer_id as string | undefined;
   const devToken      = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN') ?? '';
-  if (!refreshToken || !customerId || !devToken) return spend;
+  if (!refreshToken || !customerId || !devToken) return { spend, conversions };
 
   try {
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -145,7 +148,7 @@ async function fetchGoogleDaily(userId: string): Promise<DailyMap> {
       }).toString(),
     });
     const tokenData = await tokenRes.json() as { access_token?: string };
-    if (!tokenData.access_token) return spend;
+    if (!tokenData.access_token) return { spend, conversions };
 
     const GADS = 'https://googleads.googleapis.com/v24';
     const res = await fetch(`${GADS}/customers/${customerId}/googleAds:search`, {
@@ -156,30 +159,33 @@ async function fetchGoogleDaily(userId: string): Promise<DailyMap> {
         'Content-Type':    'application/json',
       },
       body: JSON.stringify({
-        query: `SELECT segments.date, metrics.cost_micros FROM customer WHERE segments.date DURING LAST_90_DAYS`,
+        query: `SELECT segments.date, metrics.cost_micros, metrics.conversions FROM customer WHERE segments.date DURING LAST_90_DAYS`,
       }),
     });
-    if (!res.ok) return spend;
-    const data = await res.json() as { results?: { segments?: { date?: string }; metrics?: { costMicros?: string } }[] };
+    if (!res.ok) return { spend, conversions };
+    const data = await res.json() as { results?: { segments?: { date?: string }; metrics?: { costMicros?: string; conversions?: string } }[] };
     for (const row of data.results ?? []) {
       const date = row.segments?.date;
       const micros = Number(row.metrics?.costMicros ?? 0);
-      if (date) addTo(spend, date, Math.round(micros / 10000)); // micros → cents
+      if (date) {
+        addTo(spend, date, Math.round(micros / 10000)); // micros → cents
+        addTo(conversions, date, Math.round(Number(row.metrics?.conversions ?? 0)));
+      }
     }
   } catch (e) {
     console.error('mrr-tracker google fetch error:', e);
   }
-  return spend;
+  return { spend, conversions };
 }
 
 async function handleSync(userId: string): Promise<Record<string, unknown>> {
-  const [{ revenue, orders }, metaSpend, googleSpend] = await Promise.all([
+  const [{ revenue, orders }, meta, google] = await Promise.all([
     fetchShopifyDaily(userId),
     fetchMetaDaily(userId),
     fetchGoogleDaily(userId),
   ]);
 
-  const allDates = new Set<string>([...revenue.keys(), ...metaSpend.keys(), ...googleSpend.keys()]);
+  const allDates = new Set<string>([...revenue.keys(), ...meta.spend.keys(), ...google.spend.keys()]);
   // Ensure every day in the window has a row, even if all-zero, so the chart has a continuous axis
   for (let i = 0; i < SYNC_DAYS; i++) allDates.add(isoDaysAgo(i));
 
@@ -188,8 +194,9 @@ async function handleSync(userId: string): Promise<Record<string, unknown>> {
     snapshot_date:         date,
     shopify_revenue_cents: revenue.get(date) ?? 0,
     shopify_orders_count:  orders.get(date) ?? 0,
-    meta_spend_cents:      metaSpend.get(date) ?? 0,
-    google_spend_cents:    googleSpend.get(date) ?? 0,
+    meta_spend_cents:      meta.spend.get(date) ?? 0,
+    google_spend_cents:    google.spend.get(date) ?? 0,
+    conversions:           (meta.conversions.get(date) ?? 0) + (google.conversions.get(date) ?? 0),
     updated_at:            new Date().toISOString(),
   }));
 
@@ -200,8 +207,8 @@ async function handleSync(userId: string): Promise<Record<string, unknown>> {
   return {
     synced_days:      rows.length,
     shopify_connected: revenue.size > 0 || orders.size > 0,
-    meta_connected:    metaSpend.size > 0,
-    google_connected:  googleSpend.size > 0,
+    meta_connected:    meta.spend.size > 0,
+    google_connected:  google.spend.size > 0,
   };
 }
 
@@ -226,6 +233,7 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
       revenue_cents:  r.shopify_revenue_cents ?? 0,
       spend_cents:    spend,
       orders:         r.shopify_orders_count ?? 0,
+      conversions:    r.conversions ?? 0,
       roas:           spend > 0 ? Math.round(((r.shopify_revenue_cents ?? 0) / spend) * 100) / 100 : null,
     };
   });

@@ -1571,9 +1571,21 @@ select.form-input{cursor:pointer}
             </div>
           </div>
 
+          <!-- Store Analysis (raw Shopify API, no AI call) -->
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">Store Analysis (raw Shopify API — no AI)</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Calls the Shopify Admin API directly through the existing shopify-api function. No Claude/Anthropic call — useful while ANTHROPIC_API_KEY isn't set yet.</div>
+            <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+              <button onclick="devRawShopify('shop')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7">Fetch Shop Info</button>
+              <button onclick="devRawShopify('products')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7">Fetch Products</button>
+              <button onclick="devRawShopify('collections')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7">Fetch Collections</button>
+            </div>
+            <pre id="devtools-shopify-result" style="background:#0a0d1f;border:1px solid var(--border);border-radius:9px;padding:14px;font-size:11px;color:#34d399;min-height:48px;margin:0;overflow-x:auto;white-space:pre-wrap;max-height:400px;overflow-y:auto"></pre>
+          </div>
+
           <!-- Webhook Tester -->
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">n8n Webhook Tester</div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">n8n Webhook Tester <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">(legacy, hardcodes action:'ping' — not representative of real calls)</span></div>
             <div style="display:flex;gap:10px;margin-bottom:12px">
               <select id="devtools-wh-select" style="flex:1;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none">
                 <option value="ai">AI (/ephermal/ai)</option>
@@ -2964,6 +2976,24 @@ function devSetPlan(plan) {
   renderPlanUI();
   loadDevTools();
 }
+async function devRawShopify(action) {
+  const resultEl = document.getElementById('devtools-shopify-result');
+  if (!resultEl) return;
+  resultEl.textContent = 'Fetching…'; resultEl.style.color = '#34d399';
+  try {
+    const start = Date.now();
+    const r = await authFetch(`/shopify?action=${encodeURIComponent(action)}`);
+    const ms = Date.now() - start;
+    if (!r) { resultEl.textContent = 'No response — auth token missing'; resultEl.style.color = '#f87171'; return; }
+    const data = await r.json().catch(() => null);
+    resultEl.textContent = `HTTP ${r.status} · ${ms}ms\n\n${data ? JSON.stringify(data, null, 2) : '(no JSON body)'}`;
+    resultEl.style.color = r.ok ? '#34d399' : '#f87171';
+  } catch (e) {
+    resultEl.textContent = `Error: ${e.message}`;
+    resultEl.style.color = '#f87171';
+  }
+}
+
 async function devTestWebhook() {
   const sel = document.getElementById('devtools-wh-select');
   const resultEl = document.getElementById('devtools-wh-result');
