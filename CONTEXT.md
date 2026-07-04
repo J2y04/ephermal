@@ -289,6 +289,27 @@ New sidebar tab combining Shopify revenue + Meta spend + Google Ads spend into o
 - Structured data (Organization/WebSite/SoftwareApplication/FAQPage JSON-LD in `layout.tsx`)
   was already solid — left as-is
 
+### Task 25 — ✅ Launch Ads page (replaces old Campaigns page) — DONE (Jul 5 2026)
+- Old Campaigns page (grid-row table + step wizard) removed; nav item renamed "Launch Ads"
+  (kept `data-page="campaigns"` / same GATED+paywall keys to avoid touching plan-gating config)
+- Meta/Google platform toggles (greyed out when not connected), campaign cards, "+ New
+  Campaign" builder modal (manual ad entry or AI-generated via existing `prepare` action),
+  Review/Launch modal (edit ads while draft, launch to Meta/Google, delete draft)
+- `campaign-launcher`: added `save_draft`/`update`/`delete` actions, all guarded to
+  `status='draft'` only — never touches an already-launched campaign; `copy.meta.ads` is now
+  an array of ad variations instead of one flat ad
+- Old "Live Performance" table (real Meta/Google ROAS/spend/CTR) kept underneath, unchanged
+- **Known gap**: `launch_meta` still only creates the campaign + ad set shell, not individual
+  Meta ad objects — that needs a connected Facebook Page (`pages_show_list` OAuth scope) which
+  isn't wired up. Ads are fully stored/editable in Ephermal; finishing the ad in Meta Ads
+  Manager is a manual step after launch until this is built.
+- Also fixed: favicon not refreshing on some pages (browser cache) — added `?v=2` cache-bust
+  to every favicon reference; Clerk login/signup now redirect straight to
+  `dashboard.ephermal.app` instead of through the `/dashboard.html` redirect hop;
+  `competitor-radar` was swallowing every error into a generic message — now surfaces the
+  real one; Dev Tools got a raw-Shopify-API panel (no AI call) for testing without
+  `ANTHROPIC_API_KEY`
+
 ---
 
 ## Recent Commits (latest first)
