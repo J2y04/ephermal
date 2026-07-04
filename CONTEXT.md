@@ -137,6 +137,11 @@ The dashboard has had a persistent redirect loop that was fixed across multiple 
 ### Task 1 — ✅ GROQ_API_KEY — DONE
 Set by user. All AI features (UGC generate, AI assistant, budget AI) are live.
 
+### Task 28 — ANTHROPIC_API_KEY not set (blocks 3 features now)
+Store Analysis (dashboard), the free public "Analyse Your Store" landing-page tool, and any
+future Ephermal AI agent work all need this. Run: `npx supabase secrets set ANTHROPIC_API_KEY=<key>`
+No redeploy needed after — Supabase injects secrets into the running function automatically.
+
 ### Task 2 — Stripe setup (billing is 100% broken without this)
 1. Stripe Dashboard → Products → create Starter ($89), Growth ($199), Scale ($349) + 3 topup products
 2. Set secrets: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER/GROWTH/SCALE/TOPUP_5/10/20`
@@ -186,6 +191,65 @@ Steps:
 2. Connect via Settings → Shopify in the dashboard
 3. Confirm products appear in Store Products tab
 4. Confirm `shopify_products` table populated in Supabase
+
+### Task 29 — Add dashboard.ephermal.app to Clerk allowed origins
+Clerk Dashboard → your app → allowed origins. Separate from this app's own CORS (already fixed);
+Clerk enforces its own origin allow-list and will reject auth from the subdomain without this.
+
+### Task 30 — Reconnect Shopify to pick up the new read_themes scope
+Any store connected before Jul 5 2026 has a token without `read_themes` — Store Analysis will
+silently fall back to the weaker homepage-scrape signal for colors/logo until reconnected.
+Settings → Shopify → reconnect (same OAuth flow, no data loss).
+
+### Task 31 — Facebook Page picker (multi-page Meta accounts)
+`launch_meta` now creates real ad objects (Task 27), but auto-selects the *first* Facebook Page
+returned by Meta. Fine for one-page accounts; needs a picker UI in Settings if a user manages
+multiple Pages, so they can choose which one ads get attached to.
+
+### Task 32 — Verify: Competitor Radar
+Was returning a swallowed generic 500 — now fixed to surface the real error (deployed, not yet
+retested). Retry it and report the actual error text so we know if it's a code bug, a Meta Ad
+Library permission/ID-verification issue, or something else.
+
+### Task 33 — Verify: Audience Intelligence
+Reported as "doesn't work" — reviewed the code and found no obvious bug (no silent-failure
+pattern like the two confirmed elsewhere). Needs a repro: exact error toast / blank state /
+console message next time it's opened.
+
+### Task 34 — Verify: "some AI elements glitch"
+Too vague to fix blind — need specifics (which page, what happens, any error shown) next session.
+
+### Task 35 — Verify: Products tab "Generate Ad → Add to Campaign"
+Root cause found and fixed (Jul 5): `creatives` table insert was silently failing — no `id` on a
+NOT NULL primary key with no default, so `creative_id` always came back undefined and the
+assign-to-campaign modal never had anything to open for. Should work now — needs a real retest.
+
+### Task 36 — Animated dashboard home charts (started, not finished)
+Was asked to replace the 4 home-page stat cards (ROAS/Spend/UGC Created/Conversions) with
+animated line charts (grow-from-zero reveal, X=time/Y=value, 30-day default except cumulative
+ad spend). Backend groundwork is done — `mrr-tracker` now tracks daily conversions
+(Meta actions + Google Ads metrics.conversions) specifically for this. The frontend charts
+themselves were never built — got reprioritized into the bug-fixing pass. Real next step, not
+just polish: reuses the same `buildAnimatedLineChart`-style reveal already used elsewhere.
+
+### Task 37 — General design polish
+Nicer sliders/toggles, more graphs across the dashboard (not just the home page), and a pass to
+find any remaining "squared, cheap-looking" raw HTML elements outside what's already been
+redesigned (Launch Ads page, MRR Tracker).
+
+### Task 38 — Ephermal AI as a tool-calling agent (scoped, not built)
+Plan discussed Jul 5: swap Groq for Claude Sonnet (tool-use), expose existing edge function logic
+as callable tools (campaign performance, budget calc, launch/create campaign, UGC generation,
+store brief, competitor analysis), have the agent reason over real pulled data for diagnostic asks
+("get me to 5x ROAS"), and require explicit user confirmation before any mutating tool call fires
+(same pattern as Budget AI's apply-flow). This is a multi-session build — needs its own proper
+scoping pass before starting.
+
+### Task 39 — Verify: free public "Analyse Your Store" tool end-to-end
+Built and deployed Jul 5 (`public-store-scan` + landing page section) but could not be tested live
+end-to-end from the build sandbox (no outbound network access there). Confirmed the section
+renders on the live site; the actual POST-a-URL-and-get-a-report flow needs a real test — try it
+with a real store URL once ANTHROPIC_API_KEY is set (Task 28).
 
 ---
 ### 🟢 DEFERRED (don't block launch)
