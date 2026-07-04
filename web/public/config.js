@@ -58,6 +58,11 @@
   // Where n8n sends the user back after OAuth completes
   window.SHOPIFY_SETUP_RETURN_URL = 'https://ephermal.app/setup.html';
 
+  // Sentry error monitoring — create a free project at sentry.io (Platform: Browser JavaScript),
+  // then paste its DSN here. Leave empty ('') to keep Sentry disabled — dashboard.html no-ops
+  // the init when this is blank, so it's safe to deploy before you have a DSN.
+  window.SENTRY_DSN = '';
+
   // Client-side rate limiter — real protection must be at CDN/backend level
   const _buckets = {};
   window.RateLimit = {

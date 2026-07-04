@@ -7,6 +7,21 @@
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="/config.js"></script>
+<script src="https://browser.sentry-cdn.com/9.15.0/bundle.tracing.min.js" crossorigin="anonymous"></script>
+<script>
+  if (window.SENTRY_DSN && window.Sentry) {
+    Sentry.init({
+      dsn: window.SENTRY_DSN,
+      environment: location.hostname === 'dashboard.ephermal.app' ? 'production' : 'preview',
+      tracesSampleRate: 0.1,
+      beforeSend(event) {
+        // Never forward Clerk tokens or integration tokens accidentally captured in breadcrumbs
+        if (event.request?.headers?.Authorization) delete event.request.headers.Authorization;
+        return event;
+      },
+    });
+  }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.__clerkPending=new Promise(res=>{window.__clerkResolve=res});</script>
 <script async crossorigin="anonymous"
