@@ -3675,7 +3675,7 @@ async function dashStartShopifyOAuth() {
   localStorage.setItem('shopify_oauth_shop', shop);
   const btn = document.getElementById('dash-shopify-oauth-btn');
   if (btn) { btn.disabled = true; btn.style.opacity = '0.7'; btn.innerHTML = '<svg class="spin" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width:15px;height:15px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Redirecting to Shopify…'; }
-  const params = new URLSearchParams({ client_id: window.SHOPIFY_APP_KEY, scope: 'read_products,read_orders,read_analytics,read_customers', redirect_uri: window.SHOPIFY_CALLBACK_URL, state });
+  const params = new URLSearchParams({ client_id: window.SHOPIFY_APP_KEY, scope: 'read_products,read_orders,read_analytics,read_customers,read_themes', redirect_uri: window.SHOPIFY_CALLBACK_URL, state });
   window.location.href = `https://${shop}/admin/oauth/authorize?${params}`;
 }
 async function checkShopifyReturn() {

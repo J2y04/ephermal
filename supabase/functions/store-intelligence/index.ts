@@ -70,6 +70,60 @@ async function fetchStorefrontSignals(shop: string): Promise<{ logo_url: string 
   }
 }
 
+const HEX_RE = /^#[0-9A-Fa-f]{3,8}$/;
+
+/**
+ * Real brand colors + logo from the active theme's settings_data.json — far more
+ * reliable than scraping for a theme-color meta tag most themes never set.
+ * Requires the read_themes scope; falls back silently (caller uses homepage
+ * scrape instead) for tokens granted before this scope was added.
+ */
+async function fetchThemeSignals(shop: string, token: string): Promise<{ colors: string[]; logo_url: string | null }> {
+  try {
+    const themesRes = await fetch(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/themes.json`, {
+      headers: { 'X-Shopify-Access-Token': token },
+    });
+    if (!themesRes.ok) return { colors: [], logo_url: null };
+    const themesData = await themesRes.json() as { themes?: { id: number; role: string }[] };
+    const mainTheme = themesData.themes?.find(t => t.role === 'main') ?? themesData.themes?.[0];
+    if (!mainTheme) return { colors: [], logo_url: null };
+
+    const assetRes = await fetch(
+      `https://${shop}/admin/api/${SHOPIFY_API_VERSION}/themes/${mainTheme.id}/assets.json?asset[key]=config/settings_data.json`,
+      { headers: { 'X-Shopify-Access-Token': token } },
+    );
+    if (!assetRes.ok) return { colors: [], logo_url: null };
+    const assetData = await assetRes.json() as { asset?: { value?: string } };
+    if (!assetData.asset?.value) return { colors: [], logo_url: null };
+
+    const settings = JSON.parse(assetData.asset.value) as Record<string, unknown>;
+    const colors = new Set<string>();
+    let logoUrl: string | null = null;
+
+    // Theme settings schemas vary per theme — walk the tree heuristically:
+    // any hex-looking string is a color signal, any URL under a "logo"-ish key is the logo.
+    function walk(node: unknown, keyHint = ''): void {
+      if (colors.size >= 8 && logoUrl) return;
+      if (typeof node === 'string') {
+        if (HEX_RE.test(node)) colors.add(node);
+        else if (!logoUrl && /logo/i.test(keyHint) && /^(https?:)?\/\//.test(node)) {
+          logoUrl = node.startsWith('//') ? `https:${node}` : node;
+        }
+        return;
+      }
+      if (Array.isArray(node)) { node.forEach(v => walk(v, keyHint)); return; }
+      if (node && typeof node === 'object') {
+        for (const [k, v] of Object.entries(node)) walk(v, k);
+      }
+    }
+    walk((settings as { current?: unknown }).current ?? settings);
+
+    return { colors: [...colors].slice(0, 8), logo_url: logoUrl };
+  } catch {
+    return { colors: [], logo_url: null };
+  }
+}
+
 async function callClaude(system: string, user: string): Promise<string> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
   const res = await fetch(ANTHROPIC_URL, {
@@ -111,10 +165,12 @@ async function handleAnalyze(userId: string): Promise<Record<string, unknown>> {
     throw new Error('No synced products found. Visit Store Products to sync your catalog first.');
   }
 
-  const [shopInfo, storefront] = await Promise.all([
+  const [shopInfo, storefront, theme] = await Promise.all([
     fetchShopInfo(shop, token),
     fetchStorefrontSignals(shop),
+    fetchThemeSignals(shop, token),
   ]);
+  const logoUrl = theme.logo_url ?? storefront.logo_url;
 
   const system = `You are an expert Shopify brand strategist and Meta/Google Ads strategist. You analyze REAL store data (never invent facts not present in the input) and produce a precise, structured brand intelligence brief. Return ONLY valid JSON, no markdown, matching this exact schema:
 {
@@ -130,12 +186,13 @@ async function handleAnalyze(userId: string): Promise<Record<string, unknown>> {
   "ugc_visual": string (visual style guidance for UGC video/photo generation),
   "ugc_tone": string (tone and energy guidance for UGC scripts)
 }
-Base the color palette on the provided theme color signal if present, otherwise infer tasteful hex values consistent with the brand vibe and product niche. Every field must be grounded in the input data — do not hallucinate specifics about the business beyond what the catalog and shop info imply.`;
+Base the color palette on the theme's actual detected colors if present (pick the most brand-relevant ones for primary/secondary/accent, and choose sensible background/text values that pair with them) — do not use the homepage meta tag fallback if the theme's real colors are available. Only infer tasteful hex values from scratch if neither signal is present. Every field must be grounded in the input data — do not hallucinate specifics about the business beyond what the catalog and shop info imply.`;
 
   const userMsg = `Shop name: ${shopInfo.name ?? shop}
 Domain: ${shop}
 Shop description: ${shopInfo.description ?? 'none provided'}
-Detected theme color: ${storefront.theme_color ?? 'none detected'}
+Colors found in the active theme's settings (most reliable signal): ${theme.colors.length ? theme.colors.join(', ') : 'none detected'}
+Homepage theme-color meta tag (fallback signal): ${storefront.theme_color ?? 'none detected'}
 
 Top products (by price):
 ${JSON.stringify(products, null, 2)}`;
@@ -163,7 +220,7 @@ ${JSON.stringify(products, null, 2)}`;
     typography:       brief.typography ?? {},
     ugc_visual:       brief.ugc_visual ?? null,
     ugc_tone:         brief.ugc_tone ?? null,
-    logo_url:         storefront.logo_url,
+    logo_url:         logoUrl,
     model_version:    ANTHROPIC_MODEL,
     generated_at:     new Date().toISOString(),
     updated_at:       new Date().toISOString(),
