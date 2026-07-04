@@ -70,6 +70,8 @@ Supabase secrets that must be set (`supabase secrets set KEY=value`):
 - `GOOGLE_CALLBACK_URL` — `https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/google-oauth-callback`
 - `GOOGLE_ADS_DEVELOPER_TOKEN` — (optional, apply at ads.google.com/aw/apicenter)
 - `META_APP_SECRET` — (set by user)
+- `HIGGSFIELD_API_KEY` — (set by user after subscribing at higgsfield.ai) — used by `ugc-generate` and `creative-brief` edge functions for video/image generation
+- `ANTHROPIC_API_KEY` — (set by user) — used by orchestration/brand strategy layer (Claude claude-sonnet-4-6 for store intelligence, creative briefs, ad copy)
 
 ---
 
@@ -221,6 +223,24 @@ Entry point: `supabase/functions/ugc-generate/index.ts` — add step after copy 
 ### Task 20 — OAuth state nonce server-side storage (security hardening — deferred)
 Currently nonce is checked for presence but not validated against a stored value.
 Fix: Store generated nonce in a `oauth_nonces` table on initiation, delete on use.
+
+### Task 21 — ✅ Store Intelligence (Claude Sonnet brand brief) — DONE (Jul 4 2026)
+Replaced the old URL-scrape + Groq "Store Analysis" (which hallucinated brand_vibe/color_palette/typography
+since the backend never actually returned those fields) with a real pipeline:
+- New table `store_intelligence` (migration 019) — one row per user, permanent brand brief
+- New edge function `store-intelligence` — reads connected Shopify store (shop.json + synced
+  shopify_products + storefront homepage for theme-color/logo), sends to Claude Sonnet
+  (`claude-sonnet-5`, requires `ANTHROPIC_API_KEY` — NOT YET SET, function 503s until set),
+  returns summary/target_audience/ad_opportunities/meta_strategy/products/keywords/brand_vibe/
+  color_palette/typography/ugc_visual/ugc_tone, upserts to store_intelligence
+- Dashboard `page-analysis`: no longer requires a manual URL paste — uses the user's connected
+  Shopify store automatically (button reads "Analyse My Store"); loads cached brief on page visit
+- Fixed a real gating bug: `analysis` was missing from the `pagePaywalls` map so the Growth-plan
+  paywall never actually rendered for starter users on this page — added it
+- Moved the "Store Analysis" nav item out of the hidden "AI Tools" section into the visible
+  "Intelligence" section (it's a real working feature now, not a stub)
+- **Next**: run `npx supabase secrets set ANTHROPIC_API_KEY=<key>` to activate; then wire this
+  brief into ad copy / UGC script / Higgsfield prompt generation as shared brand context
 
 ---
 

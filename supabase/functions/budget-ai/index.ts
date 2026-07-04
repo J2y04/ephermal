@@ -32,7 +32,7 @@ const supabase = createClient(
 
 const GROQ_KEY = Deno.env.get('GROQ_API_KEY') ?? '';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const BUDGET_MODEL = 'qwen-qwq-32b'; // reasoning model for math
+const BUDGET_MODEL = 'llama-3.3-70b-versatile'; // fast reasoning model for budget math
 
 async function callGroq(system: string, user: string): Promise<string> {
   if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');

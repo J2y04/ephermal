@@ -577,13 +577,13 @@ select.form-input{cursor:pointer}
       <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Ephermal AI
       <svg class="lock-icon" id="lock-ai" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </div>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Intelligence</div>
     <div class="nav-item" data-page="analysis" id="nav-analysis" onclick="handleNavClick('analysis')">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>Store Analysis
       <svg class="lock-icon" id="lock-analysis" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </div>
-  </div>
-  <div class="nav-section">
-    <div class="nav-label">Intelligence</div>
     <div class="nav-item" data-page="competitorradar" id="nav-competitorradar" onclick="handleNavClick('competitorradar')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="18" y1="12" x2="22" y2="12"/></svg>Competitor Radar
       <svg class="lock-icon" id="lock-competitorradar" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -936,13 +936,14 @@ select.form-input{cursor:pointer}
       <div class="panel fade-in" style="position:relative">
         <div class="panel-head"><div class="panel-title">Store Analysis</div></div>
         <div class="settings-form" id="analysis-form-body">
-          <div class="form-group">
-            <label class="form-label">Store URL</label>
-            <input class="form-input" id="analysis-url" placeholder="https://yourstore.com" type="url">
-            <div style="font-size:12px;color:var(--muted)">Enter any e-commerce store URL to get AI-powered insights on products, audience, and ad opportunities.</div>
+          <div class="form-group" id="analysis-connected-hint" style="display:none">
+            <div style="font-size:13px;color:var(--text)">Analyzing <strong id="analysis-shop-name">your connected store</strong> — pulls your live catalog, shop info, and storefront branding into a permanent brand brief used by every AI feature.</div>
+          </div>
+          <div class="form-group" id="analysis-disconnected-hint" style="display:none">
+            <div style="font-size:13px;color:var(--muted)">Connect your Shopify store in Settings first — Store Analysis reads your live catalog to build the brand brief.</div>
           </div>
           <div style="display:flex;justify-content:flex-start;gap:12px;align-items:center">
-            <button class="btn-save" onclick="analyzeStore()" id="btn-analyze">Analyse Store</button>
+            <button class="btn-save" onclick="analyzeStore()" id="btn-analyze">Analyse My Store</button>
             <button class="ai-gen-btn" style="padding:9px 14px;font-size:12px" onclick="aiAskAboutStore()">
               <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Ask Ephermal AI
             </button>
@@ -2112,7 +2113,7 @@ async function loadCreditsFromSupabase() {
       .select('used')
       .eq('user_id', clerkUserId)
       .eq('month', month)
-      .single();
+      .maybeSingle();
     if (ugcData) localStorage.setItem('ugc_used_' + month, String(ugcData.used));
 
     // Load AI message credits (server-side - cannot be spoofed)
@@ -2121,17 +2122,17 @@ async function loadCreditsFromSupabase() {
       .select('used')
       .eq('user_id', clerkUserId)
       .eq('month', month)
-      .single();
+      .maybeSingle();
     if (aiData) localStorage.setItem('ai_used_' + month, String(aiData.used));
 
     // Load AI top-up pool for this month
     const { data: topupData } = await sb
       .from('ai_topups')
-      .select('credits')
+      .select('messages')
       .eq('user_id', clerkUserId)
       .eq('month', month);
     if (topupData) {
-      const totalTopup = topupData.reduce((sum, r) => sum + (r.credits || 0), 0);
+      const totalTopup = topupData.reduce((sum, r) => sum + (r.messages || 0), 0);
       localStorage.setItem('ai_topup_' + month, String(totalTopup));
     }
   } catch(e) {}
@@ -2216,7 +2217,7 @@ function renderPlanUI() {
     if (lockEl) lockEl.style.display = locked ? 'block' : 'none';
   });
   // Show/hide page paywall overlays
-  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall' };
+  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall', analysis: 'analysis-paywall' };
   Object.entries(pagePaywalls).forEach(([feature, id]) => {
     const pw = document.getElementById(id);
     if (pw) pw.style.display = !canAccess(feature) ? 'flex' : 'none';
@@ -2509,6 +2510,7 @@ function navigate(page) {
     if (page === 'billing') renderBillingPage();
     if (page === 'creatives') { loadAllCreatives(); runFatigueAnalysis(); }
     if (page === 'budget')  { /* ready to use on load */ }
+    if (page === 'analysis') loadStoreIntelligence();
     if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } loadLaunchedCampaigns(); }
     if (page === 'settings') loadSettingsFields();
     if (page === 'audience') { loadPixelStatus(); loadAudiences(); }
@@ -3338,84 +3340,102 @@ async function confirmAssignCampaign() {
 }
 
 // ── STORE ANALYSIS ────────────────────────────────────────────────────────────
+function renderStoreIntelligence(d) {
+  const resultEl = document.getElementById('analysis-result');
+  if (!d) { resultEl.style.display = 'none'; return; }
+
+  document.getElementById('ar-summary').textContent       = d.summary          || '—';
+  document.getElementById('ar-audience').textContent      = d.target_audience  || '—';
+  document.getElementById('ar-opportunities').textContent = d.ad_opportunities || '—';
+  document.getElementById('ar-strategy').textContent      = d.meta_strategy    || '—';
+  document.getElementById('ar-products').innerHTML        = (d.products || []).map(p => `<span class="tag">${escHtml(p)}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">—</span>';
+
+  // ── Brand vibe ───────────────────────────────────────────────────────────
+  document.getElementById('ar-vibe').textContent = d.brand_vibe || '—';
+
+  // ── Color palette swatches ──────────────────────────────────────────────
+  const palette = d.color_palette || {};
+  const swatchDefs = [
+    {key:'primary',   label:'Primary'},
+    {key:'secondary', label:'Secondary'},
+    {key:'accent',    label:'Accent'},
+    {key:'background',label:'BG'},
+    {key:'text_on_bg',label:'Text'},
+  ];
+  document.getElementById('ar-colors').innerHTML = swatchDefs.map(({key,label}) => {
+    const hex = palette[key] || '';
+    if (!hex || hex === '—') return '';
+    // Validate hex before CSS injection — only allow #RGB / #RRGGBB / #RRGGBBAA
+    const safeHex = /^#[0-9A-Fa-f]{3,8}$/.test(hex) ? hex : '#888888';
+    return `<div class="color-swatch">
+      <div class="color-swatch-circle" style="background:${safeHex}"></div>
+      <div class="color-swatch-label">${label}</div>
+      <div class="color-swatch-hex">${escHtml(hex.length > 9 ? hex.slice(0,9) : hex)}</div>
+    </div>`;
+  }).join('');
+
+  // ── Typography ───────────────────────────────────────────────────────────
+  const typo = d.typography || {};
+  const headEl  = document.getElementById('ar-font-heading');
+  const bodyEl  = document.getElementById('ar-font-body');
+  if (headEl) headEl.textContent = typo.heading_style ? `Heading: ${typo.heading_style}` : '—';
+  if (bodyEl) bodyEl.textContent = typo.body_style    ? `Body: ${typo.body_style}`       : '';
+
+  // ── UGC creative direction ───────────────────────────────────────────────
+  document.getElementById('ar-ugc-visual').textContent = d.ugc_visual || '—';
+  document.getElementById('ar-ugc-tone').textContent   = d.ugc_tone   || '—';
+
+  resultEl.style.display = 'block';
+
+  // Persist brand identity locally so UGC generation + AI chat can reference it fast
+  localStorage.setItem('store_brand_identity', JSON.stringify({
+    shop:          d.shop || '',
+    brand_vibe:    d.brand_vibe || '',
+    color_palette: palette,
+    typography:    typo,
+    ugc_visual:    d.ugc_visual || '',
+    ugc_tone:      d.ugc_tone   || '',
+    generated_at:  d.generated_at || new Date().toISOString(),
+  }));
+}
+
+async function loadStoreIntelligence() {
+  const shop = localStorage.getItem('shopify_domain') || localStorage.getItem('shopify_store');
+  const connectedHint    = document.getElementById('analysis-connected-hint');
+  const disconnectedHint = document.getElementById('analysis-disconnected-hint');
+  const shopNameEl       = document.getElementById('analysis-shop-name');
+  if (shop) {
+    if (connectedHint) connectedHint.style.display = '';
+    if (disconnectedHint) disconnectedHint.style.display = 'none';
+    if (shopNameEl) shopNameEl.textContent = localStorage.getItem('shopify_shop_name') || shop;
+  } else {
+    if (connectedHint) connectedHint.style.display = 'none';
+    if (disconnectedHint) disconnectedHint.style.display = '';
+  }
+
+  try {
+    const r = await authFetch('/store-intelligence', {method:'POST', body:JSON.stringify({action:'get'})});
+    if (r && r.ok) { const d = await r.json(); renderStoreIntelligence(d.brief); }
+  } catch(e) { /* no cached brief yet — silent */ }
+}
+
 async function analyzeStore() {
   if (!canAccess('analysis')) { showUpgradeModal('analysis'); return; }
-  const url = document.getElementById('analysis-url').value.trim();
-  if (!url) { showToast('Enter a store URL first', 'error'); return; }
+  const shop = localStorage.getItem('shopify_domain') || localStorage.getItem('shopify_store');
+  if (!shop) { showToast('Connect your Shopify store in Settings first', 'error'); return; }
+
   const btn = document.getElementById('btn-analyze');
   btn.disabled=true; btn.textContent='Analysing…';
-  const resultEl = document.getElementById('analysis-result');
   try {
-    const r = await authFetch('/ai', {method:'POST', body:JSON.stringify({action:'analyze', url})});
+    const r = await authFetch('/store-intelligence', {method:'POST', body:JSON.stringify({action:'analyze'})});
     if (!r) { showToast('Request failed - please try again', 'error'); return; }
-    if (!r.ok) { const d = await r.json().catch(()=>({})); showToast(d.detail || 'Analysis failed', 'error'); return; }
-    const d = await r.json();
+    const d = await r.json().catch(()=>({}));
+    if (!r.ok) { showToast(d.error || 'Analysis failed', 'error'); return; }
 
-    // ── Standard fields ────────────────────────────────────────────────────
-    document.getElementById('ar-summary').textContent      = d.summary          || '—';
-    document.getElementById('ar-audience').textContent     = d.target_audience  || '—';
-    document.getElementById('ar-opportunities').textContent = d.ad_opportunities || '—';
-    document.getElementById('ar-strategy').textContent     = d.meta_strategy    || '—';
-    document.getElementById('ar-products').innerHTML       = (d.products || []).map(p => `<span class="tag">${escHtml(p)}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">—</span>';
-
-    // ── Brand vibe ─────────────────────────────────────────────────────────
-    document.getElementById('ar-vibe').textContent = d.brand_vibe || '—';
-
-    // ── Color palette swatches ─────────────────────────────────────────────
-    const palette = d.color_palette || {};
-    const swatchDefs = [
-      {key:'primary',   label:'Primary'},
-      {key:'secondary', label:'Secondary'},
-      {key:'accent',    label:'Accent'},
-      {key:'background',label:'BG'},
-      {key:'text_on_bg',label:'Text'},
-    ];
-    document.getElementById('ar-colors').innerHTML = swatchDefs.map(({key,label}) => {
-      const hex = palette[key] || '';
-      if (!hex || hex === '—') return '';
-      // Validate hex before CSS injection — only allow #RGB / #RRGGBB / #RRGGBBAA
-      const safeHex = /^#[0-9A-Fa-f]{3,8}$/.test(hex) ? hex : '#888888';
-      return `<div class="color-swatch">
-        <div class="color-swatch-circle" style="background:${safeHex}"></div>
-        <div class="color-swatch-label">${label}</div>
-        <div class="color-swatch-hex">${escHtml(hex.length > 9 ? hex.slice(0,9) : hex)}</div>
-      </div>`;
-    }).join('');
-
-    // ── Typography ─────────────────────────────────────────────────────────
-    const typo = d.typography || {};
-    const headEl  = document.getElementById('ar-font-heading');
-    const bodyEl  = document.getElementById('ar-font-body');
-    const chipsEl = document.getElementById('ar-font-chips');
-    if (headEl) headEl.textContent  = typo.heading_style ? `Heading: ${typo.heading_style}` : '—';
-    if (bodyEl) bodyEl.textContent  = typo.body_style    ? `Body: ${typo.body_style}`       : '';
-    if (chipsEl) chipsEl.innerHTML  = (typo.font_suggestions || []).map(f => `<span class="font-chip">${escHtml(f)}</span>`).join('');
-
-    // ── UGC creative direction ─────────────────────────────────────────────
-    document.getElementById('ar-ugc-visual').textContent = d.ugc_visual_style || '—';
-    document.getElementById('ar-ugc-tone').textContent   = d.ugc_tone         || '—';
-
-    // ── Show result block ──────────────────────────────────────────────────
-    resultEl.style.display = 'block';
-
-    // ── Persist brand identity for UGC generation + AI chat ───────────────
-    const brandIdentity = {
-      store_url:        url,
-      brand_vibe:       d.brand_vibe       || '',
-      color_palette:    palette,
-      typography:       typo,
-      ugc_visual_style: d.ugc_visual_style || '',
-      ugc_tone:         d.ugc_tone         || '',
-      analysed_at:      new Date().toISOString(),
-    };
-    localStorage.setItem('store_brand_identity', JSON.stringify(brandIdentity));
-    localStorage.setItem('last_analyzed_store', url);
-
-    const stEl = document.getElementById('conn-store');
-    try { if (stEl) { stEl.className='conn-status ok'; stEl.textContent=`● Last: ${new URL(url).hostname}`; } } catch(e) {}
-    showToast('Store analysed - brand identity saved for UGC', 'success');
+    renderStoreIntelligence(d);
+    showToast('Store analysed - brand brief saved for UGC and ad copy', 'success');
   } catch(e){ showToast('Request failed - please try again', 'error'); }
-  finally { btn.disabled=false; btn.textContent='Analyse Store'; }
+  finally { btn.disabled=false; btn.textContent='Analyse My Store'; }
 }
 
 // ── SHOPIFY OAUTH (dashboard settings) ───────────────────────────────────────
@@ -5225,7 +5245,7 @@ async function searchCompetitorAds() {
   if (!terms) { showToast('Enter a keyword or brand name', 'error'); return; }
   const country = document.getElementById('radar-country').value;
   const btn = document.getElementById('radar-search-btn');
-  const SVG_SEARCH = '<svg width=”14” height=”14” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2.5” stroke-linecap=”round” stroke-linejoin=”round”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg>';
+  const SVG_SEARCH = '<svg style=”width:14px;height:14px;flex-shrink:0;display:inline-block;vertical-align:middle” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2.5” stroke-linecap=”round” stroke-linejoin=”round”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg>';
   btn.disabled = true;
   btn.innerHTML = SVG_SEARCH + '<span>Searching…</span>';
   document.getElementById('radar-no-meta').style.display = 'none';

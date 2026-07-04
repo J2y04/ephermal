@@ -16,7 +16,8 @@
  * POST { action: 'create',           product_title, product_id?, product_image? }
  *
  * Required env vars:
- *   GROQ_API_KEY         — llama-3.3-70b-versatile
+ *   GROQ_API_KEY         — llama-3.3-70b-versatile (script/copy/analysis)
+ *   HIGGSFIELD_API_KEY   — Higgsfield Marketing Studio (video generation)
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
  */
@@ -30,9 +31,11 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const GROQ_KEY   = Deno.env.get('GROQ_API_KEY') ?? '';
-const GROQ_URL   = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_KEY          = Deno.env.get('GROQ_API_KEY') ?? '';
+const GROQ_URL          = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL        = 'llama-3.3-70b-versatile';
+const HIGGSFIELD_KEY    = Deno.env.get('HIGGSFIELD_API_KEY') ?? '';
+const HIGGSFIELD_URL    = 'https://api.higgsfield.ai/v1/generate';
 
 // UGC generation credits per plan (separate from AI chat message credits in ai_credits table)
 const PLAN_LIMITS: Record<string, number> = { starter: 15, growth: 75, scale: 350 };

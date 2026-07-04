@@ -87,14 +87,15 @@ export const redis = {
     return r === 1;
   },
 
-  /** Atomic increment. On first call (result === 1) sets TTL in seconds. Returns new value. */
-  async incr(key: string, ttlSeconds?: number): Promise<number> {
+  /** Atomic increment. On first call (result === 1) sets TTL in seconds.
+   *  Returns null when Redis is unavailable — callers must handle the null case. */
+  async incr(key: string, ttlSeconds?: number): Promise<number | null> {
     const result = await command<number>(['INCR', key]);
-    const val = result ?? 0;
-    if (val === 1 && ttlSeconds) {
+    if (result === null) return null;
+    if (result === 1 && ttlSeconds) {
       await command(['EXPIRE', key, ttlSeconds]);
     }
-    return val;
+    return result;
   },
 };
 

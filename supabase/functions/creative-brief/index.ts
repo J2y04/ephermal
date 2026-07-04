@@ -8,7 +8,8 @@
  * POST { action: 'history' } — return last 5 briefs for the user
  *
  * Required env vars:
- *   GROQ_API_KEY
+ *   GROQ_API_KEY         — llama-3.3-70b-versatile (brief generation)
+ *   HIGGSFIELD_API_KEY   — Higgsfield Marketing Studio (image/video prompts)
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
  */
@@ -22,9 +23,10 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const GROQ_KEY   = Deno.env.get('GROQ_API_KEY') ?? '';
-const GROQ_URL   = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const GROQ_KEY       = Deno.env.get('GROQ_API_KEY') ?? '';
+const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL     = 'llama-3.3-70b-versatile';
+const HIGGSFIELD_KEY = Deno.env.get('HIGGSFIELD_API_KEY') ?? ''; // used for image/video generation prompts
 
 async function callGroq(system: string, user: string, maxTokens = 2000): Promise<string> {
   if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');

@@ -2,7 +2,8 @@
  * Ephermal — Rate Limiting (shared)
  *
  * Sliding-window rate limiter backed by Upstash Redis (INCR + EXPIRE).
- * Falls back to "allow" if Redis is unavailable — never break prod over a missing cache.
+ * When Redis is unavailable, falls back to an in-process Map so limits
+ * are still enforced (fail-closed, not fail-open).
  *
  * Usage:
  *   const result = await rateLimit(userId, 'ai', 10, 60);   // 10 req/60s
@@ -10,6 +11,30 @@
  */
 
 import { redis } from './redis.ts';
+
+// In-memory fallback: keyed same as Redis keys, auto-evicted when window expires.
+const _memStore = new Map<string, { count: number; resetAt: number }>();
+
+function _memRateLimit(key: string, maxRequests: number, windowSeconds: number): RateLimitResult {
+  const now = Date.now();
+  let bucket = _memStore.get(key);
+  if (!bucket || now >= bucket.resetAt) {
+    bucket = { count: 0, resetAt: now + windowSeconds * 1_000 };
+    _memStore.set(key, bucket);
+    // Evict expired entries when store grows large to avoid memory leak.
+    if (_memStore.size > 10_000) {
+      for (const [k, v] of _memStore) {
+        if (now >= v.resetAt) _memStore.delete(k);
+      }
+    }
+  }
+  bucket.count += 1;
+  return {
+    allowed:   bucket.count <= maxRequests,
+    remaining: Math.max(0, maxRequests - bucket.count),
+    resetIn:   Math.ceil((bucket.resetAt - now) / 1_000),
+  };
+}
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -30,8 +55,8 @@ export async function rateLimit(
   const key   = `rl:${fn}:${userId}:${windowSeconds}`;
   const count = await redis.incr(key, windowSeconds);
   if (count === null) {
-    // Redis unavailable — allow, don't break prod
-    return { allowed: true, remaining: maxRequests, resetIn: windowSeconds };
+    // Redis unavailable — enforce limits in-process so spend-incurring endpoints stay protected.
+    return _memRateLimit(key, maxRequests, windowSeconds);
   }
   const remaining = Math.max(0, maxRequests - count);
   return { allowed: count <= maxRequests, remaining, resetIn: windowSeconds };
