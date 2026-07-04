@@ -203,6 +203,7 @@ Deno.serve(async (req) => {
           synced: products.length,
           shop,
           message: `Synced ${products.length} products from ${shop}`,
+          products,
         }, origin);
       }
 

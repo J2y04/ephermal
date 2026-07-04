@@ -4524,9 +4524,9 @@ async function syncProducts() {
   if (btn) { btn.disabled=true; btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0;animation:none"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Syncing…'; }
   if (status) status.textContent = 'Syncing…';
   try {
-    const r = await authFetch('/ephermal/shopify/products');
-    if (!r) throw new Error('No response');
-    const data = r.json ? await r.json() : r;
+    const r = await authFetch('/shopify', { method: 'POST', body: JSON.stringify({ action: 'sync_products' }) });
+    if (!r || !r.ok) throw new Error('No response');
+    const data = await r.json();
     const products = Array.isArray(data) ? data : (data.products || []);
     localStorage.setItem('products_cache', JSON.stringify(products));
     window._cachedProducts = products;

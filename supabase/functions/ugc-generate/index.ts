@@ -380,7 +380,8 @@ Write launch-ready ad copy.`;
         let copy: Record<string, unknown>;
         try { copy = JSON.parse(copyReply); } catch { copy = {}; }
 
-        const { data: creative } = await supabase.from('creatives').insert({
+        const { data: creative, error: creativeErr } = await supabase.from('creatives').insert({
+          id:        crypto.randomUUID(),
           user_id:   userId,
           headline:  String(script.hook ?? '').slice(0, 255) || desc.slice(0, 100),
           body:      String((copy.meta as Record<string, unknown>)?.primary_text ?? '').slice(0, 500),
@@ -388,7 +389,7 @@ Write launch-ready ad copy.`;
           status:    'pending_review',
           meta_data: { script, copy, audiences, preset, aspect_ratio: aspectRatio, product_description: desc },
         }).select('id').single();
-
+        if (creativeErr) console.error('ugc-generate creatives insert error:', creativeErr.message);
 
         result = { creative_id: creative?.id, script, copy, audiences, status: 'pending_review' };
         break;
@@ -428,7 +429,8 @@ Write launch-ready ad copy.`;
         let copy: Record<string, unknown>;
         try { copy = JSON.parse(copyReply); } catch { copy = {}; }
 
-        const { data: creative } = await supabase.from('creatives').insert({
+        const { data: creative, error: creativeErr } = await supabase.from('creatives').insert({
+          id:        crypto.randomUUID(),
           user_id:   userId,
           headline:  String(script.hook ?? '').slice(0, 255) || productTitle.slice(0, 100),
           body:      String((copy.meta as Record<string, unknown>)?.primary_text ?? '').slice(0, 500),
@@ -436,7 +438,7 @@ Write launch-ready ad copy.`;
           status:    'pending_review',
           meta_data: { script, copy, audiences, product_id: productId, product_title: productTitle, product_image: productImage },
         }).select('id').single();
-
+        if (creativeErr) console.error('ugc-generate creatives insert error:', creativeErr.message);
 
         result = { creative_id: creative?.id, script, copy, audiences, status: 'pending_review' };
         break;
