@@ -6,13 +6,21 @@
 
 Ephermal connects to a Shopify store via OAuth and reads the live product catalog in real time. A team of 7 specialised AI agents — coordinated by an Orchestrator — handles every step of running paid advertising:
 
-1. **Store Analyzer** — reads live catalog, pricing, and bestsellers
-2. **Copy Agent** — writes headlines, hooks, and ad copy per product
+1. **Store Analyzer** — reads live catalog, pricing, and bestsellers; generates a permanent brand-intelligence brief (summary, target audience, brand vibe, color palette, UGC creative direction)
+2. **Copy Agent** — writes headlines, hooks, and ad copy per product, grounded in the store's brand brief
 3. **UGC Agent** — generates creator-style video and image ad scripts
 4. **Meta Agent** — creates and manages Facebook and Instagram campaigns via the Meta Marketing API
 5. **Google Agent** — handles Search, Shopping, and Performance Max via the Google Ads API
 6. **Audience Agent** — builds custom and lookalike audiences from store data
-7. **Analytics Agent** — tracks ROAS and surfaces performance signals
+7. **Analytics Agent** — tracks ROAS, MRR, and ad spend across platforms in one unified dashboard
+
+## Additional Capabilities
+
+- **Store Intelligence** — AI-generated brand brief (summary, target audience, brand vibe, color palette, typography direction) built from live Shopify data, reused across every ad-copy and creative generation call
+- **MRR Tracker** — combines Shopify revenue, Meta ad spend, and Google ad spend into one time series with blended ROAS and month-over-month growth
+- **Budget AI** — calculates optimal daily ad budget from a revenue goal, with human-confirmed one-click apply to live Meta/Google campaigns (never auto-applies without explicit approval)
+- **Competitor Radar** — tracks competitor ad creative via the Meta Ad Library
+- **Profit Tracker** — true margin per product using COGS input
 
 ## Pricing
 
@@ -25,9 +33,9 @@ All plans billed monthly. Cancel any time.
 ## Key Facts
 
 - Platform: Web SaaS (dashboard at ephermal.app)
-- Integrations: Shopify, Meta Ads (Facebook/Instagram), Google Ads
+- Integrations: Shopify, Meta Ads (Facebook/Instagram), Google Ads, Higgsfield AI (UGC video generation)
 - Authentication: Shopify OAuth, Meta OAuth, Google OAuth
-- AI stack: Groq (llama-3.3-70b), proprietary agent orchestration
+- AI stack: Claude (Anthropic) for brand strategy, store intelligence, and ad copywriting; Groq (llama-3.3-70b) for fast structured calculations (budgets, forecasts)
 - Data storage: EU-hosted (Supabase EU region), GDPR compliant
 - Payments: Stripe
 - Founded: 2026

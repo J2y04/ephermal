@@ -242,6 +242,47 @@ since the backend never actually returned those fields) with a real pipeline:
 - **Next**: run `npx supabase secrets set ANTHROPIC_API_KEY=<key>` to activate; then wire this
   brief into ad copy / UGC script / Higgsfield prompt generation as shared brand context
 
+### Task 22 — ✅ MRR Tracker — DONE (Jul 5 2026)
+New sidebar tab combining Shopify revenue + Meta spend + Google Ads spend into one view:
+- New table `revenue_snapshots` (migration 020) — daily revenue/spend rows per user
+- New edge function `mrr-tracker` — `sync` pulls last 90 days from Shopify orders + Meta
+  insights + Google Ads GAQL cost, upserts daily snapshots; `get_report` returns MRR
+  (trailing 30-day revenue), MoM growth %, blended ROAS, and the full time series
+- New dashboard page: stat cards, Sync button, Meta vs Google spend donut, two new
+  interactive SVG line charts (Revenue Over Time, ROAS Over Time) with 30d/90d toggle
+- Also fixed the Analytics page charts getting stuck on a loading skeleton forever for
+  accounts with zero campaigns (no distinction existed between "still loading" and
+  "confirmed empty") — added a `_campaignsLoaded` flag so charts now resolve to a real
+  empty state instead of spinning indefinitely
+
+### Task 23 — ✅ dashboard.ephermal.app subdomain (alias, not full migration) — DONE (Jul 5 2026)
+- `web/middleware.ts` rewrites `dashboard.ephermal.app/` → `/dashboard.html` (same deployment,
+  same public/ files — everything else resolves identically on any host)
+- `next.config.mjs` redirects `ephermal.app/dashboard.html` → `https://dashboard.ephermal.app/`
+- **Known tradeoff (accepted)**: Clerk session + all integration tokens (Shopify/Meta/Google)
+  live in `localStorage`, which is per-origin. Existing logged-in users hitting the new
+  subdomain for the first time will need to log in again and reconnect integrations once —
+  a full migration would move login/setup onto the same origin to avoid this, deferred.
+- Fixed a real CORS bug this surfaced: `cache-proxy` and `_shared/auth.ts` only ever allowed
+  `APP_URL` as the CORS origin — any request from `dashboard.ephermal.app` would have been
+  silently blocked by the browser. Both now allow an explicit two-origin allow-list.
+- **Still needed (Jamal, outside Claude Code's reach):**
+  1. Add `dashboard.ephermal.app` as a domain on the Vercel project + point its CNAME at
+     Vercel per their dashboard instructions
+  2. Add `https://dashboard.ephermal.app` to Clerk Dashboard → allowed origins (Clerk enforces
+     its own origin allow-list separately from this app's CORS)
+
+### Task 24 — GEO refresh (Jul 5 2026)
+- `robots.txt`: added the crawlers that actually matter for LLM answer engines —
+  `ChatGPT-User`/`OAI-SearchBot` (OpenAI live citation, distinct from training-only `GPTBot`),
+  `ClaudeBot` (Anthropic's current crawler name), `Google-Extended` (Gemini/AI Overviews
+  grounding), `Applebot-Extended`, `CCBot`, `cohere-ai`, `Perplexity-User`
+- `llms.txt`: was stale (still said "Groq only" for the AI stack) — updated to reflect Claude
+  for brand strategy/store intelligence/copy, added Store Intelligence + MRR Tracker + Higgsfield
+  to capabilities list
+- Structured data (Organization/WebSite/SoftwareApplication/FAQPage JSON-LD in `layout.tsx`)
+  was already solid — left as-is
+
 ---
 
 ## Recent Commits (latest first)

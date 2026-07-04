@@ -134,6 +134,7 @@ function resolveFunctionName(path: string): string | null {
   if (/^\/(competitor-radar)/.test(path))           return 'competitor-radar';
   if (/^\/(profit-tracker)/.test(path))             return 'profit-tracker';
   if (/^\/(store-intelligence)/.test(path))         return 'store-intelligence';
+  if (/^\/(mrr-tracker)/.test(path))                return 'mrr-tracker';
   return null;
 }
 
@@ -181,12 +182,18 @@ function buildFunctionUrl(fnName: string, path: string): string {
   }
 }
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  APP_URL,
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  'Access-Control-Max-Age': '86400',
-};
+// dashboard.ephermal.app serves the same dashboard.html as a second origin
+// (Vercel host-based alias) — both must be allowed to call this function.
+const ALLOWED_ORIGINS = [APP_URL, 'https://dashboard.ephermal.app'];
+
+function buildCorsHeaders(origin: string | null): Record<string, string> {
+  return {
+    'Access-Control-Allow-Origin':  origin && ALLOWED_ORIGINS.includes(origin) ? origin : APP_URL,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Max-Age': '86400',
+  };
+}
 
 
 /** Extract the action name from a URL path/query */
@@ -201,6 +208,8 @@ function extractScope(headers: Record<string, string>): string {
 }
 
 Deno.serve(async (req) => {
+  const CORS_HEADERS = buildCorsHeaders(req.headers.get('origin'));
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }

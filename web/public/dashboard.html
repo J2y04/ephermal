@@ -68,6 +68,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .panel-title{font-size:15px;font-weight:700}
 .panel-action{font-size:13px;color:var(--primary);cursor:pointer;transition:opacity .2s;background:none;border:none;font-family:'Inter',sans-serif}
 .panel-action:hover{opacity:.7}
+.mrr-period-btn{padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--muted)}
+.mrr-period-btn.active{background:rgba(6,214,199,.12);border-color:rgba(6,214,199,.35);color:var(--primary)}
+.lc-dot{transition:opacity .15s}
 .campaign-table{width:100%}
 .campaign-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 90px 56px;align-items:center;padding:14px 22px;border-bottom:1px solid var(--border);transition:background .2s;cursor:pointer}
 .campaign-row:last-child{border-bottom:none}
@@ -580,6 +583,10 @@ select.form-input{cursor:pointer}
   </div>
   <div class="nav-section">
     <div class="nav-label">Intelligence</div>
+    <div class="nav-item" data-page="mrrtracker" id="nav-mrrtracker" onclick="handleNavClick('mrrtracker')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>MRR Tracker
+      <svg class="lock-icon" id="lock-mrrtracker" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
     <div class="nav-item" data-page="analysis" id="nav-analysis" onclick="handleNavClick('analysis')">
       <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/><path d="M11 8v6M8 11h6"/></svg>Store Analysis
       <svg class="lock-icon" id="lock-analysis" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -928,6 +935,72 @@ select.form-input{cursor:pointer}
           </div>
         </div>
         <div style="padding:20px 22px"><div id="creatives-body-full"><div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No creatives yet</p></div></div></div>
+      </div>
+    </div>
+
+    <!-- MRR TRACKER -->
+    <div class="page" id="page-mrrtracker">
+      <div class="paywall-wrap" id="mrrtracker-paywall-wrap">
+      <div class="page-header">
+        <div>
+          <div class="page-title">MRR Tracker</div>
+          <div class="page-subtitle">Shopify revenue + Meta &amp; Google ad spend, combined into one view</div>
+        </div>
+        <button onclick="syncMrrTracker()" class="btn btn-primary" id="mrr-sync-btn" style="padding:10px 20px;display:flex;align-items:center;gap:8px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync Data
+        </button>
+      </div>
+
+      <div class="stat-row fade-in" style="margin-bottom:20px">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">MRR (30-day revenue)</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div>
+          <div class="stat-value" id="mrr-stat-mrr">—</div>
+          <div class="stat-label" id="mrr-stat-growth">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Total Ad Spend (30d)</div><div class="stat-icon" style="background:rgba(251,191,36,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div>
+          <div class="stat-value" id="mrr-stat-spend">—</div>
+          <div class="stat-label">Meta + Google combined</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Blended ROAS</div><div class="stat-icon" style="background:rgba(52,211,153,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div></div>
+          <div class="stat-value" id="mrr-stat-roas">—</div>
+          <div class="stat-label">Revenue ÷ ad spend, last 30 days</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Orders (30d)</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div></div>
+          <div class="stat-value" id="mrr-stat-orders">—</div>
+          <div class="stat-label">Paid Shopify orders</div>
+        </div>
+      </div>
+
+      <div class="panel fade-in" style="margin-bottom:20px">
+        <div class="panel-head">
+          <div class="panel-title">Revenue Over Time</div>
+          <div style="display:flex;gap:6px">
+            <button class="panel-action mrr-period-btn active" data-days="30" onclick="setMrrPeriod(30)">30d</button>
+            <button class="panel-action mrr-period-btn" data-days="90" onclick="setMrrPeriod(90)">90d</button>
+          </div>
+        </div>
+        <div style="padding:16px 22px" id="mrr-revenue-chart"><div class="empty-state" style="padding:30px 0"><p>No revenue data yet — click Sync Data</p></div></div>
+      </div>
+
+      <div class="panel fade-in" style="margin-bottom:20px">
+        <div class="panel-head"><div class="panel-title">ROAS Over Time</div></div>
+        <div style="padding:16px 22px" id="mrr-roas-chart"><div class="empty-state" style="padding:30px 0"><p>No spend data yet — connect Meta/Google and sync</p></div></div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px">Ad Spend by Platform (30d)</div>
+        <div id="mrr-spend-donut"><div class="empty-state" style="padding:20px 0"><p>No spend data yet</p></div></div>
+      </div>
+
+        <div class="paywall-lock" id="mrrtracker-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>MRR Tracker - Growth Plan</strong>
+          <span>Combine Shopify revenue with Meta &amp; Google ad spend into one command center. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('mrrtracker')">Upgrade to Growth →</button>
+        </div>
       </div>
     </div>
 
@@ -1996,7 +2069,8 @@ select.form-input{cursor:pointer}
 
 <script>
 let allCampaigns = [];
-const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'Dev Tools',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker'};
+let _campaignsLoaded = false;
+const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Campaigns',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'Dev Tools',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker',mrrtracker:'MRR Tracker'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
@@ -2006,7 +2080,7 @@ const PLANS = {
   growth:  { name: 'Growth',  color: '#06d6c7', ugc: 75,  stores: 3,        badge: 'GROWTH'  },
   scale:   { name: 'Scale',   color: '#06d6c7', ugc: 350, stores: Infinity,  badge: 'SCALE'   },
 };
-const GATED = { analytics: 'growth', ai: 'growth', analysis: 'growth', googleads: 'growth', audience: 'growth', budget: 'growth', launch: 'growth', abtest: 'scale', bulk: 'scale', multistore: 'scale', whitelabel: 'scale', competitorradar: 'growth', creativebrief: 'growth', profittracker: 'growth' };
+const GATED = { analytics: 'growth', ai: 'growth', analysis: 'growth', googleads: 'growth', audience: 'growth', budget: 'growth', launch: 'growth', abtest: 'scale', bulk: 'scale', multistore: 'scale', whitelabel: 'scale', competitorradar: 'growth', creativebrief: 'growth', profittracker: 'growth', mrrtracker: 'growth' };
 const PLAN_RANK = { starter: 0, growth: 1, scale: 2 };
 function getUserPlan() {
   // Clerk publicMetadata is the ONLY source of truth (written server-side by Stripe webhook).
@@ -2209,7 +2283,7 @@ function renderPlanUI() {
   const fill = document.getElementById('credits-bar-fill');
   if (fill) { fill.style.width = pct + '%'; fill.style.background = pct > 85 ? 'var(--danger)' : pct > 65 ? 'var(--warning)' : 'var(--primary)'; }
   // Lock nav items
-  ['analytics','ai','analysis','audience','bulk','multistore','whitelabel','competitorradar','creativebrief','profittracker'].forEach(f => {
+  ['analytics','ai','analysis','audience','bulk','multistore','whitelabel','competitorradar','creativebrief','profittracker','mrrtracker'].forEach(f => {
     const navEl = document.getElementById('nav-' + f);
     const lockEl = document.getElementById('lock-' + f);
     const locked = !canAccess(f);
@@ -2217,7 +2291,7 @@ function renderPlanUI() {
     if (lockEl) lockEl.style.display = locked ? 'block' : 'none';
   });
   // Show/hide page paywall overlays
-  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall', analysis: 'analysis-paywall' };
+  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall', analysis: 'analysis-paywall', mrrtracker: 'mrrtracker-paywall' };
   Object.entries(pagePaywalls).forEach(([feature, id]) => {
     const pw = document.getElementById(id);
     if (pw) pw.style.display = !canAccess(feature) ? 'flex' : 'none';
@@ -2519,6 +2593,7 @@ function navigate(page) {
     if (page === 'creativebrief') { loadBriefHistory(); _populateBriefProductSelect(); }
     if (page === 'competitorradar') { renderTrackedCompetitors(); autoScanCompetitors(); }
     if (page === 'profittracker') loadProfitReport();
+    if (page === 'mrrtracker') loadMrrTracker();
     if (page === 'multistore') loadMultiStore();
     if (page === 'devtools') loadDevTools();
     if (page === 'whitelabel') loadWhitelabel();
@@ -3048,7 +3123,7 @@ async function loadCampaigns() {
   if (b2 && !b2.querySelector('.campaign-row:not(.header)')) b2.innerHTML = skelHtml;
   try {
     const rMeta = await authFetch('/meta/read?action=campaigns');
-    if (!rMeta || !rMeta.ok) return;
+    if (!rMeta || !rMeta.ok) { _campaignsLoaded = true; if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts(); return; }
     const metaCampaigns = await rMeta.json();
 
     // Fetch Google campaigns if Growth+ and credentials set
@@ -3071,9 +3146,10 @@ async function loadCampaigns() {
     const html = rowHtml + upgradeBanner;
     const b1 = document.getElementById('campaigns-body'); if (b1) { b1.innerHTML = html; setTimeout(() => { b1.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); }
     const b2 = document.getElementById('campaigns-body-full'); if (b2) { b2.innerHTML = html; setTimeout(() => { b2.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); }
+    _campaignsLoaded = true;
     // Refresh analytics charts if analytics page is currently visible
     if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts();
-  } catch(e){}
+  } catch(e){ _campaignsLoaded = true; }
 }
 
 // ── LAUNCH CAMPAIGN ───────────────────────────────────────────────────────────
@@ -3726,15 +3802,22 @@ function renderCharts() {
   // If campaigns still loading, show phantom donuts (roas-chart already handled in navigate)
   const sdEl=document.getElementById('spend-donut'), stEl=document.getElementById('status-donut');
   if (!allCampaigns.length) {
-    const donutSkel = `<div class="donut-wrap" style="display:flex;align-items:center;gap:20px;padding:20px">
-      <div class="skel skel-circle" style="width:140px;height:140px;flex-shrink:0;border-radius:50%"></div>
-      <div style="flex:1;display:flex;flex-direction:column;gap:10px">
-        ${[1,2,3].map(()=>`<div style="display:flex;align-items:center;gap:8px">${skelBlock('10px',10,'border-radius:50%;flex-shrink:0')}${skelBlock('80%',11,'border-radius:4px')}</div>`).join('')}
-      </div>
-    </div>`;
-    if(sdEl) sdEl.innerHTML=donutSkel;
-    if(stEl) stEl.innerHTML=donutSkel;
-    // Leave roas-chart showing its skeleton (set in navigate) - don't overwrite with empty state
+    if (!_campaignsLoaded) {
+      const donutSkel = `<div class="donut-wrap" style="display:flex;align-items:center;gap:20px;padding:20px">
+        <div class="skel skel-circle" style="width:140px;height:140px;flex-shrink:0;border-radius:50%"></div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px">
+          ${[1,2,3].map(()=>`<div style="display:flex;align-items:center;gap:8px">${skelBlock('10px',10,'border-radius:50%;flex-shrink:0')}${skelBlock('80%',11,'border-radius:4px')}</div>`).join('')}
+        </div>
+      </div>`;
+      if(sdEl) sdEl.innerHTML=donutSkel;
+      if(stEl) stEl.innerHTML=donutSkel;
+      // Leave roas-chart showing its skeleton (set in navigate) - don't overwrite with empty state
+      return;
+    }
+    // Fetch confirmed complete with zero campaigns — show the real empty state, not a stuck skeleton
+    renderROASChart([]);
+    if(sdEl) sdEl.innerHTML='<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data yet</p></div></div>';
+    if(stEl) stEl.innerHTML='<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No campaigns yet</p></div></div>';
     return;
   }
   renderROASChart(allCampaigns);
@@ -3747,6 +3830,125 @@ function renderCharts() {
   allCampaigns.forEach(c=>{const k=counts[c.status]!==undefined?c.status:'draft';counts[k]++;});
   const statusData=[{label:'Live',value:counts.live,color:'#34d399'},{label:'Paused',value:counts.paused,color:'#fbbf24'},{label:'Draft',value:counts.draft,color:'#8892b0'},{label:'Failed',value:counts.failed,color:'#f87171'}].filter(d=>d.value>0);
   if(stEl) stEl.innerHTML=statusData.length?buildDonut(statusData,allCampaigns.length):'<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No data</p></div></div>';
+}
+
+/** Lightweight SVG line/area chart — no dependency. points: [{date, <valueKey>}] */
+function buildLineChart(points, {color='#06d6c7', valueKey='value', format=v=>String(v), height=180} = {}) {
+  if (!points || !points.length) return '<div class="empty-state" style="padding:30px 0"><p>No data yet</p></div>';
+  const width = 720;
+  const values = points.map(p => p[valueKey] || 0);
+  const max = Math.max(...values, 1);
+  const min = Math.min(...values, 0);
+  const range = (max - min) || 1;
+  const stepX = width / ((points.length - 1) || 1);
+  const toY = v => height - ((v - min) / range) * height;
+  const coords = points.map((p, i) => [i * stepX, toY(p[valueKey] || 0)]);
+  const linePath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' ');
+  const areaPath = `${linePath} L${coords[coords.length - 1][0].toFixed(1)},${height} L0,${height} Z`;
+  const gradId = 'lcgrad-' + Math.random().toString(36).slice(2, 9);
+  const dots = coords.map((c, i) => {
+    const p = points[i];
+    const tipKey = '_lc_' + gradId + '_' + i;
+    window[tipKey] = `<strong>${escHtml(p.date || '')}</strong><br>${format(p[valueKey] || 0)}`;
+    return `<circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="3.5" fill="${color}" opacity="0" class="lc-dot" onmouseenter="this.setAttribute('opacity',1);showTip(window['${tipKey}'],event)" onmousemove="moveTip(event)" onmouseleave="this.setAttribute('opacity',0);hideTip()" style="cursor:pointer"/>`;
+  }).join('');
+  return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px;overflow:visible;display:block">
+    <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.35"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${areaPath}" fill="url(#${gradId})" stroke="none"/>
+    <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+  </svg>`;
+}
+
+// ── MRR TRACKER ───────────────────────────────────────────────────────────────
+let _mrrReport = null;
+let _mrrPeriodDays = 30;
+
+function setMrrPeriod(days) {
+  _mrrPeriodDays = days;
+  document.querySelectorAll('.mrr-period-btn').forEach(b => b.classList.toggle('active', Number(b.dataset.days) === days));
+  if (_mrrReport) renderMrrCharts(_mrrReport);
+}
+
+function renderMrrCharts(d) {
+  const series = (d.series || []).slice(-_mrrPeriodDays);
+  const revEl  = document.getElementById('mrr-revenue-chart');
+  const roasEl = document.getElementById('mrr-roas-chart');
+  const shortDate = iso => { try { return new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch { return iso; } };
+
+  if (!d.has_data || !series.length) {
+    if (revEl)  revEl.innerHTML  = '<div class="empty-state" style="padding:30px 0"><p>No revenue data yet — click Sync Data</p></div>';
+    if (roasEl) roasEl.innerHTML = '<div class="empty-state" style="padding:30px 0"><p>No spend data yet — connect Meta/Google and sync</p></div>';
+    return;
+  }
+
+  const revPoints = series.map(p => ({ date: shortDate(p.date), value: p.revenue_cents / 100 }));
+  if (revEl) revEl.innerHTML = buildLineChart(revPoints, { color: '#06d6c7', format: v => '$' + fmt(v) });
+
+  const roasPoints = series.filter(p => p.roas !== null).map(p => ({ date: shortDate(p.date), value: p.roas }));
+  if (roasEl) roasEl.innerHTML = roasPoints.length
+    ? buildLineChart(roasPoints, { color: '#fbbf24', format: v => v.toFixed(2) + '×' })
+    : '<div class="empty-state" style="padding:30px 0"><p>No spend data yet — connect Meta/Google and sync</p></div>';
+}
+
+function renderMrrReport(d) {
+  _mrrReport = d;
+  const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.textContent = val; };
+  const mrr = (d.mrr_cents || 0) / 100;
+  const spend = (d.total_spend_cents || 0) / 100;
+  set('mrr-stat-mrr', '$' + fmt(mrr));
+  set('mrr-stat-spend', '$' + fmt(spend));
+  set('mrr-stat-roas', d.blended_roas !== null && d.blended_roas !== undefined ? d.blended_roas.toFixed(2) + '×' : '—');
+  const growthEl = document.getElementById('mrr-stat-growth');
+  if (growthEl) {
+    if (d.mrr_growth_pct === null || d.mrr_growth_pct === undefined) {
+      growthEl.textContent = 'vs previous 30 days —'; growthEl.style.color = '';
+    } else {
+      const up = d.mrr_growth_pct >= 0;
+      growthEl.textContent = `${up ? '▲' : '▼'} ${Math.abs(d.mrr_growth_pct).toFixed(1)}% vs previous 30 days`;
+      growthEl.style.color = up ? 'var(--success)' : 'var(--danger)';
+    }
+  }
+  const orders30 = (d.series || []).slice(-30).reduce((s, p) => s + (p.orders || 0), 0);
+  set('mrr-stat-orders', d.has_data ? String(orders30) : '—');
+
+  renderMrrCharts(d);
+
+  const spendDonutEl = document.getElementById('mrr-spend-donut');
+  if (spendDonutEl) {
+    const last30 = (d.series || []).slice(-30);
+    const metaSpend   = last30.reduce((s, p) => s + (p.meta_spend_cents || 0), 0) / 100;
+    const googleSpend = last30.reduce((s, p) => s + (p.google_spend_cents || 0), 0) / 100;
+    spendDonutEl.innerHTML = (metaSpend + googleSpend) > 0
+      ? buildDonut([{ label: 'Meta Ads', value: metaSpend, color: '#1877F2' }, { label: 'Google Ads', value: googleSpend, color: '#4285F4' }].filter(s => s.value > 0), metaSpend + googleSpend)
+      : '<div class="empty-state" style="padding:20px 0"><p>No spend data yet</p></div>';
+  }
+}
+
+async function loadMrrTracker() {
+  if (!canAccess('mrrtracker')) return;
+  try {
+    const r = await authFetch('/mrr-tracker', { method: 'POST', body: JSON.stringify({ action: 'get_report' }) });
+    if (r && r.ok) renderMrrReport(await r.json());
+  } catch (e) { /* silent — empty states already shown */ }
+}
+
+async function syncMrrTracker() {
+  if (!canAccess('mrrtracker')) { showUpgradeModal('mrrtracker'); return; }
+  const btn = document.getElementById('mrr-sync-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Syncing…'; }
+  try {
+    const r = await authFetch('/mrr-tracker', { method: 'POST', body: JSON.stringify({ action: 'sync' }) });
+    if (!r) { showToast('Sync failed - please try again', 'error'); return; }
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { showToast(d.error || 'Sync failed', 'error'); return; }
+    if (!d.shopify_connected) { showToast('Connect Shopify in Settings to track revenue', 'warn'); }
+    await loadMrrTracker();
+    showToast('Synced — revenue and ad spend up to date', 'success');
+  } catch (e) { showToast('Sync failed - please try again', 'error'); }
+  finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync Data'; }
+  }
 }
 
 // ── TOAST ─────────────────────────────────────────────────────────────────────

@@ -5,14 +5,14 @@ Disallow: /dashboard.html
 Disallow: /setup.html
 Disallow: /config.js
 
-# AI crawlers — allow indexing public content
+# ── AI training crawlers ──────────────────────────────────────────────────────
 User-agent: GPTBot
 Allow: /
 Disallow: /auth/
 Disallow: /dashboard.html
 Disallow: /setup.html
 
-User-agent: Claude-Web
+User-agent: ClaudeBot
 Allow: /
 Disallow: /auth/
 Disallow: /dashboard.html
@@ -24,11 +24,64 @@ Disallow: /auth/
 Disallow: /dashboard.html
 Disallow: /setup.html
 
+User-agent: Claude-Web
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: CCBot
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: cohere-ai
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+# ── AI live-browsing / citation crawlers (fetch on-demand when a user asks) ───
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: Claude-User
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
 User-agent: PerplexityBot
 Allow: /
 Disallow: /auth/
 Disallow: /dashboard.html
 Disallow: /setup.html
+
+User-agent: Perplexity-User
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+# ── AI Overviews / grounding (Gemini, Apple Intelligence) ─────────────────────
+User-agent: Google-Extended
+Allow: /
+Disallow: /auth/
+Disallow: /dashboard.html
+Disallow: /setup.html
+
+User-agent: Applebot-Extended
+Allow: /
 
 User-agent: Applebot
 Allow: /

@@ -93,11 +93,12 @@ export async function extractUserId(authHeader: string | null): Promise<string |
   }
 }
 
-/** Standard CORS headers — locked to APP_URL env var */
+/** Standard CORS headers — locked to APP_URL and its dashboard subdomain */
 export function corsHeaders(origin?: string | null): Record<string, string> {
   const appUrl = Deno.env.get('APP_URL') ?? 'https://ephermal.app';
+  const allowed = [appUrl, 'https://dashboard.ephermal.app'];
   return {
-    'Access-Control-Allow-Origin':  origin === appUrl ? origin : appUrl,
+    'Access-Control-Allow-Origin':  origin && allowed.includes(origin) ? origin : appUrl,
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Meta-Token, X-Meta-Account, X-Shopify-Token, X-Shopify-Store, X-Google-Token, X-Google-Account',
     'Access-Control-Max-Age':       '86400',
