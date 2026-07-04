@@ -310,6 +310,36 @@ New sidebar tab combining Shopify revenue + Meta spend + Google Ads spend into o
   real one; Dev Tools got a raw-Shopify-API panel (no AI call) for testing without
   `ANTHROPIC_API_KEY`
 
+### Task 26 — ✅ Free public "Analyse Your Store" landing-page tool — DONE (Jul 5 2026)
+- New section on the marketing homepage (`components/StoreAnalysisTool.tsx`, inserted right
+  after the hero/ticker in `app/page.tsx`) — animated input card (gradient border sweep, scan
+  progress text), no login required
+- New edge function `public-store-scan` — fully public (no JWT), rate-limited by IP
+  (5/hour via `rateLimitIp`), results cached per-domain for 24h in new `public_store_scans`
+  table to control Claude API cost from repeat/shared visits
+- Pulls Shopify's public unauthenticated `/products.json` endpoint (works for any standard
+  Shopify storefront — no OAuth needed) + homepage meta tags (og:image, theme-color,
+  title/description), sends to Claude Sonnet for the same brief schema as the authenticated
+  Store Analysis, renders as a polished report (color swatches, brand vibe, keywords) with a
+  "Start Free — Automate This" CTA into signup
+
+### Task 27 — ✅ Meta ad-creative gap closed — DONE (Jul 5 2026)
+Closes the gap flagged in Task 25: `launch_meta` now creates real Meta ad objects, not just
+the campaign/ad set shell.
+- Meta OAuth scope extended with `pages_show_list` (`setup.html` + `dashboard.html`)
+- `meta-oauth-callback`: fetches the user's Facebook Pages via `/me/accounts` (each page comes
+  with its own access token) and stores the first page (`meta_page_id`/`meta_page_name`/
+  `meta_page_token`, migration 023) — same auto-select-first pattern already used for ad
+  accounts, no page-picker UI built yet (fine for one-page accounts, a real gap for anyone
+  managing multiple Pages — flag if this comes up)
+- `campaign-launcher.launchToMeta`: for each ad in `copy.meta.ads[]` (up to 5), creates a real
+  ad creative (`object_story_spec` with the connected page + link to the connected Shopify
+  store) and a real ad object, not just campaign+adset
+- Fixed a CORS gap `claim-oauth` had its own hardcoded origin allow-list (separate from
+  `_shared/auth.ts`) that was missed in the earlier dashboard.ephermal.app CORS fix — added
+- **Still needed if a user manages multiple Facebook Pages**: build a page picker in Settings;
+  right now the first page returned by Meta is auto-selected
+
 ---
 
 ## Recent Commits (latest first)

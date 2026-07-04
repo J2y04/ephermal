@@ -66,7 +66,7 @@ async function getUserPlan(userId: string): Promise<string> {
 async function getIntegrations(userId: string) {
   const { data } = await supabase
     .from('user_integrations')
-    .select('meta_token, meta_account, google_refresh_token, google_ads_customer_id')
+    .select('meta_token, meta_account, meta_page_id, meta_page_token, shopify_shop, google_refresh_token, google_ads_customer_id')
     .eq('user_id', userId)
     .single();
   return data;
@@ -243,7 +243,23 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
   return { campaign_id: campaignId, google_campaign_id: googleCampaignId, status: 'active', enabled: autoEnable, note: autoEnable ? 'Google Search campaign is LIVE.' : 'Google Search campaign created as PAUSED. Enable in Google Ads Manager.' };
 }
 
-/** Launch prepared campaign to Meta */
+const META_CTA_MAP: Record<string, string> = {
+  'shop now':    'SHOP_NOW',
+  'learn more':  'LEARN_MORE',
+  'sign up':     'SIGN_UP',
+  'sign up now': 'SIGN_UP',
+  'get offer':   'GET_OFFER',
+  'subscribe':   'SUBSCRIBE',
+  'contact us':  'CONTACT_US',
+  'download':    'DOWNLOAD',
+  'book now':    'BOOK_TRAVEL',
+};
+
+function metaCtaType(cta: string): string {
+  return META_CTA_MAP[cta.trim().toLowerCase()] ?? 'SHOP_NOW';
+}
+
+/** Launch prepared campaign to Meta — creates the campaign, ad set, and a real ad per variation. */
 async function launchToMeta(userId: string, campaignId: string, autoEnable = false): Promise<Record<string, unknown>> {
   const { data: row } = await supabase
     .from('launched_campaigns')
@@ -259,15 +275,16 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
   const accountId  = integrations?.meta_account;
   if (!token || !accountId) throw new Error('Meta Ads not connected — connect in Settings');
 
+  const pageId    = integrations?.meta_page_id;
+  const pageToken = integrations?.meta_page_token;
+  const shop      = integrations?.shopify_shop;
+  const linkUrl   = shop ? `https://${shop}` : (Deno.env.get('APP_URL') ?? 'https://ephermal.app');
+
   const copy      = row.copy as Record<string, unknown>;
   const metaCopy  = copy?.meta as Record<string, unknown> ?? {};
   const targeting = metaCopy?.targeting as Record<string, unknown> ?? { geo_locations: { countries: ['US'] } };
   const budget    = Math.round((row.budget_daily ?? 20) * 100); // Meta uses cents
-  // NOTE: creates the campaign + ad set shell only. Individual ad creatives
-  // (metaCopy.ads[]) are stored and editable in Ephermal but not yet pushed as
-  // live Meta ad objects — that requires a connected Facebook Page (pages_show_list
-  // scope) for the ad creative's object_story_spec, which isn't wired up yet.
-  // Enable/finish the ad(s) in Meta Ads Manager after launch.
+  const ads       = (metaCopy?.ads as { headline?: string; primary_text?: string; description?: string; cta?: string }[] | undefined) ?? [];
 
   const adStatus = autoEnable ? 'ACTIVE' : 'PAUSED';
 
@@ -290,7 +307,43 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     status:            adStatus,
   }, token);
 
-  // 3. Update DB with Meta campaign ID
+  // 3. Create a real ad creative + ad per variation — requires a connected Facebook Page.
+  // Without a page, the campaign/ad set above still exist but carry no ads; finish them
+  // manually in Meta Ads Manager (same as before pages were wired up).
+  const adIds: string[] = [];
+  let adCreationError: string | null = null;
+  if (pageId && pageToken && ads.length > 0) {
+    for (const ad of ads.slice(0, 5)) {
+      try {
+        const creative = await metaPost<{ id: string }>(`/${accountId}/adcreatives`, {
+          name: `${row.name} — ${String(ad.headline ?? 'Ad').slice(0, 40)}`,
+          object_story_spec: {
+            page_id: pageId,
+            link_data: {
+              link:        linkUrl,
+              message:     String(ad.primary_text ?? ''),
+              name:        String(ad.headline ?? row.name),
+              description: String(ad.description ?? ''),
+              call_to_action: { type: metaCtaType(String(ad.cta ?? 'Shop Now')), value: { link: linkUrl } },
+            },
+          },
+        }, pageToken);
+
+        const adObj = await metaPost<{ id: string }>(`/${accountId}/ads`, {
+          name:      String(ad.headline ?? `${row.name} — Ad`),
+          adset_id:  adSet.id,
+          creative:  { creative_id: creative.id },
+          status:    adStatus,
+        }, token);
+        adIds.push(adObj.id);
+      } catch (e) {
+        adCreationError = e instanceof Error ? e.message : 'Ad creation failed';
+        console.error('launchToMeta ad creation error:', adCreationError);
+      }
+    }
+  }
+
+  // 4. Update DB with Meta IDs
   await supabase
     .from('launched_campaigns')
     .update({
@@ -302,13 +355,23 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     .eq('id', campaignId)
     .eq('user_id', userId);
 
+  const notePrefix = autoEnable ? 'Campaign is LIVE on Meta.' : 'Campaign created as PAUSED.';
+  const adsNote = !pageId
+    ? ' Connect a Facebook Page in Settings to auto-create the ad(s) next time — for now, add the ad manually in Meta Ads Manager.'
+    : adIds.length > 0
+      ? ` ${adIds.length} ad(s) created automatically.`
+      : adCreationError
+        ? ` Ad creation failed (${adCreationError}) — add the ad manually in Meta Ads Manager.`
+        : '';
+
   return {
     campaign_id:      campaignId,
     meta_campaign_id: campaign.id,
     meta_adset_id:    adSet.id,
+    meta_ad_ids:      adIds,
     status:           'active',
     enabled:          autoEnable,
-    note:             autoEnable ? 'Campaign is LIVE on Meta.' : 'Campaign created as PAUSED. Enable in Meta Ads Manager when ready.',
+    note:             `${notePrefix}${adsNote}`,
   };
 }
 

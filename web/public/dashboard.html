@@ -4755,7 +4755,7 @@ async function dashStartMetaOAuth() {
   if (!stateRes.ok) { showToast('Failed to initialize OAuth - please try again', 'error'); return; }
   const { state } = await stateRes.json();
   localStorage.setItem('meta_oauth_nonce', nonce);
-  const scope = 'ads_read,ads_management,business_management';
+  const scope = 'ads_read,ads_management,business_management,pages_show_list';
   window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${encodeURIComponent(callbackUrl)}&scope=${scope}&state=${encodeURIComponent(state)}`;
 }
 

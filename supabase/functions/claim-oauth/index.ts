@@ -28,6 +28,7 @@ import { extractUserId } from '../_shared/auth.ts'
 const ALLOWED_ORIGINS = [
   'https://ephermal.app',
   'https://www.ephermal.app',
+  'https://dashboard.ephermal.app',
 ]
 
 function corsHeaders(origin: string | null): Record<string, string> {

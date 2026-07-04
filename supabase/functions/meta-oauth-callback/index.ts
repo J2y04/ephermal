@@ -133,6 +133,27 @@ Deno.serve(async (req: Request) => {
     // Non-fatal — continue with empty list; user will see warning in UI
   }
 
+  // ── Fetch the user's Facebook Pages (needed to create real ad creatives) ──
+  // Requires the pages_show_list scope. Each page comes with its own access
+  // token — that page token (not the user token) is what Meta expects when
+  // building an ad creative's object_story_spec.
+  let pages: Array<{ id: string; name: string; access_token: string }> = []
+  try {
+    const pageRes  = await fetch(
+      `https://graph.facebook.com/v19.0/me/accounts?fields=name,access_token&limit=50`,
+      { headers: { 'Authorization': `Bearer ${accessToken}` } },
+    )
+    const pageData = await pageRes.json()
+    pages = (pageData.data ?? []).map((p: any) => ({
+      id:           p.id           as string,
+      name:         p.name         as string,
+      access_token: p.access_token as string,
+    }))
+  } catch (e) {
+    console.error('[meta-oauth] Pages fetch threw:', e)
+    // Non-fatal — ad launches will fall back to campaign+adset only until a page is connected
+  }
+
   // ── Persist token to Supabase (service role bypasses RLS) ────────────────
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
@@ -143,9 +164,12 @@ Deno.serve(async (req: Request) => {
     .from('user_integrations')
     .upsert(
       {
-        user_id:      userId,
-        meta_token:   accessToken,
-        meta_account: accounts[0]?.id ?? null,
+        user_id:         userId,
+        meta_token:      accessToken,
+        meta_account:    accounts[0]?.id ?? null,
+        meta_page_id:    pages[0]?.id ?? null,
+        meta_page_name:  pages[0]?.name ?? null,
+        meta_page_token: pages[0]?.access_token ?? null,
       },
       { onConflict: 'user_id' },
     )
@@ -165,6 +189,8 @@ Deno.serve(async (req: Request) => {
         account_id:    accounts[0]?.id   ?? null,
         account_name:  accounts[0]?.name ?? null,
         accounts,
+        page_id:       pages[0]?.id   ?? null,
+        page_name:     pages[0]?.name ?? null,
       },
       expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     })

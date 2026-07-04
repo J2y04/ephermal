@@ -6,6 +6,7 @@ import AgentNetwork from '../components/AgentNetwork';
 import HeroMotion from '../components/HeroMotion';
 import StatsMotion from '../components/StatsMotion';
 import ShopifyReveal from '../components/ShopifyReveal';
+import StoreAnalysisTool from '../components/StoreAnalysisTool';
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
           Ephermal
         </a>
         <div className="nav-links">
+          <a href="#analyse">Analyse Your Store</a>
           <a href="#goal">Who it&apos;s for</a>
           <a href="#how-it-works">How it works</a>
           <a href="#services">Features</a>
@@ -69,6 +71,8 @@ export default function Home() {
           ))}
         </div>
       </div>
+
+      <StoreAnalysisTool />
 
       {/* ── Who It's For ── */}
       <section className="section" id="goal" style={{ paddingTop: '100px', paddingBottom: '20px' }}>
