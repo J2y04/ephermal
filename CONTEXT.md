@@ -254,17 +254,27 @@ with a real store URL once ANTHROPIC_API_KEY is set (Task 28).
 ---
 ### 🟢 DEFERRED (don't block launch)
 
-### Task 12 — Meta App Review (REQUIRED for real users to connect Meta Ads)
+### Task 13 — Gewerbeanmeldung (unlocks Task 12 — do this FIRST)
+Meta Business Verification requires a real registered business — a personal name/address won't
+clear it. Sole-proprietor registration (Einzelunternehmen) is sufficient; no GmbH needed.
+1. Gewerbeanmeldung at your local Gewerbeamt (bring ID, short walk-in form, ~€20-60)
+2. Finanzamt issues a tax number shortly after — also needed for VAT/Stripe Tax
+3. Business name + address on the Gewerbeschein must match Meta Business Manager exactly
+4. Loop in a Steuerberater for the Kleinunternehmer-vs-VAT decision — real financial
+   consequences, worth getting right rather than guessing
+5. Enable Stripe Tax once registered: Stripe Dashboard → Settings → Tax
+
+### Task 12 — Meta App Review (REQUIRED for real users to connect Meta Ads — blocked on Task 13)
 Without this, only manually-added test accounts can connect. Takes 1–4 weeks.
-Meta Developer Dashboard → App Review → Request advanced access: `ads_management`, `ads_read`, `business_management`
+Meta Developer Dashboard → App Review → Request advanced access: `ads_management`, `ads_read`,
+`business_management`. Business Verification (Task 13's Gewerbeschein) must clear first —
+submit that before starting App Review, not in parallel.
 
-### Task 13 — German VAT registration
-- Gewerbeanmeldung at local Gewerbeamt (if not done)
-- USt-ID via Finanzamt / elster.de
-- Enable Stripe Tax: Stripe Dashboard → Settings → Tax
-
-### Task 14 — Google Ads developer token
-Apply at ads.google.com/aw/apicenter — needed before Google campaign launch works
+### Task 14 — Google Ads developer token (independent of Task 12/13 — no business-ID docs needed)
+Google's requirement is lighter than Meta's: OAuth consent screen verification (domain
+ownership + privacy policy — already have both) plus the developer token application, which
+reviews use case, not legal entity. Can be pursued in parallel with Gewerbeanmeldung, no need
+to wait. Apply at ads.google.com/aw/apicenter
 
 ### Task 15 — CodeRabbit automated PR review
 coderabbit.ai → Sign in with GitHub → authorize J2y04/ephermal

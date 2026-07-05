@@ -277,8 +277,6 @@ select.form-input{cursor:pointer}
   /* Campaign table: show only name + status + toggle on mobile */
   .campaign-row{grid-template-columns:1fr auto auto;padding:12px 14px}
   .campaign-row>*:nth-child(2),.campaign-row>*:nth-child(3),.campaign-row>*:nth-child(4){display:none}
-  /* AI panel full width on mobile */
-  .ai-panel{width:100%;border-left:none;border-top:1px solid var(--border)}
   /* Analysis grid */
   .analysis-grid{grid-template-columns:1fr}
   /* Creatives */
@@ -297,8 +295,8 @@ select.form-input{cursor:pointer}
   .meta-connect-banner{flex-direction:column;align-items:flex-start;gap:12px}
   .meta-connect-banner .platform-btns{width:100%}
   .meta-connect-banner .platform-btns .btn-save{flex:1;justify-content:center;text-align:center}
-  /* AI FAB position - avoid overlap with any bottom nav */
-  .ai-fab{bottom:20px;right:16px;width:44px;height:44px}
+  .ai-page{height:calc(100vh - 96px)}
+  .ai-page-body{padding:16px}
 }
 @media(max-width:480px){
   .stat-row{grid-template-columns:1fr}
@@ -462,35 +460,42 @@ select.form-input{cursor:pointer}
 .nav-item.ai-nav { background: linear-gradient(135deg,rgba(6,214,199,0.1),rgba(6,214,199,0.08)); border: 1px solid rgba(6,214,199,0.2); }
 .nav-item.ai-nav:hover { background: linear-gradient(135deg,rgba(6,214,199,0.18),rgba(6,214,199,0.14)); }
 .nav-item.ai-nav svg { stroke: var(--primary); }
-/* ── AI floating button ── */
-.ai-fab { position:fixed; bottom:28px; right:28px; width:50px; height:50px; border-radius:50%; background:var(--primary); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:90; box-shadow:0 8px 32px rgba(6,214,199,0.45); transition:all 0.3s cubic-bezier(0.22,1,0.36,1); }
-.ai-fab:hover { transform:translateY(-3px) scale(1.05); box-shadow:0 12px 40px rgba(6,214,199,0.6); }
-.ai-fab svg { width:22px; height:22px; stroke:#08080c; fill:none; stroke-width:2; }
-.ai-fab.hidden { transform:scale(0); opacity:0; pointer-events:none; }
-/* ── AI chat panel ── */
-.ai-panel { position:fixed; top:0; right:0; width:380px; height:100vh; background:var(--surface); border-left:1px solid var(--border); z-index:80; display:flex; flex-direction:column; transform:translateX(100%); transition:transform 0.35s cubic-bezier(0.22,1,0.36,1); box-shadow:-24px 0 80px rgba(0,0,0,0.3); }
-.ai-panel.open { transform:translateX(0); }
-.ai-panel-head { display:flex; align-items:center; justify-content:space-between; padding:20px 20px 16px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.ai-panel-title { display:flex; align-items:center; gap:10px; }
-.ai-panel-title svg { width:20px; height:20px; stroke:var(--primary); fill:none; stroke-width:2; }
-.ai-panel-title span { font-size:15px; font-weight:700; }
-.ai-panel-sub { font-size:11px; color:var(--muted); margin-top:1px; }
-.ai-close { background:none; border:none; cursor:pointer; color:var(--muted); font-size:20px; line-height:1; padding:4px 8px; border-radius:10px; transition:all .2s; }
-.ai-close:hover { color:var(--text); background:rgba(255,255,255,0.05); }
-.ai-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; }
-.ai-msg { max-width:90%; line-height:1.55; font-size:13px; border-radius:14px; padding:10px 14px; animation:fadeUp .25s ease both; }
-.ai-msg.bot { background:var(--surface2); border:1px solid var(--border); color:var(--text); align-self:flex-start; border-bottom-left-radius:4px; }
-.ai-msg.user { background:var(--primary); color:#08080c; align-self:flex-end; border-bottom-right-radius:4px; }
-.ai-msg.typing { color:var(--muted); font-style:italic; }
-.ai-chips { display:flex; flex-wrap:wrap; gap:7px; padding:0 16px 12px; flex-shrink:0; }
-.ai-chip { padding:6px 12px; background:rgba(6,214,199,0.08); border:1px solid rgba(6,214,199,0.2); border-radius:20px; font-size:12px; color:var(--primary); cursor:pointer; transition:all .2s; white-space:nowrap; font-family:'Inter',sans-serif; }
+/* ── Ephermal AI page (Claude/ChatGPT-style chat) ── */
+.ai-page { display:flex; flex-direction:column; height:calc(100vh - 129px); max-width:820px; margin:0 auto; width:100%; }
+.ai-page-head { display:flex; align-items:center; gap:14px; padding-bottom:20px; border-bottom:1px solid var(--border); flex-shrink:0; }
+.ai-page-head-icon { width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,rgba(6,214,199,0.18),rgba(6,214,199,0.1)); border:1px solid rgba(6,214,199,0.25); display:flex; align-items:center; justify-content:center; color:var(--primary); flex-shrink:0; }
+.ai-page-title { font-size:18px; font-weight:800; letter-spacing:-.3px; }
+.ai-page-sub { font-size:13px; color:var(--muted); margin-top:2px; }
+.ai-page-body { flex:1; overflow-y:auto; padding:24px 4px; }
+.ai-messages { display:flex; flex-direction:column; gap:16px; max-width:100%; }
+.ai-msg { max-width:78%; line-height:1.6; font-size:14px; border-radius:16px; padding:12px 16px; animation:fadeUp .3s ease both; }
+.ai-msg.bot { background:var(--surface2); border:1px solid var(--border); color:var(--text); align-self:flex-start; border-bottom-left-radius:5px; }
+.ai-msg.user { background:var(--primary); color:#08080c; align-self:flex-end; border-bottom-right-radius:5px; font-weight:500; }
+/* ── Thinking indicator ── */
+.ai-thinking { display:flex; align-items:center; gap:8px; }
+.ai-thinking-dots { display:flex; gap:4px; }
+.ai-thinking-dots span { width:6px; height:6px; border-radius:50%; background:var(--muted); animation:aiDotPulse 1.2s ease-in-out infinite; }
+.ai-thinking-dots span:nth-child(2) { animation-delay:.15s; }
+.ai-thinking-dots span:nth-child(3) { animation-delay:.3s; }
+@keyframes aiDotPulse { 0%,60%,100%{opacity:.25;transform:scale(.8)} 30%{opacity:1;transform:scale(1)} }
+.ai-thinking-label { font-size:13px; color:var(--muted); font-style:italic; }
+/* ── Tool-call steps (ready for the tool-calling agent — Task 38) ── */
+.ai-tool-steps { display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+.ai-tool-step { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); }
+.ai-tool-step-icon { width:14px; height:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
+.ai-tool-step.done .ai-tool-step-icon { color:var(--success); }
+.ai-tool-step.running .ai-tool-step-icon { color:var(--primary); animation:spin .8s linear infinite; }
+.ai-tool-step.done { color:var(--text); }
+.ai-chips { display:flex; flex-wrap:wrap; gap:8px; padding:14px 4px; flex-shrink:0; }
+.ai-chip { padding:7px 14px; background:rgba(6,214,199,0.08); border:1px solid rgba(6,214,199,0.2); border-radius:20px; font-size:12px; color:var(--primary); cursor:pointer; transition:all .2s; white-space:nowrap; font-family:'Inter',sans-serif; }
 .ai-chip:hover { background:rgba(6,214,199,0.15); border-color:rgba(6,214,199,0.4); }
-.ai-input-row { display:flex; gap:8px; padding:14px 16px; border-top:1px solid var(--border); flex-shrink:0; }
-.ai-input { flex:1; background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; color:var(--text); font-family:'Inter',sans-serif; font-size:13px; outline:none; transition:border .2s; resize:none; height:40px; max-height:120px; overflow:auto; line-height:1.4; }
-.ai-input:focus { border-color:var(--primary); }
-.ai-send { width:38px; height:38px; border-radius:9px; background:var(--primary); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; margin-top:1px; }
-.ai-send:hover { transform:translateY(-2px); box-shadow:0 6px 20px rgba(6,214,199,0.4); }
-.ai-send svg { width:15px; height:15px; stroke:#08080c; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+.ai-input-bar { flex-shrink:0; padding-top:12px; }
+.ai-input-pill { display:flex; align-items:flex-end; gap:8px; background:var(--surface2); border:1px solid var(--border); border-radius:26px; padding:8px 8px 8px 20px; transition:border-color .2s, box-shadow .2s; }
+.ai-input-pill:focus-within { border-color:var(--primary); box-shadow:0 0 0 4px rgba(6,214,199,0.12); }
+.ai-input { flex:1; background:none; border:none; color:var(--text); font-family:'Inter',sans-serif; font-size:14px; outline:none; resize:none; height:24px; max-height:140px; overflow:auto; line-height:1.5; padding:6px 0; }
+.ai-send { width:40px; height:40px; border-radius:50%; background:var(--primary); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all .2s; }
+.ai-send:hover { transform:scale(1.06); box-shadow:0 6px 20px rgba(6,214,199,0.4); }
+.ai-send svg { width:16px; height:16px; stroke:#08080c; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
 .ai-send:disabled { opacity:.4; cursor:not-allowed; transform:none; }
 /* ── Paywall overlay ── */
 .paywall-wrap{position:relative}
@@ -575,6 +580,12 @@ select.form-input{cursor:pointer}
     <span id="wl-brand-name">Ephermal</span>
   </div>
   <div class="nav-section">
+    <div class="nav-item ai-nav" id="nav-ai" data-page="ai" onclick="handleNavClick('ai')">
+      <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Ephermal AI
+      <svg class="lock-icon" id="lock-ai" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+  </div>
+  <div class="nav-section">
     <div class="nav-label">Overview</div>
     <div class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard
@@ -606,13 +617,6 @@ select.form-input{cursor:pointer}
     <div class="nav-item" data-page="budget" id="nav-budget" onclick="handleNavClick('budget')">
       <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>Budget AI
       <svg class="lock-icon" id="lock-budget" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-    </div>
-  </div>
-  <div class="nav-section" style="display:none"><!-- AI Tools hidden until re-enabled -->
-    <div class="nav-label">AI Tools</div>
-    <div class="nav-item ai-nav" id="nav-ai" data-page="ai" onclick="handleNavClick('ai')">
-      <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Ephermal AI
-      <svg class="lock-icon" id="lock-ai" style="display:none" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
     </div>
   </div>
   <div class="nav-section">
@@ -705,6 +709,47 @@ select.form-input{cursor:pointer}
   <div class="content">
 
     <!-- DASHBOARD -->
+    <!-- EPHERMAL AI -->
+    <div class="page" id="page-ai">
+      <div class="paywall-wrap" id="ai-paywall-wrap">
+        <div class="ai-page">
+          <div class="ai-page-head">
+            <div class="ai-page-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg></div>
+            <div>
+              <div class="ai-page-title">Ephermal AI</div>
+              <div class="ai-page-sub" id="ai-page-greeting">Your advertising co-pilot</div>
+            </div>
+          </div>
+          <div class="ai-page-body">
+            <div class="ai-messages" id="ai-messages">
+              <div class="ai-msg bot">Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?</div>
+            </div>
+          </div>
+          <div class="ai-chips" id="ai-chips">
+            <button class="ai-chip" onclick="aiQuickAsk('How can I improve my ROAS?')">Improve ROAS</button>
+            <button class="ai-chip" onclick="aiQuickAsk('Write a UGC script for my top product')">Write UGC script</button>
+            <button class="ai-chip" onclick="aiQuickAsk('What audiences should I target on Meta?')">Audience ideas</button>
+            <button class="ai-chip" onclick="aiQuickAsk('Why is my CTR low and how do I fix it?')">Fix low CTR</button>
+            <button class="ai-chip" onclick="aiQuickAsk('What budget should I allocate across campaigns?')">Budget advice</button>
+          </div>
+          <div class="ai-input-bar">
+            <div class="ai-input-pill">
+              <textarea class="ai-input" id="ai-input" placeholder="Ask Ephermal AI anything about your ads…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}" oninput="this.style.height='24px';this.style.height=Math.min(this.scrollHeight,140)+'px'"></textarea>
+              <button class="ai-send" id="ai-send-btn" onclick="sendAIMessage()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="paywall-lock" id="ai-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Ephermal AI - Growth Plan</strong>
+          <span>Your AI advertising co-pilot with full context on your store, campaigns, and performance. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('ai')">Upgrade to Growth →</button>
+        </div>
+      </div>
+    </div>
+
     <div class="page active" id="page-dashboard">
       <div class="meta-connect-banner" id="meta-connect-banner" style="display:none">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -1993,39 +2038,6 @@ select.form-input{cursor:pointer}
 <!-- LAUNCH CAMPAIGN MODAL -->
 
 <!-- AI FLOATING BUTTON - hidden until re-enabled -->
-<button class="ai-fab" id="ai-fab" onclick="openAIPanel()" title="Ephermal AI" style="display:none">
-  <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-</button>
-
-<!-- AI CHAT PANEL -->
-<div class="ai-panel" id="ai-panel">
-  <div class="ai-panel-head">
-    <div class="ai-panel-title">
-      <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
-      <div>
-        <span>Ephermal AI</span>
-        <div class="ai-panel-sub">Your advertising co-pilot</div>
-      </div>
-    </div>
-    <button class="ai-close" onclick="closeAIPanel()">×</button>
-  </div>
-  <div class="ai-messages" id="ai-messages">
-    <div class="ai-msg bot">Hey! I'm your Ephermal AI. I can help you improve your ROAS, write UGC scripts, suggest audiences, and analyse your ad performance. What would you like to do?</div>
-  </div>
-  <div class="ai-chips" id="ai-chips">
-    <button class="ai-chip" onclick="aiQuickAsk('How can I improve my ROAS?')">Improve ROAS</button>
-    <button class="ai-chip" onclick="aiQuickAsk('Write a UGC script for my top product')">Write UGC script</button>
-    <button class="ai-chip" onclick="aiQuickAsk('What audiences should I target on Meta?')">Audience ideas</button>
-    <button class="ai-chip" onclick="aiQuickAsk('Why is my CTR low and how do I fix it?')">Fix low CTR</button>
-    <button class="ai-chip" onclick="aiQuickAsk('What budget should I allocate across campaigns?')">Budget advice</button>
-  </div>
-  <div class="ai-input-row">
-    <textarea class="ai-input" id="ai-input" placeholder="Ask anything about your ads…" rows="1" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAIMessage()}" oninput="this.style.height='40px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
-    <button class="ai-send" id="ai-send-btn" onclick="sendAIMessage()">
-      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-    </button>
-  </div>
-</div>
 
 <!-- APPLY BUDGET MODAL -->
 <div class="modal-overlay" id="apply-budget-modal">
@@ -2128,16 +2140,20 @@ select.form-input{cursor:pointer}
   <div class="modal" style="max-width:440px">
     <button class="modal-close" onclick="closeAssignCampaignModal()">×</button>
     <div class="modal-title">Assign to Campaign</div>
-    <div class="modal-sub">Link this UGC creative to one of your launched campaigns — or skip to leave it unassigned.</div>
-    <div class="form-group" style="margin:20px 0 24px">
+    <div class="modal-sub">An ad only ever runs inside a campaign — pick which one this creative belongs to.</div>
+    <div id="assign-campaign-empty" style="display:none;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2);border-radius:10px;padding:14px 16px;margin:20px 0 24px;font-size:13px;color:var(--muted)">
+      You don't have any campaigns yet. Create one first, then come back to assign this creative.
+      <button class="btn-save" style="width:100%;margin-top:12px" onclick="closeAssignCampaignModal();openCampaignBuilder()">+ Create Campaign</button>
+    </div>
+    <div class="form-group" id="assign-campaign-select-wrap" style="margin:20px 0 24px">
       <label class="form-label">Campaign</label>
-      <select class="form-input" id="assign-campaign-select">
-        <option value="">— None (keep unassigned) —</option>
+      <select class="form-input" id="assign-campaign-select" onchange="document.getElementById('btn-assign-campaign').disabled = !this.value">
+        <option value="">— Select a campaign —</option>
       </select>
     </div>
     <div class="modal-actions">
-      <button class="btn-secondary" onclick="closeAssignCampaignModal()">Skip</button>
-      <button class="btn-save" onclick="confirmAssignCampaign()" id="btn-assign-campaign">Assign Creative</button>
+      <button class="btn-secondary" onclick="closeAssignCampaignModal()">Decide later</button>
+      <button class="btn-save" onclick="confirmAssignCampaign()" id="btn-assign-campaign" disabled>Assign Creative</button>
     </div>
   </div>
 </div>
@@ -2147,7 +2163,7 @@ select.form-input{cursor:pointer}
 <script>
 let allCampaigns = [];
 let _campaignsLoaded = false;
-const TITLES = {dashboard:'Dashboard',analytics:'Analytics',campaigns:'Launch Ads',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'Dev Tools',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker',mrrtracker:'MRR Tracker'};
+const TITLES = {dashboard:'Dashboard',ai:'Ephermal AI',analytics:'Analytics',campaigns:'Launch Ads',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'Dev Tools',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker',mrrtracker:'MRR Tracker'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
@@ -2368,7 +2384,7 @@ function renderPlanUI() {
     if (lockEl) lockEl.style.display = locked ? 'block' : 'none';
   });
   // Show/hide page paywall overlays
-  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall', analysis: 'analysis-paywall', mrrtracker: 'mrrtracker-paywall' };
+  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall', analysis: 'analysis-paywall', mrrtracker: 'mrrtracker-paywall', ai: 'ai-paywall' };
   Object.entries(pagePaywalls).forEach(([feature, id]) => {
     const pw = document.getElementById(id);
     if (pw) pw.style.display = !canAccess(feature) ? 'flex' : 'none';
@@ -2661,6 +2677,7 @@ function navigate(page) {
     if (page === 'billing') renderBillingPage();
     if (page === 'creatives') { loadAllCreatives(); runFatigueAnalysis(); }
     if (page === 'budget')  { /* ready to use on load */ }
+    if (page === 'ai') { aiSetGreeting(); setTimeout(() => document.getElementById('ai-input')?.focus(), 300); }
     if (page === 'analysis') loadStoreIntelligence();
     if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } loadLaunchAdsCampaigns(); }
     if (page === 'settings') loadSettingsFields();
@@ -3470,21 +3487,31 @@ let _assignCreativeId = null;
 async function openAssignCampaignModal(creativeId) {
   _assignCreativeId = creativeId;
   const sel = document.getElementById('assign-campaign-select');
+  const emptyState = document.getElementById('assign-campaign-empty');
+  const selectWrap = document.getElementById('assign-campaign-select-wrap');
+  const assignBtn = document.getElementById('btn-assign-campaign');
+  if (assignBtn) assignBtn.disabled = true;
   if (sel) {
-    sel.innerHTML = '<option value="">— None (keep unassigned) —</option>';
-    // Load campaigns from backend
+    sel.innerHTML = '<option value="">— Select a campaign —</option>';
+    let campaigns = [];
     try {
       const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'list' }) });
-      if (r && r.ok) {
-        const data = await r.json();
-        (data.campaigns || []).forEach(c => {
-          const opt = document.createElement('option');
-          opt.value = c.id;
-          opt.textContent = `${c.name} (${c.platform || 'meta'}) — ${c.status}`;
-          sel.appendChild(opt);
-        });
-      }
+      if (r && r.ok) { const data = await r.json(); campaigns = data.campaigns || []; }
     } catch(e) { /* use empty list */ }
+
+    if (campaigns.length === 0) {
+      if (emptyState) emptyState.style.display = '';
+      if (selectWrap) selectWrap.style.display = 'none';
+    } else {
+      if (emptyState) emptyState.style.display = 'none';
+      if (selectWrap) selectWrap.style.display = '';
+      campaigns.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = `${c.name} (${c.platform || 'meta'}) — ${c.status}`;
+        sel.appendChild(opt);
+      });
+    }
   }
   document.getElementById('assign-campaign-modal').classList.add('open');
 }
@@ -3497,12 +3524,12 @@ function closeAssignCampaignModal() {
 async function confirmAssignCampaign() {
   const campaignId = document.getElementById('assign-campaign-select').value;
   const btn = document.getElementById('btn-assign-campaign');
-  if (!_assignCreativeId) { closeAssignCampaignModal(); return; }
+  if (!_assignCreativeId || !campaignId) return;
   btn.disabled = true; btn.textContent = 'Assigning…';
   try {
-    const r = await authFetch('/ugc/generate', { method: 'POST', body: JSON.stringify({ action: 'assign_campaign', creative_id: _assignCreativeId, campaign_id: campaignId || null }) });
+    const r = await authFetch('/ugc/generate', { method: 'POST', body: JSON.stringify({ action: 'assign_campaign', creative_id: _assignCreativeId, campaign_id: campaignId }) });
     if (r && r.ok) {
-      showToast(campaignId ? 'Creative assigned to campaign' : 'Creative left unassigned', 'success');
+      showToast('Creative assigned to campaign', 'success');
     } else {
       showToast('Assignment failed', 'error');
     }
@@ -4065,16 +4092,20 @@ function showToast(msg, type='success') {
 }
 
 // ── EPHERMAL AI ──────────────────────────────────────────────────────────────
-function openAIPanel() {
-  if (!canAccess('ai')) { showUpgradeModal('ai'); return; }
-  document.getElementById('ai-panel').classList.add('open');
-  document.getElementById('ai-fab').classList.add('hidden');
-  setTimeout(() => document.getElementById('ai-input').focus(), 350);
-}
+// Full-page chat (moved from a floating panel — see nav item "Ephermal AI" at the
+// top of the sidebar). aiRenderToolSteps() is ready for the real tool-calling agent
+// (CONTEXT.md Task 38) — until that backend exists, no steps are ever shown, so the
+// UI never lies about what the AI is actually doing.
 
-function closeAIPanel() {
-  document.getElementById('ai-panel').classList.remove('open');
-  document.getElementById('ai-fab').classList.remove('hidden');
+function aiSetGreeting() {
+  const el = document.getElementById('ai-page-greeting');
+  if (!el) return;
+  const hour = new Date().getHours();
+  const greeting = hour < 5 ? 'Late one — I\'m here when you need me.'
+    : hour < 12 ? 'Good morning. Ready to move some numbers?'
+    : hour < 18 ? 'Good afternoon. What are we optimising today?'
+    : 'Good evening. Let\'s make it count before you log off.';
+  el.textContent = greeting;
 }
 
 function aiGetContext() {
@@ -4097,17 +4128,51 @@ function aiAppendMsg(text, role) {
   return div;
 }
 
+/** Animated "thinking" bubble shown while waiting on a response. */
+function aiAppendThinking() {
+  const box = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = 'ai-msg bot';
+  div.innerHTML = `<div class="ai-thinking"><span class="ai-thinking-label">Thinking</span><div class="ai-thinking-dots"><span></span><span></span><span></span></div></div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+/**
+ * Renders the tool-call trail under a bot message (e.g. "Pulled campaign performance",
+ * "Analysed CTR trend") — ready for when the backend actually reports real tool calls.
+ * steps: [{ label: string, status: 'running'|'done' }]
+ */
+function aiRenderToolSteps(msgEl, steps) {
+  if (!steps || !steps.length) return;
+  let wrap = msgEl.querySelector('.ai-tool-steps');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.className = 'ai-tool-steps';
+    msgEl.appendChild(wrap);
+  }
+  wrap.innerHTML = steps.map(s => `
+    <div class="ai-tool-step ${s.status}">
+      <span class="ai-tool-step-icon">${s.status === 'done'
+        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'}</span>
+      <span>${escHtml(s.label)}</span>
+    </div>`).join('');
+}
+
 async function sendAIMessage() {
+  if (!canAccess('ai')) { showUpgradeModal('ai'); return; }
   const input = document.getElementById('ai-input');
   const msg = input.value.trim();
   if (!msg) return;
   input.value = '';
-  input.style.height = '40px';
+  input.style.height = '24px';
   // hide chips after first message
   const chips = document.getElementById('ai-chips');
   if (chips) chips.style.display = 'none';
   aiAppendMsg(msg, 'user');
-  const typingEl = aiAppendMsg('Thinking…', 'bot typing');
+  const thinkingEl = aiAppendThinking();
   const btn = document.getElementById('ai-send-btn');
   btn.disabled = true;
   try {
@@ -4117,21 +4182,23 @@ async function sendAIMessage() {
       method: 'POST',
       body: JSON.stringify({ action: 'chat', message: msg, context: aiGetContext(), user_id: userId, plan })
     });
-    typingEl.remove();
+    thinkingEl.remove();
     if (r && r.ok) {
       const d = await r.json();
       if (d.error === 'AI_LIMIT_REACHED') {
         aiAppendMsg(`You've used all your AI messages this month (${d.limit} on ${plan} plan). Top up to keep going.`, 'bot');
         aiShowTopupBanner(d.limit, plan);
       } else {
-        aiAppendMsg(d.reply || d.message || 'Done!', 'bot');
+        const botEl = aiAppendMsg(d.reply || d.message || 'Done!', 'bot');
+        // Only renders when the backend actually reports tool_calls — not yet wired (Task 38).
+        if (d.tool_calls?.length) aiRenderToolSteps(botEl, d.tool_calls);
         await recordAIMessage();
       }
     } else {
       aiAppendMsg("I'm having trouble connecting right now. Try again shortly.", 'bot');
     }
   } catch(e) {
-    typingEl.remove();
+    thinkingEl.remove();
     aiAppendMsg("Request failed - please try again.", 'bot');
   } finally { btn.disabled = false; }
 }
@@ -4187,8 +4254,8 @@ async function aiGenerateDescription() {
 }
 
 function aiAskAboutStore() {
-  openAIPanel();
-  const url = document.getElementById('analysis-url')?.value?.trim() || localStorage.getItem('last_analyzed_store') || '';
+  navigate('ai');
+  const url = localStorage.getItem('last_analyzed_store') || '';
   if (url) {
     setTimeout(() => aiQuickAsk(`Analyse this store and suggest Meta ad strategies: ${url}`), 400);
   } else {
