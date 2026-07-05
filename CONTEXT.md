@@ -244,6 +244,12 @@ store brief, competitor analysis), have the agent reason over real pulled data f
 ("get me to 5x ROAS"), and require explicit user confirmation before any mutating tool call fires
 (same pattern as Budget AI's apply-flow). This is a multi-session build — needs its own proper
 scoping pass before starting.
+**Frontend done (Jul 6 2026)**: Ephermal AI moved from a dead floating-panel/hidden-nav-item to
+a proper sidebar tab — full-page Claude/ChatGPT-style chat (header, message thread, animated
+"thinking" dots, rounded pill input). `aiRenderToolSteps()` is built and ready to show real
+tool-call activity but intentionally renders nothing until the backend below actually exists —
+no fake tool-call theater. **Backend is the entire remaining task**: Claude tool-use, the actual
+tools, the confirm-before-mutate flow.
 
 ### Task 39 — Verify: free public "Analyse Your Store" tool end-to-end
 Built and deployed Jul 5 (`public-store-scan` + landing page section) but could not be tested live
