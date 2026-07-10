@@ -37,7 +37,7 @@ function corsHeaders(origin: string | null): Record<string, string> {
   return {
     'Access-Control-Allow-Origin':  origin && allowed.includes(origin) ? origin : appUrl,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey',
     'Access-Control-Max-Age':       '86400',
   };
 }
@@ -68,6 +68,50 @@ function normalizeDomain(input: string): string | null {
     return host;
   } catch {
     return null;
+  }
+}
+
+/** True for loopback / RFC1918 private / link-local / cloud-metadata IPv4 or IPv6 addresses. */
+function isPrivateOrReservedIp(ip: string): boolean {
+  const v4 = ip.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (v4) {
+    const a = Number(v4[1]), b = Number(v4[2]);
+    if (a === 10) return true;                  // 10.0.0.0/8
+    if (a === 172 && b >= 16 && b <= 31) return true; // 172.16.0.0/12
+    if (a === 192 && b === 168) return true;     // 192.168.0.0/16
+    if (a === 127) return true;                  // loopback
+    if (a === 169 && b === 254) return true;     // link-local + cloud metadata (169.254.169.254)
+    if (a === 0) return true;                    // "this network"
+    if (a >= 224) return true;                   // multicast/reserved
+    return false;
+  }
+  const lower = ip.toLowerCase();
+  if (lower === '::1') return true;                                   // IPv6 loopback
+  if (lower.startsWith('fc') || lower.startsWith('fd')) return true;   // unique local fc00::/7
+  if (lower.startsWith('fe80')) return true;                          // link-local
+  if (lower.startsWith('::ffff:')) return isPrivateOrReservedIp(lower.slice(7)); // IPv4-mapped
+  return false;
+}
+
+/**
+ * Resolves the domain and rejects it if it points at a private/loopback/link-local/metadata
+ * address — prevents this public, unauthenticated endpoint from being used as an SSRF proxy
+ * against internal infrastructure (e.g. a cloud metadata service on 169.254.169.254).
+ */
+async function isSafeDomain(domain: string): Promise<boolean> {
+  if (/(^|\.)localhost$/i.test(domain) || /\.(local|internal|test)$/i.test(domain)) return false;
+  try {
+    const [v4, v6] = await Promise.all([
+      Deno.resolveDns(domain, 'A').catch(() => [] as string[]),
+      Deno.resolveDns(domain, 'AAAA').catch(() => [] as string[]),
+    ]);
+    const addresses = [...v4, ...v6];
+    if (addresses.length === 0) return false; // unresolvable — nothing safe to fetch
+    return !addresses.some(isPrivateOrReservedIp);
+  } catch {
+    // If DNS resolution itself isn't available in this runtime, fail closed on the one
+    // trivially-exploitable case (a literal IP typed as the "domain") rather than open.
+    return !isPrivateOrReservedIp(domain);
   }
 }
 
@@ -127,7 +171,8 @@ async function callClaude(system: string, user: string): Promise<string> {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
+    console.error('public-store-scan Anthropic error:', res.status, (err as { error?: { message: string } }).error?.message);
+    throw new Error('AI store analysis is temporarily unavailable — please try again shortly.');
   }
   const data = await res.json() as { content: { type: string; text?: string }[] };
   return data.content?.find(c => c.type === 'text')?.text ?? '';
@@ -196,6 +241,7 @@ Deno.serve(async (req) => {
 
   const domain = normalizeDomain(String(body.url ?? ''));
   if (!domain) return errResponse('Enter a valid store URL', 400, origin);
+  if (!(await isSafeDomain(domain))) return errResponse('Enter a valid store URL', 400, origin);
 
   try {
     // Serve from cache if scanned recently — protects against cost abuse and repeat hits

@@ -89,6 +89,24 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, 'setup.html', { google_error: 'invalid_state' })
   }
 
+  // ── Consume the nonce (single-use) — rejects replay of a captured state ──
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  )
+  const { data: consumedNonce } = await supabase
+    .from('oauth_nonces')
+    .delete()
+    .eq('nonce', nonce)
+    .eq('user_id', userId)
+    .eq('platform', 'google')
+    .gt('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
+    .select('nonce')
+  if (!consumedNonce || consumedNonce.length === 0) {
+    console.error('[google-oauth] Nonce already used, unknown, or expired')
+    return redirectTo(APP_URL, 'setup.html', { google_error: 'invalid_state' })
+  }
+
   // ── Read secrets ──────────────────────────────────────────────────────────
   const GOOGLE_CLIENT_ID     = Deno.env.get('GOOGLE_CLIENT_ID')
   const GOOGLE_CLIENT_SECRET = Deno.env.get('GOOGLE_CLIENT_SECRET')
@@ -165,11 +183,6 @@ Deno.serve(async (req: Request) => {
   }
 
   // ── Persist to Supabase (service role bypasses RLS) ───────────────────────
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  )
-
   // Build the upsert object — only update refresh_token if we got one
   const upsertData: Record<string, string | null> = {
     user_id: userId,

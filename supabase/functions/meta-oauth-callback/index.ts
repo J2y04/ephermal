@@ -83,6 +83,24 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, 'setup.html', { meta_error: 'invalid_state' })
   }
 
+  // ── Consume the nonce (single-use) — rejects replay of a captured state ──
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  )
+  const { data: consumedNonce } = await supabase
+    .from('oauth_nonces')
+    .delete()
+    .eq('nonce', nonce)
+    .eq('user_id', userId)
+    .eq('platform', 'meta')
+    .gt('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
+    .select('nonce')
+  if (!consumedNonce || consumedNonce.length === 0) {
+    console.error('[meta-oauth] Nonce already used, unknown, or expired')
+    return redirectTo(APP_URL, 'setup.html', { meta_error: 'invalid_state' })
+  }
+
   // ── Read secrets from Supabase Vault ────────────────────────────────────
   const META_APP_ID       = Deno.env.get('META_APP_ID')
   const META_APP_SECRET   = Deno.env.get('META_APP_SECRET')
@@ -155,11 +173,6 @@ Deno.serve(async (req: Request) => {
   }
 
   // ── Persist token to Supabase (service role bypasses RLS) ────────────────
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL')!,
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-  )
-
   const { error: upsertErr } = await supabase
     .from('user_integrations')
     .upsert(

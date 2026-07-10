@@ -39,7 +39,7 @@ export default function Home() {
           line1={['Your', 'First']}
           line2={['$10K', 'Starts', 'Here.']}
           sub={<>Built for Shopify stores chasing their first (or next) revenue milestone. Stop paying $3,000/month to an agency that doesn&apos;t know your store. Ephermal reads your catalog, writes your ads, and launches across Meta and Google. No guesswork. Live in 3 minutes.</>}
-          cta={<><a href="/auth/register.html" className="btn-primary">Start Free Trial</a><a href="#how-it-works" className="btn-secondary">See how it works</a></>}
+          cta={<><a href="/auth/register.html" className="btn-primary">Get Started</a><a href="#how-it-works" className="btn-secondary">See how it works</a></>}
           oneLine
         />
         <p className="hero-proof" data-reveal data-delay="3">
@@ -856,7 +856,7 @@ export default function Home() {
           <h2>Your first $10K is<br />one campaign away.</h2>
           <p>Connect your store. Let AI run the ads. Watch the revenue grow.</p>
           <a href="/auth/register.html" className="btn-primary" style={{ fontSize: '18px', padding: '20px 48px' }}>
-            Start Free Trial
+            Get Started
           </a>
           <p className="cta-note">First campaign live in 3 minutes · No experience needed · Cancel from settings</p>
         </div>

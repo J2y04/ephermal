@@ -15,8 +15,14 @@
  * Returns:    { state: "userId~page~nonce~hmac" }
  */
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, signOAuthState } from '../_shared/auth.ts';
 import { rateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+);
 
 const VALID_PLATFORMS = new Set(['meta', 'shopify', 'google']);
 const VALID_PAGES     = new Set(['setup', 'dashboard']);
@@ -66,6 +72,15 @@ Deno.serve(async (req) => {
     typeof nonce    !== 'string' || !HEX_NONCE_RE.test(nonce)
   ) {
     return new Response('Invalid parameters', { status: 400, headers: CORS_HEADERS });
+  }
+
+  // Store the nonce server-side so the callback can consume it exactly once —
+  // the HMAC alone proves authenticity but doesn't stop a captured state string
+  // from being replayed against the callback more than once.
+  const { error: nonceErr } = await supabase.from('oauth_nonces').insert({ nonce, user_id: userId, platform });
+  if (nonceErr) {
+    console.error('[oauth-state-init] Failed to store nonce:', nonceErr.message);
+    return new Response('Server error', { status: 500, headers: CORS_HEADERS });
   }
 
   const hmac  = await signOAuthState(stateSecret, userId, platform, page, nonce);

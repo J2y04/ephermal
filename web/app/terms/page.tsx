@@ -3,6 +3,9 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Terms of Service - Ephermal',
   description: 'Terms and conditions for using the Ephermal platform.',
+  alternates: {
+    canonical: 'https://ephermal.app/terms',
+  },
 };
 
 export default function TermsPage() {

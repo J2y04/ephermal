@@ -223,7 +223,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <link rel="canonical" href="https://ephermal.app/" />
         <meta name="theme-color" content="#04050f" />
         <script
           type="application/ld+json"

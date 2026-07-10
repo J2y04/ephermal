@@ -3,6 +3,9 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'Privacy Policy - Ephermal',
   description: 'How Ephermal collects, uses, and protects your data.',
+  alternates: {
+    canonical: 'https://ephermal.app/privacy',
+  },
 };
 
 export default function PrivacyPage() {

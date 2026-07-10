@@ -73,6 +73,9 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .stat-card:hover{border-color:rgba(6,214,199,0.35);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,0.22)}
 .stat-card:nth-child(1){animation-delay:.05s}.stat-card:nth-child(2){animation-delay:.1s}.stat-card:nth-child(3){animation-delay:.15s}.stat-card:nth-child(4){animation-delay:.2s}
 .stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.stat-chart-mini{margin-top:12px;height:40px;overflow:visible}
+.chart-reveal-group{transform-origin:0 100%;transform:scaleY(0);opacity:0;transition:transform 1.1s cubic-bezier(0.22,1,0.36,1), opacity .6s ease}
+.chart-reveal-group.revealed{transform:scaleY(1);opacity:1}
 .stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
 .stat-icon svg{width:17px;height:17px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .stat-value{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:4px}
@@ -774,11 +777,13 @@ select.form-input{cursor:pointer}
       <div class="stat-row">
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div>
-          <div class="stat-value" id="stat-roas">—</div><div class="stat-label">Average ROAS</div>
+          <div class="stat-value" id="stat-roas">—</div><div class="stat-label">Average ROAS · 30d</div>
+          <div class="stat-chart-mini" id="stat-roas-chart"></div>
         </div>
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div>
-          <div class="stat-value" id="stat-spend">—</div><div class="stat-label">Total Ad Spend</div>
+          <div class="stat-value" id="stat-spend">—</div><div class="stat-label">Total Ad Spend · all time</div>
+          <div class="stat-chart-mini" id="stat-spend-chart"></div>
         </div>
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" style="stroke:var(--primary)"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div></div>
@@ -786,7 +791,8 @@ select.form-input{cursor:pointer}
         </div>
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(52,211,153,0.12)"><svg viewBox="0 0 24 24" style="stroke:#34d399"><polyline points="20 6 9 17 4 12"/></svg></div></div>
-          <div class="stat-value" id="stat-conversions">—</div><div class="stat-label">Total Conversions</div>
+          <div class="stat-value" id="stat-conversions">—</div><div class="stat-label">Total Conversions · 30d</div>
+          <div class="stat-chart-mini" id="stat-conversions-chart"></div>
         </div>
       </div>
       <div class="grid-2">
@@ -2173,7 +2179,7 @@ const PLANS = {
   growth:  { name: 'Growth',  color: '#06d6c7', ugc: 75,  stores: 3,        badge: 'GROWTH'  },
   scale:   { name: 'Scale',   color: '#06d6c7', ugc: 350, stores: Infinity,  badge: 'SCALE'   },
 };
-const GATED = { analytics: 'growth', ai: 'growth', analysis: 'growth', googleads: 'growth', audience: 'growth', budget: 'growth', launch: 'growth', abtest: 'scale', bulk: 'scale', multistore: 'scale', whitelabel: 'scale', competitorradar: 'growth', creativebrief: 'growth', profittracker: 'growth', mrrtracker: 'growth' };
+const GATED = { analytics: 'growth', ai: 'growth', analysis: 'growth', googleads: 'growth', audience: 'growth', budget: 'growth', campaigns: 'growth', abtest: 'scale', bulk: 'scale', multistore: 'scale', whitelabel: 'scale', competitorradar: 'growth', creativebrief: 'growth', profittracker: 'growth', mrrtracker: 'growth' };
 const PLAN_RANK = { starter: 0, growth: 1, scale: 2 };
 function getUserPlan() {
   // Clerk publicMetadata is the ONLY source of truth (written server-side by Stripe webhook).
@@ -3150,6 +3156,36 @@ async function loadOverview() {
   } catch(e){}
 }
 
+/** Animated grow-from-zero mini charts under the ROAS/Spend/Conversions home stat cards.
+ *  Sourced from mrr-tracker's daily series (already synced for MRR Tracker) — 30-day window
+ *  except ad spend, which is cumulative across all synced history per the card's "all time" label. */
+async function loadHomeCharts() {
+  if (!document.getElementById('stat-roas-chart')) return;
+  try {
+    const r = await authFetch('/mrr-tracker', { method: 'POST', body: JSON.stringify({ action: 'get_report' }) });
+    if (!r || !r.ok) return;
+    const d = await r.json();
+    const series = d.series || [];
+    if (!d.has_data || !series.length) return;
+    const last30 = series.slice(-30);
+
+    const roasPoints = last30.filter(p => p.roas !== null && p.roas !== undefined).map(p => ({ date: p.date, value: p.roas }));
+    const roasEl = document.getElementById('stat-roas-chart');
+    if (roasEl && roasPoints.length > 1) roasEl.innerHTML = buildLineChart(roasPoints, { color: '#06d6c7', height: 40, sparkline: true });
+
+    const convPoints = last30.map(p => ({ date: p.date, value: p.conversions || 0 }));
+    const convEl = document.getElementById('stat-conversions-chart');
+    if (convEl && convPoints.length > 1) convEl.innerHTML = buildLineChart(convPoints, { color: '#34d399', height: 40, sparkline: true });
+
+    let running = 0;
+    const spendPoints = series.map(p => { running += (p.meta_spend_cents || 0) + (p.google_spend_cents || 0); return { date: p.date, value: running / 100 }; });
+    const spendEl = document.getElementById('stat-spend-chart');
+    if (spendEl && spendPoints.length > 1) spendEl.innerHTML = buildLineChart(spendPoints, { color: '#06d6c7', height: 40, sparkline: true });
+
+    revealCharts();
+  } catch (e) {}
+}
+
 // ── CAMPAIGNS ─────────────────────────────────────────────────────────────────
 const campaignMap = {};
 
@@ -3811,7 +3847,7 @@ async function saveIntegrations() {
   showToast('Settings saved!');
   if (btn) { btn.disabled=false; btn.textContent='Save Settings'; }
   if (hasMeta) {
-    await Promise.all([loadOverview(), loadCampaigns(), loadCreatives('pending_review','creatives-body')]);
+    await Promise.all([loadOverview(), loadCampaigns(), loadCreatives('pending_review','creatives-body'), loadHomeCharts()]);
   }
 }
 
@@ -3954,13 +3990,15 @@ function renderCharts() {
   if(stEl) stEl.innerHTML=statusData.length?buildDonut(statusData,allCampaigns.length):'<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No data</p></div></div>';
 }
 
-/** Lightweight SVG line/area chart — no dependency. points: [{date, <valueKey>}] */
-function buildLineChart(points, {color='#06d6c7', valueKey='value', format=v=>String(v), height=180} = {}) {
-  if (!points || !points.length) return '<div class="empty-state" style="padding:30px 0"><p>No data yet</p></div>';
+/** Lightweight SVG line/area chart — no dependency. points: [{date, <valueKey>}]
+ *  sparkline:true strips dots/hover for compact stat-card use; both modes grow
+ *  from zero on insert via revealCharts() (double-rAF scaleY reveal). */
+function buildLineChart(points, {color='#06d6c7', valueKey='value', format=v=>String(v), height=180, sparkline=false} = {}) {
+  if (!points || !points.length) return sparkline ? '' : '<div class="empty-state" style="padding:30px 0"><p>No data yet</p></div>';
   const width = 720;
   const values = points.map(p => p[valueKey] || 0);
   const max = Math.max(...values, 1);
-  const min = Math.min(...values, 0);
+  const min = sparkline ? Math.min(...values, 0) : Math.min(...values, 0);
   const range = (max - min) || 1;
   const stepX = width / ((points.length - 1) || 1);
   const toY = v => height - ((v - min) / range) * height;
@@ -3968,7 +4006,7 @@ function buildLineChart(points, {color='#06d6c7', valueKey='value', format=v=>St
   const linePath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' ');
   const areaPath = `${linePath} L${coords[coords.length - 1][0].toFixed(1)},${height} L0,${height} Z`;
   const gradId = 'lcgrad-' + Math.random().toString(36).slice(2, 9);
-  const dots = coords.map((c, i) => {
+  const dots = sparkline ? '' : coords.map((c, i) => {
     const p = points[i];
     const tipKey = '_lc_' + gradId + '_' + i;
     window[tipKey] = `<strong>${escHtml(p.date || '')}</strong><br>${format(p[valueKey] || 0)}`;
@@ -3976,10 +4014,22 @@ function buildLineChart(points, {color='#06d6c7', valueKey='value', format=v=>St
   }).join('');
   return `<svg viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="width:100%;height:${height}px;overflow:visible;display:block">
     <defs><linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.35"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
-    <path d="${areaPath}" fill="url(#${gradId})" stroke="none"/>
-    <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
-    ${dots}
+    <g class="chart-reveal-group">
+      <path d="${areaPath}" fill="url(#${gradId})" stroke="none"/>
+      <path d="${linePath}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+    </g>
   </svg>`;
+}
+
+/** Triggers the grow-from-zero reveal for every .chart-reveal-group inside container
+ *  (or document if omitted). Double-rAF ensures the browser paints the scaleY(0)
+ *  state first so the transition to scaleY(1) actually animates. */
+function revealCharts(container) {
+  const scope = container || document;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    scope.querySelectorAll('.chart-reveal-group').forEach(g => g.classList.add('revealed'));
+  }));
 }
 
 // ── MRR TRACKER ───────────────────────────────────────────────────────────────
@@ -4011,6 +4061,8 @@ function renderMrrCharts(d) {
   if (roasEl) roasEl.innerHTML = roasPoints.length
     ? buildLineChart(roasPoints, { color: '#fbbf24', format: v => v.toFixed(2) + '×' })
     : '<div class="empty-state" style="padding:30px 0"><p>No spend data yet — connect Meta/Google and sync</p></div>';
+
+  revealCharts();
 }
 
 function renderMrrReport(d) {
@@ -4781,7 +4833,7 @@ async function createUGCForNewProduct() {
   }
   const analysisUrlEl = document.getElementById('analysis-url');
   if (lastStore && analysisUrlEl) analysisUrlEl.value = lastStore;
-  await Promise.all([loadOverview(), loadCampaigns(), loadCreatives('pending_review','creatives-body')]);
+  await Promise.all([loadOverview(), loadCampaigns(), loadCreatives('pending_review','creatives-body'), loadHomeCharts()]);
 })();
 
 // ── DASHBOARD OAUTH HELPERS ───────────────────────────────────────────────────
