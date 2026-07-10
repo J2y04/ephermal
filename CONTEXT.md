@@ -420,6 +420,61 @@ the campaign/ad set shell.
 - **Still needed if a user manages multiple Facebook Pages**: build a page picker in Settings;
   right now the first page returned by Meta is auto-selected
 
+### Task 40 — ✅ Full production-readiness audit — DONE (Jul 10 2026)
+Ran a 6-dimension multi-agent audit (security, silent-failures, AI prompt quality, SEO/AEO/GEO,
+production-config, frontend-integrity) with adversarial verification of every finding, plus live
+Playwright tests against the real deployed site. 31 findings survived verification. Fixed the 4
+launch blockers that were fixable without external account access, committed as `d8c5498`
+(not yet pushed to master — see Task 41):
+- **Paywall bypass (silent revenue leak)**: `dashboard.html` GATED map used key `'launch'` but
+  every caller checked `canAccess('campaigns')` — Starter users had full free access to the
+  Growth-tier Launch Ads feature. Renamed the key.
+- **SSRF on public-store-scan**: the free, unauthenticated "Analyse Your Store" endpoint would
+  server-side-fetch any attacker-supplied domain including private/loopback/link-local/cloud-
+  metadata IPs. Added DNS-resolution-based IP-range validation before fetching. Also stopped
+  leaking raw upstream API errors (e.g. Anthropic auth failures) to the public response.
+- **Canonical tag bug**: a hardcoded `<link rel="canonical">` in `layout.tsx` rendered on every
+  route including /privacy and /terms, telling Google those pages were duplicates of the
+  homepage. Removed; each legal page now self-canonicalizes via the metadata API.
+- **"Start Free Trial" CTA contradicted Terms of Service** (which explicitly says no free
+  trial, payment starts immediately). Changed CTA copy to "Get Started" in both spots.
+- Also closed **Task 20** (OAuth nonce replay) as part of the same session, before the audit.
+
+**Confirmed broken in production (Task 41, not yet fixed — needs Jamal)**: the public
+"Analyse Your Store Now" tool returns `{"error":"invalid x-api-key"}` live. ANTHROPIC_API_KEY
+is set in Supabase secrets but Anthropic is rejecting it (wrong/revoked key, or set with
+literal quotes via the CLI, a common mistake). Re-verify and re-set the secret, retest.
+
+### Task 41 — 🔴 Push committed fixes to production
+Commit `d8c5498` has the 4 blocker fixes above, sitting locally per this project's "never
+push to production without explicit go-ahead" rule. Supabase edge functions (public-store-scan,
+oauth-state-init, meta/google/shopify-oauth-callback) were already deployed live directly via
+Supabase MCP during this session — only the frontend changes (dashboard.html, layout.tsx,
+page.tsx, privacy/page.tsx, terms/page.tsx) are waiting on `git push origin HEAD:master`.
+
+### Task 42 — 🟡 Remaining audit findings (verified, not yet fixed)
+Full report is in this session's transcript. Highest-value remaining items, roughly in order:
+- `campaign-launcher/index.ts:347` (+`:241` Google) — DB write-back after a live campaign
+  launch discards its own error; a silent failure here means the app says "LIVE" while the
+  DB still says draft, risking duplicate launches / untracked spend.
+- `dashboard.html:3245` → `meta-api` — pause/activate toggle sends `action:'toggle'`, which
+  `meta-api` has no case for. Every Meta campaign pause/activate click fails.
+- `campaign-launcher` system prompt hallucinates Meta interest/behavior targeting IDs with no
+  real catalog access; sent straight to the live Meta Ads API.
+- `budget-ai/index.ts:345` — `applied:true` set unconditionally even when every platform push
+  failed; Budget History shows false "Applied" badges.
+- `google-api/index.ts` has no rate limiting at all (sibling functions meta-api/shopify-api do).
+- `create-checkout`, `cancel-subscription`, `stripe-webhook` construct the Stripe client at
+  module scope — with STRIPE_SECRET_KEY unset this throws during cold start before any
+  try/catch runs (crash pattern, not just "Stripe is unconfigured" which is already tracked).
+- 10+ edge functions forward raw upstream error text (Postgres/Groq/Anthropic/Meta/Google)
+  verbatim to the client — internal detail leak, same class as the public-store-scan one fixed.
+- `web/public/privacy.html` / `terms.html` — legacy static files still live alongside the real
+  Next.js `/privacy` and `/terms` routes, with diverging content and no redirect.
+- `web/app/layout.tsx` FAQPage JSON-LD (7 Q&As) doesn't match the 10 questions actually
+  rendered by `FAQ.tsx` — rich-result eligibility risk.
+- `sitemap.xml` lastmod dates frozen at 2026-06-22 despite later content changes.
+
 ---
 
 ## Recent Commits (latest first)
