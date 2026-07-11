@@ -1,18 +1,18 @@
 /**
  * Ephermal — Competitor Radar (Supabase Edge Function)
  *
- * Searches Meta Ad Library for competitor ads and analyses them with Groq.
+ * Searches Meta Ad Library for competitor ads and analyses them with Claude Haiku.
  *
  * POST { action: 'search', search_terms: string, countries?: string[] }
  *   — fetches user's meta_access_token from user_integrations, queries Meta Ad Library API,
  *     returns matching ads. Returns { error, code: 'NO_META_TOKEN' } if not connected.
  *
  * POST { action: 'analyze', ad_text: string }
- *   — uses Groq llama-3.3-70b-versatile to analyse a competitor ad's copy.
+ *   — uses claude-haiku-4-5 to analyse a competitor ad's copy.
  *     Returns { hook_type, emotion, cta, strengths, counter_strategy }.
  *
  * Required env vars:
- *   GROQ_API_KEY
+ *   ANTHROPIC_API_KEY
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
  */
@@ -26,9 +26,9 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const GROQ_KEY   = Deno.env.get('GROQ_API_KEY') ?? '';
-const GROQ_URL   = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
+const ANTHROPIC_URL   = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
 
 const META_GRAPH_URL = 'https://graph.facebook.com/v25.0';
 // spend/impressions are restricted to political/issue ads only — exclude them for regular ad searches
@@ -36,23 +36,28 @@ const META_AD_FIELDS = 'id,ad_creation_time,ad_delivery_start_time,ad_delivery_s
 
 const STYLE_GUARD = '\n\nWriting style: write like a real strategist, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
-async function callGroq(system: string, user: string, maxTokens = 1500): Promise<string> {
-  if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');
-  const res = await fetch(GROQ_URL, {
+async function callClaude(system: string, user: string, maxTokens = 1500): Promise<string> {
+  if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
+  const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+    headers: {
+      'Content-Type':      'application/json',
+      'x-api-key':         ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+    },
     body: JSON.stringify({
-      model: GROQ_MODEL,
+      model:      ANTHROPIC_MODEL,
       max_tokens: maxTokens,
-      messages: [{ role: 'system', content: system + STYLE_GUARD }, { role: 'user', content: user }],
+      system:     system + STYLE_GUARD,
+      messages:   [{ role: 'user', content: user }],
     }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: { message: string } }).error?.message ?? `Groq error ${res.status}`);
+    throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { choices: { message: { content: string } }[] };
-  return data.choices[0]?.message?.content ?? '';
+  const data = await res.json() as { content: { type: string; text?: string }[] };
+  return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
 async function getMetaToken(userId: string): Promise<string | null> {
@@ -171,7 +176,7 @@ Return a JSON object with this exact structure:
 
 Return ONLY valid JSON.`;
 
-  const raw = await callGroq(system, userMsg, 1400);
+  const raw = await callClaude(system, userMsg, 1400);
 
   let analysis: Record<string, unknown>;
   try {
@@ -227,7 +232,7 @@ Deno.serve(async (req) => {
       }
 
       case 'analyze': {
-        if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
+        if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
         const adText = String(body.ad_text ?? '').trim().slice(0, 4000);
         if (!adText) return errResponse('ad_text is required', 400, origin);
         return okResponse(await handleAnalyze(adText), origin);

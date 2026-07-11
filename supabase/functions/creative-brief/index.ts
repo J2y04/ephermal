@@ -1,14 +1,14 @@
 /**
  * Ephermal — Creative Brief Generator (Supabase Edge Function)
  *
- * AI-powered ad creative brief generation using llama-3.3-70b-versatile on Groq.
+ * AI-powered ad creative brief generation using claude-haiku-4-5.
  * Reads user's products and campaigns from DB, generates structured creative briefs.
  *
  * POST { action: 'generate' } — generate a new creative brief from store data
  * POST { action: 'history' } — return last 5 briefs for the user
  *
  * Required env vars:
- *   GROQ_API_KEY         — llama-3.3-70b-versatile (brief generation)
+ *   ANTHROPIC_API_KEY    — claude-haiku-4-5 (brief generation)
  *   HIGGSFIELD_API_KEY   — Higgsfield Marketing Studio (image/video prompts)
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
@@ -23,30 +23,35 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const GROQ_KEY       = Deno.env.get('GROQ_API_KEY') ?? '';
-const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL     = 'llama-3.3-70b-versatile';
-const HIGGSFIELD_KEY = Deno.env.get('HIGGSFIELD_API_KEY') ?? ''; // used for image/video generation prompts
+const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
+const ANTHROPIC_URL   = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
+const HIGGSFIELD_KEY  = Deno.env.get('HIGGSFIELD_API_KEY') ?? ''; // used for image/video generation prompts
 
 const STYLE_GUARD = '\n\nWriting style: write like a real creative director, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
-async function callGroq(system: string, user: string, maxTokens = 2000): Promise<string> {
-  if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');
-  const res = await fetch(GROQ_URL, {
+async function callClaude(system: string, user: string, maxTokens = 2000): Promise<string> {
+  if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
+  const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+    headers: {
+      'Content-Type':      'application/json',
+      'x-api-key':         ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+    },
     body: JSON.stringify({
-      model: GROQ_MODEL,
+      model:      ANTHROPIC_MODEL,
       max_tokens: maxTokens,
-      messages: [{ role: 'system', content: system + STYLE_GUARD }, { role: 'user', content: user }],
+      system:     system + STYLE_GUARD,
+      messages:   [{ role: 'user', content: user }],
     }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: { message: string } }).error?.message ?? `Groq error ${res.status}`);
+    throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { choices: { message: { content: string } }[] };
-  return data.choices[0]?.message?.content ?? '';
+  const data = await res.json() as { content: { type: string; text?: string }[] };
+  return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
 async function handleGenerate(userId: string): Promise<Record<string, unknown>> {
@@ -101,7 +106,7 @@ Generate a complete creative brief with this exact JSON structure:
 Base hooks on the product price points and inventory. Reference campaign objectives if available.
 Return ONLY valid JSON.`;
 
-  const raw = await callGroq(system, userMsg, 2000);
+  const raw = await callClaude(system, userMsg, 2000);
 
   let brief: Record<string, unknown>;
   try {
@@ -175,7 +180,7 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'generate': {
-        if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
+        if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
         return okResponse(await handleGenerate(userId), origin);
       }
 

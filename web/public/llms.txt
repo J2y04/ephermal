@@ -35,7 +35,7 @@ All plans billed monthly. Cancel any time.
 - Platform: Web SaaS (dashboard at ephermal.app)
 - Integrations: Shopify, Meta Ads (Facebook/Instagram), Google Ads, Higgsfield AI (UGC video generation)
 - Authentication: Shopify OAuth, Meta OAuth, Google OAuth
-- AI stack: Claude (Anthropic) for brand strategy, store intelligence, and ad copywriting; Groq (llama-3.3-70b) for fast structured calculations (budgets, forecasts)
+- AI stack: Claude (Anthropic) for brand strategy, store intelligence, ad copywriting, and budget calculations
 - Data storage: EU-hosted (Supabase EU region), GDPR compliant
 - Payments: Stripe
 - Founded: 2026

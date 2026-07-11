@@ -1,7 +1,7 @@
 /**
  * Ephermal — Budget AI (Supabase Edge Function)
  *
- * AI-powered budget calculation using qwen-qwq-32b on Groq.
+ * AI-powered budget calculation using claude-haiku-4-5.
  *
  * POST { action: 'calculate',  revenue_goal, days?, aov?, current_roas?, platforms? }
  * POST { action: 'allocate',   total_budget, meta_roas?, google_roas? }
@@ -15,7 +15,7 @@
  *   scale   → all + apply (auto-execute budget changes)
  *
  * Required env vars:
- *   GROQ_API_KEY
+ *   ANTHROPIC_API_KEY
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
  */
@@ -30,29 +30,34 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-const GROQ_KEY = Deno.env.get('GROQ_API_KEY') ?? '';
-const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const BUDGET_MODEL = 'llama-3.3-70b-versatile'; // fast reasoning model for budget math
+const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const BUDGET_MODEL  = 'claude-haiku-4-5-20251001';
 
 const STYLE_GUARD = '\n\nWriting style: write like a real CFO, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
-async function callGroq(system: string, user: string): Promise<string> {
-  if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');
-  const res = await fetch(GROQ_URL, {
+async function callClaude(system: string, user: string): Promise<string> {
+  if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
+  const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+    headers: {
+      'Content-Type':      'application/json',
+      'x-api-key':         ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+    },
     body: JSON.stringify({
-      model: BUDGET_MODEL,
+      model:      BUDGET_MODEL,
       max_tokens: 2048,
-      messages: [{ role: 'system', content: system + STYLE_GUARD }, { role: 'user', content: user }],
+      system:     system + STYLE_GUARD,
+      messages:   [{ role: 'user', content: user }],
     }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error((err as { error?: { message: string } }).error?.message ?? `Groq error ${res.status}`);
+    throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { choices: { message: { content: string } }[] };
-  return data.choices[0]?.message?.content ?? '';
+  const data = await res.json() as { content: { type: string; text?: string }[] };
+  return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
 async function getUserPlan(userId: string): Promise<string> {
@@ -93,11 +98,10 @@ JSON schema:
 - Active platforms: ${platforms.join(', ')}
 Use industry benchmarks. Account for learning phase (first 7 days). Include Meta vs Google split reasoning.`;
 
-  const raw  = await callGroq(system, userMsg);
+  const raw  = await callClaude(system, userMsg);
   let result: Record<string, unknown>;
   try {
-    // Strip potential thinking tags from qwq model
-    const json = raw.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+    const json = raw.trim();
     result = JSON.parse(json);
   } catch {
     throw new Error('Failed to parse budget calculation from AI');
@@ -217,7 +221,7 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'calculate': {
-        if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
+        if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
         const result = await handleCalculate(userId, body);
         return okResponse(result, origin);
       }
