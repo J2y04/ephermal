@@ -180,7 +180,7 @@ export default function PrivacyPage() {
           <a href="../terms">Terms of Service</a>
           <a href="mailto:hello@ephermal.app">Contact</a>
         </div>
-        <div className="legal-footer-copy">© 2026 Ephermal. All rights reserved.</div>
+        <div className="legal-footer-copy">© 2026 Interlink Platforms. All rights reserved.</div>
       </footer>
     </>
   );

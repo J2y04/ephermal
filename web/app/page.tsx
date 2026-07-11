@@ -873,7 +873,7 @@ export default function Home() {
           <a href="/terms">Terms</a>
           <a href="mailto:hello@ephermal.app">Contact</a>
         </div>
-        <div className="footer-copy">© 2026 Ephermal. All rights reserved.</div>
+        <div className="footer-copy">© 2026 Interlink Platforms. All rights reserved.</div>
       </footer>
     </>
   );
