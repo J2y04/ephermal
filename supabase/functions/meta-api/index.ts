@@ -452,12 +452,14 @@ async function createLookalike(
 async function updateCreativeStatus(
   userId: string, creativeId: string, status: 'approved' | 'rejected',
 ) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('creatives')
     .update({ status, updated_at: new Date().toISOString() })
     .eq('id', creativeId)
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .select('id');
   if (error) throw new Error(error.message);
+  if (!data || data.length === 0) throw new Error('Creative not found');
   return { success: true, id: creativeId, status };
 }
 
@@ -559,6 +561,22 @@ Deno.serve(async (req) => {
             await setCampaignStatus(token, id, postAction === 'enable' ? 'ACTIVE' : 'PAUSED'),
             origin,
           );
+        }
+
+        // Same contract as google-api's 'toggle': campaign_id + status (ACTIVE|PAUSED).
+        // The dashboard's single pause/activate toggle switch calls this for Meta campaigns.
+        case 'toggle': {
+          const id        = String(body.campaign_id ?? body.id ?? '');
+          const newStatus = String(body.status ?? 'PAUSED');
+          if (!id) return errResponse('campaign_id required', 400, origin);
+          if (!['ACTIVE', 'PAUSED'].includes(newStatus)) {
+            return errResponse('status must be ACTIVE or PAUSED', 400, origin);
+          }
+          // BOLA guard: verify campaign belongs to this user before touching Meta API
+          const { data: owned } = await supabase.from('campaigns')
+            .select('id').eq('id', id).eq('user_id', userId).single();
+          if (!owned) return errResponse('Campaign not found', 403, origin);
+          return okResponse(await setCampaignStatus(token, id, newStatus), origin);
         }
 
         case 'scale_budget': {

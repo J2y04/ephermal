@@ -342,13 +342,15 @@ Deno.serve(async (req) => {
           }
         }
 
-        // Mark recommendation applied
-        await supabase.from('budget_recommendations')
-          .update({ applied: true, auto_applied: false })
+        // Only mark applied if at least one platform push actually succeeded — otherwise
+        // Budget History shows a green "Applied" badge for a recommendation that never took effect.
+        const anySuccess = applied.some(r => r.success);
+        const { error: markErr } = await supabase.from('budget_recommendations')
+          .update({ applied: anySuccess, auto_applied: false })
           .eq('id', recId)
           .eq('user_id', userId);
+        if (markErr) console.error('budget-ai: failed to mark recommendation applied:', markErr.message);
 
-        const anySuccess = applied.some(r => r.success);
         return okResponse({ applied, recommendation_id: recId, any_success: anySuccess }, origin);
       }
 
