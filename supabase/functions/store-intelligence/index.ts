@@ -186,7 +186,8 @@ async function handleAnalyze(userId: string): Promise<Record<string, unknown>> {
   "ugc_visual": string (visual style guidance for UGC video/photo generation),
   "ugc_tone": string (tone and energy guidance for UGC scripts)
 }
-Base the color palette on the theme's actual detected colors if present (pick the most brand-relevant ones for primary/secondary/accent, and choose sensible background/text values that pair with them) — do not use the homepage meta tag fallback if the theme's real colors are available. Only infer tasteful hex values from scratch if neither signal is present. Every field must be grounded in the input data — do not hallucinate specifics about the business beyond what the catalog and shop info imply.`;
+Base the color palette on the theme's actual detected colors if present (pick the most brand-relevant ones for primary/secondary/accent, and choose sensible background/text values that pair with them). Do not use the homepage meta tag fallback if the theme's real colors are available. Only infer tasteful hex values from scratch if neither signal is present. Every field must be grounded in the input data. Do not hallucinate specifics about the business beyond what the catalog and shop info imply.
+Writing style: write like a real strategist, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.`;
 
   const userMsg = `Shop name: ${shopInfo.name ?? shop}
 Domain: ${shop}
@@ -263,7 +264,7 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'analyze': {
-        if (!ANTHROPIC_KEY) return errResponse('AI not configured — set ANTHROPIC_API_KEY', 503, origin);
+        if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
         return okResponse(await handleAnalyze(userId), origin);
       }
       case 'get':

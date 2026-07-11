@@ -62,12 +62,12 @@ export default function StoreAnalysisTool() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error || 'Could not analyse this store — try another URL.');
+        setError(data.error || 'Could not analyse this store. Try another URL.');
         return;
       }
       setResult(data as ScanResult);
     } catch {
-      setError('Request failed — check your connection and try again.');
+      setError('Request failed. Check your connection and try again.');
     } finally {
       setLoading(false);
     }
@@ -89,7 +89,7 @@ export default function StoreAnalysisTool() {
           <div className="section-label" style={{ justifyContent: 'center', display: 'flex' }}>Free — no signup required</div>
           <h2 className="section-title">Analyse Your Store Now.</h2>
           <p className="section-sub" style={{ margin: '0 auto' }}>
-            Paste your store URL. In seconds, see the exact brand brief, color palette, and ad strategy Ephermal would build for you — for free, right now.
+            Paste your store URL. In seconds, see the exact brand brief, color palette, and ad strategy Ephermal would build for you, for free, right now.
           </p>
         </div>
 
@@ -105,7 +105,7 @@ export default function StoreAnalysisTool() {
               aria-label="Store URL"
             />
             <button type="submit" className="btn-primary store-scan-btn" disabled={loading || !url.trim()}>
-              {loading ? 'Analysing…' : 'Analyse Your Store Now →'}
+              {loading ? 'Analysing…' : 'Analyse Your Store Now'}
             </button>
           </form>
 
@@ -128,7 +128,7 @@ export default function StoreAnalysisTool() {
                   {result.brand_vibe && <span className="store-scan-vibe">{result.brand_vibe}</span>}
                 </div>
                 {!result.has_catalog && (
-                  <span className="store-scan-note">No public catalog found — analysis based on homepage only</span>
+                  <span className="store-scan-note">No public catalog found. Analysis based on homepage only</span>
                 )}
               </div>
 
@@ -181,8 +181,8 @@ export default function StoreAnalysisTool() {
               )}
 
               <div className="store-scan-cta">
-                <p>This took Ephermal about 10 seconds — with zero setup. Connect your real store and Ephermal does this automatically, then writes your ads and launches them across Meta and Google.</p>
-                <a href="/auth/register.html" className="btn-primary">Start Free — Automate This →</a>
+                <p>This took Ephermal about 10 seconds, with zero setup. Connect your real store and Ephermal does this automatically, then writes your ads and launches them across Meta and Google.</p>
+                <a href="/auth/register.html" className="btn-primary">Start Free, Automate This</a>
               </div>
             </div>
           )}

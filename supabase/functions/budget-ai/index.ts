@@ -34,6 +34,8 @@ const GROQ_KEY = Deno.env.get('GROQ_API_KEY') ?? '';
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const BUDGET_MODEL = 'llama-3.3-70b-versatile'; // fast reasoning model for budget math
 
+const STYLE_GUARD = '\n\nWriting style: write like a real CFO, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
+
 async function callGroq(system: string, user: string): Promise<string> {
   if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');
   const res = await fetch(GROQ_URL, {
@@ -42,7 +44,7 @@ async function callGroq(system: string, user: string): Promise<string> {
     body: JSON.stringify({
       model: BUDGET_MODEL,
       max_tokens: 2048,
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      messages: [{ role: 'system', content: system + STYLE_GUARD }, { role: 'user', content: user }],
     }),
   });
   if (!res.ok) {
@@ -68,7 +70,7 @@ async function handleCalculate(userId: string, body: Record<string, unknown>) {
   if (revenueGoal < 1) throw new Error('revenue_goal must be greater than 0');
 
   const system = `You are an expert performance marketing CFO. Calculate optimal ad budgets.
-Return ONLY valid JSON — no markdown, no explanation outside the JSON.
+Return ONLY valid JSON. No markdown, no explanation outside the JSON.
 JSON schema:
 {
   "daily_budget_total": number,
@@ -215,7 +217,7 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'calculate': {
-        if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
+        if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
         const result = await handleCalculate(userId, body);
         return okResponse(result, origin);
       }

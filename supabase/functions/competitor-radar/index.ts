@@ -34,6 +34,8 @@ const META_GRAPH_URL = 'https://graph.facebook.com/v25.0';
 // spend/impressions are restricted to political/issue ads only — exclude them for regular ad searches
 const META_AD_FIELDS = 'id,ad_creation_time,ad_delivery_start_time,ad_delivery_stop_time,ad_snapshot_url,page_id,page_name,ad_creative_bodies,ad_creative_link_captions,ad_creative_link_descriptions,ad_creative_link_titles,publisher_platforms,languages';
 
+const STYLE_GUARD = '\n\nWriting style: write like a real strategist, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
+
 async function callGroq(system: string, user: string, maxTokens = 1500): Promise<string> {
   if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');
   const res = await fetch(GROQ_URL, {
@@ -42,7 +44,7 @@ async function callGroq(system: string, user: string, maxTokens = 1500): Promise
     body: JSON.stringify({
       model: GROQ_MODEL,
       max_tokens: maxTokens,
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      messages: [{ role: 'system', content: system + STYLE_GUARD }, { role: 'user', content: user }],
     }),
   });
   if (!res.ok) {
@@ -225,7 +227,7 @@ Deno.serve(async (req) => {
       }
 
       case 'analyze': {
-        if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
+        if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
         const adText = String(body.ad_text ?? '').trim().slice(0, 4000);
         if (!adText) return errResponse('ad_text is required', 400, origin);
         return okResponse(await handleAnalyze(adText), origin);

@@ -28,6 +28,8 @@ const GROQ_URL       = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL     = 'llama-3.3-70b-versatile';
 const HIGGSFIELD_KEY = Deno.env.get('HIGGSFIELD_API_KEY') ?? ''; // used for image/video generation prompts
 
+const STYLE_GUARD = '\n\nWriting style: write like a real creative director, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
+
 async function callGroq(system: string, user: string, maxTokens = 2000): Promise<string> {
   if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');
   const res = await fetch(GROQ_URL, {
@@ -36,7 +38,7 @@ async function callGroq(system: string, user: string, maxTokens = 2000): Promise
     body: JSON.stringify({
       model: GROQ_MODEL,
       max_tokens: maxTokens,
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      messages: [{ role: 'system', content: system + STYLE_GUARD }, { role: 'user', content: user }],
     }),
   });
   if (!res.ok) {
@@ -173,7 +175,7 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'generate': {
-        if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
+        if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
         return okResponse(await handleGenerate(userId), origin);
       }
 

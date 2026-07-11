@@ -39,6 +39,8 @@ const GROQ_KEY  = Deno.env.get('GROQ_API_KEY') ?? '';
 const GROQ_URL  = 'https://api.groq.com/openai/v1/chat/completions';
 const MAIN_MODEL = 'llama-3.3-70b-versatile';
 
+const STYLE_GUARD = '\n\nWriting style: write like a real media buyer, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
+
 async function callGroq(system: string, user: string, maxTokens = 1500): Promise<string> {
   if (!GROQ_KEY) throw new Error('GROQ_API_KEY not configured');
   const res = await fetch(GROQ_URL, {
@@ -47,7 +49,7 @@ async function callGroq(system: string, user: string, maxTokens = 1500): Promise
     body: JSON.stringify({
       model: MAIN_MODEL,
       max_tokens: maxTokens,
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      messages: [{ role: 'system', content: system + STYLE_GUARD }, { role: 'user', content: user }],
     }),
   });
   if (!res.ok) {
@@ -85,7 +87,7 @@ async function prepareCampaign(
 
   const system = `You are an elite performance marketing specialist writing ad campaigns.
 Generate complete, launch-ready campaign structures for Meta Ads and Google Ads.
-Return ONLY valid JSON — no markdown fences, no explanation.
+Return ONLY valid JSON. No markdown fences, no explanation.
 JSON schema:
 {
   "campaign_name": string,
@@ -189,7 +191,7 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
   const integrations = await getIntegrations(userId);
   const refreshToken = integrations?.google_refresh_token;
   const rawCid       = String(integrations?.google_ads_customer_id ?? '').replace(/-/g, '');
-  if (!refreshToken || !rawCid) throw new Error('Google Ads not connected — connect in Settings');
+  if (!refreshToken || !rawCid) throw new Error('Google Ads not connected. Connect in Settings');
 
   const devToken = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN');
   if (!devToken) throw new Error('Google Ads developer token not configured');
@@ -220,7 +222,7 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
 
   // 3. Ad group
   const agRes      = await gAdsPost(rawCid, accessToken, devToken, 'adGroups:mutate', {
-    operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} — Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD', cpcBidMicros: '1000000' } }],
+    operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD', cpcBidMicros: '1000000' } }],
   }) as { results: { resourceName: string }[] };
   const adGroupRn  = (agRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
 
@@ -273,7 +275,7 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
   const integrations = await getIntegrations(userId);
   const token      = integrations?.meta_token;
   const accountId  = integrations?.meta_account;
-  if (!token || !accountId) throw new Error('Meta Ads not connected — connect in Settings');
+  if (!token || !accountId) throw new Error('Meta Ads not connected. Connect in Settings');
 
   const pageId    = integrations?.meta_page_id;
   const pageToken = integrations?.meta_page_token;
@@ -298,7 +300,7 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
 
   // 2. Create ad set
   const adSet = await metaPost<{ id: string }>(`/${accountId}/adsets`, {
-    name:              String(metaCopy.adset_name ?? `${row.name} — Ad Set`),
+    name:              String(metaCopy.adset_name ?? `${row.name} Ad Set`),
     campaign_id:       campaign.id,
     daily_budget:      budget,
     billing_event:     'IMPRESSIONS',
@@ -316,7 +318,7 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     for (const ad of ads.slice(0, 5)) {
       try {
         const creative = await metaPost<{ id: string }>(`/${accountId}/adcreatives`, {
-          name: `${row.name} — ${String(ad.headline ?? 'Ad').slice(0, 40)}`,
+          name: `${row.name}: ${String(ad.headline ?? 'Ad').slice(0, 40)}`,
           object_story_spec: {
             page_id: pageId,
             link_data: {
@@ -330,7 +332,7 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
         }, pageToken);
 
         const adObj = await metaPost<{ id: string }>(`/${accountId}/ads`, {
-          name:      String(ad.headline ?? `${row.name} — Ad`),
+          name:      String(ad.headline ?? `${row.name} Ad`),
           adset_id:  adSet.id,
           creative:  { creative_id: creative.id },
           status:    adStatus,
@@ -357,11 +359,11 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
 
   const notePrefix = autoEnable ? 'Campaign is LIVE on Meta.' : 'Campaign created as PAUSED.';
   const adsNote = !pageId
-    ? ' Connect a Facebook Page in Settings to auto-create the ad(s) next time — for now, add the ad manually in Meta Ads Manager.'
+    ? ' Connect a Facebook Page in Settings to auto-create the ad(s) next time. For now, add the ad manually in Meta Ads Manager.'
     : adIds.length > 0
       ? ` ${adIds.length} ad(s) created automatically.`
       : adCreationError
-        ? ` Ad creation failed (${adCreationError}) — add the ad manually in Meta Ads Manager.`
+        ? ` Ad creation failed (${adCreationError}). Add the ad manually in Meta Ads Manager.`
         : '';
 
   return {
@@ -410,7 +412,7 @@ async function updateDraft(userId: string, campaignId: string, body: Record<stri
     .eq('user_id', userId)
     .maybeSingle();
   if (!existing) throw new Error('Campaign not found');
-  if (existing.status !== 'draft') throw new Error('Only draft campaigns can be edited — this campaign has already been launched');
+  if (existing.status !== 'draft') throw new Error('Only draft campaigns can be edited. This campaign has already been launched');
 
   const updates: Record<string, unknown> = {};
   if (body.name !== undefined)         updates.name = String(body.name).trim();
@@ -441,7 +443,7 @@ async function deleteDraft(userId: string, campaignId: string): Promise<Record<s
     .eq('user_id', userId)
     .maybeSingle();
   if (!existing) throw new Error('Campaign not found');
-  if (existing.status !== 'draft') throw new Error('Only draft campaigns can be deleted — pause or remove launched campaigns from the ad platform directly');
+  if (existing.status !== 'draft') throw new Error('Only draft campaigns can be deleted. Pause or remove launched campaigns from the ad platform directly');
 
   const { error } = await supabase
     .from('launched_campaigns')
@@ -476,7 +478,7 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'prepare': {
-        if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
+        if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
         return okResponse(await prepareCampaign(userId, body), origin);
       }
 

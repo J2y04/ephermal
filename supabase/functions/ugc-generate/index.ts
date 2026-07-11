@@ -40,15 +40,19 @@ const HIGGSFIELD_URL    = 'https://api.higgsfield.ai/v1/generate';
 // UGC generation credits per plan (separate from AI chat message credits in ai_credits table)
 const PLAN_LIMITS: Record<string, number> = { starter: 15, growth: 75, scale: 350 };
 
+// Applied to every prompt in this file — ad copy and UGC scripts go live in front of
+// real customers, so they must read as human-written, not AI-generated.
+const STYLE_GUARD = '\n\nWriting style: write like a real copywriter, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
+
 async function callAI(system: string, user: string, maxTokens = 1500): Promise<string> {
-  if (!GROQ_KEY) throw new Error('AI not configured — set GROQ_API_KEY');
+  if (!GROQ_KEY) throw new Error('AI not configured. Set GROQ_API_KEY');
   const res = await fetch(GROQ_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
     body: JSON.stringify({
       model: GROQ_MODEL,
       max_tokens: maxTokens,
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      messages: [{ role: 'system', content: system + STYLE_GUARD }, { role: 'user', content: user }],
     }),
   });
   if (!res.ok) {
@@ -106,7 +110,7 @@ Deno.serve(async (req) => {
   ]);
   if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
 
-  if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
+  if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
@@ -149,8 +153,8 @@ Deno.serve(async (req) => {
         const tone     = String(body.tone ?? 'authentic and relatable');
         const audience = String(body.audience ?? 'general consumers');
         const system = `You are an expert UGC scriptwriter for Meta and TikTok ads.
-Write scripts that feel like genuine customer reviews — not polished commercials.
-Structure: Hook (3-5 sec) → Problem → Solution/Product → Proof → CTA.
+Write scripts that feel like genuine customer reviews, not polished commercials.
+Structure: Hook (3-5 sec), then Problem, then Solution/Product, then Proof, then CTA.
 Keep total script under 60 seconds (~130 words/min).
 Return JSON: { hook, problem, solution, proof, cta, full_script, estimated_duration_seconds }
 Return ONLY valid JSON.`;

@@ -34,6 +34,8 @@ const PLAN_LIMITS: Record<string, number> = {
   scale:   500,
 };
 
+const STYLE_GUARD = '\n\nWriting style: write like a real advertising consultant, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
+
 /** Call Groq API (OpenAI-compatible) */
 async function callGroq(
   systemPrompt: string,
@@ -50,7 +52,7 @@ async function callGroq(
       model:      MODEL,
       max_tokens: maxTokens,
       messages: [
-        { role: 'system', content: systemPrompt },
+        { role: 'system', content: systemPrompt + STYLE_GUARD },
         { role: 'user',   content: userMessage },
       ],
     }),
@@ -132,7 +134,7 @@ Deno.serve(async (req) => {
   // ── Body size guard (64 KB max) ──────────────────────────────────────────
   if (bodyTooLarge(req, 65_536)) return errResponse('Request body too large', 413, origin);
 
-  if (!GROQ_KEY) return errResponse('AI not configured — set GROQ_API_KEY', 503, origin);
+  if (!GROQ_KEY) return errResponse('AI not configured. Set GROQ_API_KEY', 503, origin);
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
@@ -159,7 +161,7 @@ Deno.serve(async (req) => {
           ? `\n\nDashboard context: ${JSON.stringify(body.context, null, 2)}`
           : '';
 
-        const system = `You are Ephermal's AI advertising expert — an elite Meta Ads and Shopify growth specialist.
+        const system = `You are Ephermal's AI advertising expert, an elite Meta Ads and Shopify growth specialist.
 You help Shopify store owners maximize ROAS, reduce wasted ad spend, and scale winning campaigns.
 Be concise, data-driven, and actionable. When asked about performance, give specific recommendations.
 Never make up data — if context data is provided, reference it; otherwise, give best-practice advice.${contextStr}`;

@@ -172,7 +172,7 @@ async function callClaude(system: string, user: string): Promise<string> {
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     console.error('public-store-scan Anthropic error:', res.status, (err as { error?: { message: string } }).error?.message);
-    throw new Error('AI store analysis is temporarily unavailable — please try again shortly.');
+    throw new Error('AI store analysis is temporarily unavailable. Please try again shortly.');
   }
   const data = await res.json() as { content: { type: string; text?: string }[] };
   return data.content?.find(c => c.type === 'text')?.text ?? '';
@@ -185,10 +185,10 @@ async function analyzeDomain(domain: string): Promise<Record<string, unknown>> {
   ]);
 
   if (products.length === 0 && !signals.title) {
-    throw new Error('Could not read this store — check the URL and make sure the site is publicly reachable.');
+    throw new Error('Could not read this store. Check the URL and make sure the site is publicly reachable.');
   }
 
-  const system = `You are an expert Shopify brand strategist and Meta/Google Ads strategist analyzing a PUBLIC storefront for a free preview tool. Work only from the data given — never invent specifics about the business beyond what's provided. Return ONLY valid JSON, no markdown, matching this exact schema:
+  const system = `You are an expert Shopify brand strategist and Meta/Google Ads strategist analyzing a PUBLIC storefront for a free preview tool. Work only from the data given. Never invent specifics about the business beyond what's provided. Return ONLY valid JSON, no markdown, matching this exact schema:
 {
   "summary": string (2-3 sentences on what this store sells and who it serves),
   "target_audience": string (specific ideal customer profile),
@@ -202,7 +202,8 @@ async function analyzeDomain(domain: string): Promise<Record<string, unknown>> {
   "ugc_visual": string (visual style guidance for UGC video/photo generation),
   "ugc_tone": string (tone and energy guidance for UGC scripts)
 }
-Base the color palette on the detected theme color if present, otherwise infer tasteful hex values consistent with the brand vibe. If no product catalog was available, base the analysis on the homepage title/description alone and say so implicitly by keeping claims general.`;
+Base the color palette on the detected theme color if present, otherwise infer tasteful hex values consistent with the brand vibe. If no product catalog was available, base the analysis on the homepage title/description alone and say so implicitly by keeping claims general.
+Writing style: write like a real strategist, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.`;
 
   const userMsg = `Store domain: ${domain}
 Homepage title: ${signals.title ?? 'unknown'}
@@ -255,7 +256,7 @@ Deno.serve(async (req) => {
       return okResponse({ ...(cached.result as Record<string, unknown>), cached: true }, origin);
     }
 
-    if (!ANTHROPIC_KEY) return errResponse('AI not configured — set ANTHROPIC_API_KEY', 503, origin);
+    if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
 
     const result = await analyzeDomain(domain);
     await supabase.from('public_store_scans').upsert({
