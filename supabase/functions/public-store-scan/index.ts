@@ -115,9 +115,14 @@ async function isSafeDomain(domain: string): Promise<boolean> {
   }
 }
 
+const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+
 async function fetchStorefrontSignals(domain: string): Promise<{ logo_url: string | null; theme_color: string | null; title: string | null; description: string | null }> {
   try {
-    const res = await fetch(`https://${domain}/`, { signal: AbortSignal.timeout(8000) });
+    const res = await fetch(`https://${domain}/`, {
+      signal: AbortSignal.timeout(8000),
+      headers: { 'User-Agent': BROWSER_UA, 'Accept': 'text/html,*/*' },
+    });
     if (!res.ok) return { logo_url: null, theme_color: null, title: null, description: null };
     const html = await res.text();
     const pick = (re: RegExp) => html.match(re)?.[1] ?? null;
@@ -125,7 +130,9 @@ async function fetchStorefrontSignals(domain: string): Promise<{ logo_url: strin
                      ?? pick(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
     const themeColor = pick(/<meta[^>]+name=["']theme-color["'][^>]+content=["']([^"']+)["']/i)
                      ?? pick(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']theme-color["']/i);
-    const title = pick(/<title>([^<]+)<\/title>/i);
+    // [^>]* (not +) tolerates a bare <title> tag as well as one with attributes,
+    // e.g. Next.js SSR renders <title data-next-head="">Nike. Just Do It.</title>
+    const title = pick(/<title[^>]*>([^<]+)<\/title>/i);
     const description = pick(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
                       ?? pick(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
     return { logo_url: ogImage, theme_color: themeColor, title, description };
@@ -139,7 +146,10 @@ interface PublicProduct { title: string; vendor?: string; product_type?: string;
 /** Shopify's default storefront exposes /products.json publicly — no OAuth needed. */
 async function fetchPublicProducts(domain: string): Promise<PublicProduct[]> {
   try {
-    const res = await fetch(`https://${domain}/products.json?limit=20`, { signal: AbortSignal.timeout(8000) });
+    const res = await fetch(`https://${domain}/products.json?limit=20`, {
+      signal: AbortSignal.timeout(8000),
+      headers: { 'User-Agent': BROWSER_UA, 'Accept': 'application/json,*/*' },
+    });
     if (!res.ok) return [];
     const data = await res.json() as { products?: { title: string; vendor?: string; product_type?: string; variants?: { price?: string }[] }[] };
     return (data.products ?? []).map(p => ({
@@ -184,7 +194,7 @@ async function analyzeDomain(domain: string): Promise<Record<string, unknown>> {
     fetchPublicProducts(domain),
   ]);
 
-  if (products.length === 0 && !signals.title) {
+  if (products.length === 0 && !signals.title && !signals.description) {
     throw new Error('Could not read this store. Check the URL and make sure the site is publicly reachable.');
   }
 
