@@ -103,9 +103,7 @@ JSON schema:
     "targeting": {
       "geo_locations": { "countries": string[] },
       "age_min": number,
-      "age_max": number,
-      "interests": { "id": string, "name": string }[],
-      "behaviors": { "id": string, "name": string }[]
+      "age_max": number
     },
     "ads": [ { "headline": string, "primary_text": string, "description": string, "cta": string } ]
   },
@@ -245,9 +243,18 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
     });
   }
 
-  await supabase.from('launched_campaigns').update({ google_campaign_id: googleCampaignId, status: 'active', launched_at: new Date().toISOString() }).eq('id', campaignId).eq('user_id', userId);
+  const { error: updateErr } = await supabase.from('launched_campaigns').update({ google_campaign_id: googleCampaignId, status: 'active', launched_at: new Date().toISOString() }).eq('id', campaignId).eq('user_id', userId);
 
-  return { campaign_id: campaignId, google_campaign_id: googleCampaignId, status: 'active', enabled: autoEnable, note: autoEnable ? 'Google Search campaign is LIVE.' : 'Google Search campaign created as PAUSED. Enable in Google Ads Manager.' };
+  if (updateErr) {
+    console.error(`CRITICAL: campaign ${campaignId} launched live on Google but DB update failed:`, updateErr);
+  }
+
+  const baseNote = autoEnable ? 'Google Search campaign is LIVE.' : 'Google Search campaign created as PAUSED. Enable in Google Ads Manager.';
+  const dbWarning = updateErr
+    ? ' WARNING: launch succeeded but we could not update your dashboard. Refresh and check Google Ads Manager directly before relaunching.'
+    : '';
+
+  return { campaign_id: campaignId, google_campaign_id: googleCampaignId, status: 'active', enabled: autoEnable, note: `${baseNote}${dbWarning}` };
 }
 
 const META_CTA_MAP: Record<string, string> = {
@@ -289,7 +296,15 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
 
   const copy      = row.copy as Record<string, unknown>;
   const metaCopy  = copy?.meta as Record<string, unknown> ?? {};
-  const targeting = metaCopy?.targeting as Record<string, unknown> ?? { geo_locations: { countries: ['US'] } };
+  // Whitelist-sanitize targeting: only pass through safe fields. Meta interest/behavior
+  // targeting requires real Meta-assigned numeric IDs that an LLM cannot know and may
+  // fabricate; never forward AI-generated interests/behaviors to the live Ads API.
+  const rawTargeting = metaCopy?.targeting as Record<string, unknown> ?? {};
+  const targeting = {
+    geo_locations: rawTargeting.geo_locations ?? { countries: ['US'] },
+    age_min: typeof rawTargeting.age_min === 'number' ? rawTargeting.age_min : 18,
+    age_max: typeof rawTargeting.age_max === 'number' ? rawTargeting.age_max : 65,
+  };
   const budget    = Math.round((row.budget_daily ?? 20) * 100); // Meta uses cents
   const ads       = (metaCopy?.ads as { headline?: string; primary_text?: string; description?: string; cta?: string }[] | undefined) ?? [];
 
@@ -301,6 +316,9 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     objective:              String(row.objective ?? 'OUTCOME_TRAFFIC'),
     status:                 adStatus,
     special_ad_categories: [],
+    // Required by Graph API v25+ whenever the campaign has no campaign-level budget
+    // (we set daily_budget on the ad set below instead) — omitting it is a hard 400.
+    is_adset_budget_sharing_enabled: false,
   }, token);
 
   // 2. Create ad set
@@ -351,7 +369,7 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
   }
 
   // 4. Update DB with Meta IDs
-  await supabase
+  const { error: updateErr } = await supabase
     .from('launched_campaigns')
     .update({
       platform_campaign_id: campaign.id,
@@ -362,6 +380,10 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     .eq('id', campaignId)
     .eq('user_id', userId);
 
+  if (updateErr) {
+    console.error(`CRITICAL: campaign ${campaignId} launched live on Meta but DB update failed:`, updateErr);
+  }
+
   const notePrefix = autoEnable ? 'Campaign is LIVE on Meta.' : 'Campaign created as PAUSED.';
   const adsNote = !pageId
     ? ' Connect a Facebook Page in Settings to auto-create the ad(s) next time. For now, add the ad manually in Meta Ads Manager.'
@@ -370,6 +392,9 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
       : adCreationError
         ? ` Ad creation failed (${adCreationError}). Add the ad manually in Meta Ads Manager.`
         : '';
+  const dbWarning = updateErr
+    ? ' WARNING: launch succeeded but we could not update your dashboard. Refresh and check Meta Ads Manager directly before relaunching.'
+    : '';
 
   return {
     campaign_id:      campaignId,
@@ -378,7 +403,7 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     meta_ad_ids:      adIds,
     status:           'active',
     enabled:          autoEnable,
-    note:             `${notePrefix}${adsNote}`,
+    note:             `${notePrefix}${adsNote}${dbWarning}`,
   };
 }
 
@@ -468,16 +493,26 @@ Deno.serve(async (req) => {
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
-  const rl = await rateLimitTiered(userId, 'launcher', [
-    { max: 3,  window: 60   },
-    { max: 20, window: 3600 },
-  ]);
-  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
-
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
 
   const action = String(body.action ?? 'prepare');
+
+  // Rate limit tier depends on action cost — cheap DB reads (list/status) must not
+  // share a budget with the AI generation call or a real Meta/Google Ads API launch,
+  // otherwise just opening the campaign review before launching burns the launch quota.
+  const READ_ACTIONS  = new Set(['list', 'status']);
+  const LAUNCH_ACTIONS = new Set(['launch_meta', 'launch_google', 'launch']);
+  const rateTier = READ_ACTIONS.has(action)
+    ? { key: 'launcher-read',  tiers: [{ max: 30, window: 60 }, { max: 300, window: 3600 }] }
+    : action === 'prepare'
+      ? { key: 'launcher-prepare', tiers: [{ max: 6, window: 60 }, { max: 40, window: 3600 }] }
+      : LAUNCH_ACTIONS.has(action)
+        ? { key: 'launcher-launch', tiers: [{ max: 8, window: 60 }, { max: 40, window: 3600 }] }
+        : { key: 'launcher-write', tiers: [{ max: 15, window: 60 }, { max: 100, window: 3600 }] };
+  const rl = await rateLimitTiered(userId, rateTier.key, rateTier.tiers);
+  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
+
   const plan   = await getUserPlan(userId);
 
   try {

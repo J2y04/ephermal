@@ -1549,7 +1549,7 @@ select.form-input{cursor:pointer}
         <div class="panel-head"><div class="panel-title" style="color:var(--danger)">Danger Zone</div></div>
         <div style="padding:24px;display:flex;align-items:center;justify-content:space-between">
           <div><div style="font-weight:600">Delete Account</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Permanently remove your account and all data</div></div>
-          <button onclick="if(confirm('Delete your account? This cannot be undone.'))alert('Contact support@ephermal.app to delete your account.')" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid rgba(248,113,113,0.4);color:var(--danger);background:transparent">Delete Account</button>
+          <button onclick="openDeleteAccountModal()" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid rgba(248,113,113,0.4);color:var(--danger);background:transparent">Delete Account</button>
         </div>
       </div>
     </div>
@@ -1624,8 +1624,8 @@ select.form-input{cursor:pointer}
           <div style="background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.2);border-radius:14px;padding:20px">
             <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--danger);margin-bottom:14px">Danger Zone</div>
             <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button onclick="if(confirm('Clear all localStorage?')){localStorage.clear();location.reload()}" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid rgba(248,113,113,0.4);color:var(--danger);transition:all .2s">Clear LocalStorage</button>
-              <button onclick="if(confirm('Force reload?')){location.reload(true)}" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid var(--border);color:var(--muted);transition:all .2s">Hard Reload</button>
+              <button onclick="showConfirm('Clear all localStorage?',{danger:true}).then(ok=>{if(ok){localStorage.clear();location.reload()}})" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid rgba(248,113,113,0.4);color:var(--danger);transition:all .2s">Clear LocalStorage</button>
+              <button onclick="showConfirm('Force reload?').then(ok=>{if(ok){location.reload(true)}})" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid var(--border);color:var(--muted);transition:all .2s">Hard Reload</button>
             </div>
           </div>
 
@@ -2004,6 +2004,36 @@ select.form-input{cursor:pointer}
     <div class="modal-actions" style="justify-content:center">
       <button class="btn-secondary" onclick="document.getElementById('upgrade-modal').classList.remove('open')">Maybe later</button>
       <a id="upgrade-modal-link" href="#" target="_blank" class="btn-save" style="text-decoration:none">Upgrade Now</a>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE ACCOUNT MODAL -->
+<div class="modal-overlay" id="delete-account-modal">
+  <div class="modal" style="max-width:460px">
+    <button class="modal-close" onclick="closeDeleteAccountModal()">×</button>
+    <div class="modal-title" style="color:var(--danger)">Delete your account</div>
+    <div class="modal-sub">This permanently deletes your Ephermal account: every connected integration, campaign, creative, and stored setting. Any active subscription is cancelled immediately. This cannot be undone.</div>
+    <div class="form-group" style="margin-top:16px">
+      <label class="form-label">Type <strong>DELETE</strong> to confirm</label>
+      <input class="form-input" id="delete-account-confirm-input" type="text" placeholder="DELETE" autocomplete="off" oninput="document.getElementById('delete-account-confirm-btn').disabled = this.value !== 'DELETE'">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeDeleteAccountModal()">Cancel</button>
+      <button id="delete-account-confirm-btn" class="btn-save" style="background:var(--danger);border-color:var(--danger)" disabled onclick="confirmDeleteAccount()">Delete My Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC CONFIRM MODAL (replaces window.confirm() everywhere) -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="_confirmModalResolve(false)">×</button>
+    <div class="modal-title" id="confirm-modal-title">Are you sure?</div>
+    <div class="modal-sub" id="confirm-modal-body" style="margin-bottom:0"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="confirm-modal-cancel" onclick="_confirmModalResolve(false)">Cancel</button>
+      <button class="btn-save" id="confirm-modal-ok" onclick="_confirmModalResolve(true)">Confirm</button>
     </div>
   </div>
 </div>
@@ -2906,6 +2936,42 @@ async function logout() {
   if (window.__clerk) await window.__clerk.signOut().catch(() => {});
   window.location.href = 'auth/login.html';
 }
+
+function openDeleteAccountModal() {
+  const input = document.getElementById('delete-account-confirm-input'); if (input) input.value = '';
+  const btn = document.getElementById('delete-account-confirm-btn'); if (btn) { btn.disabled = true; btn.textContent = 'Delete My Account'; }
+  document.getElementById('delete-account-modal')?.classList.add('open');
+}
+function closeDeleteAccountModal() {
+  document.getElementById('delete-account-modal')?.classList.remove('open');
+}
+async function confirmDeleteAccount() {
+  const input = document.getElementById('delete-account-confirm-input');
+  if (!input || input.value !== 'DELETE') return;
+  const btn = document.getElementById('delete-account-confirm-btn');
+  if (btn) { if (btn.disabled && btn.textContent !== 'Delete My Account') return; btn.disabled = true; btn.textContent = 'Deleting…'; }
+  try {
+    const clerkToken = await window.__clerk?.session?.getToken();
+    if (!clerkToken) { showToast('Not signed in - please refresh', 'error'); if (btn) { btn.disabled = false; btn.textContent = 'Delete My Account'; } return; }
+    const res = await fetch(`${window.SUPABASE_FN}/delete-account`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${clerkToken}`, 'apikey': window.SUPABASE_ANON },
+      body: JSON.stringify({ confirm: 'DELETE' }),
+    });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      showToast(e.error || 'Account deletion failed - please try again', 'error');
+      if (btn) { btn.disabled = false; btn.textContent = 'Delete My Account'; }
+      return;
+    }
+    localStorage.clear();
+    if (window.__clerk) await window.__clerk.signOut().catch(() => {});
+    window.location.href = 'https://ephermal.app/?account_deleted=1';
+  } catch (e) {
+    showToast('Account deletion failed - please try again', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Delete My Account'; }
+  }
+}
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fmt(n, d = 0) { if (n == null || n === '') return '—'; return Number(n).toLocaleString('en-US', {maximumFractionDigits:d, minimumFractionDigits:d}); }
 function timeSince(iso) { const s = Math.floor((Date.now()-new Date(iso))/1000); if (s<60) return `${s}s ago`; if (s<3600) return `${Math.floor(s/60)}m ago`; if (s<86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; }
@@ -3775,11 +3841,14 @@ async function checkShopifyReturn() {
   navigate('settings');
   showToast('Shopify connected: ' + (data.shop_name || data.shop), 'success');
 }
-function dashDisconnectShopify() {
-  if (!confirm('Disconnect your Shopify store?')) return;
+async function dashDisconnectShopify() {
+  if (!(await showConfirm('Disconnect your Shopify store?', { danger: true, confirmText: 'Disconnect' }))) return;
+  const r = await authFetch('/disconnect', { method: 'POST', body: JSON.stringify({ action: 'disconnect', platform: 'shopify' }) });
+  if (!r || !r.ok) { showToast('Failed to disconnect - please try again', 'error'); return; }
   localStorage.removeItem('shopify_token'); localStorage.removeItem('shopify_domain');
   localStorage.removeItem('shopify_shop_name'); localStorage.removeItem('shopify_store');
   refreshDashShopifyState();
+  showToast('Shopify disconnected', 'warn');
 }
 
 // ── SETTINGS ─────────────────────────────────────────────────────────────────
@@ -4141,6 +4210,24 @@ function showToast(msg, type='success') {
   document.body.appendChild(t);
   requestAnimationFrame(()=>{t.style.transform='translateX(0)';t.style.opacity='1';});
   setTimeout(()=>{t.style.transform='translateX(110%)';t.style.opacity='0';setTimeout(()=>{t.remove();_toastOffset=Math.max(0,_toastOffset-62);},350);},4500);
+}
+
+// ── Styled confirm modal — replaces window.confirm() everywhere in the app ────
+let _confirmModalPending = null;
+function showConfirm(message, opts = {}) {
+  const { title = 'Are you sure?', confirmText = 'Confirm', danger = false } = opts;
+  document.getElementById('confirm-modal-title').textContent = title;
+  document.getElementById('confirm-modal-body').textContent = message;
+  const okBtn = document.getElementById('confirm-modal-ok');
+  okBtn.textContent = confirmText;
+  okBtn.style.background = danger ? 'var(--danger)' : '';
+  okBtn.style.borderColor = danger ? 'var(--danger)' : '';
+  document.getElementById('confirm-modal').classList.add('open');
+  return new Promise((resolve) => { _confirmModalPending = resolve; });
+}
+function _confirmModalResolve(result) {
+  document.getElementById('confirm-modal').classList.remove('open');
+  if (_confirmModalPending) { _confirmModalPending(result); _confirmModalPending = null; }
 }
 
 // ── EPHERMAL AI ──────────────────────────────────────────────────────────────
@@ -4921,13 +5008,26 @@ async function checkMetaOAuthReturn() {
   }
 }
 
-function dashSelectMetaAccount() {
+async function dashSelectMetaAccount() {
   const sel = document.getElementById('dash-meta-select');
   const val = sel.value;
-  const text = sel.selectedOptions[0]?.text || val;
-  localStorage.setItem('meta_account', val);
-  const picker = document.getElementById('dash-meta-picker'); if (picker) picker.style.display='none';
-  dashShowMetaBadge(text, val);
+  const name = sel.selectedOptions[0]?.text || val;
+  sel.disabled = true;
+  try {
+    const r = await authFetch('/meta', { method: 'POST', body: JSON.stringify({ action: 'select_account', account_id: val }) });
+    if (!r || !r.ok) {
+      const e = r ? await r.json().catch(()=>({})) : {};
+      showToast(e.error || 'Failed to switch ad account - please try again', 'error');
+      return;
+    }
+    localStorage.setItem('meta_account', val);
+    const picker = document.getElementById('dash-meta-picker'); if (picker) picker.style.display='none';
+    dashShowMetaBadge(name, val);
+  } catch (e) {
+    showToast('Failed to switch ad account - please try again', 'error');
+  } finally {
+    sel.disabled = false;
+  }
 }
 
 function dashShowMetaBadge(name, id, toast=true) {
@@ -4940,7 +5040,10 @@ function dashShowMetaBadge(name, id, toast=true) {
   if (toast) showToast('Meta Ads connected');
 }
 
-function dashDisconnectMeta() {
+async function dashDisconnectMeta() {
+  if (!(await showConfirm('Disconnect Meta Ads?', { danger: true, confirmText: 'Disconnect' }))) return;
+  const r = await authFetch('/disconnect', { method: 'POST', body: JSON.stringify({ action: 'disconnect', platform: 'meta' }) });
+  if (!r || !r.ok) { showToast('Failed to disconnect - please try again', 'error'); return; }
   localStorage.removeItem('meta_token'); localStorage.removeItem('meta_account');
   const badge = document.getElementById('dash-meta-badge'); if (badge) badge.style.display='none';
   const btn = document.getElementById('dash-meta-oauth-btn'); if (btn) btn.style.display='flex';
@@ -5039,7 +5142,10 @@ function dashShowGoogleBadge(cid, toast=true) {
   if (toast) showToast('Google Ads connected');
 }
 
-function dashDisconnectGoogle() {
+async function dashDisconnectGoogle() {
+  if (!(await showConfirm('Disconnect Google Ads?', { danger: true, confirmText: 'Disconnect' }))) return;
+  const r = await authFetch('/disconnect', { method: 'POST', body: JSON.stringify({ action: 'disconnect', platform: 'google' }) });
+  if (!r || !r.ok) { showToast('Failed to disconnect - please try again', 'error'); return; }
   localStorage.removeItem('google_token'); localStorage.removeItem('google_account');
   const badge = document.getElementById('dash-google-badge'); if (badge) badge.style.display='none';
   const btn = document.getElementById('dash-google-oauth-btn'); if (btn) btn.style.display='flex';
@@ -5123,22 +5229,30 @@ async function loadBudgetForecast() {
   if (plan === 'starter') { showToast('Upgrade to Growth for forecasting', 'warn'); return; }
   if (!_budgetDailyBudget) { showToast('Calculate a budget first', 'warn'); return; }
 
-  const roas = parseFloat(document.getElementById('budget-roas')?.value || '2.5');
-  const r = await authFetch('/budget', { method: 'POST', body: JSON.stringify({ action: 'forecast', daily_budget: _budgetDailyBudget, current_roas: roas, days: 30 }) });
-  if (!r || !r.ok) { showToast('Forecast failed', 'error'); return; }
-  const data = await r.json();
+  const btn = document.getElementById('bud-forecast-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading forecast…'; }
+  try {
+    const roas = parseFloat(document.getElementById('budget-roas')?.value || '2.5');
+    const r = await authFetch('/budget', { method: 'POST', body: JSON.stringify({ action: 'forecast', daily_budget: _budgetDailyBudget, current_roas: roas, days: 30 }) });
+    if (!r || !r.ok) { showToast('Forecast failed - please try again', 'error'); return; }
+    const data = await r.json();
 
-  const cells = document.getElementById('forecast-cells');
-  if (!cells) return;
-  const pts = data.projections || [];
-  cells.innerHTML = pts.map(p => `
-    <div class="forecast-cell">
-      <div class="val">$${Math.round(p.cumulative_revenue).toLocaleString()}</div>
-      <div class="lbl">Day ${p.day} Revenue</div>
-    </div>
-  `).join('');
+    const cells = document.getElementById('forecast-cells');
+    if (!cells) return;
+    const pts = data.projections || [];
+    cells.innerHTML = pts.map(p => `
+      <div class="forecast-cell">
+        <div class="val">$${Math.round(p.cumulative_revenue).toLocaleString()}</div>
+        <div class="lbl">Day ${p.day} Revenue</div>
+      </div>
+    `).join('');
 
-  document.getElementById('budget-forecast-wrap').style.display = '';
+    document.getElementById('budget-forecast-wrap').style.display = '';
+  } catch(e) {
+    showToast('Forecast failed - please try again', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'View 30-day Forecast'; }
+  }
 }
 
 async function applyBudgetRec() {
@@ -5502,7 +5616,7 @@ async function saveCampaignDraft() {
 // ── Campaign Review / Launch ─────────────────────────────────────────────────
 async function openCampaignReview(campaignId) {
   const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'status', campaign_id: campaignId }) });
-  if (!r || !r.ok) { showToast('Could not load campaign', 'error'); return; }
+  if (!r || !r.ok) { showToast('Could not load campaign details - please try again', 'error'); return; }
   const c = await r.json();
   _crCampaign = c;
   refreshPlatformToggles();
@@ -5578,7 +5692,7 @@ async function saveCampaignReviewEdits() {
 
 async function launchReviewedCampaign(platform) {
   if (!_crCampaign) return;
-  if (!confirm(`Launch "${_crCampaign.name}" to ${platform === 'meta' ? 'Meta' : 'Google'} now? It will be created as PAUSED.`)) return;
+  if (!(await showConfirm(`Launch "${_crCampaign.name}" to ${platform === 'meta' ? 'Meta' : 'Google'} now? It will be created as PAUSED.`, { title: 'Launch campaign', confirmText: 'Launch' }))) return;
   const action = platform === 'meta' ? 'launch_meta' : 'launch_google';
   const btnId = platform === 'meta' ? 'cr-launch-meta-btn' : 'cr-launch-google-btn';
   const btn = document.getElementById(btnId);
@@ -5596,14 +5710,17 @@ async function launchReviewedCampaign(platform) {
 
 async function deleteCampaignDraft() {
   if (!_crCampaign) return;
-  if (!confirm(`Delete draft "${_crCampaign.name}"? This can't be undone.`)) return;
+  if (!(await showConfirm(`Delete draft "${_crCampaign.name}"? This can't be undone.`, { danger: true, confirmText: 'Delete' }))) return;
+  const btn = document.getElementById('cr-delete-btn');
+  if (btn) { if (btn.disabled) return; btn.disabled = true; btn.textContent = 'Deleting…'; }
   try {
     const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'delete', campaign_id: _crCampaign.id }) });
-    if (!r || !r.ok) { const e = r ? await r.json().catch(()=>({})) : {}; showToast(e.error || 'Failed to delete', 'error'); return; }
+    if (!r || !r.ok) { const e = r ? await r.json().catch(()=>({})) : {}; showToast(e.error || 'Failed to delete draft - please try again', 'error'); return; }
     showToast('Draft deleted', 'success');
     closeCampaignReview();
     loadLaunchAdsCampaigns();
-  } catch(e) { showToast('Failed to delete', 'error'); }
+  } catch(e) { showToast('Failed to delete draft - please try again', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Delete Draft'; } }
 }
 
 // ── Legacy: live-launched campaigns feed used by the Dashboard home panel ─────

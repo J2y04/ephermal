@@ -97,6 +97,9 @@ const WRITE_ACTIONS = new Set([
   'create_audience', 'create_lookalike', 'sync_products', 'launch', 'approve',
   'reject', 'bulk-action',
   'set_cogs', 'bulk_set',  // profit-tracker writes
+  'select_account', // meta-api: switch which Meta ad account is active
+  'disconnect', // disconnect-integration: clear a platform's stored credentials
+  'launch_meta', 'launch_google', 'save_draft', 'update', 'delete', // campaign-launcher writes
 ]);
 
 // After a write, invalidate related read caches
@@ -110,6 +113,16 @@ const WRITE_INVALIDATES: Record<string, string[]> = {
   enable:             ['meta-api:campaigns', 'meta-api:overview'],
   scale_budget:       ['meta-api:campaigns', 'meta-api:overview'],
   'bulk-action':      ['meta-api:campaigns', 'meta-api:overview'],
+  // Switching the active ad account invalidates every cached Meta read —
+  // all of it was scoped to the previous account.
+  select_account:     ['meta-api:overview', 'meta-api:campaigns', 'meta-api:creatives', 'meta-api:audiences', 'meta-api:pixel', 'meta-api:analytics'],
+  // Disconnecting a platform could be any of the three — over-invalidate all
+  // of them rather than track which platform per call; cheap and harmless.
+  disconnect:         ['meta-api:overview', 'meta-api:campaigns', 'meta-api:creatives', 'meta-api:audiences', 'meta-api:pixel', 'meta-api:analytics', 'shopify-api:products', 'google-api:campaigns', 'google-api:analytics'],
+  // A real launch creates a live campaign on the platform — the cached campaign
+  // list must refresh immediately so the dashboard reflects it, not after the TTL.
+  launch_meta:        ['meta-api:campaigns', 'meta-api:overview'],
+  launch_google:      ['google-api:campaigns', 'google-api:analytics'],
 };
 
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL') ?? '';
@@ -135,6 +148,7 @@ function resolveFunctionName(path: string): string | null {
   if (/^\/(profit-tracker)/.test(path))             return 'profit-tracker';
   if (/^\/(store-intelligence)/.test(path))         return 'store-intelligence';
   if (/^\/(mrr-tracker)/.test(path))                return 'mrr-tracker';
+  if (/^\/(disconnect)/.test(path))                 return 'disconnect-integration';
   return null;
 }
 
