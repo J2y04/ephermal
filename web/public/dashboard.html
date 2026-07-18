@@ -474,6 +474,14 @@ select.form-input{cursor:pointer}
 .ai-msg { max-width:78%; line-height:1.6; font-size:14px; border-radius:16px; padding:12px 16px; animation:fadeUp .3s ease both; }
 .ai-msg.bot { background:var(--surface2); border:1px solid var(--border); color:var(--text); align-self:flex-start; border-bottom-left-radius:5px; }
 .ai-msg.user { background:var(--primary); color:#08080c; align-self:flex-end; border-bottom-right-radius:5px; font-weight:500; }
+.ai-msg.bot p { margin:0 0 8px; }
+.ai-msg.bot p:last-child { margin-bottom:0; }
+.ai-msg.bot strong { font-weight:700; color:var(--text); }
+.ai-msg.bot code { background:rgba(255,255,255,0.08); border-radius:4px; padding:1px 5px; font-size:12.5px; font-family:'JetBrains Mono',monospace; }
+.ai-msg.bot ul, .ai-msg.bot ol { margin:0 0 8px; padding-left:20px; }
+.ai-msg.bot li { margin-bottom:4px; }
+.ai-msg.bot li:last-child { margin-bottom:0; }
+.ai-msg.bot a { color:var(--primary); text-decoration:underline; }
 /* ── Thinking indicator ── */
 .ai-thinking { display:flex; align-items:center; gap:8px; }
 .ai-thinking-dots { display:flex; gap:4px; }
@@ -823,7 +831,7 @@ select.form-input{cursor:pointer}
             </div>
             <div class="conn-item">
               <div class="conn-icon" style="background:rgba(6,214,199,0.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#06d6c7" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
-              <div class="conn-info"><div class="conn-name">UGC Generation</div><div class="conn-status" id="conn-ugc">Ready - AI video generation</div></div>
+              <div class="conn-info"><div class="conn-name">UGC Generation</div><div class="conn-status" id="conn-ugc">Ready - AI scripts, hooks &amp; ad copy</div></div>
               <button class="conn-badge" onclick="openUGCModal()">Generate</button>
             </div>
           </div>
@@ -1890,10 +1898,10 @@ select.form-input{cursor:pointer}
         <div style="font-size:13px;color:var(--muted)" id="new-product-price"></div>
       </div>
     </div>
-    <div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:22px">Would you like Ephermal to automatically create a UGC video ad for this product?</div>
+    <div style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:22px">Would you like Ephermal to automatically write a UGC-style ad script and hooks for this product?</div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="document.getElementById('new-product-modal').classList.remove('open');_currentNewProductIdx++;setTimeout(showNextNewProduct,300)">Not Now</button>
-      <button id="btn-create-product-ugc" onclick="createUGCForNewProduct()" style="padding:10px 22px;background:#06d6c7;border:none;border-radius:10px;color:#08080c;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Create UGC Ad</button>
+      <button id="btn-create-product-ugc" onclick="createUGCForNewProduct()" style="padding:10px 22px;background:#06d6c7;border:none;border-radius:10px;color:#08080c;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Generate Script</button>
     </div>
   </div>
 </div>
@@ -2130,8 +2138,8 @@ select.form-input{cursor:pointer}
 <div class="modal-overlay" id="ugc-modal">
   <div class="modal" style="max-width:520px">
     <button class="modal-close" onclick="closeUGCModal()">×</button>
-    <div class="modal-title">Generate UGC Ad</div>
-    <div class="modal-sub">AI video generation powered by Higgsfield Marketing Studio - the same engine behind viral UGC ads.</div>
+    <div class="modal-title">Generate UGC Ad Script</div>
+    <div class="modal-sub">AI-written UGC-style script, hooks, and ad copy for your product - ready to hand to a creator or use as-is. Video generation is coming soon.</div>
     <div class="form-group" style="margin-bottom:16px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <label class="form-label" style="margin-bottom:0">Product Description</label>
@@ -2166,7 +2174,7 @@ select.form-input{cursor:pointer}
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeUGCModal()">Cancel</button>
-      <button class="btn-save" onclick="submitUGC()" id="btn-ugc-submit">Generate Video</button>
+      <button class="btn-save" onclick="submitUGC()" id="btn-ugc-submit">Generate Script</button>
     </div>
   </div>
 </div>
@@ -2745,23 +2753,28 @@ function _memSet(key, data, ttlMs) {
 // TTLs for client-side dedup cache (shorter than Redis - just prevents double-firing)
 const _MEM_TTL = { overview:20000, campaigns:20000, audiences:30000, pixel:60000, products:30000, creatives:20000 };
 
+/** Get a Clerk session token. forceRefresh bypasses Clerk's internal token cache
+ *  (used on retry after a 401 — the cached token may be stale/near-expiry even
+ *  though Clerk considered it valid when it handed it out). */
+async function _getClerkToken(forceRefresh) {
+  if (window.__clerk?.session) {
+    try {
+      let t = await window.__clerk.session.getToken(forceRefresh ? { skipCache: true } : undefined);
+      if (!t) {
+        await window.__clerk.session.touch();
+        t = await window.__clerk.session.getToken();
+      }
+      return t;
+    } catch { return null; }
+  }
+  return localStorage.getItem('access_token');
+}
+
 async function authFetch(path, opts = {}) {
   // Client-side rate limit - real enforcement is at the backend
   try { window.RateLimit?.check(path, 20); } catch(e) { showToast(e.message, 'error'); return null; }
 
-  let token;
-  if (window.__clerk?.session) {
-    token = await window.__clerk.session.getToken();
-    if (!token) {
-      // Session expired or revoked — try a forced refresh once
-      try {
-        await window.__clerk.session.touch();
-        token = await window.__clerk.session.getToken();
-      } catch { /* will fall through to null guard */ }
-    }
-  } else {
-    token = localStorage.getItem('access_token');
-  }
+  const token = await _getClerkToken(false);
   if (!token) return null;
 
   // Build integration headers (passed to cache-proxy / edge functions)
@@ -2779,59 +2792,82 @@ async function authFetch(path, opts = {}) {
   const isRead = method === 'GET';
   const proxyUrl = window.CACHE_PROXY_URL;
 
-  // ── Route ALL requests through cache-proxy Edge Function ─────────────────
-  // GETs are cached by action TTL; POSTs are forwarded directly (never cached).
-  if (proxyUrl && !opts._direct) {
-    // Client-side dedup for GETs only
-    if (isRead) {
-      const memKey = path + JSON.stringify(extraHeaders);
-      const cached = _memGet(memKey);
-      if (cached) {
-        return { ok: true, status: 200, json: async () => cached, text: async () => JSON.stringify(cached) };
-      }
-    }
-    try {
-      // Parse POST body so cache-proxy can forward it as JSON
-      let reqBody = undefined;
-      if (!isRead && opts.body) {
-        try { reqBody = JSON.parse(opts.body); } catch { reqBody = opts.body; }
-      }
-      const r = await fetch(proxyUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${window.SUPABASE_ANON}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ path, method, body: reqBody, headers: extraHeaders, clerkToken: token }),
-      });
-      if (r.status === 401) { console.warn('[authFetch] 401 on', path); return null; }
-      if (r.status === 429) { showToast('Too many requests - slow down', 'error'); return null; }
-      if (r.ok) {
-        const data = await r.json();
-        if (isRead) {
-          const action = new URLSearchParams(path.split('?')[1] || '').get('action') || 'default';
-          const ttl = _MEM_TTL[action] || 15000;
-          _memSet(path + JSON.stringify(extraHeaders), data, ttl);
+  // One attempt of the whole fetch, parameterized by which token to use.
+  // Returns { retry401: true } on a 401 so the caller can refresh and retry once;
+  // returns { fallthrough: true } if the proxy itself is unreachable.
+  async function attempt(tok) {
+    if (proxyUrl && !opts._direct) {
+      if (isRead) {
+        const memKey = path + JSON.stringify(extraHeaders);
+        const cached = _memGet(memKey);
+        if (cached) {
+          return { done: { ok: true, status: 200, json: async () => cached, text: async () => JSON.stringify(cached) } };
         }
-        return { ok: true, status: 200, json: async () => data, text: async () => JSON.stringify(data) };
       }
-      return r;
-    } catch {
-      // Cache proxy unavailable - fall through to direct Supabase call
+      try {
+        let reqBody = undefined;
+        if (!isRead && opts.body) {
+          try { reqBody = JSON.parse(opts.body); } catch { reqBody = opts.body; }
+        }
+        const r = await fetch(proxyUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${window.SUPABASE_ANON}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ path, method, body: reqBody, headers: extraHeaders, clerkToken: tok }),
+        });
+        if (r.status === 401) return { retry401: true };
+        if (r.status === 429) { showToast('Too many requests - slow down', 'error'); return { done: null }; }
+        if (r.ok) {
+          const data = await r.json();
+          if (isRead) {
+            const action = new URLSearchParams(path.split('?')[1] || '').get('action') || 'default';
+            const ttl = _MEM_TTL[action] || 15000;
+            _memSet(path + JSON.stringify(extraHeaders), data, ttl);
+          }
+          return { done: { ok: true, status: 200, json: async () => data, text: async () => JSON.stringify(data) } };
+        }
+        return { done: r };
+      } catch {
+        return { fallthrough: true };
+      }
     }
+    return { fallthrough: true };
   }
 
-  // ── Direct fallback to Supabase functions (no cache-proxy) ───────────────
-  const directHeaders = {
-    'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
-    ...extraHeaders,
-    ...(opts.headers || {}),
-  };
-  const r = await fetch((window.SUPABASE_FN || window.API_BASE || '') + path, { ...opts, headers: directHeaders });
-  if (r.status === 401) { console.warn('[authFetch] 401 on', path); return null; }
-  if (r.status === 429) { showToast('Too many requests - slow down', 'error'); return null; }
-  return r;
+  async function directFallback(tok) {
+    const directHeaders = {
+      'Authorization': `Bearer ${tok}`,
+      'Content-Type': 'application/json',
+      ...extraHeaders,
+      ...(opts.headers || {}),
+    };
+    const r = await fetch((window.SUPABASE_FN || window.API_BASE || '') + path, { ...opts, headers: directHeaders });
+    if (r.status === 401) return { retry401: true };
+    if (r.status === 429) { showToast('Too many requests - slow down', 'error'); return { done: null }; }
+    return { done: r };
+  }
+
+  let result = await attempt(token);
+  if (result.fallthrough) result = await directFallback(token);
+
+  if (result.retry401) {
+    // The token Clerk handed us was rejected server-side — force a genuinely fresh
+    // one (bypassing Clerk's cache) and retry exactly once before giving up. This
+    // is the fix for the dashboard silently showing no data on a stale/near-expiry
+    // token: previously a single 401 just gave up with no retry at all.
+    console.warn('[authFetch] 401 on', path, '- retrying with a forced-fresh token');
+    const freshToken = await _getClerkToken(true);
+    if (freshToken) {
+      let retryResult = await attempt(freshToken);
+      if (retryResult.fallthrough) retryResult = await directFallback(freshToken);
+      if (!retryResult.retry401) return retryResult.done;
+    }
+    return null;
+  }
+
+  return result.done;
 }
 
 /** Invalidate a cached action for the current user (called after write operations) */
@@ -3335,9 +3371,14 @@ async function loadCampaigns() {
   const b2 = document.getElementById('campaigns-body-full');
   if (b1 && !b1.querySelector('.campaign-row:not(.header)')) b1.innerHTML = skelHtml;
   if (b2 && !b2.querySelector('.campaign-row:not(.header)')) b2.innerHTML = skelHtml;
+  const showLoadError = () => {
+    const errHtml = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><p>Couldn\'t load campaigns</p><button class="btn-secondary" style="margin-top:10px" onclick="loadCampaigns()">Retry</button></div>';
+    const eb1 = document.getElementById('campaigns-body'); if (eb1) eb1.innerHTML = errHtml;
+    const eb2 = document.getElementById('campaigns-body-full'); if (eb2) eb2.innerHTML = errHtml;
+  };
   try {
     const rMeta = await authFetch('/meta/read?action=campaigns');
-    if (!rMeta || !rMeta.ok) { _campaignsLoaded = true; if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts(); return; }
+    if (!rMeta || !rMeta.ok) { _campaignsLoaded = true; showLoadError(); if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts(); return; }
     const metaCampaigns = await rMeta.json();
 
     // Fetch Google campaigns if Growth+ and credentials set
@@ -3363,7 +3404,7 @@ async function loadCampaigns() {
     _campaignsLoaded = true;
     // Refresh analytics charts if analytics page is currently visible
     if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts();
-  } catch(e){ _campaignsLoaded = true; }
+  } catch(e){ _campaignsLoaded = true; showLoadError(); }
 }
 
 // ── LAUNCH CAMPAIGN ───────────────────────────────────────────────────────────
@@ -3572,15 +3613,15 @@ async function submitUGC() {
       renderPlanUI();
       closeUGCModal();
       document.getElementById('ugc-description').value = '';
-      showToast('UGC video generation started - check Creatives in ~60s');
-      setTimeout(() => loadCreatives('pending_review','creatives-body'), 8000);
+      showToast('UGC script generated - check Creatives');
+      loadCreatives('pending_review','creatives-body');
       if (creativeId) openAssignCampaignModal(creativeId);
     } else {
       const d = r ? await r.json().catch(()=>({})) : {};
       showToast(d.detail || d.message || 'Generation failed', 'error');
     }
   } catch(e){ showToast('Request failed - please try again', 'error'); }
-  finally { btn.disabled=false; btn.textContent='Generate Video'; }
+  finally { btn.disabled=false; btn.textContent='Generate Script'; }
 }
 
 // ── ASSIGN CREATIVE → CAMPAIGN ───────────────────────────────────────────────
@@ -4257,11 +4298,45 @@ function aiGetContext() {
   };
 }
 
+/**
+ * Minimal, dependency-free markdown -> safe HTML for bot chat replies only.
+ * HTML-escapes first, then converts a small safe subset (bold, italic, inline
+ * code, bullet/numbered lists, links) — never passes raw model output through.
+ */
+function renderChatMarkdown(text) {
+  const lines = String(text || '').split('\n');
+  const htmlLines = [];
+  let listType = null; // 'ul' | 'ol' | null
+  const inline = (s) => escHtml(s)
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  const closeList = () => { if (listType) { htmlLines.push(`</${listType}>`); listType = null; } };
+  for (const raw of lines) {
+    const line = raw.trim();
+    const bullet = /^[-*]\s+(.*)/.exec(line);
+    const numbered = /^\d+\.\s+(.*)/.exec(line);
+    if (bullet) {
+      if (listType !== 'ul') { closeList(); htmlLines.push('<ul>'); listType = 'ul'; }
+      htmlLines.push(`<li>${inline(bullet[1])}</li>`);
+    } else if (numbered) {
+      if (listType !== 'ol') { closeList(); htmlLines.push('<ol>'); listType = 'ol'; }
+      htmlLines.push(`<li>${inline(numbered[1])}</li>`);
+    } else {
+      closeList();
+      if (line) htmlLines.push(`<p>${inline(line)}</p>`);
+    }
+  }
+  closeList();
+  return htmlLines.join('');
+}
+
 function aiAppendMsg(text, role) {
   const box = document.getElementById('ai-messages');
   const div = document.createElement('div');
   div.className = `ai-msg ${role}`;
-  div.textContent = text;
+  if (role === 'bot') { div.innerHTML = renderChatMarkdown(text); } else { div.textContent = text; }
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
   return div;
@@ -4324,15 +4399,16 @@ async function sendAIMessage() {
     thinkingEl.remove();
     if (r && r.ok) {
       const d = await r.json();
-      if (d.error === 'AI_LIMIT_REACHED') {
-        aiAppendMsg(`You've used all your AI messages this month (${d.limit} on ${plan} plan). Top up to keep going.`, 'bot');
-        aiShowTopupBanner(d.limit, plan);
-      } else {
-        const botEl = aiAppendMsg(d.reply || d.message || 'Done!', 'bot');
-        // Only renders when the backend actually reports tool_calls — not yet wired (Task 38).
-        if (d.tool_calls?.length) aiRenderToolSteps(botEl, d.tool_calls);
-        await recordAIMessage();
-      }
+      const botEl = aiAppendMsg(d.reply || d.message || 'Done!', 'bot');
+      if (d.tool_calls?.length) aiRenderToolSteps(botEl, d.tool_calls);
+      await recordAIMessage();
+    } else if (r && r.status === 429) {
+      const d = await r.json().catch(() => ({}));
+      const limit = d.limit ?? null;
+      aiAppendMsg(limit
+        ? `You've used all your AI messages this month (${limit} on ${plan} plan). Top up to keep going.`
+        : (d.error || "You've hit a rate limit - try again in a moment."), 'bot');
+      if (limit) aiShowTopupBanner(limit, plan);
     } else {
       aiAppendMsg("I'm having trouble connecting right now. Try again shortly.", 'bot');
     }

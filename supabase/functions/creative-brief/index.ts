@@ -100,7 +100,7 @@ Generate a complete creative brief with this exact JSON structure:
   "copy_variations": ["copy1", "copy2", "copy3", "copy4", "copy5"],
   "format_recommendation": "string describing best ad format (video/static/carousel/etc)",
   "target_audience": "string describing ideal customer profile",
-  "brief_summary": "string — 2-3 sentence strategic overview"
+  "summary": "string — 2-3 sentence strategic overview"
 }
 
 Base hooks on the product price points and inventory. Reference campaign objectives if available.
@@ -193,6 +193,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('creative-brief error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Creative brief error', 500, origin);
+    return errResponse('Creative brief error', 500, origin);
   }
 });

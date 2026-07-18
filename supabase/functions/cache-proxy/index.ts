@@ -139,7 +139,7 @@ function resolveFunctionName(path: string): string | null {
   if (/^\/(ephermal\/ugc|ugc)/.test(path))         return 'ugc-generate';
   if (/^\/(ephermal\/google|google)/.test(path))   return 'google-api';
   if (path.startsWith('/ai'))                       return 'ai-assistant';
-  if (path.startsWith('/fatigue'))                  return 'creative-fatigue';
+  if (/^\/(fatigue|creative-fatigue)/.test(path))   return 'creative-fatigue';
   if (/^\/(optimize|roas)/.test(path))              return 'roas-optimizer';
   if (/^\/(budget)/.test(path))                     return 'budget-ai';
   if (/^\/(launch)/.test(path))                     return 'campaign-launcher';
@@ -333,13 +333,23 @@ Deno.serve(async (req) => {
 
   if (!upstreamRes.ok) {
     const errText = await upstreamRes.text();
-    // Log detail server-side; return generic message to avoid leaking internals
     console.error(`[cache-proxy] upstream ${fnName} ${upstreamRes.status}:`, errText.slice(0, 500));
-    // Forward the status code so client can distinguish 401/403/429/503, but not the body
-    const clientMsg = upstreamRes.status === 429
-      ? JSON.stringify({ error: 'Too many requests — please slow down.' })
-      : JSON.stringify({ error: 'Upstream service error.' });
-    return new Response(clientMsg, {
+    if (upstreamRes.status === 429) {
+      return new Response(JSON.stringify({ error: 'Too many requests — please slow down.' }), {
+        status: 429,
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      });
+    }
+    // Every edge function already returns clean, user-facing {error: "..."} strings
+    // (validation messages, plan gating, sanitized Meta/Google errors) — forward that
+    // message as-is instead of a generic "Upstream service error" that hides what
+    // actually happened. Fall back to a generic message only if the body isn't that shape.
+    let upstreamMsg = 'Upstream service error.';
+    try {
+      const parsed = JSON.parse(errText) as { error?: unknown };
+      if (typeof parsed.error === 'string' && parsed.error) upstreamMsg = parsed.error;
+    } catch { /* not JSON — keep generic message */ }
+    return new Response(JSON.stringify({ error: upstreamMsg }), {
       status: upstreamRes.status,
       headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
     });

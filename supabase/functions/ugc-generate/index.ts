@@ -16,9 +16,11 @@
  *
  * Required env vars:
  *   ANTHROPIC_API_KEY    — claude-haiku-4-5 (script/copy/analysis)
- *   HIGGSFIELD_API_KEY   — Higgsfield Marketing Studio (video generation)
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
+ *
+ * HIGGSFIELD_API_KEY is set but NOT wired yet — this function only produces text
+ * (script/hooks/copy), not actual video. Video generation is a planned fast-follow.
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -131,7 +133,10 @@ Deno.serve(async (req) => {
       .update({ campaign_id: campaignId })
       .eq('id', creativeId)
       .eq('user_id', userId);
-    if (error) return errResponse(error.message, 500, origin);
+    if (error) {
+      console.error('ugc-generate assign_campaign error:', error);
+      return errResponse('Failed to save creative', 500, origin);
+    }
     return okResponse({ success: true }, origin);
   }
 
@@ -459,6 +464,6 @@ Write launch-ready ad copy.`;
     return okResponse({ result, used: used + 1, limit }, origin);
   } catch (err) {
     console.error('ugc-generate error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Generation error', 500, origin);
+    return errResponse('Generation error', 500, origin);
   }
 });

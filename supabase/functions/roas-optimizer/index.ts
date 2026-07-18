@@ -72,6 +72,23 @@ async function loadRules(userId: string): Promise<OptimizerRules> {
   return { ...DEFAULT_RULES, ...data } as OptimizerRules;
 }
 
+/**
+ * Apply one-off threshold overrides from the request body on top of the saved rules —
+ * without this, a "quick apply" call with custom thresholds silently falls back to
+ * whatever's saved in optimizer_rules, ignoring what the caller actually asked for.
+ * Same clamping as the `rules` action so an override can't push budgets out of bounds.
+ */
+function applyOverrides(rules: OptimizerRules, body: Record<string, unknown>): OptimizerRules {
+  const overrides: Partial<OptimizerRules> = {};
+  if (typeof body.pause_below_roas === 'number') overrides.pause_below_roas = body.pause_below_roas;
+  if (typeof body.scale_above_roas === 'number') overrides.scale_above_roas = body.scale_above_roas;
+  if (typeof body.min_spend === 'number')        overrides.min_spend = body.min_spend;
+  if (typeof body.lookback_days === 'number')    overrides.lookback_days = body.lookback_days;
+  if (typeof body.scale_multiplier === 'number') overrides.scale_multiplier = Math.min(Math.max(body.scale_multiplier, 1.0), 2.0);
+  if (typeof body.max_daily_budget === 'number') overrides.max_daily_budget = Math.min(Math.max(body.max_daily_budget, 1), 10000);
+  return { ...rules, ...overrides };
+}
+
 /** Load Meta access token for user — always from DB, never from request headers */
 async function getMetaToken(userId: string): Promise<string> {
   const { data } = await supabase
@@ -215,7 +232,7 @@ Deno.serve(async (req) => {
       case 'analyze': {
         const token   = await getMetaToken(userId);
         if (!token)   return errResponse('Meta not connected', 403, origin);
-        const rules   = await loadRules(userId);
+        const rules   = applyOverrides(await loadRules(userId), body);
         const actions = await analyzeCampaigns(userId, token, rules);
 
         const summary = {
@@ -231,7 +248,7 @@ Deno.serve(async (req) => {
       case 'apply': {
         const token   = await getMetaToken(userId);
         if (!token)   return errResponse('Meta not connected', 403, origin);
-        const rules   = await loadRules(userId);
+        const rules   = applyOverrides(await loadRules(userId), body);
         const planned = await analyzeCampaigns(userId, token, rules);
 
         const results: { id: string; action: string; success: boolean; error?: string }[] = [];
