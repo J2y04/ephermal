@@ -21,7 +21,15 @@
 import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId } from '../_shared/auth.ts';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2024-04-10' });
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+    _stripe = new Stripe(key, { apiVersion: '2024-04-10' });
+  }
+  return _stripe;
+}
 
 // Allowed Stripe Price IDs — acts as an allowlist to prevent arbitrary price injection
 const ALLOWED_PRICES = new Set([
@@ -105,7 +113,7 @@ Deno.serve(async (req) => {
 
   try {
     // Lookup or create Stripe customer to de-duplicate by clerk_user_id
-    const existing = await stripe.customers.search({
+    const existing = await getStripe().customers.search({
       query: `metadata['clerk_user_id']:'${clerk_user_id}'`,
       limit: 1,
     });
@@ -114,7 +122,7 @@ Deno.serve(async (req) => {
     if (existing.data.length > 0) {
       customerId = existing.data[0].id;
     } else if (email) {
-      const customer = await stripe.customers.create({
+      const customer = await getStripe().customers.create({
         email: email.trim(),
         metadata: { clerk_user_id },
       });
@@ -141,7 +149,7 @@ Deno.serve(async (req) => {
       sessionParams.payment_intent_data = { metadata: { clerk_user_id, type: 'ai_topup', price_id } };
     }
 
-    const session = await stripe.checkout.sessions.create(sessionParams);
+    const session = await getStripe().checkout.sessions.create(sessionParams);
 
     console.log(`✓ Checkout session created [${isTopup?'topup':'subscription'}] for ${clerk_user_id} — ${session.id}`);
 

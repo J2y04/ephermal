@@ -449,6 +449,36 @@ async function createLookalike(
   return { success: true, audience_id: res.id, note: 'Lookalike may take up to 2 hours to populate' };
 }
 
+async function selectMetaAccount(userId: string, accountId: string): Promise<Record<string, unknown>> {
+  if (!/^act_\d+$/.test(accountId)) throw new Error('Invalid account_id format');
+
+  const { data } = await supabase
+    .from('user_integrations')
+    .select('meta_token')
+    .eq('user_id', userId)
+    .single();
+  const token = data?.meta_token as string | undefined;
+  if (!token) throw new Error('Meta account not connected — add your token in Settings');
+
+  // Verify the token actually has access to this account before persisting it —
+  // otherwise a stale/mistyped account_id would silently break every future Meta call.
+  let accountName = accountId;
+  try {
+    const acc = await metaGet<{ id: string; name?: string }>(`/${accountId}`, { fields: 'id,name' }, token);
+    accountName = acc.name ?? accountId;
+  } catch {
+    throw new Error('This ad account is not accessible with your connected Meta login');
+  }
+
+  const { error } = await supabase
+    .from('user_integrations')
+    .update({ meta_account: accountId })
+    .eq('user_id', userId);
+  if (error) throw new Error('Failed to save account selection');
+
+  return { success: true, account_id: accountId, account_name: accountName };
+}
+
 async function updateCreativeStatus(
   userId: string, creativeId: string, status: 'approved' | 'rejected',
 ) {
@@ -487,9 +517,21 @@ Deno.serve(async (req) => {
   const url    = new URL(req.url);
   const action = url.searchParams.get('action') ?? '';
 
+  // Parse the POST body once up front — the guard below needs to see the action
+  // even when it's only in the JSON body (not the query string), and the body
+  // stream can only be read once.
+  let postBody: Record<string, unknown> = {};
+  if (req.method === 'POST') {
+    try { postBody = await req.json(); } catch { /* empty body ok */ }
+  }
+  const postAction = String(postBody.action ?? action);
+
   // Allow status-filtered creatives reads without Meta credentials (DB-only path)
   const isDbOnlyRead = req.method === 'GET' && action === 'creatives' && url.searchParams.has('status');
-  if (!creds && !isDbOnlyRead) {
+  // select_account only needs meta_token (checked inside the handler) — meta_account
+  // may not be set yet, that's exactly the case this action exists to resolve.
+  const isSelectAccount = req.method === 'POST' && postAction === 'select_account';
+  if (!creds && !isDbOnlyRead && !isSelectAccount) {
     return errResponse('Meta account not connected — add your token in Settings', 400, origin);
   }
 
@@ -540,12 +582,15 @@ Deno.serve(async (req) => {
 
     // ── POST requests ────────────────────────────────────────────────────────
     if (req.method === 'POST') {
-      let body: Record<string, unknown> = {};
-      try { body = await req.json(); } catch { /* empty body ok */ }
-
-      const postAction = String(body.action ?? action);
+      const body = postBody;
 
       switch (postAction) {
+        case 'select_account': {
+          const accountId2 = String(body.account_id ?? '');
+          if (!accountId2) return errResponse('account_id required', 400, origin);
+          return okResponse(await selectMetaAccount(userId, accountId2), origin);
+        }
+
         case 'create_campaign':
           return okResponse(await createCampaign(accountId, token, userId, body), origin);
 

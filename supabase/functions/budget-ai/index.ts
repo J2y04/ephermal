@@ -237,7 +237,7 @@ Deno.serve(async (req) => {
       }
 
       case 'apply': {
-        if (plan === 'starter') return errResponse('Upgrade to Growth to apply budgets', 403, origin);
+        if (plan !== 'scale') return errResponse('Upgrade to Scale to apply budgets', 403, origin);
         const recId     = String(body.recommendation_id ?? '');
         const campaignId = String(body.campaign_id ?? '');
         const platform  = String(body.platform ?? 'meta'); // 'meta'|'google'|'both'
@@ -376,6 +376,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('budget-ai error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Budget AI error', 500, origin);
+    return errResponse('Budget AI error', 500, origin);
   }
 });

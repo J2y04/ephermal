@@ -197,19 +197,22 @@ Deno.serve(async (req) => {
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
 
-  // Rate limit: 5/min, 30/hour per user
-  const rl = await rateLimitTiered(userId, 'radar', [
-    { max: 5,  window: 60   },
-    { max: 30, window: 3600 },
-  ]);
-  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
-
   if (bodyTooLarge(req, 32_768)) return errResponse('Request body too large', 413, origin);
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
 
   const action = String(body.action ?? 'search');
+
+  // Rate limit: separate buckets per action so search/analyze/load-more don't share one budget
+  const rateLimitBucket = action === 'search' && body.after
+    ? 'radar-loadmore'
+    : `radar-${action}`;
+  const rateLimitTiers = action === 'analyze'
+    ? [{ max: 15, window: 60 }, { max: 60, window: 3600 }]
+    : [{ max: 10, window: 60 }, { max: 60, window: 3600 }];
+  const rl = await rateLimitTiered(userId, rateLimitBucket, rateLimitTiers);
+  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
 
   try {
     switch (action) {
@@ -243,6 +246,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('competitor-radar error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Competitor radar error', 500, origin);
+    return errResponse('Competitor radar error', 500, origin);
   }
 });

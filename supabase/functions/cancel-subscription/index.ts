@@ -19,7 +19,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 
-const stripe   = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2024-04-10' });
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+    _stripe = new Stripe(key, { apiVersion: '2024-04-10' });
+  }
+  return _stripe;
+}
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -50,7 +58,7 @@ Deno.serve(async (req) => {
 
   let subscription: Stripe.Subscription;
   try {
-    subscription = await stripe.subscriptions.retrieve(plan.stripe_sub_id as string);
+    subscription = await getStripe().subscriptions.retrieve(plan.stripe_sub_id as string);
   } catch {
     return errResponse('Subscription not found in Stripe', 404, origin);
   }
@@ -66,7 +74,7 @@ Deno.serve(async (req) => {
     if (!subscription.cancel_at_period_end) {
       return okResponse({ reactivated: true, already_active: true }, origin);
     }
-    const updated = await stripe.subscriptions.update(plan.stripe_sub_id as string, {
+    const updated = await getStripe().subscriptions.update(plan.stripe_sub_id as string, {
       cancel_at_period_end: false,
     });
     const { error: dbErr } = await supabase.from('user_plans')
@@ -89,7 +97,7 @@ Deno.serve(async (req) => {
       return okResponse({ cancel_at: cancelAt, period_end: cancelAt, already_scheduled: true }, origin);
     }
 
-    const updated = await stripe.subscriptions.update(plan.stripe_sub_id as string, {
+    const updated = await getStripe().subscriptions.update(plan.stripe_sub_id as string, {
       cancel_at_period_end: true,
     });
 

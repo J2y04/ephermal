@@ -321,13 +321,31 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     is_adset_budget_sharing_enabled: false,
   }, token);
 
+  // Conversion-optimized ad sets (OFFSITE_CONVERSIONS) require a promoted_object pointing
+  // at a real Meta Pixel — check whether one exists before choosing the optimization goal,
+  // otherwise Meta hard-rejects the ad set with "Select a promoted object for your ad set."
+  let pixelId: string | null = null;
+  if (row.objective === 'OUTCOME_SALES') {
+    try {
+      const pixels = await metaGet<{ data: { id: string }[] }>(`/${accountId}/adspixels`, { fields: 'id' }, token);
+      pixelId = pixels.data?.[0]?.id ?? null;
+    } catch {
+      // Pixel lookup failing shouldn't block the launch — just fall back to REACH below.
+    }
+  }
+  const useConversions = row.objective === 'OUTCOME_SALES' && !!pixelId;
+
   // 2. Create ad set
   const adSet = await metaPost<{ id: string }>(`/${accountId}/adsets`, {
     name:              String(metaCopy.adset_name ?? `${row.name} Ad Set`),
     campaign_id:       campaign.id,
     daily_budget:      budget,
     billing_event:     'IMPRESSIONS',
-    optimization_goal: row.objective === 'OUTCOME_SALES' ? 'OFFSITE_CONVERSIONS' : 'REACH',
+    optimization_goal: useConversions ? 'OFFSITE_CONVERSIONS' : 'REACH',
+    // Required whenever bidding isn't a manual bid cap — omitting it is a hard 400 on
+    // Graph API v25+.
+    bid_strategy:      'LOWEST_COST_WITHOUT_CAP',
+    ...(useConversions ? { promoted_object: { pixel_id: pixelId, custom_event_type: 'PURCHASE' } } : {}),
     targeting,
     status:            adStatus,
   }, token);
@@ -385,6 +403,9 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
   }
 
   const notePrefix = autoEnable ? 'Campaign is LIVE on Meta.' : 'Campaign created as PAUSED.';
+  const pixelNote = row.objective === 'OUTCOME_SALES' && !useConversions
+    ? ' No Meta Pixel found on this ad account, so the ad set was optimized for reach instead of purchases — install a Pixel for conversion-optimized delivery.'
+    : '';
   const adsNote = !pageId
     ? ' Connect a Facebook Page in Settings to auto-create the ad(s) next time. For now, add the ad manually in Meta Ads Manager.'
     : adIds.length > 0
@@ -403,7 +424,7 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     meta_ad_ids:      adIds,
     status:           'active',
     enabled:          autoEnable,
-    note:             `${notePrefix}${adsNote}${dbWarning}`,
+    note:             `${notePrefix}${pixelNote}${adsNote}${dbWarning}`,
   };
 }
 
@@ -543,8 +564,9 @@ Deno.serve(async (req) => {
         }
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
-        const autoEnable = body.auto_enable === true;
-        return okResponse(await launchToMeta(userId, campaignId, autoEnable), origin);
+        // Launches are always created PAUSED — approval to go live happens outside this
+        // API. Never trust a client-supplied auto_enable flag here.
+        return okResponse(await launchToMeta(userId, campaignId, false), origin);
       }
 
       case 'launch_google': {
@@ -553,8 +575,9 @@ Deno.serve(async (req) => {
         }
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
-        const autoEnable = body.auto_enable === true;
-        return okResponse(await launchToGoogle(userId, campaignId, autoEnable), origin);
+        // Launches are always created PAUSED — approval to go live happens outside this
+        // API. Never trust a client-supplied auto_enable flag here.
+        return okResponse(await launchToGoogle(userId, campaignId, false), origin);
       }
 
       case 'launch': {
@@ -564,14 +587,15 @@ Deno.serve(async (req) => {
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
         const platforms  = (body.platforms as string[] | undefined) ?? ['meta'];
-        const autoEnable = body.auto_enable === true;
 
+        // Launches are always created PAUSED — approval to go live happens outside this
+        // API. Never trust a client-supplied auto_enable flag here.
         const results: Record<string, unknown> = {};
         if (platforms.includes('meta')) {
-          results.meta = await launchToMeta(userId, campaignId, autoEnable);
+          results.meta = await launchToMeta(userId, campaignId, false);
         }
         if (platforms.includes('google') && plan === 'scale') {
-          results.google = await launchToGoogle(userId, campaignId, autoEnable);
+          results.google = await launchToGoogle(userId, campaignId, false);
         }
         return okResponse(results, origin);
       }

@@ -1735,7 +1735,7 @@ select.form-input{cursor:pointer}
       <div class="card" style="margin-bottom:20px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
           <div style="font-size:13px;font-weight:700;color:var(--text)">Tracked Competitors</div>
-          <button onclick="autoScanCompetitors()" id="radar-scan-all-btn" class="btn btn-primary" style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:6px">
+          <button onclick="autoScanCompetitors(true)" id="radar-scan-all-btn" class="btn btn-primary" style="padding:6px 14px;font-size:12px;display:flex;align-items:center;gap:6px">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
             Scan All
           </button>
@@ -2759,7 +2759,7 @@ function navigate(page) {
     if (page === 'bulk') loadBulkCampaigns();
     if (page === 'products') loadProducts();
     if (page === 'creativebrief') { loadBriefHistory(); _populateBriefProductSelect(); }
-    if (page === 'competitorradar') { renderTrackedCompetitors(); autoScanCompetitors(); }
+    if (page === 'competitorradar') { renderTrackedCompetitors(); if (Date.now() - _radarLastScanAt > 60000) autoScanCompetitors(); }
     if (page === 'profittracker') loadProfitReport();
     if (page === 'mrrtracker') loadMrrTracker();
     if (page === 'multistore') loadMultiStore();
@@ -3207,7 +3207,7 @@ async function devTestWebhook() {
   try {
     const start = Date.now();
     const token = window.__clerk?.session ? await window.__clerk.session.getToken() : '';
-    const r = await fetch(`${window.API_BASE || 'https://jamhich.de/webhook'}/${path}`, {
+    const r = await fetch(`${window.API_BASE || ''}/${path}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({ action: 'ping', user_id: window.__clerk?.user?.id || 'dev' }),
@@ -3491,7 +3491,10 @@ async function loadCreatives(status = 'pending_review', containerId = 'creatives
     const container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = creatives.length ? `<div class="creatives-grid">${creatives.map(renderCreativeCard).join('')}</div>` : '<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No creatives found</p></div>';
-  } catch(e){}
+  } catch(e) {
+    console.error('loadCreatives failed:', e);
+    if (container) container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>Failed to load creatives. Try again.</p></div>';
+  }
 }
 
 async function loadAllCreatives() {
@@ -4484,13 +4487,12 @@ async function aiGenerateDescription() {
     });
     if (r && r.ok) {
       const d = await r.json();
-      if (d.error === 'AI_LIMIT_REACHED') {
-        showToast(`AI message limit reached - top up to continue`, 'warn');
-      } else {
-        ta.value = d.description || d.text || '';
-        ta.dispatchEvent(new Event('input'));
-        await recordAIMessage();
-      }
+      ta.value = d.description || d.text || '';
+      ta.dispatchEvent(new Event('input'));
+      await recordAIMessage();
+    } else if (r && r.status === 429) {
+      const d = await r.json().catch(() => ({}));
+      showToast(d.error || 'AI message limit reached - top up to continue', 'warn');
     } else {
       showToast('AI generation failed - try writing manually', 'warn');
     }
@@ -5840,10 +5842,13 @@ async function loadLaunchedCampaigns() {
 // ── COMPETITOR RADAR ──────────────────────────────────────────────────────────
 let _radarAds = [];
 let _radarAutoAds = {}; // { competitorName: [ads] }
+let _radarLastScanAt = 0; // throttle auto-scans so re-visiting the tab doesn't burn the rate limit
+let _radarRateLimited = false; // dedupe rate-limit toasts within a single scan pass
 const _radarAdStore = {}; // uid → ad object (avoids unsafe inline JSON)
 let _radarNextCursor = null; // pagination cursor for manual search
 let _radarCurrentTerms = '';
 let _radarCurrentCountry = 'US';
+const RADAR_SCAN_TTL_MS = 3 * 60 * 1000;
 
 // ── Tracked competitors (persisted in localStorage) ────────────────────────
 function _loadTrackedCompetitors() {
@@ -5885,6 +5890,7 @@ function addTrackedCompetitor() {
   renderTrackedCompetitors();
   showToast('”' + name + '” added, scanning now…', 'success');
   // Scan just this new competitor
+  _radarRateLimited = false;
   _scanSingleCompetitor({ name, country }, list.length - 1);
 }
 
@@ -5904,7 +5910,13 @@ async function _scanSingleCompetitor(competitor, idx) {
     method: 'POST',
     body: JSON.stringify({ action: 'search', search_terms: competitor.name, countries: [competitor.country] })
   });
-  if (!r || !r.ok) return;
+  if (!r || !r.ok) {
+    if (!_radarRateLimited) {
+      _radarRateLimited = true;
+      showToast(r && r.status === 429 ? 'Rate limit reached — wait a minute before scanning again' : 'Failed to scan ' + competitor.name, 'error');
+    }
+    return;
+  }
   const data = await r.json();
   if (data.code === 'NO_META_TOKEN') {
     document.getElementById('radar-no-meta').style.display = 'block'; return;
@@ -5913,10 +5925,17 @@ async function _scanSingleCompetitor(competitor, idx) {
   renderAutoScanResults();
 }
 
-async function autoScanCompetitors() {
+async function autoScanCompetitors(force = false) {
   const list = _loadTrackedCompetitors();
   renderTrackedCompetitors();
   if (!list.length) return;
+  // Client-side TTL cache: don't burn the shared rate-limit bucket by re-scanning on every panel visit
+  if (!force && Object.keys(_radarAutoAds).length && (Date.now() - _radarLastScanAt) < RADAR_SCAN_TTL_MS) {
+    renderAutoScanResults();
+    return;
+  }
+  _radarLastScanAt = Date.now();
+  _radarRateLimited = false;
   const btn = document.getElementById('radar-scan-all-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Scanning…'; }
   document.getElementById('radar-no-meta').style.display = 'none';
@@ -5928,7 +5947,7 @@ async function autoScanCompetitors() {
   for (const c of rest) await _scanSingleCompetitor(c, list.indexOf(c));
   if (btn) {
     btn.disabled = false;
-    btn.innerHTML = '<svg width=”12” height=”12” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2.5” stroke-linecap=”round” stroke-linejoin=”round”><circle cx=”12” cy=”12” r=”10”/><circle cx=”12” cy=”12” r=”6”/><circle cx=”12” cy=”12” r=”2”/></svg> Scan All';
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg> Scan All';
   }
 }
 
@@ -6063,7 +6082,10 @@ async function searchCompetitorAds() {
 
   btn.disabled = false;
   btn.innerHTML = SVG_SEARCH + '<span>Search Ads</span>';
-  if (!r || !r.ok) { showToast('Search failed. Check your Meta connection in Settings', 'error'); return; }
+  if (!r || !r.ok) {
+    showToast(r && r.status === 429 ? 'Rate limit reached — wait a minute and try again' : 'Search failed. Check your Meta connection in Settings', 'error');
+    return;
+  }
   const data = await r.json();
 
   if (data.code === 'NO_META_TOKEN') {

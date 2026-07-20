@@ -291,6 +291,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('mrr-tracker error:', err);
-    return errResponse(err instanceof Error ? err.message : 'MRR tracker error', 500, origin);
+    return errResponse('MRR tracker error', 500, origin);
   }
 });

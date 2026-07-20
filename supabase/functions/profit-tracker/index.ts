@@ -204,6 +204,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('profit-tracker error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Profit tracker error', 500, origin);
+    return errResponse('Profit tracker error', 500, origin);
   }
 });

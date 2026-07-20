@@ -164,7 +164,10 @@ Deno.serve(async (req) => {
     .eq('user_id', userId)
     .in('status', ['launched', 'approved']);
 
-  if (dbErr) return errResponse(dbErr.message, 500, origin);
+  if (dbErr) {
+    console.error('creative-fatigue creatives fetch error:', dbErr);
+    return errResponse('Failed to load fatigue data', 500, origin);
+  }
   if (!creatives?.length) {
     return okResponse({ results: [], message: 'No launched creatives found' }, origin);
   }

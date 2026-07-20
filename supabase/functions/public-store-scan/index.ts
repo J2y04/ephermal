@@ -279,6 +279,6 @@ Deno.serve(async (req) => {
     return okResponse({ ...result, cached: false }, origin);
   } catch (err) {
     console.error('public-store-scan error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Store analysis failed', 500, origin);
+    return errResponse('Store analysis failed', 500, origin);
   }
 });

@@ -14,7 +14,15 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
 
-const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY')!, { apiVersion: '2024-04-10' });
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+    _stripe = new Stripe(key, { apiVersion: '2024-04-10' });
+  }
+  return _stripe;
+}
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -62,7 +70,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   // Guard: only process subscription checkouts
   if (!session.subscription) throw new Error('No subscription on checkout session');
 
-  const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
+  const subscription = await getStripe().subscriptions.retrieve(session.subscription as string);
   const priceId = subscription.items.data[0]?.price.id;
   const plan = PRICE_TO_PLAN[priceId];
   if (!plan) {
@@ -150,7 +158,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   // Fire top-up confirmation email (best-effort)
   try {
     const charge = paymentIntent.latest_charge
-      ? await stripe.charges.retrieve(paymentIntent.latest_charge as string)
+      ? await getStripe().charges.retrieve(paymentIntent.latest_charge as string)
       : null;
     const userEmail = charge?.billing_details?.email;
     if (userEmail) {
@@ -226,7 +234,7 @@ Deno.serve(async (req) => {
 
   let event: Stripe.Event;
   try {
-    event = stripe.webhooks.constructEvent(body, sig, Deno.env.get('STRIPE_WEBHOOK_SECRET')!);
+    event = getStripe().webhooks.constructEvent(body, sig, Deno.env.get('STRIPE_WEBHOOK_SECRET')!);
   } catch (err) {
     // Log detail server-side, return generic message to caller
     console.error('Signature verification failed:', err);
@@ -234,17 +242,13 @@ Deno.serve(async (req) => {
   }
 
   // Idempotency guard: skip if already processed (Stripe may replay events)
-  const { error: dupErr } = await supabase.from('stripe_processed_events')
-    .insert({ event_id: event.id });
-  if (dupErr) {
-    // Unique violation = already processed; other errors we log and continue
-    if (dupErr.code === '23505') {
-      console.log(`Duplicate Stripe event ignored: ${event.id}`);
-      return new Response(JSON.stringify({ received: true }), {
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-    console.error('stripe_processed_events insert error:', dupErr);
+  const { data: alreadyProcessed } = await supabase.from('stripe_processed_events')
+    .select('event_id').eq('event_id', event.id).maybeSingle();
+  if (alreadyProcessed) {
+    console.log(`Duplicate Stripe event ignored: ${event.id}`);
+    return new Response(JSON.stringify({ received: true }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -266,6 +270,13 @@ Deno.serve(async (req) => {
     // Log detail server-side only
     console.error('Handler error for', event.type, ':', err);
     return new Response('Internal error', { status: 500 });
+  }
+
+  // Mark as processed only after the handler succeeds
+  const { error: dupErr } = await supabase.from('stripe_processed_events')
+    .insert({ event_id: event.id });
+  if (dupErr && dupErr.code !== '23505') {
+    console.error('stripe_processed_events insert error:', dupErr);
   }
 
   return new Response(JSON.stringify({ received: true }), {

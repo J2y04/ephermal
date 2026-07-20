@@ -274,6 +274,6 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('store-intelligence error:', err);
-    return errResponse(err instanceof Error ? err.message : 'Store intelligence error', 500, origin);
+    return errResponse('Store intelligence error', 500, origin);
   }
 });
