@@ -285,14 +285,16 @@ to wait. Apply at ads.google.com/aw/apicenter
 ### Task 15 — CodeRabbit automated PR review
 coderabbit.ai → Sign in with GitHub → authorize J2y04/ephermal
 
-### Task 16 — ✅ Error monitoring (Sentry) — wired, needs your DSN (Jul 5 2026)
-- `dashboard.html`: loads Sentry browser SDK from CDN, initializes only if `window.SENTRY_DSN` is set
-  (no-ops otherwise — safe to deploy before you have a DSN); strips `Authorization` header from
-  captured request data before sending
-- `config.js`: `window.SENTRY_DSN = ''` — paste your DSN here to activate
-- `vercel.json` CSP: allowed `browser.sentry-cdn.com` (script) and `*.ingest.sentry.io` (beacon)
-- **Still needed**: sign up free at sentry.io → New Project → Platform: Browser JavaScript →
-  copy the DSN → paste into `web/public/config.js` `window.SENTRY_DSN`
+### Task 16 — ✅ Error monitoring (Sentry) — DONE (Jul 20 2026)
+- `dashboard.html`: loads Sentry's project-specific loader script (DSN baked into the script URL,
+  EU region: `js-de.sentry-cdn.com`), only Error monitoring enabled (no logging/replay/tracing/
+  metrics — kept off to conserve free-tier quota); `window.sentryOnLoad` sets environment
+  (production vs preview by hostname) and strips `Authorization` header from captured request
+  data before sending
+- `config.js`: old `window.SENTRY_DSN` variable removed — no longer needed, the loader script
+  carries its own DSN
+- `vercel.json` CSP: allowed `js-de.sentry-cdn.com` (script) and `*.ingest.de.sentry.io` (beacon),
+  alongside the original `browser.sentry-cdn.com` / `*.ingest.sentry.io`
 
 ### Task 17 — ✅ UGC text pipeline — DONE (Jun 8 2026)
 Both dashboard UGC buttons now work end-to-end:
