@@ -63,16 +63,28 @@ export async function extractUserId(authHeader: string | null): Promise<string |
 
     // Validate issuer — must be our Clerk domain
     const expectedIss = Deno.env.get('CLERK_ISSUER') ?? 'https://clerk.ephermal.app';
-    if (!payloadJson.iss || payloadJson.iss !== expectedIss) return null;
+    if (!payloadJson.iss || payloadJson.iss !== expectedIss) {
+      console.warn('[auth] rejected: issuer mismatch — token iss:', payloadJson.iss, 'expected:', expectedIss);
+      return null;
+    }
 
     // Validate expiry and not-before
     const now = Math.floor(Date.now() / 1000);
-    if (!payloadJson.exp || now > payloadJson.exp) return null;
-    if (payloadJson.nbf && now < payloadJson.nbf) return null;
+    if (!payloadJson.exp || now > payloadJson.exp) {
+      console.warn('[auth] rejected: expired — exp:', payloadJson.exp, 'now:', now);
+      return null;
+    }
+    if (payloadJson.nbf && now < payloadJson.nbf) {
+      console.warn('[auth] rejected: not yet valid — nbf:', payloadJson.nbf, 'now:', now);
+      return null;
+    }
 
     // Verify RS256 signature
     const key = await getPublicKey(headerJson.kid);
-    if (!key) return null;
+    if (!key) {
+      console.warn('[auth] rejected: no matching JWKS key for kid:', headerJson.kid);
+      return null;
+    }
 
     const signingInput = `${parts[0]}.${parts[1]}`;
     const sigBytes     = Uint8Array.from(
@@ -87,8 +99,10 @@ export async function extractUserId(authHeader: string | null): Promise<string |
       new TextEncoder().encode(signingInput),
     );
 
+    if (!valid) console.warn('[auth] rejected: signature verification failed for kid:', headerJson.kid);
     return valid ? (payloadJson.sub ?? null) : null;
-  } catch {
+  } catch (e) {
+    console.warn('[auth] rejected: exception during verification —', e instanceof Error ? e.message : String(e));
     return null;
   }
 }
