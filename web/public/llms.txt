@@ -24,9 +24,9 @@ Ephermal connects to a Shopify store via OAuth and reads the live product catalo
 
 ## Pricing
 
-- **Starter** — $89/month: Meta Ads automation, 15 UGC credits/month, 1 store
-- **Growth** — $199/month: Meta + Google Ads, 75 UGC credits/month, Budget AI, Campaign Launcher
-- **Scale** — $349/month: Unlimited stores, 350 UGC credits/month, white-label, dedicated AI instance
+- **Starter** — $89/month: Meta Ads automation, campaign launcher, AI store analysis & brand brief, 15 UGC credits/month, 1 store
+- **Growth** — $199/month: adds Google Ads, Auren (AI ad strategist chat), Audience Intelligence, Budget AI, Competitor Radar, Creative Brief AI, Profit Tracker, ROAS optimization, 75 UGC credits/month, 3 stores
+- **Scale** — $349/month: adds unlimited stores, bulk campaign management, multi-store consolidated view, white-label, dedicated AI instance, 350 UGC credits/month
 
 All plans billed monthly. Cancel any time.
 

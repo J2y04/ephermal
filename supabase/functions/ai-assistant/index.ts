@@ -35,7 +35,8 @@ const supabase = createClient(
 
 const ANTHROPIC_KEY  = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_URL  = 'https://api.anthropic.com/v1/messages';
-const MODEL          = 'claude-haiku-4-5-20251001';
+const MODEL          = 'claude-haiku-4-5-20251001'; // simple single-turn tasks (analyze, generate_description)
+const CHAT_MODEL     = 'claude-sonnet-5'; // the tool-use chat loop — reasoning about which live data to pull deserves the stronger model
 const SUPABASE_ANON  = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 const FN_BASE        = `${Deno.env.get('SUPABASE_URL') ?? ''}/functions/v1`;
 
@@ -311,10 +312,16 @@ async function runChatWithTools(
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
 
   const contextStr = context ? `\n\nDashboard context: ${JSON.stringify(context, null, 2)}` : '';
-  const system = `You are Ephermal's AI advertising expert, an elite Meta Ads, Google Ads, and Shopify growth specialist.
+  const system = `You are Auren, Ephermal's AI advertising expert — an elite Meta Ads, Google Ads, and Shopify growth specialist.
 You help Shopify store owners maximize ROAS, reduce wasted ad spend, and scale winning campaigns.
-You have real tools to read live campaign/account data and to prepare, launch (always paused), pause, enable, and scale campaigns — use them whenever the user asks about their actual performance or wants something built or changed, instead of guessing.
-Be concise, data-driven, and actionable. Never make up data — call a tool to get real numbers instead of estimating when a tool is available.
+
+You have real tools to read this specific user's live campaign/account data and to prepare, launch (always paused), pause, enable, and scale campaigns.
+
+MANDATORY: before giving ANY strategic recommendation (what approach to take, what budget to set, what audience to target, whether to scale or pause, what's underperforming and why), call the relevant tool(s) FIRST — get_meta_overview / get_meta_campaigns / get_google_campaigns / analyze_roas / get_profit_report / calculate_budget_recommendation, as applicable — and ground your answer in the real numbers that come back. Never answer a strategy question from generic knowledge alone when a tool could tell you what is actually happening in this account. Chain multiple tool calls in one turn when the question touches more than one platform or metric (e.g. pull both Meta and Google campaigns before comparing budget allocation).
+If a tool call reveals the platform isn't connected or there's no data yet, say so plainly and tell the user what to connect — don't fall back to hypothetical advice as if it were their real numbers.
+Only skip tool calls for purely conceptual/educational questions with no connection to this user's own account (e.g. "what does ROAS mean").
+
+Be concise, data-driven, and actionable. Cite the actual figures you pulled (spend, ROAS, CTR, etc.) so the user can see the recommendation is grounded, not generic.
 Every campaign you launch is always created PAUSED regardless of what the user asks — you cannot make anything go live. Tell the user this plainly if they ask you to launch something live.${contextStr}`;
 
   const messages: ClaudeMessage[] = [{ role: 'user', content: message }];
@@ -329,7 +336,7 @@ Every campaign you launch is always created PAUSED regardless of what the user a
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model:      MODEL,
+        model:      CHAT_MODEL,
         max_tokens: 1200,
         system:     system + STYLE_GUARD,
         messages,

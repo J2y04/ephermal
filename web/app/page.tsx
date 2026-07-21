@@ -744,6 +744,7 @@ export default function Home() {
                   {f:'1 Shopify store'},
                   {f:'15 UGC creatives / month'},
                   {f:'Meta Ads automation'},
+                  {f:'AI store analysis & brand brief'},
                   {f:'Live store sync'},
                   {f:'Campaign dashboard'},
                   {f:'Creative approval workflow'},
@@ -751,7 +752,7 @@ export default function Home() {
                   {f:'Google Ads automation',locked:true,badge:'Growth+'},
                   {f:'AI ad strategist chat',locked:true,badge:'Growth+'},
                   {f:'AI UGC script writer',locked:true,badge:'Growth+'},
-                  {f:'Store intelligence & audiences',locked:true,badge:'Growth+'},
+                  {f:'Audience Intelligence',locked:true,badge:'Growth+'},
                   {f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},
                   {f:'Competitor Radar (ad spy)',locked:true,badge:'Growth+'},
                   {f:'Creative Brief AI',locked:true,badge:'Growth+'},
@@ -784,13 +785,14 @@ export default function Home() {
                   {f:'3 Shopify stores'},
                   {f:'75 UGC creatives / month'},
                   {f:'Meta Ads automation'},
+                  {f:'AI store analysis & brand brief'},
                   {f:'Live store sync'},
                   {f:'Campaign dashboard'},
                   {f:'Creative approval workflow'},
                   {f:'Google Ads automation'},
                   {f:'AI ad strategist chat'},
                   {f:'AI UGC script writer'},
-                  {f:'Store intelligence & audiences'},
+                  {f:'Audience Intelligence'},
                   {f:'Full campaign analytics'},
                   {f:'Closed-loop ROAS optimization'},
                   {f:'Competitor Radar (ad spy)'},
@@ -822,7 +824,7 @@ export default function Home() {
                 350 UGC credits / month
               </div>
               <ul className="price-features">
-                {['Unlimited stores','350 UGC creatives / month','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Priority AI agents','Bulk campaign management','Multi-store consolidated view','White-label option','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
+                {['Unlimited stores','350 UGC creatives / month','Meta + Google Ads automation','AI store analysis & brand brief','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Audience Intelligence','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Priority AI agents','Bulk campaign management','Multi-store consolidated view','White-label option','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
                   <li key={f}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>{f}</li>
                 ))}
               </ul>

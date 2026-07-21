@@ -15,9 +15,10 @@
  * POST { action: 'status',       campaign_id }
  *
  * Plan gating:
- *   starter → prepare only (generates copy, no launch)
- *   growth  → prepare + launch_meta
- *   scale   → prepare + launch_meta + launch_google + launch (both)
+ *   starter → prepare + launch_meta (core value — Meta Ads is the default platform for small stores)
+ *   growth  → + launch_google
+ *   scale   → same launch permissions as growth; Scale is differentiated by bulk/multi-store
+ *             tools elsewhere (bulk-manager, multi-store view), not by campaign-launch access
  *
  * Required env vars:
  *   ANTHROPIC_API_KEY
@@ -559,9 +560,8 @@ Deno.serve(async (req) => {
       }
 
       case 'launch_meta': {
-        if (plan === 'starter') {
-          return errResponse('Upgrade to Growth to launch campaigns directly from Ephermal', 403, origin);
-        }
+        // Launching to Meta is a core, Starter-tier action — small Shopify stores need this
+        // to work on day one, not after upgrading.
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
         // Launches are always created PAUSED — approval to go live happens outside this
@@ -570,8 +570,8 @@ Deno.serve(async (req) => {
       }
 
       case 'launch_google': {
-        if (plan !== 'scale') {
-          return errResponse('Upgrade to Scale to launch Google campaigns directly from Ephermal', 403, origin);
+        if (plan === 'starter') {
+          return errResponse('Upgrade to Growth to launch Google campaigns directly from Ephermal', 403, origin);
         }
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
@@ -581,9 +581,6 @@ Deno.serve(async (req) => {
       }
 
       case 'launch': {
-        if (plan === 'starter') {
-          return errResponse('Upgrade to Growth to launch campaigns directly from Ephermal', 403, origin);
-        }
         const campaignId = String(body.campaign_id ?? '');
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
         const platforms  = (body.platforms as string[] | undefined) ?? ['meta'];
@@ -594,7 +591,7 @@ Deno.serve(async (req) => {
         if (platforms.includes('meta')) {
           results.meta = await launchToMeta(userId, campaignId, false);
         }
-        if (platforms.includes('google') && plan === 'scale') {
+        if (platforms.includes('google') && plan !== 'starter') {
           results.google = await launchToGoogle(userId, campaignId, false);
         }
         return okResponse(results, origin);
