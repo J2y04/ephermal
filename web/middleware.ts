@@ -27,7 +27,12 @@ export function middleware(req: NextRequest) {
     return NextResponse.rewrite(url);
   }
 
-  if (host === ADMIN_HOST && !pathname.startsWith('/admin')) {
+  // Skip static files (ephermal.jpg, robots.txt, config.js, ...) — they live
+  // directly under public/ and must be served as-is, not rewritten under
+  // /admin where no matching file exists.
+  const isStaticFile = /\.[a-zA-Z0-9]+$/.test(pathname);
+
+  if (host === ADMIN_HOST && !pathname.startsWith('/admin') && !isStaticFile) {
     const url = req.nextUrl.clone();
     url.pathname = pathname === '/' ? '/admin' : `/admin${pathname}`;
     return NextResponse.rewrite(url);
