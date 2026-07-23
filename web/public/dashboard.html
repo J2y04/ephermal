@@ -565,10 +565,6 @@ select.form-input{cursor:pointer}
 .plan-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;margin-left:auto}
 /* ── CEO / Admin role badge ── */
 .role-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:8px;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;background:linear-gradient(135deg,rgba(251,191,36,0.18),rgba(245,158,11,0.12));border:1px solid rgba(251,191,36,0.4);color:#f59e0b;margin-top:2px;width:fit-content}
-/* ── Dev tools nav item ── */
-.nav-item.dev-tools-nav{color:#f59e0b}
-.nav-item.dev-tools-nav svg{stroke:#f59e0b}
-.nav-item.dev-tools-nav:hover,.nav-item.dev-tools-nav.active{background:rgba(251,191,36,0.1)}
 /* ── Nav locked item ── */
 .nav-item.locked{opacity:.5;cursor:default}
 .nav-item.locked .lock-icon{width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2;margin-left:auto;flex-shrink:0}
@@ -727,9 +723,6 @@ select.form-input{cursor:pointer}
     </div>
     <div class="nav-item" data-page="billing" onclick="navigate('billing')">
       <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>Billing
-    </div>
-    <div class="nav-item dev-tools-nav" id="nav-devtools" data-page="devtools" onclick="navigate('devtools')" style="display:none">
-      <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Dev Tools
     </div>
   </div>
   <div class="sidebar-footer">
@@ -1618,85 +1611,6 @@ select.form-input{cursor:pointer}
       </div>
     </div>
 
-    <!-- DEV TOOLS (admin only) -->
-    <div class="page" id="page-devtools">
-      <div class="panel fade-in">
-        <div class="panel-head">
-          <div class="panel-title" style="color:#f59e0b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" style="vertical-align:-2px;margin-right:6px"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>Dev Tools <span style="font-size:11px;font-weight:600;padding:2px 8px;background:rgba(251,191,36,0.15);border-radius:8px;color:#f59e0b;margin-left:8px">ADMIN</span></div>
-        </div>
-        <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
-
-          <!-- User Info -->
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">Session Info</div>
-            <div id="devtools-user-info" style="font-family:monospace;font-size:12px;color:var(--text);display:flex;flex-direction:column;gap:6px"></div>
-          </div>
-
-          <!-- Plan Override (testing) -->
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">Plan Override <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">(local test only, resets on reload)</span></div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button onclick="devSetPlan('starter')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7;transition:all .2s">Starter</button>
-              <button onclick="devSetPlan('growth')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7;transition:all .2s">Growth</button>
-              <button onclick="devSetPlan('scale')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7;transition:all .2s">Scale</button>
-              <button onclick="devSetPlan(null)" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid var(--border);color:var(--muted);transition:all .2s">Reset</button>
-            </div>
-          </div>
-
-          <!-- Store Analysis (raw Shopify API, no AI call) -->
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">Store Analysis (raw Shopify API, no AI)</div>
-            <div style="font-size:12px;color:var(--muted);margin-bottom:14px">Calls the Shopify Admin API directly through the existing shopify-api function. No Claude/Anthropic call — useful while ANTHROPIC_API_KEY isn't set yet.</div>
-            <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
-              <button onclick="devRawShopify('shop')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7">Fetch Shop Info</button>
-              <button onclick="devRawShopify('products')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7">Fetch Products</button>
-              <button onclick="devRawShopify('collections')" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.3);color:#06d6c7">Fetch Collections</button>
-            </div>
-            <pre id="devtools-shopify-result" style="background:#0a0d1f;border:1px solid var(--border);border-radius:9px;padding:14px;font-size:11px;color:#34d399;min-height:48px;margin:0;overflow-x:auto;white-space:pre-wrap;max-height:400px;overflow-y:auto"></pre>
-          </div>
-
-          <!-- Webhook Tester -->
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b;margin-bottom:14px">n8n Webhook Tester <span style="font-size:10px;color:var(--muted);font-weight:400;text-transform:none">(legacy, hardcodes action:'ping' — not representative of real calls)</span></div>
-            <div style="display:flex;gap:10px;margin-bottom:12px">
-              <select id="devtools-wh-select" style="flex:1;padding:9px 12px;background:var(--surface);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none">
-                <option value="ai">AI (/ephermal/ai)</option>
-                <option value="meta/read">Meta Read (/ephermal/meta/read)</option>
-                <option value="meta/write">Meta Write (/ephermal/meta/write)</option>
-                <option value="google/ads">Google Ads (/ephermal/google/ads)</option>
-                <option value="ugc/generate">UGC Generate (/ephermal/ugc/generate)</option>
-                <option value="creatives">Creatives (/ephermal/creatives)</option>
-                <option value="roas/optimize">ROAS Optimizer (/ephermal/roas/optimize)</option>
-                <option value="bulk/campaigns">Bulk Campaigns (/ephermal/bulk/campaigns)</option>
-                <option value="shopify/products">Shopify Products (/ephermal/shopify/products)</option>
-              </select>
-              <button onclick="devTestWebhook()" style="padding:9px 18px;background:#f59e0b;border:none;border-radius:10px;color:#000;font-family:'Inter',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s">Ping</button>
-            </div>
-            <pre id="devtools-wh-result" style="background:#0a0d1f;border:1px solid var(--border);border-radius:9px;padding:14px;font-size:11px;color:#34d399;min-height:48px;margin:0;overflow-x:auto;white-space:pre-wrap"></pre>
-          </div>
-
-          <!-- LocalStorage Viewer -->
-          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:20px">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-              <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f59e0b">LocalStorage</div>
-              <button onclick="devRefreshStorage()" style="font-size:11px;font-weight:600;padding:4px 10px;border-radius:10px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s">Refresh ↺</button>
-            </div>
-            <div id="devtools-storage" style="font-family:monospace;font-size:11px;color:var(--text);display:flex;flex-direction:column;gap:4px;max-height:240px;overflow-y:auto"></div>
-          </div>
-
-          <!-- Danger -->
-          <div style="background:rgba(248,113,113,0.05);border:1px solid rgba(248,113,113,0.2);border-radius:14px;padding:20px">
-            <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--danger);margin-bottom:14px">Danger Zone</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
-              <button onclick="showConfirm('Clear all localStorage?',{danger:true}).then(ok=>{if(ok){localStorage.clear();location.reload()}})" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid rgba(248,113,113,0.4);color:var(--danger);transition:all .2s">Clear LocalStorage</button>
-              <button onclick="showConfirm('Force reload?').then(ok=>{if(ok){location.reload(true)}})" style="padding:8px 16px;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;background:transparent;border:1px solid var(--border);color:var(--muted);transition:all .2s">Hard Reload</button>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
     <!-- BILLING -->
     <div class="page" id="page-billing">
       <div class="panel fade-in">
@@ -2271,7 +2185,7 @@ select.form-input{cursor:pointer}
 <script>
 let allCampaigns = [];
 let _campaignsLoaded = false;
-const TITLES = {dashboard:'Dashboard',ai:'Auren',analytics:'Analytics',campaigns:'Launch Ads',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',devtools:'Dev Tools',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker',mrrtracker:'MRR Tracker'};
+const TITLES = {dashboard:'Dashboard',ai:'Auren',analytics:'Analytics',campaigns:'Launch Ads',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker',mrrtracker:'MRR Tracker'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
@@ -2800,7 +2714,6 @@ function navigate(page) {
     if (page === 'profittracker') loadProfitReport();
     if (page === 'mrrtracker') loadMrrTracker();
     if (page === 'multistore') loadMultiStore();
-    if (page === 'devtools') loadDevTools();
     if (page === 'whitelabel') loadWhitelabel();
   }, 200);
 }
@@ -3184,92 +3097,7 @@ function loadUser() {
   if (isAdmin()) {
     const roleBadge = document.getElementById('role-badge-wrap');
     if (roleBadge) roleBadge.style.display = 'block';
-    const devNav = document.getElementById('nav-devtools');
-    if (devNav) devNav.style.display = 'flex';
   }
-}
-
-// ── DEV TOOLS ─────────────────────────────────────────────────────────────────
-function loadDevTools() {
-  if (!isAdmin()) { navigate('dashboard'); return; }
-  // User info block
-  const u = window.__clerk?.user;
-  const infoEl = document.getElementById('devtools-user-info');
-  if (infoEl && u) {
-    const rows = [
-      ['Clerk ID', u.id],
-      ['Email', u.primaryEmailAddress?.emailAddress || '—'],
-      ['Full Name', u.fullName || '—'],
-      ['Role', u.publicMetadata?.role || '(not set)'],
-      ['Plan (metadata)', u.publicMetadata?.plan || '(not set)'],
-      ['Plan (local)', localStorage.getItem('ephermal_plan_override') || getUserPlan()],
-      ['Session ID', window.__clerk?.session?.id || '—'],
-    ];
-    infoEl.innerHTML = rows.map(([k,v]) =>
-      `<div style="display:flex;gap:12px"><span style="color:var(--muted);min-width:130px">${escHtml(String(k||''))}</span><span style="color:#34d399;word-break:break-all">${escHtml(String(v||''))}</span></div>`
-    ).join('');
-  }
-  devRefreshStorage();
-}
-function devSetPlan(plan) {
-  if (!isAdmin()) return; // admin-only — guard against direct JS console calls
-  if (plan) { localStorage.setItem('ephermal_plan_override', plan); showToast(`Plan set to ${plan} (local only)`, 'success'); }
-  else { localStorage.removeItem('ephermal_plan_override'); showToast('Plan override cleared', 'success'); }
-  renderPlanUI();
-  loadDevTools();
-}
-async function devRawShopify(action) {
-  const resultEl = document.getElementById('devtools-shopify-result');
-  if (!resultEl) return;
-  resultEl.textContent = 'Fetching…'; resultEl.style.color = '#34d399';
-  try {
-    const start = Date.now();
-    const r = await authFetch(`/shopify?action=${encodeURIComponent(action)}`);
-    const ms = Date.now() - start;
-    if (!r) { resultEl.textContent = 'No response — auth token missing'; resultEl.style.color = '#f87171'; return; }
-    const data = await r.json().catch(() => null);
-    resultEl.textContent = `HTTP ${r.status} · ${ms}ms\n\n${data ? JSON.stringify(data, null, 2) : '(no JSON body)'}`;
-    resultEl.style.color = r.ok ? '#34d399' : '#f87171';
-  } catch (e) {
-    resultEl.textContent = `Error: ${e.message}`;
-    resultEl.style.color = '#f87171';
-  }
-}
-
-async function devTestWebhook() {
-  const sel = document.getElementById('devtools-wh-select');
-  const resultEl = document.getElementById('devtools-wh-result');
-  const path = sel?.value || 'ai';
-  resultEl.textContent = 'Pinging…';
-  try {
-    const start = Date.now();
-    const token = window.__clerk?.session ? await window.__clerk.session.getToken() : '';
-    const r = await fetch(`${window.API_BASE || ''}/${path}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ action: 'ping', user_id: window.__clerk?.user?.id || 'dev' }),
-    });
-    const ms = Date.now() - start;
-    const text = await r.text();
-    let display;
-    try { display = JSON.stringify(JSON.parse(text), null, 2); } catch { display = text; }
-    resultEl.textContent = `HTTP ${r.status} · ${ms}ms\n\n${display}`;
-    resultEl.style.color = r.ok ? '#34d399' : '#f87171';
-  } catch(e) {
-    resultEl.textContent = `Error: ${e.message}`;
-    resultEl.style.color = '#f87171';
-  }
-}
-function devRefreshStorage() {
-  const el = document.getElementById('devtools-storage');
-  if (!el) return;
-  const keys = Object.keys(localStorage).sort();
-  if (!keys.length) { el.innerHTML = '<span style="color:var(--muted)">Empty</span>'; return; }
-  el.innerHTML = keys.map(k => {
-    const v = localStorage.getItem(k);
-    const display = v && v.length > 80 ? v.slice(0, 80) + '…' : v;
-    return `<div style="display:flex;gap:10px;padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--muted);min-width:180px;flex-shrink:0">${escHtml(k)}</span><span style="color:#f0f2ff;word-break:break-all">${escHtml(display || '')}</span></div>`;
-  }).join('');
 }
 
 // ── META STATUS ───────────────────────────────────────────────────────────────
