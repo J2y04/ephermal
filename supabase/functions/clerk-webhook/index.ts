@@ -6,6 +6,14 @@
  *
  * Deploy: supabase functions deploy clerk-webhook
  *
+ * verify_jwt is deliberately OFF — Clerk never sends a Supabase JWT, only
+ * svix-* headers. This function's own verifyClerkSignature() (HMAC-SHA256
+ * over svix-id.svix-timestamp.body, constant-time compare, 5-minute replay
+ * window) IS the real auth boundary. Leaving verify_jwt:true here silently
+ * rejects every real Clerk delivery with 401 before this code ever runs —
+ * the same class of platform-gateway bug already found and fixed on
+ * admin-api (see supabase/functions/admin-api/index.ts).
+ *
  * Required secrets:
  *   CLERK_WEBHOOK_SECRET  — "whsec_..." from Clerk Dashboard → Webhooks → Signing Secret
  *
@@ -179,7 +187,7 @@ Deno.serve(async (req) => {
         'Prefer': 'resolution=ignore-duplicates',
       };
 
-      await Promise.allSettled([
+      const seedResults = await Promise.allSettled([
         // Default starter plan (no subscription yet)
         fetch(`${supabaseUrl}/rest/v1/user_plans`, {
           method: 'POST', headers,
@@ -191,6 +199,11 @@ Deno.serve(async (req) => {
           body: JSON.stringify({ user_id: userId }),
         }),
       ]);
+      for (const r of seedResults) {
+        if (r.status === 'rejected') {
+          console.error('Default-row seed failed for', userId, ':', r.reason);
+        }
+      }
 
       if (!email) {
         console.warn('user.created event has no email — skipping welcome email', userId);

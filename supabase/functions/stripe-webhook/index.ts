@@ -3,6 +3,14 @@
  *
  * Deploy: supabase functions deploy stripe-webhook
  *
+ * verify_jwt is deliberately OFF — Stripe never sends a Supabase JWT, only
+ * a `stripe-signature` header. This function's own getStripe().webhooks.
+ * constructEvent() call IS the real auth boundary (HMAC signature check
+ * against STRIPE_WEBHOOK_SECRET). Leaving verify_jwt:true here silently
+ * rejects every real Stripe delivery with 401 before this code ever runs —
+ * the same class of platform-gateway bug already found and fixed on
+ * admin-api (see supabase/functions/admin-api/index.ts).
+ *
  * Required env vars (Supabase Dashboard → Settings → Edge Functions):
  *   STRIPE_SECRET_KEY         — sk_live_...
  *   STRIPE_WEBHOOK_SECRET     — whsec_...
