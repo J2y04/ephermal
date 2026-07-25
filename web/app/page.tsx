@@ -874,6 +874,7 @@ export default function Home() {
           <a href="/docs">Docs</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
+          <a href="/data-deletion">Data Deletion</a>
           <a href="mailto:hello@ephermal.app">Contact</a>
         </div>
         <div className="footer-copy">© 2026 Interlink Platforms. All rights reserved.</div>

@@ -41,7 +41,7 @@ export default function PrivacyPage() {
           <h2>2. Data We Collect</h2>
           <p>We collect only what is necessary to operate the service:</p>
           <ul>
-            <li><strong>Account data</strong>: name, email address, password (hashed with bcrypt), and optionally a Google account ID when using Google Sign-In.</li>
+            <li><strong>Account data</strong>: name and email address, managed via our authentication provider (Clerk).</li>
             <li><strong>Shopify store data</strong>: store domain, products, orders, and customer analytics accessed via the Shopify Admin API under your authorised OAuth permissions.</li>
             <li><strong>Ad account data</strong>: Meta Ads and Google Ads access tokens (encrypted at rest using AES-256 Fernet), ad account IDs, campaign performance metrics.</li>
             <li><strong>Billing data</strong>: payment is processed entirely by Stripe. We store only a Stripe customer ID and subscription status; we never see or store your card details.</li>
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
             <li><strong>Performance of contract (Art. 6(1)(b))</strong>: Core service delivery: generating ad creatives, launching campaigns, managing integrations with Shopify/Meta/Google, sending transactional emails, and processing payments via Stripe.</li>
             <li><strong>Legal obligation (Art. 6(1)(c))</strong>: Retaining billing records for tax and accounting purposes as required by applicable law.</li>
             <li><strong>Legitimate interests (Art. 6(1)(f))</strong>: Analysing platform usage data to improve reliability and performance. You may object to this processing at any time by contacting us.</li>
-            <li><strong>Consent (Art. 6(1)(a))</strong>: Where you choose to use Google Sign-In, we process your Google account ID on the basis of your consent. You may withdraw this consent at any time by contacting <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>; withdrawal does not affect the lawfulness of prior processing.</li>
+            <li><strong>Consent (Art. 6(1)(a))</strong>: Where you choose to connect a Meta Ads or Google Ads account, we process the resulting access tokens and account data on the basis of your consent. You may withdraw this consent at any time by disconnecting the integration in Settings or contacting <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>; withdrawal does not affect the lawfulness of prior processing.</li>
           </ul>
         </div>
 
@@ -79,7 +79,7 @@ export default function PrivacyPage() {
             <li><strong>Stripe, Inc.</strong> (US): payment processing; billing information. Safeguard: EU–US Data Privacy Framework (DPF). <a href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer">Stripe Privacy Policy</a></li>
             <li><strong>Shopify Inc.</strong> (Canada): store data via OAuth; store domain, products, orders, customer analytics. Safeguard: EU adequacy decision for Canada. <a href="https://www.shopify.com/legal/privacy" target="_blank" rel="noopener noreferrer">Shopify Privacy Policy</a></li>
             <li><strong>Meta Platforms Ireland Ltd</strong> (EU entity): ad account management; ad account IDs and campaign data. Safeguard: Standard Contractual Clauses (SCCs) for onward transfers. <a href="https://www.facebook.com/privacy/policy" target="_blank" rel="noopener noreferrer">Meta Privacy Policy</a></li>
-            <li><strong>Google Ireland Ltd</strong> (EU entity): Google Ads management and optional Sign-In; ad account data and Google account ID. Safeguard: SCCs for onward transfers. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a></li>
+            <li><strong>Google Ireland Ltd</strong> (EU entity): Google Ads management; ad account access tokens and campaign data. Safeguard: SCCs for onward transfers. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google Privacy Policy</a></li>
             <li><strong>Clerk.com, Inc.</strong> (US): authentication and user account management; name, email, session data. Safeguard: Standard Contractual Clauses. <a href="https://clerk.com/privacy" target="_blank" rel="noopener noreferrer">Clerk Privacy Policy</a></li>
             <li><strong>Supabase, Inc.</strong> (US; EU-region data hosting): database infrastructure; all account and operational data. Safeguard: Standard Contractual Clauses. <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer">Supabase Privacy Policy</a></li>
           </ul>
@@ -123,7 +123,7 @@ export default function PrivacyPage() {
             <li><strong>Objection / Restriction</strong>: object to or restrict certain processing, including processing based on legitimate interests.</li>
             <li><strong>Withdraw consent</strong>: at any time where processing is based on consent (e.g. Google Sign-In), without affecting the lawfulness of prior processing.</li>
           </ul>
-          <p>To exercise any of these rights, email <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>. We will respond within one month (extendable by a further two months for complex requests, with notice within the first month).</p>
+          <p>To exercise any of these rights, email <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>. We will respond within one month (extendable by a further two months for complex requests, with notice within the first month). See our <a href="/data-deletion">Data Deletion Instructions</a> for the fastest way to delete your account and data.</p>
         </div>
 
         <div className="legal-section">
