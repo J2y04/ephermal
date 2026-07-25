@@ -4853,7 +4853,7 @@ async function bulkAction(action) {
 // ── MULTI-STORE ──────────────────────────────────────────────────────────────
 function loadMultiStore() {
   if (!canAccess('multistore')) return;
-  const stores = JSON.parse(localStorage.getItem('connected_stores')||'[]');
+  let stores; try { stores = JSON.parse(localStorage.getItem('connected_stores')||'[]'); } catch(e) { stores = []; }
   const setEl = (id, v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
   setEl('ms-stores', stores.length || '1');
   setEl('ms-campaigns', allCampaigns.length || '-');
@@ -4961,7 +4961,9 @@ function closeSubModal() {
 }
 
 // ── STORE PRODUCTS ────────────────────────────────────────────────────────────
-let _knownProductIds = new Set(JSON.parse(localStorage.getItem('known_product_ids') || '[]'));
+let _knownProductIds = new Set((() => {
+  try { return JSON.parse(localStorage.getItem('known_product_ids') || '[]'); } catch(e) { return []; }
+})());
 let _pendingNewProducts = [];
 let _currentNewProductIdx = 0;
 
@@ -5800,7 +5802,8 @@ function closeCampaignBuilder() {
 function _cbPopulateProductSelect() {
   const sel = document.getElementById('cb-product-select');
   if (!sel) return;
-  const products = window._cachedProducts || JSON.parse(localStorage.getItem('products_cache') || '[]');
+  let products = window._cachedProducts;
+  if (!products) { try { products = JSON.parse(localStorage.getItem('products_cache') || '[]'); } catch(e) { products = []; } }
   sel.innerHTML = '<option value="">- Pick a synced product -</option>';
   products.forEach((p, i) => {
     const opt = document.createElement('option');
@@ -5812,7 +5815,8 @@ function _cbPopulateProductSelect() {
 
 function _cbFillFromProduct(idx) {
   if (idx === '') return;
-  const products = window._cachedProducts || JSON.parse(localStorage.getItem('products_cache') || '[]');
+  let products = window._cachedProducts;
+  if (!products) { try { products = JSON.parse(localStorage.getItem('products_cache') || '[]'); } catch(e) { products = []; } }
   const p = products[parseInt(idx, 10)];
   if (!p) return;
   const nameEl = document.getElementById('cb-name');

@@ -68,13 +68,17 @@ export async function extractUserId(authHeader: string | null): Promise<string |
       return null;
     }
 
-    // Validate expiry and not-before
+    // Validate expiry and not-before, with a small leeway for clock skew between
+    // Clerk's issuing server and this edge function's container clock — without
+    // it, a token that is genuinely still valid can get rejected purely because
+    // the two clocks disagree by a few seconds.
+    const CLOCK_SKEW_LEEWAY_SEC = 10;
     const now = Math.floor(Date.now() / 1000);
-    if (!payloadJson.exp || now > payloadJson.exp) {
+    if (!payloadJson.exp || now > payloadJson.exp + CLOCK_SKEW_LEEWAY_SEC) {
       console.warn('[auth] rejected: expired — exp:', payloadJson.exp, 'now:', now);
       return null;
     }
-    if (payloadJson.nbf && now < payloadJson.nbf) {
+    if (payloadJson.nbf && now < payloadJson.nbf - CLOCK_SKEW_LEEWAY_SEC) {
       console.warn('[auth] rejected: not yet valid — nbf:', payloadJson.nbf, 'now:', now);
       return null;
     }

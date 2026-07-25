@@ -122,11 +122,18 @@ async function handleSearch(
     const err = await res.json().catch(() => ({})) as Record<string, unknown>;
     const metaErrObj = err?.error as Record<string, unknown> | undefined;
     const metaMsg = String(metaErrObj?.message ?? `Meta API error ${res.status}`);
-    // Surface permission errors with a clear message
+    console.error('[competitor-radar] Meta ads_archive error:', res.status, metaMsg);
+    // Surface permission errors with a clear message. This is expected, user-facing
+    // feedback (missing Ad Library API access, bad token, etc.) — not a server
+    // failure — so return it the same way NO_META_TOKEN is returned below, rather
+    // than throwing and letting it get flattened into an opaque 500 by the outer catch.
     if (res.status === 403 || String(metaErrObj?.code) === '200') {
-      throw new Error('Your Meta token does not have Ad Library access. Reconnect Meta Ads and ensure ads_read permission is granted.');
+      return {
+        error: 'Your Meta token does not have Ad Library access. Reconnect Meta Ads and ensure ads_read permission is granted.',
+        code: 'NO_AD_LIBRARY_ACCESS',
+      };
     }
-    throw new Error(metaMsg);
+    return { error: metaMsg, code: 'META_API_ERROR' };
   }
 
   const data = await res.json() as {

@@ -10,6 +10,16 @@ const nextConfig = {
         destination: 'https://dashboard.ephermal.app/',
         permanent:   false,
       },
+      {
+        source: '/privacy.html',
+        destination: '/privacy',
+        permanent: true,
+      },
+      {
+        source: '/terms.html',
+        destination: '/terms',
+        permanent: true,
+      },
     ];
   },
 };
