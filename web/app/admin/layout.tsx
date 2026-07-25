@@ -78,6 +78,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const nav = [
     { href: '/admin', label: 'Overview', Icon: IconGrid },
     { href: '/admin/users', label: 'Users', Icon: IconUsers },
+    { href: '/admin/finance', label: 'Finance', Icon: IconCreditCard },
   ];
 
   // Real, honest "Dev Tools" — quick links out to the actual dashboards this

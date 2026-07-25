@@ -159,7 +159,6 @@ interface TierStat { count: number; mrr_cents: number }
 
 async function handleGetRevenue(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const days = Math.min(90, Math.max(1, Number(body.days ?? 30) || 30));
-  const stripe = getStripe();
 
   let mrrCents = 0;
   let activeSubscriptionCount = 0;
@@ -170,30 +169,45 @@ async function handleGetRevenue(body: Record<string, unknown>): Promise<Record<s
     other:   { count: 0, mrr_cents: 0 },
   };
 
-  // Live from Stripe's real active subscriptions — this naturally excludes any
-  // manually-granted user_plans row (like the owner's own dev account), since
-  // those correspond to no Stripe subscription and simply never appear here.
-  for await (const sub of stripe.subscriptions.list({ status: 'active', limit: 100 })) {
-    activeSubscriptionCount++;
-    let subMonthlyCents = 0;
-    let tierKey = 'other';
-    for (const item of sub.items.data) {
-      const price = item.price;
-      if (!price?.unit_amount) continue;
-      const qty = item.quantity ?? 1;
-      let cents = price.unit_amount * qty;
-      if (price.recurring?.interval === 'year') cents = Math.round(cents / 12);
-      subMonthlyCents += cents;
-      const mapped = PRICE_TO_PLAN[price.id];
-      if (mapped) tierKey = mapped;
+  // Stripe is optional for this action — if it's not configured yet (e.g. before
+  // Jamal has signed up for a Stripe account), the rest of the admin panel
+  // (user counts, signups) must still load. Only the Stripe-derived fields
+  // degrade to zero/empty, flagged via stripe_available so the frontend can
+  // show an honest "not connected" state instead of pretending MRR is $0.
+  let stripeAvailable = true;
+  let stripeError: string | null = null;
+  try {
+    const stripe = getStripe();
+    // Live from Stripe's real active subscriptions — this naturally excludes any
+    // manually-granted user_plans row (like the owner's own dev account), since
+    // those correspond to no Stripe subscription and simply never appear here.
+    for await (const sub of stripe.subscriptions.list({ status: 'active', limit: 100 })) {
+      activeSubscriptionCount++;
+      let subMonthlyCents = 0;
+      let tierKey = 'other';
+      for (const item of sub.items.data) {
+        const price = item.price;
+        if (!price?.unit_amount) continue;
+        const qty = item.quantity ?? 1;
+        let cents = price.unit_amount * qty;
+        if (price.recurring?.interval === 'year') cents = Math.round(cents / 12);
+        subMonthlyCents += cents;
+        const mapped = PRICE_TO_PLAN[price.id];
+        if (mapped) tierKey = mapped;
+      }
+      mrrCents += subMonthlyCents;
+      byTier[tierKey].count += 1;
+      byTier[tierKey].mrr_cents += subMonthlyCents;
     }
-    mrrCents += subMonthlyCents;
-    byTier[tierKey].count += 1;
-    byTier[tierKey].mrr_cents += subMonthlyCents;
+  } catch (e) {
+    stripeAvailable = false;
+    stripeError = e instanceof Error ? e.message : 'Stripe unavailable';
+    console.warn('[admin-api] get_revenue: Stripe unavailable, degrading gracefully:', stripeError);
   }
 
   // Signups-over-time: zero-filled daily series from Clerk's created_at timestamps,
   // same zero-fill discipline mrr-tracker already uses so the chart has a continuous axis.
+  // Independent of Stripe — always computed even when the block above fails.
   const users = await fetchAllClerkUsers();
   const dayBuckets = new Map<string, number>();
   const now = Date.now();
@@ -214,6 +228,8 @@ async function handleGetRevenue(body: Record<string, unknown>): Promise<Record<s
     by_tier: byTier,
     signups,
     generated_at: new Date().toISOString(),
+    stripe_available: stripeAvailable,
+    stripe_error: stripeError,
   };
 }
 
