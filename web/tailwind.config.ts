@@ -90,6 +90,19 @@ const config: Config = {
         // the squircle path computes on mount.
         '4xl': '28px',
         '5xl': '32px',
+        // Tremor's own components (TextInput, Badge, NumberInput, Select, etc.)
+        // reference these exact token names internally (rounded-tremor-small,
+        // rounded-tremor-default, rounded-tremor-full — see Tremor's theming
+        // docs). Without defining them, Tailwind can't generate any CSS for
+        // those classes, so Tremor falls back to a 0px radius — square
+        // corners on the search box and badge pills while every hand-styled
+        // element around them is rounded. Same class of bug already found
+        // and fixed for Tremor's color tokens above; values picked to match
+        // the admin panel's existing rounded-xl (12px) / pill conventions
+        // rather than Tremor's own (smaller) stock defaults.
+        'tremor-small':   '10px',
+        'tremor-default': '12px',
+        'tremor-full':    '9999px',
       },
     },
   },
