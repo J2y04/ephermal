@@ -129,7 +129,11 @@ async function getOverview(accountId: string, token: string, userId: string) {
     total_conversions: totalConversions,
     roas:              roasCount > 0 ? Math.round((roasSum / roasCount) * 100) / 100 : 0,
     total_creatives:   creativesCount ?? 0,
-    pixel_active:      !!pixel?.id,
+    // pixel_exists: a pixel object exists on the ad account. pixel_active: it has
+    // actually fired an event at least once — a pixel can exist but never have
+    // been installed on the store, which behaves identically to having none.
+    pixel_exists:      !!pixel?.id,
+    pixel_active:      !!pixel?.last_fired_time,
     pixel_id:          pixel?.id ?? null,
     pixel_last_fired:  pixel?.last_fired_time ?? null,
     campaign_count:    campaigns.length,
@@ -288,7 +292,12 @@ async function getPixel(accountId: string, token: string) {
   );
   const pixel = res.data?.[0] ?? null;
   return {
-    active:        !!pixel?.id,
+    // "active" means the pixel is actually firing events, not merely that one
+    // exists on the ad account — a pixel can be created but never installed,
+    // which is functionally the same as having none. exists/active are kept
+    // separate so callers can tell "no pixel" from "pixel installed but dead".
+    exists:        !!pixel?.id,
+    active:        !!pixel?.last_fired_time,
     id:            pixel?.id ?? null,
     name:          pixel?.name ?? null,
     last_fired:    pixel?.last_fired_time ?? null,

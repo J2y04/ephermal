@@ -149,6 +149,10 @@ label{display:block;font-size:12px;font-weight:600;color:#6b7280;text-transform:
       <div class="dot"></div>
       <div><span>Meta Ads connected</span><small id="meta-badge-account"></small></div>
     </div>
+    <p id="meta-pixel-hint" style="display:none;font-size:12px;color:var(--muted, #8a8a94);margin-top:10px;line-height:1.5">
+      One more thing: make sure your <strong>Meta Pixel</strong> is installed on your store. Without it, Meta can't optimise
+      ads toward buyers and your reported metrics will be incomplete. <a href="/docs#pixel" target="_blank" rel="noopener" style="color:#06d6c7">See how</a>
+    </p>
     <!-- Account picker (shown when user has multiple ad accounts) -->
     <div id="meta-account-picker" style="display:none">
       <label for="meta-account-select">Select Ad Account</label>
@@ -487,8 +491,13 @@ function showMetaConnected(name, id) {
   if (infoEl) infoEl.style.display = 'none';
   document.getElementById('meta-connected-badge').style.display = 'flex';
   document.getElementById('meta-badge-account').textContent = id || name;
+  const pixelHint = document.getElementById('meta-pixel-hint');
+  if (pixelHint) pixelHint.style.display = 'block';
   setNodeDone(2);
-  setTimeout(() => showCard(3), 700);
+  // Slightly longer than the previous 700ms — this step now shows one extra
+  // line (the pixel hint) that's worth a beat to actually register before
+  // auto-advancing, not just a flash the user skips past.
+  setTimeout(() => showCard(3), 1400);
 }
 
 function _esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }

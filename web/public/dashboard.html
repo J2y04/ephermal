@@ -841,6 +841,17 @@ select.form-input{cursor:pointer}
           </button>
         </div>
       </div>
+      <div class="meta-connect-banner" id="pixel-connect-banner" style="display:none">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="text">
+          <strong>Your Meta Pixel isn&apos;t firing yet</strong>
+          <span>Without it, Meta can&apos;t optimise ads toward buyers and your reported ROAS/conversions will be incomplete. <a href="/docs#pixel" target="_blank" rel="noopener" style="color:var(--primary)">Learn how to install it</a></span>
+        </div>
+        <div class="platform-btns">
+          <button class="btn-save" style="padding:8px 16px;font-size:12px;white-space:nowrap" onclick="navigate('audience')">Check status</button>
+          <button class="panel-action" style="padding:8px 10px" onclick="dismissPixelBanner()" title="Dismiss for now">✕</button>
+        </div>
+      </div>
       <div class="welcome-banner" id="welcome-banner">
         <div class="welcome-date" id="welcome-date"></div>
         <div class="welcome-phrase" id="welcome-phrase"></div>
@@ -3180,6 +3191,7 @@ async function loadOverview() {
     setVal('a-impressions', fmt(d.total_impressions));
     setVal('a-clicks', fmt(d.total_clicks));
     setVal('a-conversions', fmt(d.total_conversions));
+    updatePixelBanner(d.pixel_exists, d.pixel_active);
     if (d.total_spend > 0) { const el = document.getElementById('stat-spend'); animateCounter(el, d.total_spend, v => `$${fmt(v)}`); }
     if (d.total_creatives > 0) { const el = document.getElementById('stat-creatives'); animateCounter(el, d.total_creatives, v => fmt(Math.round(v))); }
     if (d.total_conversions > 0) { const el = document.getElementById('a-conversions'); animateCounter(el, d.total_conversions, v => fmt(Math.round(v))); }
@@ -3975,6 +3987,27 @@ function updatePlatformBanner() {
   banner.style.display = (hasMetaFull || hasGoogleFull) ? 'none' : 'flex';
 }
 
+/** Quiet, non-interruptive reminder — shown once per session, not on every
+ *  page load, so it nudges without nagging. Reappears next session (new tab/
+ *  day) if the pixel still isn't firing, since that's still worth surfacing,
+ *  just not worth repeating within the same visit. */
+function dismissPixelBanner() {
+  const banner = document.getElementById('pixel-connect-banner');
+  if (banner) banner.style.display = 'none';
+  sessionStorage.setItem('pixel_banner_dismissed', '1');
+}
+function updatePixelBanner(pixelExists, pixelActive) {
+  const banner = document.getElementById('pixel-connect-banner');
+  if (!banner) return;
+  const hasMeta = !!localStorage.getItem('meta_token') && !!localStorage.getItem('meta_account');
+  const dismissed = sessionStorage.getItem('pixel_banner_dismissed') === '1';
+  // Only nudge when Meta is actually connected (otherwise the platform-connect
+  // banner above already covers that gap) and the pixel genuinely isn't firing —
+  // "exists but never fired" and "doesn't exist at all" both mean the same
+  // thing in practice: no usable purchase-conversion signal reaching Meta.
+  banner.style.display = (hasMeta && !pixelActive && !dismissed) ? 'flex' : 'none';
+}
+
 // ── GOOGLE ADS STATUS ─────────────────────────────────────────────────────────
 function refreshGoogleStatus() {
   const token = localStorage.getItem('google_token');
@@ -4642,32 +4675,29 @@ async function loadPixelStatus() {
   try {
     const r = await authFetch('/meta/read?action=pixel');
     if (!r || !r.ok) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">Could not load pixel data - check Meta credentials.</p>'; return; }
-    const d = await r.json();
-    const pixels = d.pixels || d.data || [];
-    if (!pixels.length) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">No Meta Pixel found on your ad account.</p>'; return; }
-    const firstPixel = pixels[0];
-    const firstOk = !!firstPixel.last_fired_time;
+    // getPixel() returns a single flat object ({exists, active, id, name, last_fired, code}),
+    // not a list — there's only ever one pixel per ad account.
+    const p = await r.json();
+    if (!p.exists) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">No Meta Pixel found on your ad account.</p>'; return; }
+    const ok = !!p.active;
     // Update stat card
     const statPixel = document.getElementById('aud-stat-pixel');
     const statSub = document.getElementById('aud-stat-pixel-sub');
     const dot = document.getElementById('aud-pixel-dot');
-    if (statPixel) statPixel.textContent = firstOk ? 'Active' : 'Inactive';
-    if (statPixel) statPixel.style.color = firstOk ? 'var(--success)' : 'var(--warning)';
-    if (statSub) statSub.textContent = firstOk ? `Last fired ${timeSince(firstPixel.last_fired_time)}` : 'No recent activity';
-    if (dot) { dot.style.background = firstOk ? 'var(--success)' : 'var(--warning)'; dot.style.boxShadow = firstOk ? '0 0 6px var(--success)' : 'none'; }
-    el.innerHTML = pixels.map(p => {
-      const fired = p.last_fired_time ? `Last fired: ${timeSince(p.last_fired_time)}` : 'Never fired';
-      const ok = !!p.last_fired_time;
-      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:8px">
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="width:36px;height:36px;background:${ok?'rgba(52,211,153,0.1)':'rgba(251,191,36,0.1)'};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${ok?'var(--success)':'var(--warning)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-          </div>
-          <div><div style="font-size:13px;font-weight:700">${escHtml(p.name||'Meta Pixel')}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">ID: ${escHtml(p.id)} · ${fired}</div></div>
+    if (statPixel) statPixel.textContent = ok ? 'Active' : 'Inactive';
+    if (statPixel) statPixel.style.color = ok ? 'var(--success)' : 'var(--warning)';
+    if (statSub) statSub.textContent = ok ? `Last fired ${timeSince(p.last_fired)}` : 'No recent activity';
+    if (dot) { dot.style.background = ok ? 'var(--success)' : 'var(--warning)'; dot.style.boxShadow = ok ? '0 0 6px var(--success)' : 'none'; }
+    const fired = p.last_fired ? `Last fired: ${timeSince(p.last_fired)}` : 'Never fired';
+    el.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface2);border:1px solid var(--border);border-radius:12px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:36px;height:36px;background:${ok?'rgba(52,211,153,0.1)':'rgba(251,191,36,0.1)'};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${ok?'var(--success)':'var(--warning)'}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
         </div>
-        <span class="status-pill ${ok?'live':'paused'}">${ok?'Active':'Inactive'}</span>
-      </div>`;
-    }).join('');
+        <div><div style="font-size:13px;font-weight:700">${escHtml(p.name||'Meta Pixel')}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">ID: ${escHtml(p.id)} · ${fired}</div></div>
+      </div>
+      <span class="status-pill ${ok?'live':'paused'}">${ok?'Active':'Inactive'}</span>
+    </div>`;
   } catch(e) { if(el) el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">Failed to load pixel status.</p>'; }
 }
 
