@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 const EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 const GRADIENT: React.CSSProperties = {
-  color: '#06d6c7',
+  color: 'var(--primary)',
 };
 
 interface HeroMotionProps {

@@ -380,7 +380,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-              <div style={{ marginTop: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(6,214,199,0.08)', border: '1px solid rgba(6,214,199,0.2)', borderRadius: '10px', fontSize: '13px', color: 'var(--primary)', fontWeight: 600 }}>
+              <div style={{ marginTop: '24px', display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 18px', background: 'rgba(var(--primary-rgb),0.08)', border: '1px solid rgba(var(--primary-rgb),0.2)', borderRadius: '10px', fontSize: '13px', color: 'var(--primary)', fontWeight: 600 }}>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="15" height="15"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                 Available on Growth &amp; Scale plans
               </div>
@@ -401,7 +401,7 @@ export default function Home() {
       </section>
 
       {/* ── Competitor Radar Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(6,214,199,0.05) 0%, rgba(255,255,255,0.02) 100%)' }}>
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(var(--primary-rgb),0.05) 0%, rgba(255,255,255,0.02) 100%)' }}>
         <div className="container">
           <div className="meta-inner">
             <div className="meta-content" data-reveal="left" data-delay="1">
@@ -427,24 +427,24 @@ export default function Home() {
               </div>
             </div>
             <div className="meta-logo-block" data-reveal="right">
-              <div style={{ background: 'rgba(6,214,199,0.06)', border: '1px solid rgba(6,214,199,0.18)', borderRadius: '20px', padding: '32px' }}>
+              <div style={{ background: 'rgba(var(--primary-rgb),0.06)', border: '1px solid rgba(var(--primary-rgb),0.18)', borderRadius: '20px', padding: '32px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="36" height="36">
-                    <circle cx="24" cy="24" r="20" stroke="#06d6c7" strokeWidth="1.5" opacity="0.3"/>
-                    <circle cx="24" cy="24" r="13" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
-                    <circle cx="24" cy="24" r="6" stroke="#06d6c7" strokeWidth="1.5" opacity="0.8"/>
-                    <circle cx="24" cy="24" r="2.5" fill="#06d6c7"/>
-                    <line x1="24" y1="4" x2="24" y2="10" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
-                    <line x1="24" y1="38" x2="24" y2="44" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
-                    <line x1="4" y1="24" x2="10" y2="24" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
-                    <line x1="38" y1="24" x2="44" y2="24" stroke="#06d6c7" strokeWidth="1.5" opacity="0.5"/>
+                    <circle cx="24" cy="24" r="20" stroke="var(--primary)" strokeWidth="1.5" opacity="0.3"/>
+                    <circle cx="24" cy="24" r="13" stroke="var(--primary)" strokeWidth="1.5" opacity="0.5"/>
+                    <circle cx="24" cy="24" r="6" stroke="var(--primary)" strokeWidth="1.5" opacity="0.8"/>
+                    <circle cx="24" cy="24" r="2.5" fill="var(--primary)"/>
+                    <line x1="24" y1="4" x2="24" y2="10" stroke="var(--primary)" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="24" y1="38" x2="24" y2="44" stroke="var(--primary)" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="4" y1="24" x2="10" y2="24" stroke="var(--primary)" strokeWidth="1.5" opacity="0.5"/>
+                    <line x1="38" y1="24" x2="44" y2="24" stroke="var(--primary)" strokeWidth="1.5" opacity="0.5"/>
                   </svg>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '5px 10px', background: 'rgba(6,214,199,0.12)', borderRadius: '8px' }}>
-                    <div style={{ width: '7px', height: '7px', background: '#06d6c7', borderRadius: '50%' }} />
-                    <span style={{ fontSize: '11px', fontWeight: 700, color: '#06d6c7', letterSpacing: '0.05em', textTransform: 'uppercase' }}>New ad detected · FitFuel Co.</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '5px 10px', background: 'rgba(var(--primary-rgb),0.12)', borderRadius: '8px' }}>
+                    <div style={{ width: '7px', height: '7px', background: 'var(--primary)', borderRadius: '50%' }} />
+                    <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>New ad detected · FitFuel Co.</span>
                   </div>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px 14px', marginBottom: '14px', fontSize: '12px', color: 'var(--muted)', lineHeight: 1.65, fontStyle: 'italic', borderLeft: '2px solid rgba(6,214,199,0.4)' }}>
+                <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '12px 14px', marginBottom: '14px', fontSize: '12px', color: 'var(--muted)', lineHeight: 1.65, fontStyle: 'italic', borderLeft: '2px solid rgba(var(--primary-rgb),0.4)' }}>
                   &ldquo;Tired of pre-workouts that don&apos;t deliver? FitFuel gives you 4-hour clean energy with no crash, no jitters. Try it today.&rdquo;
                 </div>
                 {[
@@ -457,7 +457,7 @@ export default function Home() {
                     <span style={{ color: 'var(--text)', fontWeight: 600 }}>{r.value}</span>
                   </div>
                 ))}
-                <div style={{ marginTop: '14px', padding: '10px 12px', background: 'rgba(6,214,199,0.08)', borderRadius: '8px', fontSize: '12px', color: '#06d6c7', fontWeight: 600, lineHeight: 1.5 }}>
+                <div style={{ marginTop: '14px', padding: '10px 12px', background: 'rgba(var(--primary-rgb),0.08)', borderRadius: '8px', fontSize: '12px', color: 'var(--primary)', fontWeight: 600, lineHeight: 1.5 }}>
                   Counter: Lead with &ldquo;zero compromise&rdquo;. Own what they&apos;re promising but can&apos;t prove.
                 </div>
               </div>
@@ -467,11 +467,11 @@ export default function Home() {
       </section>
 
       {/* ── Creative Brief Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(6,214,199,0.05) 0%, rgba(6,214,199,0.01) 100%)' }}>
+      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(var(--primary-rgb),0.05) 0%, rgba(var(--primary-rgb),0.01) 100%)' }}>
         <div className="container">
           <div className="meta-inner" style={{ direction: 'rtl' }}>
             <div className="meta-content" data-reveal="right" data-delay="1" style={{ direction: 'ltr' }}>
-              <div className="section-label" style={{ color: '#06d6c7' }}>Creative Brief AI</div>
+              <div className="section-label" style={{ color: 'var(--primary)' }}>Creative Brief AI</div>
               <h2 className="section-title">From blank page to<br />ready-to-shoot brief.<br />Eight seconds.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
                 Your creator is asking for direction. You&apos;re staring at a blank doc at 11pm, trying to remember what made last month&apos;s best ad work. Brief AI reads your live catalog, checks what&apos;s actually converting, and hands you a complete creative strategy: hook angle, emotions to hit, headline variants, exact CTA. In the time it takes to pour a coffee.
@@ -493,10 +493,10 @@ export default function Home() {
               </div>
             </div>
             <div className="meta-logo-block" data-reveal="left" style={{ direction: 'ltr' }}>
-              <div style={{ background: 'rgba(6,214,199,0.06)', border: '1px solid rgba(6,214,199,0.2)', borderRadius: '20px', padding: '32px', fontSize: '13px', lineHeight: 1.7 }}>
+              <div style={{ background: 'rgba(var(--primary-rgb),0.06)', border: '1px solid rgba(var(--primary-rgb),0.2)', borderRadius: '20px', padding: '32px', fontSize: '13px', lineHeight: 1.7 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
-                  <div style={{ fontSize: '11px', fontWeight: 700, color: '#06d6c7', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Brief · Protein Powder 1kg</div>
-                  <div style={{ fontSize: '10px', color: '#06d6c7', background: 'rgba(6,214,199,0.1)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>Generated · just now</div>
+                  <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--primary)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Brief · Protein Powder 1kg</div>
+                  <div style={{ fontSize: '10px', color: 'var(--primary)', background: 'rgba(var(--primary-rgb),0.1)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>Generated · just now</div>
                 </div>
                 {[
                   { label: 'Hook angle', value: 'Transformation / Results' },
@@ -545,16 +545,16 @@ export default function Home() {
             </div>
             <div className="meta-logo-block" data-reveal="right">
               <div style={{ background: 'rgba(150,191,72,0.06)', border: '1px solid rgba(150,191,72,0.2)', borderRadius: '20px', padding: '32px' }}>
-                <div style={{ marginBottom: '20px', padding: '11px 14px', background: 'rgba(6,214,199,0.05)', borderRadius: '10px', border: '1px solid rgba(6,214,199,0.12)' }}>
-                  <div style={{ fontSize: '10px', color: '#06d6c7', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>ROAS 4.1× · looks great</div>
+                <div style={{ marginBottom: '20px', padding: '11px 14px', background: 'rgba(var(--primary-rgb),0.05)', borderRadius: '10px', border: '1px solid rgba(var(--primary-rgb),0.12)' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>ROAS 4.1× · looks great</div>
                   <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>Pre-Workout 300g · $59 retail, $46 landed cost = 22% margin. Losing $3.20/order after fees.</div>
                 </div>
                 <div style={{ fontSize: '11px', fontWeight: 700, color: '#96BF48', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '14px' }}>Real margin by product</div>
                 {[
-                  { product: 'Protein Powder 1kg', margin: '68%', color: '#06d6c7' },
-                  { product: 'Shaker Bottle', margin: '51%', color: '#06d6c7' },
-                  { product: 'Resistance Bands', margin: '43%', color: 'rgba(6,214,199,0.6)' },
-                  { product: 'Pre-Workout 300g', margin: '22%', color: 'rgba(6,214,199,0.35)' },
+                  { product: 'Protein Powder 1kg', margin: '68%', color: 'var(--primary)' },
+                  { product: 'Shaker Bottle', margin: '51%', color: 'var(--primary)' },
+                  { product: 'Resistance Bands', margin: '43%', color: 'rgba(var(--primary-rgb),0.6)' },
+                  { product: 'Pre-Workout 300g', margin: '22%', color: 'rgba(var(--primary-rgb),0.35)' },
                 ].map((r, i) => (
                   <div key={i} style={{ marginBottom: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px', fontSize: '12px' }}>
@@ -593,7 +593,7 @@ export default function Home() {
                 <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '3px' }}>Every new Shopify store pays this price</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '10px', fontWeight: 800, color: '#06d6c7', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(6,214,199,0.12)', border: '1px solid rgba(6,214,199,0.25)', padding: '4px 10px', borderRadius: '6px', marginBottom: '6px' }}>Monthly</div>
+                <div style={{ fontSize: '10px', fontWeight: 800, color: 'var(--primary)', letterSpacing: '0.1em', textTransform: 'uppercase', background: 'rgba(var(--primary-rgb),0.12)', border: '1px solid rgba(var(--primary-rgb),0.25)', padding: '4px 10px', borderRadius: '6px', marginBottom: '6px' }}>Monthly</div>
                 <div style={{ fontSize: '11px', color: 'var(--muted)' }}>Adding up every month</div>
               </div>
             </div>
@@ -612,24 +612,24 @@ export default function Home() {
               ].map((item, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center' }}>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{item.desc}</span>
-                  <span style={{ fontSize: '13px', color: 'rgba(6,214,199,0.85)', fontWeight: 600, fontFamily: 'monospace', textAlign: 'right' }}>{item.amount}</span>
+                  <span style={{ fontSize: '13px', color: 'rgba(var(--primary-rgb),0.85)', fontWeight: 600, fontFamily: 'monospace', textAlign: 'right' }}>{item.amount}</span>
                 </div>
               ))}
-              <div style={{ marginTop: '16px', padding: '16px 20px', background: 'rgba(6,214,199,0.05)', border: '1px solid rgba(6,214,199,0.15)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ marginTop: '16px', padding: '16px 20px', background: 'rgba(var(--primary-rgb),0.05)', border: '1px solid rgba(var(--primary-rgb),0.15)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>Monthly total</div>
-                  <div style={{ fontSize: '28px', fontWeight: 900, color: '#06d6c7', fontFamily: 'monospace', letterSpacing: '-1px' }}>$2,027.00</div>
+                  <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace', letterSpacing: '-1px' }}>$2,027.00</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>That&apos;s per year</div>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(6,214,199,0.65)', fontFamily: 'monospace' }}>$24,324.00</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(var(--primary-rgb),0.65)', fontFamily: 'monospace' }}>$24,324.00</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Knockout */}
-          <div data-reveal style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'center', padding: '36px 32px', background: 'linear-gradient(135deg, rgba(150,191,72,0.1), rgba(6,214,199,0.07))', border: '1px solid rgba(150,191,72,0.25)', borderRadius: '20px' }}>
+          <div data-reveal style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'center', padding: '36px 32px', background: 'linear-gradient(135deg, rgba(150,191,72,0.1), rgba(var(--primary-rgb),0.07))', border: '1px solid rgba(150,191,72,0.25)', borderRadius: '20px' }}>
             <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '10px' }}>No agency. No guesswork. Everything above, one tool.</div>
             <div style={{ fontSize: 'clamp(32px,5vw,48px)', fontWeight: 900, color: 'var(--text)', letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '10px' }}>
               Ephermal. <span style={{ color: 'var(--accent)' }}>$89/month.</span>
@@ -766,7 +766,7 @@ export default function Home() {
                       ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{flexShrink:0,marginTop:'1px'}}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                       : <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                     }
-                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:'#06d6c7',fontWeight:700}}>{badge}</span>}
+                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:'var(--primary)',fontWeight:700}}>{badge}</span>}
                   </li>
                 ))}
               </ul>
@@ -809,7 +809,7 @@ export default function Home() {
                       ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{flexShrink:0,marginTop:'1px'}}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                       : <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                     }
-                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:'#06d6c7',fontWeight:700}}>{badge}</span>}
+                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:'var(--primary)',fontWeight:700}}>{badge}</span>}
                   </li>
                 ))}
               </ul>
@@ -871,6 +871,7 @@ export default function Home() {
           Ephermal
         </div>
         <div className="footer-links">
+          <a href="/docs">Docs</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
           <a href="mailto:hello@ephermal.app">Contact</a>

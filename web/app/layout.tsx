@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     template: '%s | Ephermal',
   },
   description:
-    'Ephermal is the AI marketing agent for Shopify stores. Automate Meta Ads, Google Ads, generate UGC, track profit margins, spy on competitors, and compound ROAS — all from one dashboard. Setup in under 3 minutes.',
+    'Ephermal is the AI marketing agent for Shopify stores. Automate Meta Ads, Google Ads, generate UGC, track profit margins, spy on competitors, and compound ROAS, all from one dashboard. Setup in under 3 minutes.',
   keywords: [
     'Ephermal',
     'Ephermal app',
@@ -31,9 +31,9 @@ export const metadata: Metadata = {
     'creative brief AI',
     'profit margin tracking',
   ],
-  authors: [{ name: 'Ephermal', url: 'https://ephermal.app' }],
-  creator: 'Ephermal',
-  publisher: 'Ephermal',
+  authors: [{ name: 'Interlink Platforms', url: 'https://ephermal.app' }],
+  creator: 'Interlink Platforms',
+  publisher: 'Interlink Platforms',
   category: 'technology',
   applicationName: 'Ephermal',
   alternates: {
@@ -92,6 +92,12 @@ const jsonLd = {
   '@graph': [
     {
       '@type': 'Organization',
+      '@id': 'https://ephermal.app/#organization-parent',
+      name: 'Interlink Platforms',
+      description: 'Interlink Platforms is the company that develops and operates Ephermal.',
+    },
+    {
+      '@type': 'Organization',
       '@id': 'https://ephermal.app/#organization',
       name: 'Ephermal',
       url: 'https://ephermal.app',
@@ -102,7 +108,7 @@ const jsonLd = {
         height: 512,
       },
       description:
-        'Ephermal is an AI marketing agent that automates Meta Ads, Google Ads, UGC creation, profit tracking, and competitor intelligence for Shopify stores.',
+        'Ephermal is an AI marketing agent, developed by Interlink Platforms, that automates Meta Ads, Google Ads, UGC ad copy, profit tracking, and competitor intelligence for Shopify stores.',
       sameAs: ['https://ephermal.app', 'https://twitter.com/ephermal'],
       contactPoint: {
         '@type': 'ContactPoint',
@@ -111,6 +117,7 @@ const jsonLd = {
       },
       foundingDate: '2026',
       areaServed: 'Worldwide',
+      parentOrganization: { '@id': 'https://ephermal.app/#organization-parent' },
     },
     {
       '@type': 'WebSite',
@@ -128,7 +135,7 @@ const jsonLd = {
       operatingSystem: 'Web',
       url: 'https://ephermal.app',
       description:
-        'Ephermal automates your entire Shopify marketing stack. Meta Ads, Google Ads, UGC creation, profit tracking, competitor intelligence — all AI-powered from one dashboard.',
+        'Ephermal automates your entire Shopify marketing stack. Meta Ads, Google Ads, UGC creation, profit tracking, competitor intelligence, all AI-powered from one dashboard.',
       offers: [
         {
           '@type': 'Offer',
@@ -160,18 +167,34 @@ const jsonLd = {
       mainEntity: [
         {
           '@type': 'Question',
-          name: 'Do I need a Shopify store to use Ephermal?',
+          name: 'Do I need any ad experience to use Ephermal?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Ephermal connects directly to your Shopify store via OAuth — no app store required. Your products, pricing and store data sync instantly.',
+            text: "No experience required. Ephermal is built specifically for Shopify store owners who have never run a paid ad in their life. You connect your store, and the AI handles audience research, creative writing, campaign setup, and budget management. You review and approve. That's it.",
           },
         },
         {
           '@type': 'Question',
-          name: 'How does the UGC ad generation work?',
+          name: 'My store is very new. Can I still use Ephermal?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Our AI analyses your products and brand, then generates authentic creator-style ad scripts and copy. You review and approve before anything goes live.',
+            text: "Ephermal is designed for stores at the earliest stage. Whether you've made 10 sales or 10,000, the AI reads your catalog and builds a campaign strategy around what you actually have. The sooner you start running real ads, the sooner you find out what the market wants.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How much should I spend on ads to start?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: "You set your own ad budget. Ephermal never charges against your ad spend. Most early-stage stores start with $10 to $30 a day on Meta to test what converts. Ephermal's job is to make every dollar of that spend smarter: better audiences, better creatives, better signals on what to scale.",
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Do I need a Shopify store to use Ephermal?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. Ephermal connects directly to your Shopify store via OAuth. You authorise access from inside your Ephermal dashboard in about 90 seconds. Your products, pricing, inventory and store data sync instantly and stay live.',
           },
         },
         {
@@ -179,7 +202,15 @@ const jsonLd = {
           name: 'Which ad platforms does Ephermal support?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Ephermal fully supports Meta Ads (Facebook and Instagram) and Google Ads (Search, Shopping, Performance Max). Campaigns are created via official APIs from a single dashboard.',
+            text: 'All plans include Meta Ads automation (Facebook and Instagram) via the official Meta Marketing API. Growth and Scale plans also unlock Google Search Ads via the Google Ads API. Everything is managed from one dashboard.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How does the AI content engine work?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Ephermal reads your live product catalog and generates creator-style ad scripts, hooks, headlines, and copy tailored to your actual products. These are not templates. Every brief is written specifically for your store and audience. You review and approve before anything goes live.',
           },
         },
         {
@@ -187,15 +218,7 @@ const jsonLd = {
           name: 'Can I approve creatives before they launch?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Yes — every creative generated by Ephermal goes through your approval queue first. You can approve, reject, or request a regeneration before anything is published.',
-          },
-        },
-        {
-          '@type': 'Question',
-          name: 'How is billing handled?',
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: 'Billing is handled directly through Ephermal via Stripe. You subscribe monthly and can cancel any time from your dashboard. No agency fees, no hidden costs.',
+            text: 'Yes. Every creative generated by Ephermal goes through your approval queue first. You can approve, reject, or request a regeneration before anything is published to your ad accounts. You stay in full control at all times.',
           },
         },
         {
@@ -203,7 +226,7 @@ const jsonLd = {
           name: 'What is Competitor Radar?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Competitor Radar uses the Meta Ad Library to surface active ads from competitors in your niche. The AI then analyses their hooks, angles, and CTAs so you can build counter-campaigns.',
+            text: 'Competitor Radar searches the Meta Ad Library for active ads in your niche. You enter a keyword or brand name and it surfaces what competitors are running right now. The AI then breaks down the hook type, target emotion, and CTA, then writes a counter-strategy so you can position against them before you spend a dollar.',
           },
         },
         {
@@ -211,7 +234,15 @@ const jsonLd = {
           name: 'How does profit-aware campaign optimisation work?',
           acceptedAnswer: {
             '@type': 'Answer',
-            text: 'Enter your cost of goods (COGS) per product and Ephermal optimises campaigns for actual net profit — not just ROAS. A 5x ROAS on a 10% margin product is worse than 2x on a 70% margin product. Ephermal knows the difference.',
+            text: 'Enter your cost of goods (COGS) for each product and Ephermal recalculates true profitability per campaign, not just revenue or ROAS. A 5x ROAS on a 10% margin product is less profitable than 2x on a 70% margin product. Profit Tracker makes that visible, and Ephermal\'s AI uses it to recommend where to shift budget. You review and approve every change before it goes live.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'How is billing handled?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Billing is handled directly through Ephermal via Stripe, separate from your Shopify billing. You subscribe monthly and can cancel any time from your dashboard. No agency fees, no hidden costs, no minimum contract.',
           },
         },
       ],

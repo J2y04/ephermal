@@ -1,6 +1,6 @@
 # Ephermal
 
-> Ephermal is an AI advertising agent for Shopify merchants. It automates Meta Ads and Google Ads — generating creatives, launching campaigns, and optimising ROAS — from a single dashboard, without an agency.
+> Ephermal is an AI advertising agent for Shopify merchants, developed by Interlink Platforms. It automates Meta Ads and Google Ads, generating creatives, launching campaigns, and optimising ROAS, from a single dashboard, without an agency.
 
 ## What Ephermal Does
 
@@ -8,9 +8,9 @@ Ephermal connects to a Shopify store via OAuth and reads the live product catalo
 
 1. **Store Analyzer** — reads live catalog, pricing, and bestsellers; generates a permanent brand-intelligence brief (summary, target audience, brand vibe, color palette, UGC creative direction)
 2. **Copy Agent** — writes headlines, hooks, and ad copy per product, grounded in the store's brand brief
-3. **UGC Agent** — generates creator-style video and image ad scripts
+3. **UGC Agent** — generates creator-style ad scripts, hooks, and copy for video and image ads (script and copy generation today; automated video rendering is on the roadmap)
 4. **Meta Agent** — creates and manages Facebook and Instagram campaigns via the Meta Marketing API
-5. **Google Agent** — handles Search, Shopping, and Performance Max via the Google Ads API
+5. **Google Agent** — creates and manages Google Search campaigns via the Google Ads API
 6. **Audience Agent** — builds custom and lookalike audiences from store data
 7. **Analytics Agent** — tracks ROAS, MRR, and ad spend across platforms in one unified dashboard
 
@@ -32,8 +32,9 @@ All plans billed monthly. Cancel any time.
 
 ## Key Facts
 
+- Developed by: Interlink Platforms
 - Platform: Web SaaS (dashboard at ephermal.app)
-- Integrations: Shopify, Meta Ads (Facebook/Instagram), Google Ads, Higgsfield AI (UGC video generation)
+- Integrations: Shopify, Meta Ads (Facebook/Instagram), Google Search Ads
 - Authentication: Shopify OAuth, Meta OAuth, Google OAuth
 - AI stack: Claude (Anthropic) for brand strategy, store intelligence, ad copywriting, and budget calculations
 - Data storage: EU-hosted (Supabase EU region), GDPR compliant
