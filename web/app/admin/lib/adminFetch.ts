@@ -96,6 +96,6 @@ export async function adminFetch<T = unknown>(
 
     return { ok: true, status: res.status, data: data as T, error: null };
   } catch {
-    return { ok: false, status: 0, data: null, error: 'Network error — could not reach admin-api' };
+    return { ok: false, status: 0, data: null, error: 'Network error: could not reach admin-api' };
   }
 }

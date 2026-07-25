@@ -303,19 +303,44 @@ interface ClaudeMessage {
   content: string | ClaudeContentBlock[];
 }
 
+/** Fetch the user's saved store intelligence brief (from store-intelligence/index.ts), if one exists. */
+async function getStoreBrief(userId: string): Promise<Record<string, unknown> | null> {
+  const { data } = await supabase
+    .from('store_intelligence')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return data ?? null;
+}
+
 /** Runs the tool-use loop for the chat action. Returns the final reply text + tool call trail. */
 async function runChatWithTools(
   rawToken: string,
+  userId: string,
   message: string,
   context: unknown,
 ): Promise<{ reply: string; tool_calls: ToolCallTrail[] }> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
 
+  const brief = await getStoreBrief(userId);
+  const briefStr = brief
+    ? `\n\nSaved store analysis for this user (from Store Analysis, treat as real grounded context about their brand, do not re-derive or contradict it unless a tool call shows it's out of date):
+Summary: ${brief.summary ?? 'n/a'}
+Target audience: ${brief.target_audience ?? 'n/a'}
+Ad opportunities: ${brief.ad_opportunities ?? 'n/a'}
+Meta strategy: ${brief.meta_strategy ?? 'n/a'}
+Key product categories: ${Array.isArray(brief.products) ? brief.products.join(', ') : 'n/a'}
+Keywords: ${Array.isArray(brief.keywords) ? brief.keywords.join(', ') : 'n/a'}
+Brand vibe: ${brief.brand_vibe ?? 'n/a'}
+UGC visual direction: ${brief.ugc_visual ?? 'n/a'}
+UGC tone: ${brief.ugc_tone ?? 'n/a'}`
+    : `\n\nThis user has not run Store Analysis yet, so there is no saved brand brief. Do not invent brand details, target audience, or product info. If the conversation would benefit from that context, suggest they run Store Analysis first.`;
+
   const contextStr = context ? `\n\nDashboard context: ${JSON.stringify(context, null, 2)}` : '';
   const system = `You are Auren, Ephermal's AI advertising expert — an elite Meta Ads, Google Ads, and Shopify growth specialist.
 You help Shopify store owners maximize ROAS, reduce wasted ad spend, and scale winning campaigns.
 
-You have real tools to read this specific user's live campaign/account data and to prepare, launch (always paused), pause, enable, and scale campaigns.
+You have real tools to read this specific user's live campaign/account data and to prepare, launch (always paused), pause, enable, and scale campaigns.${briefStr}
 
 MANDATORY: before giving ANY strategic recommendation (what approach to take, what budget to set, what audience to target, whether to scale or pause, what's underperforming and why), call the relevant tool(s) FIRST — get_meta_overview / get_meta_campaigns / get_google_campaigns / analyze_roas / get_profit_report / calculate_budget_recommendation, as applicable — and ground your answer in the real numbers that come back. Never answer a strategy question from generic knowledge alone when a tool could tell you what is actually happening in this account. Chain multiple tool calls in one turn when the question touches more than one platform or metric (e.g. pull both Meta and Google campaigns before comparing budget allocation).
 If a tool call reveals the platform isn't connected or there's no data yet, say so plainly and tell the user what to connect — don't fall back to hypothetical advice as if it were their real numbers.
@@ -434,7 +459,7 @@ Deno.serve(async (req) => {
         const message = String(body.message ?? '').trim();
         if (!message) return errResponse('message is required', 400, origin);
 
-        const { reply, tool_calls } = await runChatWithTools(rawToken, message, body.context);
+        const { reply, tool_calls } = await runChatWithTools(rawToken, userId, message, body.context);
         result = { reply, tool_calls, used: newCount, limit };
         break;
       }

@@ -1,10 +1,10 @@
 'use client';
 
 const FEATURES = [
-  'Official Shopify Admin API — no scraping or middleware',
+  'Official Shopify Admin API, no scraping or middleware',
   'Real-time product, pricing and inventory sync',
   'Bestseller and collection detection for smarter ads',
-  'Secure OAuth 2.0 — your store token never leaves Supabase',
+  'Secure OAuth 2.0, your store token never leaves Supabase',
 ];
 
 export default function ShopifyReveal() {
@@ -39,7 +39,7 @@ export default function ShopifyReveal() {
         className="section-sub"
         style={{ maxWidth: '560px', margin: '0 auto 36px', animation: 'shopifySlideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.28s both' }}
       >
-        Ephermal connects directly to the official Shopify Admin API — reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
+        Ephermal connects directly to the official Shopify Admin API, reading your live inventory, pricing, and bestsellers in real time. When your store updates, your ads update. No manual syncing, no stale creatives, ever.
       </p>
 
       {/* Platform cards */}

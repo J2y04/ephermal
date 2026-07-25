@@ -81,6 +81,8 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .stat-icon svg{width:17px;height:17px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .stat-value{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:4px}
 .stat-label{font-size:12px;color:var(--muted)}
+.jargon-help{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;border:1px solid var(--border);color:var(--muted);font-size:9px;font-weight:700;text-decoration:none;margin-left:5px;vertical-align:1px;line-height:1;transition:all .2s}
+.jargon-help:hover{color:var(--primary);border-color:var(--primary)}
 .grid-2{display:grid;grid-template-columns:1fr 360px;gap:20px;margin-bottom:28px}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-widget);box-shadow:var(--shadow-ambient), var(--shadow-contact), var(--hairline-top);overflow:hidden}
 .panel-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
@@ -734,14 +736,17 @@ select.form-input{cursor:pointer}
     <div class="nav-item" data-page="billing" onclick="navigate('billing')">
       <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>Billing
     </div>
+    <a class="nav-item" href="/docs" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Docs &amp; Help
+    </a>
   </div>
   <div class="sidebar-footer">
     <div class="credits-bar-wrap" id="credits-bar-wrap">
-      <div class="credits-bar-label"><span>UGC Credits</span><strong id="credits-label">— / —</strong></div>
+      <div class="credits-bar-label"><span>UGC Credits</span><strong id="credits-label">- / -</strong></div>
       <div class="credits-bar-track"><div class="credits-bar-fill" id="credits-bar-fill" style="width:0%;background:var(--primary)"></div></div>
     </div>
     <div class="credits-bar-wrap" id="ai-credits-bar-wrap" style="margin-top:6px">
-      <div class="credits-bar-label"><span>AI Messages</span><strong id="ai-credits-label">— / —</strong></div>
+      <div class="credits-bar-label"><span>AI Messages</span><strong id="ai-credits-label">- / -</strong></div>
       <div class="credits-bar-track"><div class="credits-bar-fill" id="ai-credits-bar-fill" style="width:0%;background:var(--accent)"></div></div>
     </div>
     <div class="user-pill" style="margin-top:8px">
@@ -751,7 +756,7 @@ select.form-input{cursor:pointer}
         <div id="role-badge-wrap" style="display:none"><span class="role-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="vertical-align:-1px;flex-shrink:0"><path d="M2 20h20M5 20l-1-8 5 4.5 3-7.5 3 7.5 5-4.5-1 8"/></svg> CEO</span></div>
         <div class="email" id="sidebar-email"></div>
       </div>
-      <span class="plan-badge" id="plan-badge" style="background:rgba(136,146,176,.15);color:var(--muted)">—</span>
+      <span class="plan-badge" id="plan-badge" style="background:rgba(136,146,176,.15);color:var(--muted)">-</span>
     </div>
   </div>
 </aside>
@@ -813,7 +818,7 @@ select.form-input{cursor:pointer}
         </div>
         <div class="paywall-lock" id="ai-paywall" style="display:none">
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <strong>Auren — Growth Plan</strong>
+          <strong>Auren: Growth Plan</strong>
           <span>Your AI advertising copilot with full context on your store, campaigns, and performance. Available on Growth and Scale plans.</span>
           <button class="btn-upgrade" onclick="showUpgradeModal('ai')">Upgrade to Growth</button>
         </div>
@@ -844,21 +849,21 @@ select.form-input{cursor:pointer}
       <div class="stat-row">
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div>
-          <div class="stat-value" id="stat-roas">—</div><div class="stat-label">Average ROAS · 30d</div>
+          <div class="stat-value" id="stat-roas">-</div><div class="stat-label">Average ROAS · 30d <a href="/docs#roas" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div>
           <div class="stat-chart-mini" id="stat-roas-chart"></div>
         </div>
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div>
-          <div class="stat-value" id="stat-spend">—</div><div class="stat-label">Total Ad Spend · all time</div>
+          <div class="stat-value" id="stat-spend">-</div><div class="stat-label">Total Ad Spend · all time <a href="/docs#spend" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div>
           <div class="stat-chart-mini" id="stat-spend-chart"></div>
         </div>
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" style="stroke:var(--primary)"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div></div>
-          <div class="stat-value" id="stat-creatives">—</div><div class="stat-label">UGC Ads Created</div>
+          <div class="stat-value" id="stat-creatives">-</div><div class="stat-label">UGC Ads Created <a href="/docs#creative" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div>
         </div>
         <div class="stat-card">
           <div class="stat-top"><div class="stat-icon" style="background:rgba(52,211,153,0.12)"><svg viewBox="0 0 24 24" style="stroke:#34d399"><polyline points="20 6 9 17 4 12"/></svg></div></div>
-          <div class="stat-value" id="stat-conversions">—</div><div class="stat-label">Total Conversions · 30d</div>
+          <div class="stat-value" id="stat-conversions">-</div><div class="stat-label">Total Conversions · 30d <a href="/docs#conversions" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div>
           <div class="stat-chart-mini" id="stat-conversions-chart"></div>
         </div>
       </div>
@@ -909,14 +914,14 @@ select.form-input{cursor:pointer}
     <div class="page" id="page-analytics">
       <div class="paywall-wrap" id="analytics-paywall-wrap">
       <div class="stat-row">
-        <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div><div class="stat-value" id="a-roas">—</div><div class="stat-label">Avg ROAS</div><div class="a-chart-mini" id="a-roas-chart"></div></div>
-        <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div></div><div class="stat-value" id="a-impressions">—</div><div class="stat-label">Impressions</div></div>
-        <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" style="stroke:var(--primary)"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13 12H3"/></svg></div></div><div class="stat-value" id="a-clicks">—</div><div class="stat-label">Clicks</div></div>
-        <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(52,211,153,0.12)"><svg viewBox="0 0 24 24" style="stroke:#34d399"><polyline points="20 6 9 17 4 12"/></svg></div></div><div class="stat-value" id="a-conversions">—</div><div class="stat-label">Conversions</div><div class="a-chart-mini" id="a-conversions-chart"></div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div></div><div class="stat-value" id="a-roas">-</div><div class="stat-label">Avg ROAS <a href="/docs#roas" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="a-chart-mini" id="a-roas-chart"></div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.12)"><svg viewBox="0 0 24 24" style="stroke:#06d6c7"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div></div><div class="stat-value" id="a-impressions">-</div><div class="stat-label">Impressions <a href="/docs#impressions" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" style="stroke:var(--primary)"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13 12H3"/></svg></div></div><div class="stat-value" id="a-clicks">-</div><div class="stat-label">Clicks <a href="/docs#clicks" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div></div>
+        <div class="stat-card"><div class="stat-top"><div class="stat-icon" style="background:rgba(52,211,153,0.12)"><svg viewBox="0 0 24 24" style="stroke:#34d399"><polyline points="20 6 9 17 4 12"/></svg></div></div><div class="stat-value" id="a-conversions">-</div><div class="stat-label">Conversions <a href="/docs#conversions" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="a-chart-mini" id="a-conversions-chart"></div></div>
       </div>
       <div class="charts-grid">
         <div class="panel">
-          <div class="panel-head"><div class="panel-title">Campaign ROAS Performance</div><button class="panel-action" onclick="renderCharts()">Refresh ↺</button></div>
+          <div class="panel-head"><div class="panel-title">Campaign ROAS Performance <a href="/docs#roas" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><button class="panel-action" onclick="renderCharts()">Refresh ↺</button></div>
           <div class="chart-inner" id="roas-chart"><div class="empty-state"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><p>No campaign data</p></div></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:20px">
@@ -976,7 +981,7 @@ select.form-input{cursor:pointer}
 
       <!-- Live performance (Meta/Google reported stats for launched campaigns) -->
       <div class="panel fade-in">
-        <div class="panel-head"><div class="panel-title">Live Performance</div><button id="btn-roas-optimize" class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:var(--primary);font-weight:700" onclick="runROASOptimizer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="vertical-align:-1px;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS</button></div>
+        <div class="panel-head"><div class="panel-title">Live Performance <a href="/docs#roas" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><button id="btn-roas-optimize" class="panel-action" style="background:rgba(6,214,199,0.12);border:1px solid rgba(6,214,199,0.25);color:var(--primary);font-weight:700" onclick="runROASOptimizer()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12" style="vertical-align:-1px;margin-right:4px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS</button></div>
         <div class="campaign-table">
           <div class="campaign-row header"><span>Campaign</span><span>ROAS</span><span>Spend</span><span>CTR</span><span>Status</span><span>On/Off</span></div>
           <div id="campaigns-body-full"><div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div></div>
@@ -985,7 +990,7 @@ select.form-input{cursor:pointer}
         <div class="paywall-lock" id="launch-paywall" style="display:none">
           <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
           <strong>Campaign Launcher</strong>
-          <span>AI writes the copy, picks the audience and launches to Meta with zero ad manager. Available on every plan — Growth adds Google Ads launches.</span>
+          <span>AI writes the copy, picks the audience and launches to Meta with zero ad manager. Available on every plan. Growth adds Google Ads launches.</span>
           <button class="btn-upgrade" onclick="showUpgradeModal('launch')">Upgrade</button>
         </div>
       </div>
@@ -997,7 +1002,7 @@ select.form-input{cursor:pointer}
       <div class="panel fade-in" style="margin-bottom:20px">
         <div class="panel-head">
           <div style="display:flex;align-items:center;gap:10px">
-            <div class="panel-title">Creative Fatigue Radar</div>
+            <div class="panel-title">Creative Fatigue Radar <a href="/docs#creative-fatigue" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div>
             <span id="fatigue-alert-badge" style="display:none;background:rgba(248,113,113,.15);color:var(--danger);font-size:11px;font-weight:700;padding:3px 9px;border-radius:6px;border:1px solid rgba(248,113,113,.25)">Action needed</span>
           </div>
           <button class="panel-action" onclick="runFatigueAnalysis()" id="btn-fatigue-refresh">Analyse ↺</button>
@@ -1012,7 +1017,7 @@ select.form-input{cursor:pointer}
       <!-- Creatives list -->
       <div class="panel fade-in">
         <div class="panel-head">
-          <div class="panel-title">All Creatives</div>
+          <div class="panel-title">All Creatives <a href="/docs#creative" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div>
           <div style="display:flex;gap:10px;align-items:center">
             <select id="creative-filter" onchange="loadAllCreatives()" class="form-input" style="padding:6px 10px;width:auto;cursor:pointer">
               <option value="">All</option>
@@ -1043,23 +1048,23 @@ select.form-input{cursor:pointer}
 
       <div class="stat-row fade-in" style="margin-bottom:20px">
         <div class="stat-card">
-          <div class="stat-top"><div class="stat-label">MRR (30-day revenue)</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div>
-          <div class="stat-value" id="mrr-stat-mrr">—</div>
-          <div class="stat-label" id="mrr-stat-growth">—</div>
+          <div class="stat-top"><div class="stat-label">MRR (30-day revenue) <a href="/docs#mrr" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div>
+          <div class="stat-value" id="mrr-stat-mrr">-</div>
+          <div class="stat-label" id="mrr-stat-growth">-</div>
         </div>
         <div class="stat-card">
-          <div class="stat-top"><div class="stat-label">Total Ad Spend (30d)</div><div class="stat-icon" style="background:rgba(251,191,36,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div>
-          <div class="stat-value" id="mrr-stat-spend">—</div>
+          <div class="stat-top"><div class="stat-label">Total Ad Spend (30d) <a href="/docs#spend" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="stat-icon" style="background:rgba(251,191,36,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div>
+          <div class="stat-value" id="mrr-stat-spend">-</div>
           <div class="stat-label">Meta + Google combined</div>
         </div>
         <div class="stat-card">
-          <div class="stat-top"><div class="stat-label">Blended ROAS</div><div class="stat-icon" style="background:rgba(52,211,153,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div></div>
-          <div class="stat-value" id="mrr-stat-roas">—</div>
+          <div class="stat-top"><div class="stat-label">Blended ROAS <a href="/docs#blended-roas" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="stat-icon" style="background:rgba(52,211,153,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div></div>
+          <div class="stat-value" id="mrr-stat-roas">-</div>
           <div class="stat-label">Revenue ÷ ad spend, last 30 days</div>
         </div>
         <div class="stat-card">
-          <div class="stat-top"><div class="stat-label">Orders (30d)</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div></div>
-          <div class="stat-value" id="mrr-stat-orders">—</div>
+          <div class="stat-top"><div class="stat-label">Orders (30d) <a href="/docs#orders" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div></div>
+          <div class="stat-value" id="mrr-stat-orders">-</div>
           <div class="stat-label">Paid Shopify orders</div>
         </div>
       </div>
@@ -1125,7 +1130,7 @@ select.form-input{cursor:pointer}
           <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
             <div>
               <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Brand Vibe</div>
-              <span class="vibe-badge" id="ar-vibe">—</span>
+              <span class="vibe-badge" id="ar-vibe">-</span>
             </div>
             <div style="font-size:11px;color:var(--muted);background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:5px 11px;font-weight:600">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="11" height="11" style="vertical-align:-1px;margin-right:5px"><path d="M12 3l1.9 5.8H20l-4.9 3.6 1.9 5.8L12 14.6l-5 3.6 1.9-5.8L4 8.8h6.1z"/></svg>Brand identity saved for UGC generation
@@ -1142,8 +1147,8 @@ select.form-input{cursor:pointer}
           <div class="analysis-section" style="margin-bottom:0">
             <h4>Typography Direction</h4>
             <div id="ar-typography" style="display:flex;flex-direction:column;gap:8px">
-              <div style="font-size:13px;color:var(--text)" id="ar-font-heading">—</div>
-              <div style="font-size:12px;color:var(--muted)" id="ar-font-body">—</div>
+              <div style="font-size:13px;color:var(--text)" id="ar-font-heading">-</div>
+              <div style="font-size:12px;color:var(--muted)" id="ar-font-body">-</div>
               <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px" id="ar-font-chips"></div>
             </div>
           </div>
@@ -1155,23 +1160,23 @@ select.form-input{cursor:pointer}
           <div class="analysis-grid" style="gap:20px">
             <div>
               <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Visual Style</div>
-              <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0" id="ar-ugc-visual">—</p>
+              <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0" id="ar-ugc-visual">-</p>
             </div>
             <div>
               <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Tone &amp; Energy</div>
-              <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0" id="ar-ugc-tone">—</p>
+              <p style="font-size:13px;color:var(--text);line-height:1.65;margin:0" id="ar-ugc-tone">-</p>
             </div>
           </div>
         </div>
 
         <!-- Standard analysis sections -->
         <div class="analysis-grid" style="margin-bottom:20px">
-          <div class="analysis-section" style="margin-bottom:0"><h4>Store Summary</h4><p id="ar-summary">—</p></div>
-          <div class="analysis-section" style="margin-bottom:0"><h4>Target Audience</h4><p id="ar-audience">—</p></div>
+          <div class="analysis-section" style="margin-bottom:0"><h4>Store Summary</h4><p id="ar-summary">-</p></div>
+          <div class="analysis-section" style="margin-bottom:0"><h4>Target Audience</h4><p id="ar-audience">-</p></div>
         </div>
         <div class="analysis-section"><h4>Top Products / Categories</h4><div class="analysis-tags" id="ar-products"></div></div>
-        <div class="analysis-section"><h4>Ad Opportunities</h4><p id="ar-opportunities">—</p></div>
-        <div class="analysis-section" style="margin-bottom:0"><h4>Recommended Meta Ad Strategy</h4><p id="ar-strategy">—</p></div>
+        <div class="analysis-section"><h4>Ad Opportunities</h4><p id="ar-opportunities">-</p></div>
+        <div class="analysis-section" style="margin-bottom:0"><h4>Recommended Meta Ad Strategy</h4><p id="ar-strategy">-</p></div>
       </div>
     </div>
 
@@ -1192,23 +1197,23 @@ select.form-input{cursor:pointer}
         <!-- Stats row -->
         <div class="stat-row fade-in" style="margin-bottom:20px">
           <div class="stat-card">
-            <div class="stat-top"><div class="stat-label">Pixel Status</div><div class="stat-icon" style="background:rgba(52,211,153,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div></div>
-            <div class="stat-value" id="aud-stat-pixel" style="font-size:20px">—</div>
+            <div class="stat-top"><div class="stat-label">Pixel Status <a href="/docs#pixel" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="stat-icon" style="background:rgba(52,211,153,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div></div>
+            <div class="stat-value" id="aud-stat-pixel" style="font-size:20px">-</div>
             <div class="stat-label" id="aud-stat-pixel-sub">Checking…</div>
           </div>
           <div class="stat-card">
-            <div class="stat-top"><div class="stat-label">Custom Audiences</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div>
-            <div class="stat-value" id="aud-stat-count">—</div>
+            <div class="stat-top"><div class="stat-label">Custom Audiences <a href="/docs#audience" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div></div>
+            <div class="stat-value" id="aud-stat-count">-</div>
             <div class="stat-label">Audiences created</div>
           </div>
           <div class="stat-card">
             <div class="stat-top"><div class="stat-label">Largest Reach</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div></div>
-            <div class="stat-value" id="aud-stat-largest">—</div>
+            <div class="stat-value" id="aud-stat-largest">-</div>
             <div class="stat-label">Estimated people</div>
           </div>
           <div class="stat-card">
-            <div class="stat-top"><div class="stat-label">Lookalikes</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg></div></div>
-            <div class="stat-value" id="aud-stat-lookalikes">—</div>
+            <div class="stat-top"><div class="stat-label">Lookalikes <a href="/docs#lookalike" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><path d="M11 18H8a2 2 0 0 1-2-2V9"/></svg></div></div>
+            <div class="stat-value" id="aud-stat-lookalikes">-</div>
             <div class="stat-label">Lookalike audiences</div>
           </div>
         </div>
@@ -1218,7 +1223,7 @@ select.form-input{cursor:pointer}
           <div class="panel-head">
             <div style="display:flex;align-items:center;gap:10px">
               <div style="width:8px;height:8px;border-radius:50%;background:var(--muted)" id="aud-pixel-dot"></div>
-              <div class="panel-title">Meta Pixel</div>
+              <div class="panel-title">Meta Pixel <a href="/docs#pixel" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div>
             </div>
             <button class="panel-action" onclick="loadPixelStatus();loadAudiences()" style="display:flex;align-items:center;gap:5px">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Refresh
@@ -1322,17 +1327,17 @@ select.form-input{cursor:pointer}
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px" class="fade-in">
           <div class="stat-card">
             <div class="stat-top"><div class="stat-label">Total Campaigns</div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div></div>
-            <div class="stat-value" id="bulk-stat-total">—</div>
+            <div class="stat-value" id="bulk-stat-total">-</div>
             <div class="stat-label">Loaded</div>
           </div>
           <div class="stat-card">
             <div class="stat-top"><div class="stat-label">Live</div><div class="stat-icon" style="background:rgba(52,211,153,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></div></div>
-            <div class="stat-value" id="bulk-stat-live" style="color:var(--success)">—</div>
+            <div class="stat-value" id="bulk-stat-live" style="color:var(--success)">-</div>
             <div class="stat-label">Active campaigns</div>
           </div>
           <div class="stat-card">
             <div class="stat-top"><div class="stat-label">Paused</div><div class="stat-icon" style="background:rgba(251,191,36,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg></div></div>
-            <div class="stat-value" id="bulk-stat-paused" style="color:var(--warning)">—</div>
+            <div class="stat-value" id="bulk-stat-paused" style="color:var(--warning)">-</div>
             <div class="stat-label">Paused campaigns</div>
           </div>
         </div>
@@ -1381,10 +1386,10 @@ select.form-input{cursor:pointer}
             <button class="btn-save" style="font-size:12px;padding:7px 14px" onclick="loadMultiStore()">↺ Refresh</button>
           </div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">
-            <div class="stat-card"><div class="stat-label">Connected Stores</div><div class="stat-value" id="ms-stores">—</div></div>
-            <div class="stat-card"><div class="stat-label">Total Spend</div><div class="stat-value" id="ms-spend">—</div></div>
-            <div class="stat-card"><div class="stat-label">Avg ROAS</div><div class="stat-value" id="ms-roas">—</div></div>
-            <div class="stat-card"><div class="stat-label">Total Campaigns</div><div class="stat-value" id="ms-campaigns">—</div></div>
+            <div class="stat-card"><div class="stat-label">Connected Stores</div><div class="stat-value" id="ms-stores">-</div></div>
+            <div class="stat-card"><div class="stat-label">Total Spend</div><div class="stat-value" id="ms-spend">-</div></div>
+            <div class="stat-card"><div class="stat-label">Avg ROAS</div><div class="stat-value" id="ms-roas">-</div></div>
+            <div class="stat-card"><div class="stat-label">Total Campaigns</div><div class="stat-value" id="ms-campaigns">-</div></div>
           </div>
           <div id="multistore-stores-list"><div class="empty-state"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><p>Connect stores in Settings to see them here</p></div></div>
         </div>
@@ -1468,26 +1473,26 @@ select.form-input{cursor:pointer}
           <div class="budget-ai-rec fade-in">
             <h4>AI Budget Recommendation</h4>
             <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Daily Total</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--accent)" id="bud-daily-total">—</div></div>
-              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Expected ROAS</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--success)" id="bud-roas">—</div></div>
-              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Projected Revenue</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary)" id="bud-revenue">—</div></div>
+              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Daily Total</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--accent)" id="bud-daily-total">-</div></div>
+              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Expected ROAS</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--success)" id="bud-roas">-</div></div>
+              <div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Projected Revenue</div><div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--primary)" id="bud-revenue">-</div></div>
             </div>
             <div class="budget-split-row">
               <div class="budget-platform-card">
                 <div class="budget-platform-label" style="color:#1877F2">Meta Ads</div>
-                <div class="budget-platform-amount" id="bud-meta-daily">—</div>
+                <div class="budget-platform-amount" id="bud-meta-daily">-</div>
                 <div style="font-size:12px;color:var(--muted);margin-top:2px">Prospecting + Retargeting + Brand</div>
                 <div class="budget-alloc-bar"><div class="budget-alloc-fill" id="bud-meta-bar" style="background:#1877F2;width:65%"></div></div>
               </div>
               <div class="budget-platform-card">
                 <div class="budget-platform-label" style="color:#4285F4">Google Ads</div>
-                <div class="budget-platform-amount" id="bud-google-daily">—</div>
+                <div class="budget-platform-amount" id="bud-google-daily">-</div>
                 <div style="font-size:12px;color:var(--muted);margin-top:2px">Search + Performance Max + Display</div>
                 <div class="budget-alloc-bar"><div class="budget-alloc-fill" id="bud-google-bar" style="background:#4285F4;width:35%"></div></div>
               </div>
             </div>
             <div style="margin-top:14px;padding:12px 14px;background:rgba(255,255,255,.03);border-radius:8px;border-left:2px solid var(--primary)">
-              <div style="font-size:12px;color:var(--muted);line-height:1.6" id="bud-reasoning">—</div>
+              <div style="font-size:12px;color:var(--muted);line-height:1.6" id="bud-reasoning">-</div>
             </div>
             <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
               <button class="btn-save" onclick="applyBudgetRec()" id="bud-apply-btn" style="padding:9px 20px;font-size:13px;display:none">Apply to Campaigns</button>
@@ -1937,7 +1942,7 @@ select.form-input{cursor:pointer}
     <div class="form-group" style="margin-bottom:10px">
       <label class="form-label">Product (optional, prefills ad copy)</label>
       <select class="form-input" id="cb-product-select" onchange="_cbFillFromProduct(this.value)">
-        <option value="">— Pick a synced product —</option>
+        <option value="">- Pick a synced product -</option>
       </select>
     </div>
 
@@ -1966,10 +1971,10 @@ select.form-input{cursor:pointer}
   <div class="modal" style="max-width:620px;max-height:88vh;overflow-y:auto">
     <button class="modal-close" onclick="closeCampaignReview()">×</button>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;padding-right:32px">
-      <div class="modal-title" id="cr-name" style="margin-bottom:0">—</div>
-      <span class="status-pill" id="cr-status">—</span>
+      <div class="modal-title" id="cr-name" style="margin-bottom:0">-</div>
+      <span class="status-pill" id="cr-status">-</span>
     </div>
-    <div class="modal-sub" id="cr-meta">—</div>
+    <div class="modal-sub" id="cr-meta">-</div>
 
     <div id="cr-ads-list" style="margin-bottom:16px"></div>
 
@@ -1983,6 +1988,20 @@ select.form-input{cursor:pointer}
     <div class="modal-actions" style="justify-content:space-between">
       <button class="btn-secondary" style="color:var(--danger);border-color:rgba(248,113,113,.3)" onclick="deleteCampaignDraft()" id="cr-delete-btn">Delete Draft</button>
       <button class="btn-secondary" onclick="closeCampaignReview()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROAS AI OPTIMIZER MODAL -->
+<div class="modal-overlay" id="roas-ai-modal">
+  <div class="modal" style="max-width:640px;max-height:88vh;overflow-y:auto">
+    <button class="modal-close" onclick="document.getElementById('roas-ai-modal').classList.remove('open')">×</button>
+    <div class="modal-title">Optimize ROAS</div>
+    <div class="modal-sub" id="roas-ai-summary">Analyzing your campaigns against real revenue and spend...</div>
+    <div id="roas-ai-list" style="margin:16px 0;display:flex;flex-direction:column;gap:10px"></div>
+    <div class="modal-actions" style="justify-content:space-between">
+      <button class="btn-secondary" onclick="document.getElementById('roas-ai-modal').classList.remove('open')">Close</button>
+      <button class="btn-save" id="roas-ai-apply-btn" onclick="applyRoasOptimizer()" style="display:none">Apply pause/scale actions</button>
     </div>
   </div>
 </div>
@@ -2039,22 +2058,22 @@ select.form-input{cursor:pointer}
   <div class="modal" style="max-width:560px">
     <button class="modal-close" onclick="document.getElementById('camp-modal').classList.remove('open')">×</button>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding-right:32px">
-      <div class="modal-title" id="camp-modal-name" style="margin-bottom:0">—</div>
-      <span class="status-pill" id="camp-modal-status">—</span>
+      <div class="modal-title" id="camp-modal-name" style="margin-bottom:0">-</div>
+      <span class="status-pill" id="camp-modal-status">-</span>
     </div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:20px" id="camp-modal-sub">Meta Ads Campaign</div>
     <div class="camp-detail-grid">
-      <div class="camp-stat-box"><div class="label">ROAS</div><div class="val" id="cd-roas">—</div></div>
-      <div class="camp-stat-box"><div class="label">CTR</div><div class="val" id="cd-ctr">—</div></div>
-      <div class="camp-stat-box"><div class="label">Total Spend</div><div class="val" id="cd-spend">—</div></div>
-      <div class="camp-stat-box"><div class="label">Conversions</div><div class="val" id="cd-conv">—</div></div>
-      <div class="camp-stat-box"><div class="label">Impressions</div><div class="val" id="cd-impr">—</div></div>
-      <div class="camp-stat-box"><div class="label">Clicks</div><div class="val" id="cd-clicks">—</div></div>
+      <div class="camp-stat-box"><div class="label">ROAS</div><div class="val" id="cd-roas">-</div></div>
+      <div class="camp-stat-box"><div class="label">CTR</div><div class="val" id="cd-ctr">-</div></div>
+      <div class="camp-stat-box"><div class="label">Total Spend</div><div class="val" id="cd-spend">-</div></div>
+      <div class="camp-stat-box"><div class="label">Conversions</div><div class="val" id="cd-conv">-</div></div>
+      <div class="camp-stat-box"><div class="label">Impressions</div><div class="val" id="cd-impr">-</div></div>
+      <div class="camp-stat-box"><div class="label">Clicks</div><div class="val" id="cd-clicks">-</div></div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-top:1px solid var(--border)">
       <div>
         <div style="font-size:13px;font-weight:600" id="cd-budget-label">Daily Budget</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="cd-budget">—</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="cd-budget">-</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
         <span style="font-size:13px;color:var(--muted)" id="cd-toggle-label">Active</span>
@@ -2089,7 +2108,7 @@ select.form-input{cursor:pointer}
       <div style="display:flex;justify-content:space-between;align-items:center">
         <div>
           <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">New Daily Budget</div>
-          <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--accent)" id="apply-budget-amount">—</div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;color:var(--accent)" id="apply-budget-amount">-</div>
         </div>
         <div id="apply-budget-platform-badge" style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px"></div>
       </div>
@@ -2158,7 +2177,7 @@ select.form-input{cursor:pointer}
       </select>
     </div>
     <div style="margin-top:16px;padding:12px 14px;background:rgba(6,214,199,0.06);border:1px solid rgba(6,214,199,0.15);border-radius:10px;font-size:12px;color:var(--muted);line-height:1.5" id="ugc-credits-info">
-      <span style="color:var(--primary);font-weight:600">1 UGC credit</span> will be used · <span id="ugc-credits-remaining">—</span> remaining this month.
+      <span style="color:var(--primary);font-weight:600">1 UGC credit</span> will be used · <span id="ugc-credits-remaining">-</span> remaining this month.
     </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeUGCModal()">Cancel</button>
@@ -2180,7 +2199,7 @@ select.form-input{cursor:pointer}
     <div class="form-group" id="assign-campaign-select-wrap" style="margin:20px 0 24px">
       <label class="form-label">Campaign</label>
       <select class="form-input" id="assign-campaign-select" onchange="document.getElementById('btn-assign-campaign').disabled = !this.value">
-        <option value="">— Select a campaign —</option>
+        <option value="">- Select a campaign -</option>
       </select>
     </div>
     <div class="modal-actions">
@@ -2702,7 +2721,7 @@ function navigate(page) {
       // Show skeleton on analytics stat cards if data hasn't arrived yet
       ['a-roas','a-impressions','a-clicks','a-conversions'].forEach(id => {
         const el = document.getElementById(id);
-        if (el && (!el.textContent || el.textContent === '—')) {
+        if (el && (!el.textContent || el.textContent === '-')) {
           el.classList.add('skel');
           el.dataset.skelOrig = el.textContent;
           el.textContent = '';
@@ -3005,7 +3024,7 @@ async function confirmDeleteAccount() {
   }
 }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmt(n, d = 0) { if (n == null || n === '') return '—'; return Number(n).toLocaleString('en-US', {maximumFractionDigits:d, minimumFractionDigits:d}); }
+function fmt(n, d = 0) { if (n == null || n === '') return '-'; return Number(n).toLocaleString('en-US', {maximumFractionDigits:d, minimumFractionDigits:d}); }
 function timeSince(iso) { const s = Math.floor((Date.now()-new Date(iso))/1000); if (s<60) return `${s}s ago`; if (s<3600) return `${Math.floor(s/60)}m ago`; if (s<86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; }
 
 function animateCounter(el, target, formatter, duration = 1600) {
@@ -3138,7 +3157,7 @@ async function loadOverview() {
     if (!r || !r.ok) {
       ['stat-roas','stat-spend','stat-creatives','stat-conversions'].forEach(id => {
         const el = document.getElementById(id);
-        if (el) { el.classList.remove('skel'); el.textContent = el.dataset.skelOrig || '—'; }
+        if (el) { el.classList.remove('skel'); el.textContent = el.dataset.skelOrig || '-'; }
       });
       return;
     }
@@ -3153,9 +3172,9 @@ async function loadOverview() {
       if (el) el.classList.remove('skel');
     });
     const setVal = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
-    const roasStr = d.roas > 0 ? `${d.roas.toFixed(1)}×` : '—';
+    const roasStr = d.roas > 0 ? `${d.roas.toFixed(1)}×` : '-';
     setVal('stat-roas', roasStr); setVal('a-roas', roasStr);
-    setVal('stat-spend', d.total_spend > 0 ? `$${fmt(d.total_spend)}` : '—');
+    setVal('stat-spend', d.total_spend > 0 ? `$${fmt(d.total_spend)}` : '-');
     setVal('stat-creatives', fmt(d.total_creatives));
     setVal('stat-conversions', fmt(d.total_conversions));
     setVal('a-impressions', fmt(d.total_impressions));
@@ -3213,9 +3232,9 @@ function renderCampaignRow(c, _idx, readOnly) {
   campaignMap[c.id] = c;
   const colors = {meta:'#1877F2', both:'#06d6c7'};
   const color = colors[c.platform] || 'var(--muted)';
-  const roas = c.roas ? `<span class="camp-metric ${c.roas>=3?'green':'yellow'}">${c.roas.toFixed(1)}×</span>` : '<span class="camp-metric dim">—</span>';
-  const spend = c.total_spend > 0 ? `<span class="camp-metric">$${fmt(c.total_spend)}</span>` : '<span class="camp-metric dim">—</span>';
-  const ctr = c.ctr ? `<span class="camp-metric ${c.ctr>=2?'green':'yellow'}">${c.ctr.toFixed(1)}%</span>` : '<span class="camp-metric dim">—</span>';
+  const roas = c.roas ? `<span class="camp-metric ${c.roas>=3?'green':'yellow'}">${c.roas.toFixed(1)}×</span>` : '<span class="camp-metric dim">-</span>';
+  const spend = c.total_spend > 0 ? `<span class="camp-metric">$${fmt(c.total_spend)}</span>` : '<span class="camp-metric dim">-</span>';
+  const ctr = c.ctr ? `<span class="camp-metric ${c.ctr>=2?'green':'yellow'}">${c.ctr.toFixed(1)}%</span>` : '<span class="camp-metric dim">-</span>';
   const sc = ['live','paused','failed'].includes(c.status) ? c.status : 'draft';
   const isActive = c.status === 'live' || c.status === 'ACTIVE';
   const safeId = escHtml(String(c.id));
@@ -3238,16 +3257,16 @@ function openCampaignDetail(id) {
   set('camp-modal-sub', `Meta Ads · ${c.objective||'Campaign'} · ID ${c.id}`);
   const statusEl = document.getElementById('camp-modal-status');
   if (statusEl) { const sc = ['live','paused','failed'].includes(c.status)?c.status:'draft'; statusEl.className=`status-pill ${sc}`; statusEl.textContent=c.status; }
-  const roasVal = c.roas ? `${c.roas.toFixed(1)}×` : '—';
+  const roasVal = c.roas ? `${c.roas.toFixed(1)}×` : '-';
   const roasEl = document.getElementById('cd-roas');
   if (roasEl) { roasEl.textContent=roasVal; roasEl.className=`val ${c.roas>=3?'green':c.roas>=1.5?'yellow':'red'}`; }
   const ctrEl = document.getElementById('cd-ctr');
-  if (ctrEl) { ctrEl.textContent=c.ctr?`${c.ctr.toFixed(2)}%`:'—'; ctrEl.className=`val ${c.ctr>=2?'green':c.ctr>=1?'yellow':'red'}`; }
-  set('cd-spend', c.total_spend>0?`$${fmt(c.total_spend)}`:'—');
-  set('cd-conv', c.conversions>0?fmt(c.conversions):'—');
-  set('cd-impr', c.impressions>0?fmt(c.impressions):'—');
-  set('cd-clicks', c.clicks>0?fmt(c.clicks):'—');
-  set('cd-budget', c.daily_budget?`$${fmt(c.daily_budget)}/day`:c.lifetime_budget?`$${fmt(c.lifetime_budget)} lifetime`:'—');
+  if (ctrEl) { ctrEl.textContent=c.ctr?`${c.ctr.toFixed(2)}%`:'-'; ctrEl.className=`val ${c.ctr>=2?'green':c.ctr>=1?'yellow':'red'}`; }
+  set('cd-spend', c.total_spend>0?`$${fmt(c.total_spend)}`:'-');
+  set('cd-conv', c.conversions>0?fmt(c.conversions):'-');
+  set('cd-impr', c.impressions>0?fmt(c.impressions):'-');
+  set('cd-clicks', c.clicks>0?fmt(c.clicks):'-');
+  set('cd-budget', c.daily_budget?`$${fmt(c.daily_budget)}/day`:c.lifetime_budget?`$${fmt(c.lifetime_budget)} lifetime`:'-');
   set('cd-budget-label', c.lifetime_budget?'Lifetime Budget':'Daily Budget');
   const toggle = document.getElementById('cd-toggle');
   if (toggle) toggle.checked = c.status==='live'||c.status==='ACTIVE';
@@ -3336,23 +3355,79 @@ async function loadCampaigns() {
 
 // ── LAUNCH CAMPAIGN ───────────────────────────────────────────────────────────
 // ── ROAS OPTIMIZER ────────────────────────────────────────────────────────────
+const ROAS_OPTIMIZER_THRESHOLDS = { pause_below_roas: 1.5, scale_above_roas: 4.0, min_spend: 50 };
+const ROAS_ACTION_LABEL = { pause: 'Pause', scale: 'Scale up', hold: 'Hold', 'adjust-audience': 'Adjust audience', 'refresh-creative': 'Refresh creative' };
+const ROAS_ACTION_COLOR = { pause: 'var(--danger)', scale: 'var(--success)', hold: 'var(--muted)', 'adjust-audience': 'var(--warn, #f59e0b)', 'refresh-creative': 'var(--warn, #f59e0b)' };
+
+function renderRoasRecommendation(rec) {
+  const color = ROAS_ACTION_COLOR[rec.action] || 'var(--muted)';
+  const label = ROAS_ACTION_LABEL[rec.action] || rec.action;
+  return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px 14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:4px">
+      <span style="font-weight:600;font-size:13px">${escHtml(rec.campaign_name || rec.campaign_id || '')}</span>
+      <span style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.03em">${escHtml(label)}</span>
+    </div>
+    <div style="font-size:12.5px;color:var(--muted);line-height:1.5">${escHtml(rec.reason || '')}</div>
+  </div>`;
+}
+
 async function runROASOptimizer() {
   if (!canAccess('analytics')) { showUpgradeModal('analytics'); return; }
   const btn = document.getElementById('btn-roas-optimize');
-  if (btn) { btn.disabled = true; btn.textContent = 'Optimizing…'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Analyzing…'; }
+
+  const modal = document.getElementById('roas-ai-modal');
+  const summaryEl = document.getElementById('roas-ai-summary');
+  const listEl = document.getElementById('roas-ai-list');
+  const applyBtn = document.getElementById('roas-ai-apply-btn');
+  summaryEl.textContent = 'Analyzing your campaigns against real revenue and spend...';
+  listEl.innerHTML = '';
+  applyBtn.style.display = 'none';
+  modal.classList.add('open');
+
   try {
-    const r = await authFetch('/optimize/roas', { method: 'POST', body: JSON.stringify({ action: 'apply', pause_below_roas: 1.5, scale_above_roas: 4.0, min_spend: 50 }) });
+    const r = await authFetch('/optimize/roas', { method: 'POST', body: JSON.stringify({ action: 'analyze', ...ROAS_OPTIMIZER_THRESHOLDS }) });
+    if (!r || !r.ok) {
+      summaryEl.textContent = 'Could not analyze campaigns - check your Meta connection and try again.';
+      showToast('Optimizer failed - check credentials', 'error');
+      return;
+    }
+    const d = await r.json();
+    const recs = (d.ai && d.ai.campaigns && d.ai.campaigns.length) ? d.ai.campaigns : (d.actions || []);
+    if (!recs.length) {
+      summaryEl.textContent = 'No live campaigns with enough spend to analyze yet.';
+      return;
+    }
+    summaryEl.textContent = d.ai && d.ai.account_summary
+      ? d.ai.account_summary
+      : `${d.summary.pause} to pause, ${d.summary.scale} to scale, ${d.summary.hold} holding steady.`;
+    listEl.innerHTML = recs.map(renderRoasRecommendation).join('');
+    if (d.summary.pause + d.summary.scale > 0) applyBtn.style.display = '';
+  } catch(e) {
+    summaryEl.textContent = 'Optimizer error - try again in a moment.';
+    showToast('Optimizer error', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:5px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS'; }
+  }
+}
+
+async function applyRoasOptimizer() {
+  const applyBtn = document.getElementById('roas-ai-apply-btn');
+  applyBtn.disabled = true; applyBtn.textContent = 'Applying…';
+  try {
+    const r = await authFetch('/optimize/roas', { method: 'POST', body: JSON.stringify({ action: 'apply', ...ROAS_OPTIMIZER_THRESHOLDS }) });
     if (!r || !r.ok) { showToast('Optimizer failed - check credentials', 'error'); return; }
     const d = await r.json();
     const { paused = 0, scaled = 0, failed = 0 } = d.summary || {};
     let msg = `Optimizer ran: ${paused} paused, ${scaled} scaled up`;
     if (failed) msg += `, ${failed} errors`;
     showToast(msg, paused + scaled > 0 ? 'success' : 'info');
+    document.getElementById('roas-ai-modal').classList.remove('open');
     if (paused + scaled > 0) loadCampaigns();
   } catch(e) {
     showToast('Optimizer error', 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13" style="vertical-align:-2px;margin-right:5px"><path d="M13 2L3 14h9l-1 8 10-12h-9z"/></svg>Optimize ROAS'; }
+    applyBtn.disabled = false; applyBtn.textContent = 'Apply pause/scale actions';
   }
 }
 
@@ -3565,7 +3640,7 @@ async function openAssignCampaignModal(creativeId) {
   const assignBtn = document.getElementById('btn-assign-campaign');
   if (assignBtn) assignBtn.disabled = true;
   if (sel) {
-    sel.innerHTML = '<option value="">— Select a campaign —</option>';
+    sel.innerHTML = '<option value="">- Select a campaign -</option>';
     let campaigns = [];
     try {
       const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'list' }) });
@@ -3615,14 +3690,14 @@ function renderStoreIntelligence(d) {
   const resultEl = document.getElementById('analysis-result');
   if (!d) { resultEl.style.display = 'none'; return; }
 
-  document.getElementById('ar-summary').textContent       = d.summary          || '—';
-  document.getElementById('ar-audience').textContent      = d.target_audience  || '—';
-  document.getElementById('ar-opportunities').textContent = d.ad_opportunities || '—';
-  document.getElementById('ar-strategy').textContent      = d.meta_strategy    || '—';
-  document.getElementById('ar-products').innerHTML        = (d.products || []).map(p => `<span class="tag">${escHtml(p)}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">—</span>';
+  document.getElementById('ar-summary').textContent       = d.summary          || '-';
+  document.getElementById('ar-audience').textContent      = d.target_audience  || '-';
+  document.getElementById('ar-opportunities').textContent = d.ad_opportunities || '-';
+  document.getElementById('ar-strategy').textContent      = d.meta_strategy    || '-';
+  document.getElementById('ar-products').innerHTML        = (d.products || []).map(p => `<span class="tag">${escHtml(p)}</span>`).join('') || '<span style="color:var(--muted);font-size:13px">-</span>';
 
   // ── Brand vibe ───────────────────────────────────────────────────────────
-  document.getElementById('ar-vibe').textContent = d.brand_vibe || '—';
+  document.getElementById('ar-vibe').textContent = d.brand_vibe || '-';
 
   // ── Color palette swatches ──────────────────────────────────────────────
   const palette = d.color_palette || {};
@@ -3635,7 +3710,7 @@ function renderStoreIntelligence(d) {
   ];
   document.getElementById('ar-colors').innerHTML = swatchDefs.map(({key,label}) => {
     const hex = palette[key] || '';
-    if (!hex || hex === '—') return '';
+    if (!hex || hex === '-') return '';
     // Validate hex before CSS injection — only allow #RGB / #RRGGBB / #RRGGBBAA
     const safeHex = /^#[0-9A-Fa-f]{3,8}$/.test(hex) ? hex : '#888888';
     return `<div class="color-swatch">
@@ -3649,12 +3724,12 @@ function renderStoreIntelligence(d) {
   const typo = d.typography || {};
   const headEl  = document.getElementById('ar-font-heading');
   const bodyEl  = document.getElementById('ar-font-body');
-  if (headEl) headEl.textContent = typo.heading_style ? `Heading: ${typo.heading_style}` : '—';
+  if (headEl) headEl.textContent = typo.heading_style ? `Heading: ${typo.heading_style}` : '-';
   if (bodyEl) bodyEl.textContent = typo.body_style    ? `Body: ${typo.body_style}`       : '';
 
   // ── UGC creative direction ───────────────────────────────────────────────
-  document.getElementById('ar-ugc-visual').textContent = d.ugc_visual || '—';
-  document.getElementById('ar-ugc-tone').textContent   = d.ugc_tone   || '—';
+  document.getElementById('ar-ugc-visual').textContent = d.ugc_visual || '-';
+  document.getElementById('ar-ugc-tone').textContent   = d.ugc_tone   || '-';
 
   resultEl.style.display = 'block';
 
@@ -4008,10 +4083,10 @@ function renderROASChart(campaigns) {
   const maxRoas = Math.max(...campaigns.map(c => c.roas||0), 1);
   const rows = campaigns.map((c,i) => {
     const col = !c.roas ? '#3f4263' : c.roas>=4 ? '#34d399' : c.roas>=2 ? '#fbbf24' : '#f87171';
-    const roasLabel = c.roas ? `${c.roas.toFixed(1)}×` : '—';
+    const roasLabel = c.roas ? `${c.roas.toFixed(1)}×` : '-';
     const pct = c.roas ? Math.round((c.roas/maxRoas)*100) : 0;
     const tipId = `tip-${i}`;
-    window['_tip_'+i] = `<strong>${escHtml(c.name)}</strong><br>ROAS: ${roasLabel}<br>Spend: ${c.total_spend?fmt(c.total_spend):'—'}<br>Status: ${escHtml(c.status||'—')}`;
+    window['_tip_'+i] = `<strong>${escHtml(c.name)}</strong><br>ROAS: ${roasLabel}<br>Spend: ${c.total_spend?fmt(c.total_spend):'-'}<br>Status: ${escHtml(c.status||'-')}`;
     return `<div class="chart-bar-row"><div class="chart-bar-label" title="${escHtml(c.name)}">${escHtml(c.name.length>16?c.name.slice(0,15)+'…':c.name)}</div><div class="chart-bar-track" onmouseenter="showTip(window['_tip_${i}'],event)" onmousemove="moveTip(event)" onmouseleave="hideTip()"><div class="chart-bar-fill" id="bar-${i}" style="background:${col};width:0%"></div></div><div class="chart-bar-val" style="color:${col}">${roasLabel}</div></div>`;
   }).join('');
   el.innerHTML = `<div class="chart-bar-wrap">${rows}</div>`;
@@ -4159,11 +4234,11 @@ function renderMrrReport(d) {
   const spend = (d.total_spend_cents || 0) / 100;
   set('mrr-stat-mrr', '$' + fmt(mrr));
   set('mrr-stat-spend', '$' + fmt(spend));
-  set('mrr-stat-roas', d.blended_roas !== null && d.blended_roas !== undefined ? d.blended_roas.toFixed(2) + '×' : '—');
+  set('mrr-stat-roas', d.blended_roas !== null && d.blended_roas !== undefined ? d.blended_roas.toFixed(2) + '×' : '-');
   const growthEl = document.getElementById('mrr-stat-growth');
   if (growthEl) {
     if (d.mrr_growth_pct === null || d.mrr_growth_pct === undefined) {
-      growthEl.textContent = 'vs previous 30 days —'; growthEl.style.color = '';
+      growthEl.textContent = 'vs previous 30 days -'; growthEl.style.color = '';
     } else {
       const up = d.mrr_growth_pct >= 0;
       growthEl.textContent = `${up ? '▲' : '▼'} ${Math.abs(d.mrr_growth_pct).toFixed(1)}% vs previous 30 days`;
@@ -4171,7 +4246,7 @@ function renderMrrReport(d) {
     }
   }
   const orders30 = (d.series || []).slice(-30).reduce((s, p) => s + (p.orders || 0), 0);
-  set('mrr-stat-orders', d.has_data ? String(orders30) : '—');
+  set('mrr-stat-orders', d.has_data ? String(orders30) : '-');
 
   renderMrrCharts(d);
 
@@ -4287,18 +4362,18 @@ function _confirmModalResolve(result) {
 const AI_HERO_PHRASES = {
   lateNight: [
     { g: (n) => `Burning the midnight oil${n ? ', ' + n : ''}.`, s: 'Still here if you need a second pair of eyes on your ads.' },
-    { g: () => `Late night grind.`, s: 'The best operators never really log off — what are we working on?' },
+    { g: () => `Late night grind.`, s: 'The best operators never really log off. What are we working on?' },
     { g: (n) => `Midnight mode${n ? ', ' + n : ''}.`, s: 'Quiet hours, sharp thinking. Ask me anything.' },
   ],
   morning: [
     { g: (n) => `Good morning${n ? ', ' + n : ''}.`, s: 'Ready to move some numbers today?' },
     { g: () => `Fresh start.`, s: 'Let\'s find something worth optimising before your coffee gets cold.' },
-    { g: (n) => `Morning${n ? ', ' + n : ''}.`, s: 'Your store\'s been running all night — let\'s see what it did.' },
+    { g: (n) => `Morning${n ? ', ' + n : ''}.`, s: 'Your store\'s been running all night, let\'s see what it did.' },
   ],
   afternoon: [
     { g: (n) => `Good afternoon${n ? ', ' + n : ''}.`, s: 'What are we optimising today?' },
-    { g: () => `Mid-day check-in.`, s: 'Ask about ROAS, creatives, audiences — I\'ve got context on your store.' },
-    { g: (n) => `Afternoon${n ? ', ' + n : ''}.`, s: 'The algorithm doesn\'t take lunch breaks — neither do we.' },
+    { g: () => `Mid-day check-in.`, s: 'Ask about ROAS, creatives, audiences: I\'ve got context on your store.' },
+    { g: (n) => `Afternoon${n ? ', ' + n : ''}.`, s: 'The algorithm doesn\'t take lunch breaks, neither do we.' },
   ],
   evening: [
     { g: (n) => `Good evening${n ? ', ' + n : ''}.`, s: 'Let\'s make it count before you log off.' },
@@ -4322,10 +4397,10 @@ function aiSetGreeting() {
 
 function aiGetContext() {
   return {
-    roas: document.getElementById('stat-roas')?.textContent || '—',
-    spend: document.getElementById('stat-spend')?.textContent || '—',
-    creatives: document.getElementById('stat-creatives')?.textContent || '—',
-    conversions: document.getElementById('stat-conversions')?.textContent || '—',
+    roas: document.getElementById('stat-roas')?.textContent || '-',
+    spend: document.getElementById('stat-spend')?.textContent || '-',
+    creatives: document.getElementById('stat-creatives')?.textContent || '-',
+    conversions: document.getElementById('stat-conversions')?.textContent || '-',
     store_url: localStorage.getItem('last_analyzed_store') || ''
   };
 }
@@ -4751,12 +4826,12 @@ function loadMultiStore() {
   const stores = JSON.parse(localStorage.getItem('connected_stores')||'[]');
   const setEl = (id, v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
   setEl('ms-stores', stores.length || '1');
-  setEl('ms-campaigns', allCampaigns.length || '—');
+  setEl('ms-campaigns', allCampaigns.length || '-');
   const totalSpend = allCampaigns.reduce((a,c)=>a+(c.total_spend||0), 0);
-  setEl('ms-spend', totalSpend > 0 ? '$'+fmt(totalSpend) : '—');
+  setEl('ms-spend', totalSpend > 0 ? '$'+fmt(totalSpend) : '-');
   const roasArr = allCampaigns.filter(c=>c.roas>0).map(c=>c.roas);
   const avgRoas = roasArr.length ? roasArr.reduce((a,b)=>a+b,0)/roasArr.length : 0;
-  setEl('ms-roas', avgRoas > 0 ? avgRoas.toFixed(1)+'×' : '—');
+  setEl('ms-roas', avgRoas > 0 ? avgRoas.toFixed(1)+'×' : '-');
   const listEl = document.getElementById('multistore-stores-list');
   if (!listEl) return;
   const storeData = stores.length ? stores : [{
@@ -4765,7 +4840,7 @@ function loadMultiStore() {
   }];
   listEl.innerHTML = storeData.map(s => `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:12px;margin-bottom:8px">
     <div><div style="font-size:13px;font-weight:700">${escHtml(String(s.name||s.domain||'Store'))}</div><div style="font-size:12px;color:var(--muted)">${s.campaigns||0} campaigns · $${fmt(s.spend||0)} spend</div></div>
-    <div style="text-align:right"><div style="font-size:18px;font-weight:800">${s.roas>0?Number(s.roas).toFixed(1)+'×':'—'}</div><div style="font-size:11px;color:var(--muted)">ROAS</div></div>
+    <div style="text-align:right"><div style="font-size:18px;font-weight:800">${s.roas>0?Number(s.roas).toFixed(1)+'×':'-'}</div><div style="font-size:11px;color:var(--muted)">ROAS</div></div>
   </div>`).join('');
 }
 
@@ -5696,7 +5771,7 @@ function _cbPopulateProductSelect() {
   const sel = document.getElementById('cb-product-select');
   if (!sel) return;
   const products = window._cachedProducts || JSON.parse(localStorage.getItem('products_cache') || '[]');
-  sel.innerHTML = '<option value="">— Pick a synced product —</option>';
+  sel.innerHTML = '<option value="">- Pick a synced product -</option>';
   products.forEach((p, i) => {
     const opt = document.createElement('option');
     opt.value = String(i);
@@ -5852,7 +5927,7 @@ async function openCampaignReview(campaignId) {
   metaBtn.title = !metaConnected ? 'Connect Meta Ads in Settings first' : (plan === 'starter' ? 'Upgrade to Growth to launch' : '');
   googleBtn.title = !googleConnected ? 'Connect Google Ads in Settings first' : (plan !== 'scale' ? 'Upgrade to Scale to launch Google campaigns' : '');
   document.getElementById('cr-launch-note').textContent = isDraft
-    ? 'Launches as PAUSED — enable in the ad platform\'s manager when ready.'
+    ? 'Launches as PAUSED. Enable in the ad platform\'s manager when ready.'
     : `Launched ${c.launched_at ? new Date(c.launched_at).toLocaleDateString() : ''}. Manage status from the Live Performance table below.`;
 
   document.getElementById('campaign-review-modal').classList.add('open');
@@ -6000,7 +6075,7 @@ async function _scanSingleCompetitor(competitor, idx) {
   if (!r || !r.ok) {
     if (!_radarRateLimited) {
       _radarRateLimited = true;
-      showToast(r && r.status === 429 ? 'Rate limit reached — wait a minute before scanning again' : 'Failed to scan ' + competitor.name, 'error');
+      showToast(r && r.status === 429 ? 'Rate limit reached, wait a minute before scanning again' : 'Failed to scan ' + competitor.name, 'error');
     }
     return;
   }
@@ -6112,9 +6187,9 @@ function _renderAnalysisResult(d, elId) {
   el.innerHTML =
     '<div style=”margin-top:8px;padding:14px;background:rgba(6,214,199,0.05);border-radius:10px;border-left:2px solid var(--primary)”>' +
       '<div style=”display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px”>' +
-        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Hook type</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.hook_type || '—') + '</div></div>' +
-        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Emotion</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.emotion || '—') + '</div></div>' +
-        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Their CTA</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.cta || '—') + '</div></div>' +
+        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Hook type</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.hook_type || '-') + '</div></div>' +
+        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Emotion</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.emotion || '-') + '</div></div>' +
+        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Their CTA</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.cta || '-') + '</div></div>' +
       '</div>' +
       '<div style=”font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:' + (ca.headline ? '12px' : '0') + '”>' +
         (d.counter_strategy ? '<span style=”color:var(--warning);font-weight:600”>Strategy: </span>' + escHtml(d.counter_strategy) : '') +
@@ -6170,7 +6245,7 @@ async function searchCompetitorAds() {
   btn.disabled = false;
   btn.innerHTML = SVG_SEARCH + '<span>Search Ads</span>';
   if (!r || !r.ok) {
-    showToast(r && r.status === 429 ? 'Rate limit reached — wait a minute and try again' : 'Search failed. Check your Meta connection in Settings', 'error');
+    showToast(r && r.status === 429 ? 'Rate limit reached, wait a minute and try again' : 'Search failed. Check your Meta connection in Settings', 'error');
     return;
   }
   const data = await r.json();
@@ -6347,7 +6422,7 @@ function renderProfitTable() {
     '</div>' +
     _profitProducts.map((p, i) => {
       const price = ((p.price_cents || 0) / 100).toFixed(2);
-      const margin = p.margin_percent !== null ? p.margin_percent.toFixed(1) + '%' : '—';
+      const margin = p.margin_percent !== null ? p.margin_percent.toFixed(1) + '%' : '-';
       const marginColor = p.margin_percent === null ? 'var(--muted)' : p.margin_percent >= 50 ? 'var(--success)' : p.margin_percent >= 25 ? 'var(--warning)' : 'var(--danger)';
       return '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">' +
         '<span style="font-size:13px;color:var(--text);padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(p.title || '') + '</span>' +
@@ -6361,12 +6436,12 @@ function renderProfitTable() {
 function renderProfitSummary(summary) {
   const el = document.getElementById('profit-summary-wrap');
   if (!el) return;
-  const avg = summary.avg_margin_percent !== null ? summary.avg_margin_percent.toFixed(1) + '%' : '—';
+  const avg = summary.avg_margin_percent !== null ? summary.avg_margin_percent.toFixed(1) + '%' : '-';
   const avgColor = summary.avg_margin_percent === null ? 'var(--text)' : summary.avg_margin_percent >= 50 ? 'var(--success)' : summary.avg_margin_percent >= 25 ? 'var(--warning)' : 'var(--danger)';
   el.innerHTML = [
     { label: 'Avg margin', value: avg, color: avgColor },
     { label: 'Products with COGS', value: summary.total_products_with_cogs + ' / ' + summary.total_products, color: 'var(--text)' },
-    { label: 'Profit / ROAS point', value: summary.estimated_profit_per_roas_point !== null ? (summary.estimated_profit_per_roas_point * 100).toFixed(1) + '%' : '—', color: 'var(--primary)' }
+    { label: 'Profit / ROAS point', value: summary.estimated_profit_per_roas_point !== null ? (summary.estimated_profit_per_roas_point * 100).toFixed(1) + '%' : '-', color: 'var(--primary)' }
   ].map(s =>
     '<div class="card" style="text-align:center">' +
       '<div style="font-size:26px;font-weight:800;color:' + s.color + ';margin-bottom:6px">' + s.value + '</div>' +

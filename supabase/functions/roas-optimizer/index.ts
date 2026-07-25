@@ -31,6 +31,10 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
+const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
+const ANTHROPIC_URL   = 'https://api.anthropic.com/v1/messages';
+const ANTHROPIC_MODEL = 'claude-sonnet-5';
+
 interface OptimizerRules {
   pause_below_roas:  number;
   scale_above_roas:  number;
@@ -204,6 +208,161 @@ async function analyzeCampaigns(
   });
 }
 
+// ── AI-grounded recommendations ──────────────────────────────────────────────
+// The rule-based analyzeCampaigns() above still does the real data gathering
+// (live ROAS/spend/budget per campaign from Meta). This layer packages that
+// alongside real MRR/revenue context and, on Scale plan, audience intelligence,
+// and asks Claude to reason about the whole account — not just per-campaign
+// thresholds in isolation.
+
+async function callClaude(system: string, user: string): Promise<string> {
+  if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
+  const res = await fetch(ANTHROPIC_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type':      'application/json',
+      'x-api-key':         ANTHROPIC_KEY,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model:      ANTHROPIC_MODEL,
+      max_tokens: 2048,
+      system,
+      messages: [{ role: 'user', content: user }],
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
+  }
+  const data = await res.json() as { content: { type: string; text?: string }[] };
+  return data.content?.find(c => c.type === 'text')?.text ?? '';
+}
+
+async function getUserPlan(userId: string): Promise<string> {
+  const { data } = await supabase.from('user_plans').select('plan').eq('user_id', userId).single();
+  return data?.plan ?? 'starter';
+}
+
+/** Real store revenue vs ad spend over the last 30 days, from the same table mrr-tracker fills. */
+async function fetchMrrContext(userId: string): Promise<Record<string, unknown>> {
+  const since = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+  const { data } = await supabase
+    .from('revenue_snapshots')
+    .select('shopify_revenue_cents, meta_spend_cents, google_spend_cents')
+    .eq('user_id', userId)
+    .gte('snapshot_date', since);
+
+  if (!data || data.length === 0) return { available: false };
+
+  const revenueCents = data.reduce((s, r) => s + (r.shopify_revenue_cents ?? 0), 0);
+  const spendCents   = data.reduce((s, r) => s + (r.meta_spend_cents ?? 0) + (r.google_spend_cents ?? 0), 0);
+
+  return {
+    available:                 true,
+    last_30d_revenue_usd:      Math.round(revenueCents / 100),
+    last_30d_ad_spend_usd:     Math.round(spendCents / 100),
+    blended_roas:              spendCents > 0 ? Math.round((revenueCents / spendCents) * 100) / 100 : null,
+    net_profit_estimate_usd:   Math.round((revenueCents - spendCents) / 100),
+  };
+}
+
+/** Scale-plan only: real synced audience data (from the `audiences` table meta-api keeps in sync). */
+async function fetchAudienceIntelligence(userId: string): Promise<Record<string, unknown>> {
+  const { data } = await supabase
+    .from('audiences')
+    .select('name, subtype, approximate_count, delivery_status')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(10);
+
+  if (!data || data.length === 0) return { available: false };
+  return { available: true, audiences: data };
+}
+
+interface AIRecommendation {
+  campaigns: unknown[];
+  account_summary: string;
+  model_version: string;
+  generated_at: string;
+}
+
+/**
+ * Sends the rule-based signals + real MRR context + (Scale-plan) audience intel to
+ * Claude and returns grounded, account-aware recommendations. The rule thresholds
+ * are passed in as ONE signal, not the final answer — the model reasons about
+ * overall account profitability, not just per-campaign ROAS.
+ */
+async function generateAIRecommendations(
+  userId: string,
+  ruleActions: CampaignAction[],
+  rules: OptimizerRules,
+): Promise<AIRecommendation> {
+  const plan = await getUserPlan(userId);
+  const [mrrContext, audienceIntel] = await Promise.all([
+    fetchMrrContext(userId),
+    plan === 'scale'
+      ? fetchAudienceIntelligence(userId)
+      : Promise.resolve({ available: false, reason: 'Audience intelligence is a Scale-plan feature' }),
+  ]);
+
+  const system = `You are an expert performance marketing strategist who optimizes Meta and Google ad accounts for Shopify stores. You analyze REAL campaign data (never invent numbers not present in the input) and produce grounded, actionable recommendations.
+The input includes rule-of-thumb threshold signals (a simple ROAS-based heuristic already computed) as ONE input, not the final answer, plus the store's real revenue/profit context and, when available, audience intelligence. Weigh all of it together and think about actual account profitability, not just per-campaign ROAS in isolation.
+Return ONLY valid JSON, no markdown, matching this exact schema:
+{
+  "campaigns": [
+    { "campaign_id": string, "campaign_name": string, "action": "pause" | "scale" | "hold" | "adjust-audience" | "refresh-creative", "reason": string (plain English, 1-2 sentences, understandable by a non-technical Shopify store owner), "new_budget": number or null }
+  ],
+  "account_summary": string (2-4 sentences: is this account profitable overall once ad spend is weighed against real store revenue, what's the biggest opportunity, what's the biggest risk)
+}
+Every campaign_id present in the rule-based signals must appear exactly once in your campaigns array. Do not invent campaigns that are not in the input.
+Writing style: write like a real strategist, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.`;
+
+  const userMsg = `Rule-of-thumb threshold signals (pause below ${rules.pause_below_roas}x ROAS, scale above ${rules.scale_above_roas}x ROAS, scale multiplier ${rules.scale_multiplier}x, max daily budget $${rules.max_daily_budget}):
+${JSON.stringify(ruleActions, null, 2)}
+
+Store revenue and ad spend context (last 30 days, from connected Shopify + ad accounts):
+${JSON.stringify(mrrContext, null, 2)}
+
+Audience intelligence (${plan === 'scale' ? 'Scale plan' : 'not available on this plan'}):
+${JSON.stringify(audienceIntel, null, 2)}`;
+
+  const raw = await callClaude(system, userMsg);
+  let parsed: { campaigns?: unknown[]; account_summary?: string };
+  try {
+    const json = raw.replace(/```json\s*|```/g, '').trim();
+    parsed = JSON.parse(json);
+  } catch {
+    throw new Error('Failed to parse AI recommendations');
+  }
+
+  const result: AIRecommendation = {
+    campaigns:       parsed.campaigns ?? [],
+    account_summary: parsed.account_summary ?? '',
+    model_version:   ANTHROPIC_MODEL,
+    generated_at:    new Date().toISOString(),
+  };
+
+  await supabase.from('optimizer_runs').insert({
+    user_id: userId,
+    actions: result.campaigns,
+    summary: {
+      type:            'ai_analyze',
+      account_summary: result.account_summary,
+      model_version:   ANTHROPIC_MODEL,
+      rule_summary: {
+        total: ruleActions.length,
+        pause: ruleActions.filter(a => a.action === 'pause').length,
+        scale: ruleActions.filter(a => a.action === 'scale').length,
+        hold:  ruleActions.filter(a => a.action === 'hold').length,
+      },
+    },
+    ran_at: new Date().toISOString(),
+  }).catch(() => {}); // best-effort — never fail the request over logging
+
+  return result;
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
 
@@ -242,7 +401,16 @@ Deno.serve(async (req) => {
           hold:  actions.filter(a => a.action === 'hold').length,
         };
 
-        return okResponse({ actions, summary, rules }, origin);
+        let ai: AIRecommendation | null = null;
+        if (ANTHROPIC_KEY && actions.length > 0) {
+          try {
+            ai = await generateAIRecommendations(userId, actions, rules);
+          } catch (e) {
+            console.error('roas-optimizer AI analysis failed:', e);
+          }
+        }
+
+        return okResponse({ actions, summary, rules, ai }, origin);
       }
 
       case 'apply': {
@@ -312,6 +480,16 @@ Deno.serve(async (req) => {
 
         await supabase.from('optimizer_rules').upsert(newRules, { onConflict: 'user_id' });
         return okResponse({ rules: newRules, message: 'Optimizer rules updated' }, origin);
+      }
+
+      case 'history': {
+        const { data } = await supabase
+          .from('optimizer_runs')
+          .select('*')
+          .eq('user_id', userId)
+          .order('ran_at', { ascending: false })
+          .limit(20);
+        return okResponse({ runs: data ?? [] }, origin);
       }
 
       default:

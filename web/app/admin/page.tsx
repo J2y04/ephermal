@@ -119,7 +119,7 @@ export default function AdminOverviewPage() {
     <div className="mx-auto max-w-[1600px] px-10 py-10">
       <Reveal>
         <h1 className="text-[22px] font-semibold tracking-tight text-eph-text">Overview</h1>
-        <p className="mt-1 text-sm text-eph-muted">Live from Clerk + Stripe — no cached values.</p>
+        <p className="mt-1 text-sm text-eph-muted">Live from Clerk + Stripe, no cached values.</p>
       </Reveal>
 
       {error && (
@@ -132,10 +132,10 @@ export default function AdminOverviewPage() {
       <Reveal delay={0.05}>
         <Squircle cornerRadius={28} className="mt-7 border border-eph-border bg-eph-surface/60">
           <div className="flex flex-wrap divide-x divide-eph-border">
-            <KpiCell label="Total Users" value={loading ? '—' : (userTotal ?? '—')} />
+            <KpiCell label="Total Users" value={loading ? '-' : (userTotal ?? '-')} />
             <KpiCell
               label="Gross MRR"
-              value={loading || !revenue ? '—' : centsToUsd(revenue.mrr_cents)}
+              value={loading || !revenue ? '-' : centsToUsd(revenue.mrr_cents)}
               sub={
                 !loading && revenue ? (
                   <span className="rounded-full bg-eph-success/10 px-2 py-0.5 text-[11px] font-semibold text-eph-success">
@@ -144,8 +144,8 @@ export default function AdminOverviewPage() {
                 ) : null
               }
             />
-            <KpiCell label="Active Subscriptions" value={loading || !revenue ? '—' : revenue.active_subscription_count} />
-            <KpiCell label="Signups (30d)" value={loading || !revenue ? '—' : totalSignups30d} />
+            <KpiCell label="Active Subscriptions" value={loading || !revenue ? '-' : revenue.active_subscription_count} />
+            <KpiCell label="Signups (30d)" value={loading || !revenue ? '-' : totalSignups30d} />
           </div>
         </Squircle>
       </Reveal>
@@ -160,9 +160,9 @@ export default function AdminOverviewPage() {
         >
           <div className="relative flex items-baseline justify-between">
             <div>
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Signups — last 30 days</div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Signups: last 30 days</div>
               <div className="tabular-nums mt-2 text-[56px] font-semibold leading-none tracking-tight text-eph-text">
-                {loading || !revenue ? '—' : totalSignups30d}
+                {loading || !revenue ? '-' : totalSignups30d}
               </div>
             </div>
           </div>
@@ -216,10 +216,10 @@ export default function AdminOverviewPage() {
           <Squircle cornerRadius={28} className="shine widget-shadow flex h-full flex-col justify-center border border-eph-border bg-eph-surface p-7">
             <div className="text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Data freshness</div>
             <div className="mt-3 text-sm text-eph-text">
-              {revenue ? new Date(revenue.generated_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '—'}
+              {revenue ? new Date(revenue.generated_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : '-'}
             </div>
             <div className="mt-4 text-xs leading-relaxed text-eph-subtle">
-              Gross MRR is computed live from Stripe&apos;s active subscriptions — manually
+              Gross MRR is computed live from Stripe&apos;s active subscriptions, manually
               granted plans (no Stripe subscription) never inflate this number.
             </div>
           </Squircle>

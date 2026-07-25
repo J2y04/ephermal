@@ -176,6 +176,7 @@ export default function PrivacyPage() {
           Ephermal
         </div>
         <div className="legal-footer-links">
+          <a href="../docs">Documentation</a>
           <a href="../privacy">Privacy Policy</a>
           <a href="../terms">Terms of Service</a>
           <a href="mailto:hello@ephermal.app">Contact</a>
