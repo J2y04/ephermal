@@ -112,12 +112,22 @@ async function fetchAllProducts(
  * read_inventory scope; if the merchant's stored token predates that scope being requested,
  * this 403s and we just skip auto-fill for this sync rather than failing the whole thing.
  */
+interface InventoryCostResult {
+  costByItemId: Map<string, string>;
+  /** True if every batch request came back 401/403 — i.e. the stored token predates the
+   *  read_inventory scope. Distinct from "Shopify has no cost data" so the caller can tell
+   *  the user the real reason instead of silently reporting 0 filled either way. */
+  scopeDenied: boolean;
+}
+
 async function fetchInventoryCosts(
   shop: string,
   token: string,
   inventoryItemIds: string[],
-): Promise<Map<string, string>> {
+): Promise<InventoryCostResult> {
   const costByItemId = new Map<string, string>();
+  let sawScopeDenial = false;
+  let sawSuccess = false;
   for (let i = 0; i < inventoryItemIds.length; i += 250) {
     const batch = inventoryItemIds.slice(i, i + 250);
     const url = new URL(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/inventory_items.json`);
@@ -126,13 +136,19 @@ async function fetchInventoryCosts(
     const res = await fetch(url.toString(), {
       headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
     });
-    if (!res.ok) continue; // missing scope or transient error — degrade gracefully, don't fail the sync
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 403) sawScopeDenial = true;
+      continue; // missing scope or transient error — degrade gracefully, don't fail the sync
+    }
+    sawSuccess = true;
     const data = await res.json().catch(() => ({})) as { inventory_items?: { id: number; cost?: string | null }[] };
     for (const item of data.inventory_items ?? []) {
       if (item.cost) costByItemId.set(String(item.id), item.cost);
     }
   }
-  return costByItemId;
+  // Only report scope-denied if EVERY batch failed with 401/403 and none succeeded —
+  // a partial failure shouldn't blame the scope for what's really a transient blip.
+  return { costByItemId, scopeDenied: sawScopeDenial && !sawSuccess };
 }
 
 Deno.serve(async (req) => {
@@ -192,6 +208,8 @@ Deno.serve(async (req) => {
         // Fetch all products and upsert to shopify_products table
         const products = await fetchAllProducts(shop, token);
         let cogsAutoFilled = 0;
+        let cogsScopeDenied = false;
+        let cogsAvailableInShopify = 0;
 
         if (products.length > 0) {
           const rows = products.map(p => {
@@ -234,19 +252,22 @@ Deno.serve(async (req) => {
             .map(String);
 
           if (inventoryItemIds.length > 0) {
-            const costByItemId = await fetchInventoryCosts(shop, token, inventoryItemIds);
+            const { costByItemId, scopeDenied } = await fetchInventoryCosts(shop, token, inventoryItemIds);
+            cogsScopeDenied = scopeDenied;
+            cogsAvailableInShopify = costByItemId.size;
             const fillResults = await Promise.all(products.map(async (p) => {
               const variant = (p.variants as { inventory_item_id?: number }[])?.[0];
               const cost = variant?.inventory_item_id != null ? costByItemId.get(String(variant.inventory_item_id)) : undefined;
               if (!cost) return false;
               const cogsCents = Math.round(parseFloat(cost) * 100);
               if (!Number.isFinite(cogsCents)) return false;
-              const { data } = await supabase.from('shopify_products')
+              const { data, error } = await supabase.from('shopify_products')
                 .update({ cogs_cents: cogsCents })
                 .eq('shopify_id', String(p.id))
                 .eq('user_id', userId)
                 .is('cogs_cents', null)
                 .select('id');
+              if (error) console.error('[shopify-api] cogs auto-fill update failed:', error.message);
               return !!data && data.length > 0;
             }));
             cogsAutoFilled = fillResults.filter(Boolean).length;
@@ -264,6 +285,8 @@ Deno.serve(async (req) => {
           message: `Synced ${products.length} products from ${shop}`,
           products,
           cogs_auto_filled: cogsAutoFilled,
+          cogs_scope_denied: cogsScopeDenied,
+          cogs_available_in_shopify: cogsAvailableInShopify,
         }, origin);
       }
 

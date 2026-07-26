@@ -141,10 +141,17 @@ function limitReachedResponse(origin: string | null, limit: number): Response {
 // auth, plan-gating, and rate limiting. The AI can never do anything the logged-in
 // user couldn't already do by clicking the equivalent dashboard button.
 
+type ToolPlatform = 'meta' | 'google' | 'shopify';
+
 interface ToolDef {
   fn: string;
   buildBody: (input: Record<string, unknown>) => Record<string, unknown>;
   label: (input: Record<string, unknown>) => string;
+  /** Which connected platform this tool call reads/writes — drives the icon shown in the
+   *  live chat checklist (e.g. the Meta logo stays next to "Pulling Meta campaigns" instead
+   *  of being swapped out for a plain checkmark once it's done). Omitted for tools that are
+   *  purely internal to Ephermal (campaign drafts, budget math). */
+  platform?: ToolPlatform;
 }
 
 const TOOL_DISPATCH: Record<string, ToolDef> = {
@@ -176,51 +183,61 @@ const TOOL_DISPATCH: Record<string, ToolDef> = {
     // not just discouraged by prompting.
     buildBody: (i) => ({ action: 'launch_meta', campaign_id: i.campaign_id, auto_enable: false }),
     label: (i) => `Launching campaign ${i.campaign_id} to Meta (created paused)`,
+    platform: 'meta',
   },
   launch_campaign_to_google: {
     fn: 'campaign-launcher',
     buildBody: (i) => ({ action: 'launch_google', campaign_id: i.campaign_id, auto_enable: false }),
     label: (i) => `Launching campaign ${i.campaign_id} to Google (created paused)`,
+    platform: 'google',
   },
   get_meta_overview: {
     fn: 'meta-api',
     buildBody: () => ({ action: 'overview' }),
     label: () => 'Pulling Meta Ads account overview',
+    platform: 'meta',
   },
   get_meta_campaigns: {
     fn: 'meta-api',
     buildBody: () => ({ action: 'campaigns' }),
     label: () => 'Pulling Meta campaign performance',
+    platform: 'meta',
   },
   pause_meta_campaign: {
     fn: 'meta-api',
     buildBody: (i) => ({ action: 'pause', campaign_id: i.campaign_id }),
     label: (i) => `Pausing Meta campaign ${i.campaign_id}`,
+    platform: 'meta',
   },
   enable_meta_campaign: {
     fn: 'meta-api',
     buildBody: (i) => ({ action: 'enable', campaign_id: i.campaign_id }),
     label: (i) => `Enabling Meta campaign ${i.campaign_id}`,
+    platform: 'meta',
   },
   scale_meta_budget: {
     fn: 'meta-api',
     buildBody: (i) => ({ action: 'scale_budget', campaign_id: i.campaign_id, multiplier: i.multiplier ?? 1.15 }),
     label: (i) => `Scaling budget for Meta campaign ${i.campaign_id} (×${i.multiplier ?? 1.15})`,
+    platform: 'meta',
   },
   get_google_campaigns: {
     fn: 'google-api',
     buildBody: () => ({ action: 'campaigns' }),
     label: () => 'Pulling Google Ads campaigns',
+    platform: 'google',
   },
   toggle_google_campaign: {
     fn: 'google-api',
     buildBody: (i) => ({ action: 'toggle', campaign_id: i.campaign_id, status: i.status }),
     label: (i) => `${i.status === 'ENABLED' ? 'Enabling' : 'Pausing'} Google campaign ${i.campaign_id}`,
+    platform: 'google',
   },
   update_google_budget: {
     fn: 'google-api',
     buildBody: (i) => ({ action: 'budget', campaign_id: i.campaign_id, budget_usd: i.budget_usd }),
     label: (i) => `Updating Google budget for campaign ${i.campaign_id}`,
+    platform: 'google',
   },
   calculate_budget_recommendation: {
     fn: 'budget-ai',
@@ -238,16 +255,25 @@ const TOOL_DISPATCH: Record<string, ToolDef> = {
     fn: 'roas-optimizer',
     buildBody: () => ({ action: 'analyze' }),
     label: () => 'Analyzing campaigns against ROAS rules (read-only)',
+    platform: 'meta',
   },
   get_profit_report: {
     fn: 'profit-tracker',
     buildBody: () => ({ action: 'get_report' }),
     label: () => 'Pulling profit report',
+    platform: 'shopify',
+  },
+  get_shopify_products: {
+    fn: 'shopify-api',
+    buildBody: () => ({ action: 'products' }),
+    label: () => 'Pulling Shopify product catalog',
+    platform: 'shopify',
   },
   search_competitor_ads: {
     fn: 'competitor-radar',
     buildBody: (i) => ({ action: 'search', search_terms: i.search_terms }),
     label: (i) => `Searching competitor ads for "${i.search_terms}"`,
+    platform: 'meta',
   },
 };
 
@@ -268,6 +294,7 @@ const TOOLS = [
   { name: 'calculate_budget_recommendation', description: 'Get an AI-calculated daily budget split across Meta/Google for a given revenue goal.', input_schema: { type: 'object', properties: { revenue_goal: { type: 'number', description: 'Target revenue over the period, in USD' }, days: { type: 'number' }, aov: { type: 'number', description: 'Average order value in USD' }, current_roas: { type: 'number' }, platforms: { type: 'array', items: { type: 'string' } } }, required: ['revenue_goal'] } },
   { name: 'analyze_roas', description: "Analyze all live Meta campaigns against the user's ROAS optimization rules and get pause/scale/hold recommendations. Read-only — does not pause or change any budget.", input_schema: { type: 'object', properties: {}, required: [] } },
   { name: 'get_profit_report', description: 'Get a profit/margin report combining Shopify COGS with ad spend.', input_schema: { type: 'object', properties: {}, required: [] } },
+  { name: 'get_shopify_products', description: "List the connected Shopify store's product catalog directly from Shopify (title, price, inventory, vendor, status) — use this for product/inventory questions that go beyond get_profit_report's margin numbers.", input_schema: { type: 'object', properties: {}, required: [] } },
   { name: 'search_competitor_ads', description: "Search Meta's public Ad Library for ads matching a search term (brand name, niche, or keyword).", input_schema: { type: 'object', properties: { search_terms: { type: 'string' } }, required: ['search_terms'] } },
 ];
 
@@ -401,16 +428,16 @@ Every campaign you launch is always created PAUSED regardless of what the user a
       } else {
         const input = use.input ?? {};
         const label = def.label(input);
-        emit?.('tool_start', { label });
+        emit?.('tool_start', { label, platform: def.platform });
         try {
           const result = await callInternal(def.fn, def.buildBody(input), rawToken);
           content = JSON.stringify(result).slice(0, 8000); // cap payload back to the model
           trail.push({ label, status: 'done' });
-          emit?.('tool_done', { label, status: 'done' });
+          emit?.('tool_done', { label, status: 'done', platform: def.platform });
         } catch (e) {
           content = JSON.stringify({ error: e instanceof Error ? e.message : 'Tool call failed' });
           trail.push({ label, status: 'error' });
-          emit?.('tool_done', { label, status: 'error' });
+          emit?.('tool_done', { label, status: 'error', platform: def.platform });
         }
       }
       resultBlocks.push({ type: 'tool_result', tool_use_id: use.id!, content });

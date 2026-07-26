@@ -547,6 +547,7 @@ select.form-input{cursor:pointer}
 .ai-tool-step.done .ai-tool-step-icon { color:var(--primary); }
 .ai-tool-step.running .ai-tool-step-icon { color:var(--primary); animation:spin .8s linear infinite; }
 .ai-tool-step.error .ai-tool-step-icon { color:var(--danger); }
+.ai-tool-step-platform { width:14px; height:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 .ai-tool-step.done { color:var(--text); }
 .ai-tool-step.error { color:var(--danger); }
 .ai-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; padding:6px 4px 14px; flex-shrink:0; }
@@ -636,6 +637,22 @@ select.form-input{cursor:pointer}
   <symbol id="icon-auren" viewBox="0 0 24 24">
     <circle cx="12" cy="12" r="7.2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="30 14"/>
     <circle cx="12" cy="12" r="2.1" fill="currentColor"/>
+  </symbol>
+  <!-- Platform badges for Auren's live tool-call checklist — kept simple/generic (not the
+       real trademarked logos) but colored to each platform so they're instantly recognizable. -->
+  <symbol id="icon-platform-meta" viewBox="0 0 24 24">
+    <path fill="#1877F2" d="M6.5 2C3.5 2 2 4.6 2 8.4c0 3.9 2.1 7.3 3.9 9.4.9 1 1.7 1.5 2.4 1.5.7 0 1.1-.4 1.9-1.5.5-.7 1-1.6 1.8-3 .8 1.4 1.3 2.3 1.8 3 .8 1.1 1.2 1.5 1.9 1.5.7 0 1.5-.5 2.4-1.5C19.9 15.7 22 12.3 22 8.4 22 4.6 20.5 2 17.5 2c-1.7 0-3 1-4.1 2.5C12.6 5.7 12.3 6.4 12 7c-.3-.6-.6-1.3-1.4-2.5C9.5 3 8.2 2 6.5 2Zm.2 2.3c1 0 1.7.6 2.6 2-.7 1.1-1.5 2.6-2.5 4.4-1 1.9-1.7 3.1-2.1 3.7-.7-1.4-1.6-3.6-1.6-6C3.1 5.4 4 4.3 6.7 4.3Zm10.6 0c2.7 0 3.6 1.1 3.6 4.4 0 2.4-.9 4.6-1.6 6-.4-.6-1.1-1.8-2.1-3.7-1-1.8-1.8-3.3-2.5-4.4.9-1.4 1.6-2 2.6-2Z"/>
+  </symbol>
+  <symbol id="icon-platform-google" viewBox="0 0 24 24">
+    <path fill="#4285F4" d="M22 12.2c0-.7-.06-1.4-.18-2.05H12v3.9h5.6a4.8 4.8 0 0 1-2.08 3.15v2.6h3.36c1.97-1.8 3.12-4.5 3.12-7.6Z"/>
+    <path fill="#34A853" d="M12 22c2.8 0 5.16-.92 6.88-2.5l-3.36-2.6c-.93.63-2.13 1-3.52 1-2.7 0-5-1.83-5.82-4.28H2.7v2.68A10 10 0 0 0 12 22Z"/>
+    <path fill="#FBBC05" d="M6.18 13.62a6 6 0 0 1 0-3.84V7.1H2.7a10 10 0 0 0 0 8.9l3.48-2.38Z"/>
+    <path fill="#EA4335" d="M12 6.5c1.52 0 2.88.52 3.95 1.55l2.96-2.96C17.15 3.4 14.8 2.4 12 2.4a10 10 0 0 0-9.3 5.7l3.48 2.68C6.99 8.33 9.3 6.5 12 6.5Z"/>
+  </symbol>
+  <symbol id="icon-platform-shopify" viewBox="0 0 24 24">
+    <path fill="#95BF47" d="M17.1 4.9c0-.1-.1-.2-.2-.2h-1.5l-1.1-1.1c-.1-.1-.3-.1-.4 0l-.6.3c-.2-.5-.5-1-.9-1.3C11.6 1.9 10.7 2 10.2 2.2c-.5-1-1.3-1.4-1.9-1.2-1 .3-1.9 1.7-2.2 3.7l-1.7.5c-.5.2-.5.2-.6.7L2 20.9 15.5 23.6 21 22.4 17.1 4.9Z"/>
+    <path fill="#5E8E3E" d="m17.1 4.9-.1-.1L15.5 23.6 21 22.4 17.1 4.9Z"/>
+    <path fill="#fff" d="M12.2 8.9s-.8-.4-1.7-.4c-1.4 0-1.4.9-1.4 1.1 0 1.2 3.1 1.6 3.1 4.4 0 2.2-1.4 3.6-3.3 3.6-2.2 0-3.4-1.4-3.4-1.4l.6-2s1.2 1.1 2.3 1.1c.7 0 1-.5.9-1-.1-1.5-2.6-1.6-2.6-4.2 0-2.1 1.5-4.2 4.6-4.2 1.2 0 1.8.3 1.8.3l-.9 2.7Z"/>
   </symbol>
 </svg>
 
@@ -4570,11 +4587,23 @@ const AI_TOOL_STEP_ICONS = {
   running: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
 };
 
+// Maps a tool call's platform (from the backend's ToolDef.platform) to the badge icon shown
+// next to it in the checklist. Unlike the status icon, this one never changes to a checkmark —
+// it stays put for the life of the step so the user can see at a glance which platform Auren
+// pulled from, even after the step finishes.
+const AI_TOOL_STEP_PLATFORM_ICONS = {
+  meta:    '<svg viewBox="0 0 24 24" width="12" height="12"><use href="#icon-platform-meta"/></svg>',
+  google:  '<svg viewBox="0 0 24 24" width="12" height="12"><use href="#icon-platform-google"/></svg>',
+  shopify: '<svg viewBox="0 0 24 24" width="12" height="12"><use href="#icon-platform-shopify"/></svg>',
+};
+
 /**
  * Renders the tool-call trail under a bot message (e.g. "Pulled campaign performance",
  * "Analysed CTR trend"). Each step shows a spinning circle while running, then a checkmark
- * in Ephermal cyan once done (or an X if the tool call failed).
- * steps: [{ label: string, status: 'running'|'done'|'error' }]
+ * in Ephermal cyan once done (or an X if the tool call failed) — plus a persistent platform
+ * badge (Meta/Google/Shopify) for steps that touch a connected platform, so the row still
+ * reads as "Meta · Pulling campaign performance" after it finishes, not just a bare checkmark.
+ * steps: [{ label: string, status: 'running'|'done'|'error', platform?: 'meta'|'google'|'shopify' }]
  */
 function aiRenderToolSteps(msgEl, steps) {
   if (!steps || !steps.length) return;
@@ -4587,6 +4616,7 @@ function aiRenderToolSteps(msgEl, steps) {
   wrap.innerHTML = steps.map(s => `
     <div class="ai-tool-step ${s.status}">
       <span class="ai-tool-step-icon">${AI_TOOL_STEP_ICONS[s.status] || AI_TOOL_STEP_ICONS.running}</span>
+      ${s.platform && AI_TOOL_STEP_PLATFORM_ICONS[s.platform] ? `<span class="ai-tool-step-platform">${AI_TOOL_STEP_PLATFORM_ICONS[s.platform]}</span>` : ''}
       <span>${escHtml(s.label)}</span>
     </div>`).join('');
   const box = document.getElementById('ai-messages');
@@ -4595,10 +4625,10 @@ function aiRenderToolSteps(msgEl, steps) {
 
 /** Upserts one step's status by label in a live steps array, then re-renders. Used while
  *  streaming tool_start/tool_done SSE events so the checklist updates in real time. */
-function aiUpsertToolStep(msgEl, steps, label, status) {
+function aiUpsertToolStep(msgEl, steps, label, status, platform) {
   const existing = steps.find(s => s.label === label);
-  if (existing) existing.status = status;
-  else steps.push({ label, status });
+  if (existing) { existing.status = status; if (platform) existing.platform = platform; }
+  else steps.push({ label, status, platform });
   aiRenderToolSteps(msgEl, steps);
 }
 
@@ -4693,9 +4723,9 @@ async function sendAIMessage() {
         if (!data) continue;
 
         if (event === 'tool_start') {
-          aiUpsertToolStep(botEl, steps, data.label, 'running');
+          aiUpsertToolStep(botEl, steps, data.label, 'running', data.platform);
         } else if (event === 'tool_done') {
-          aiUpsertToolStep(botEl, steps, data.label, data.status === 'error' ? 'error' : 'done');
+          aiUpsertToolStep(botEl, steps, data.label, data.status === 'error' ? 'error' : 'done', data.platform);
         } else if (event === 'final') {
           settled = true;
           aiStreamRevealInto(botEl, data.reply || 'Done!', () => aurenSetActive(false));
@@ -5123,7 +5153,11 @@ async function syncProducts() {
     renderProducts(products);
     if (status) status.textContent = `${products.length} products · synced just now`;
     const cogsFilled = data.cogs_auto_filled || 0;
-    showToast(`Synced ${products.length} products${(!isFirstSync && _pendingNewProducts.length) ? ` · ${_pendingNewProducts.length} new!` : ''}${cogsFilled ? ` · COGS auto-filled for ${cogsFilled} from Shopify` : ''}`, 'success');
+    let cogsMsg = '';
+    if (cogsFilled) cogsMsg = ` · COGS auto-filled for ${cogsFilled} from Shopify`;
+    else if (data.cogs_scope_denied) cogsMsg = ` · Reconnect Shopify to enable COGS auto-fill (needs inventory access)`;
+    else if (data.cogs_available_in_shopify === 0) cogsMsg = ` · No "Cost per item" set in Shopify yet — add it there or set COGS manually in Profit Tracker`;
+    showToast(`Synced ${products.length} products${(!isFirstSync && _pendingNewProducts.length) ? ` · ${_pendingNewProducts.length} new!` : ''}${cogsMsg}`, (cogsFilled || !cogsMsg) ? 'success' : 'warn');
     if (!isFirstSync && _pendingNewProducts.length > 0) { _currentNewProductIdx = 0; setTimeout(showNextNewProduct, 600); }
   } catch(e) {
     showToast('Sync failed - check Shopify connection in Settings', 'error');
