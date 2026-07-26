@@ -96,7 +96,7 @@ export default function AdminOverviewPage() {
   return (
     <div className="mx-auto max-w-[1600px] px-10 py-10">
       <Reveal>
-        <div className="text-lg font-semibold tracking-tight text-eph-text">{wayne.greeting}</div>
+        <div className="text-lg font-semibold tracking-tight text-eph-primary">{wayne.greeting}</div>
         <div className="mt-0.5 text-sm italic text-eph-subtle">&ldquo;{wayne.quote}&rdquo;</div>
       </Reveal>
 
