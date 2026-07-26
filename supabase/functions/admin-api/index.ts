@@ -11,7 +11,8 @@
  *
  * POST { action: 'list_users', query? }
  * POST { action: 'get_revenue', days? }
- * POST { action: 'set_plan', target_user_id, plan }
+ * POST { action: 'get_platform_stats' }
+ * POST { action: 'set_plan', target_user_id, plan, expires_in_days? }
  * POST { action: 'ban_user',   target_user_id }
  * POST { action: 'unban_user', target_user_id }
  *
@@ -233,26 +234,196 @@ async function handleGetRevenue(body: Record<string, unknown>): Promise<Record<s
   };
 }
 
+// ── get_platform_stats ───────────────────────────────────────────────────────
+/**
+ * Everything Stripe-independent that isn't already covered by list_users /
+ * get_revenue: plan mix, connected integrations, Auren usage, Shopify catalog
+ * health, campaign activity, and top-of-funnel signals (public store scans
+ * happen before signup, so they're the earliest interest signal we have).
+ * Every query here reads real tables directly with the service-role client —
+ * no caching, no Stripe dependency, so this always loads even if Stripe is
+ * unconfigured. Tables are small pre-launch, so aggregation happens in JS
+ * after a plain select rather than hand-rolled SQL aggregates; revisit with
+ * real Postgres aggregates if any of these tables grow past a few thousand rows.
+ */
+function isoWeekKeyAdmin(d: Date = new Date()): string {
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const weekNum = 1 + Math.round(
+    ((date.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7,
+  );
+  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
+
+async function handleGetPlatformStats(): Promise<Record<string, unknown>> {
+  const nowIso = new Date().toISOString();
+  const in7dIso = new Date(Date.now() + 7 * 86_400_000).toISOString();
+  const thisWeek = isoWeekKeyAdmin();
+  const thisMonth = nowIso.slice(0, 7);
+
+  const [
+    plansRes,
+    expiringRes,
+    integrationsRes,
+    aiCreditsWeekRes,
+    aiCreditsAllRes,
+    topupsRes,
+    productsRes,
+    campaignsRes,
+    briefsRes,
+    storeIntelRes,
+    publicScansRes,
+    ugcRes,
+    optimizerRunsRes,
+  ] = await Promise.all([
+    supabase.from('user_plans').select('plan, stripe_sub_id'),
+    supabase.from('user_plans')
+      .select('user_id, plan, period_end')
+      .is('stripe_sub_id', null)
+      .not('period_end', 'is', null)
+      .lte('period_end', in7dIso)
+      .gte('period_end', nowIso)
+      .order('period_end', { ascending: true }),
+    supabase.from('user_integrations').select('shopify_token, meta_token, meta_page_id, google_refresh_token'),
+    supabase.from('ai_credits').select('user_id, used').eq('month', thisWeek),
+    supabase.from('ai_credits').select('used'),
+    supabase.from('ai_topups').select('user_id, messages'),
+    supabase.from('shopify_products').select('user_id, cogs_cents, price_cents'),
+    supabase.from('launched_campaigns').select('status, platform, budget_daily, launched_at'),
+    supabase.from('creative_briefs').select('user_id'),
+    supabase.from('store_intelligence').select('user_id'),
+    supabase.from('public_store_scans').select('domain, created_at'),
+    supabase.from('ugc_credits').select('user_id, used').eq('month', thisMonth),
+    supabase.from('optimizer_runs').select('user_id'),
+  ]);
+
+  const plans = plansRes.data ?? [];
+  const planCounts: Record<string, number> = { starter: 0, growth: 0, scale: 0 };
+  let manualGrants = 0;
+  for (const p of plans) {
+    const plan = (p.plan as string) ?? 'starter';
+    if (plan in planCounts) planCounts[plan] += 1;
+    if (!p.stripe_sub_id && plan !== 'starter') manualGrants += 1;
+  }
+
+  const integrations = integrationsRes.data ?? [];
+  const integrationCounts = {
+    total_users_with_row: integrations.length,
+    shopify_connected: integrations.filter(r => r.shopify_token).length,
+    meta_connected:    integrations.filter(r => r.meta_token).length,
+    meta_page_linked:  integrations.filter(r => r.meta_page_id).length,
+    google_connected:  integrations.filter(r => r.google_refresh_token).length,
+  };
+
+  const aiWeek = aiCreditsWeekRes.data ?? [];
+  const aiAll = aiCreditsAllRes.data ?? [];
+  const topups = topupsRes.data ?? [];
+  const auren = {
+    messages_this_week:  aiWeek.reduce((s, r) => s + (r.used ?? 0), 0),
+    active_users_this_week: aiWeek.filter(r => (r.used ?? 0) > 0).length,
+    messages_all_time:   aiAll.reduce((s, r) => s + (r.used ?? 0), 0),
+    topups_purchased:    topups.length,
+    topup_messages_granted: topups.reduce((s, r) => s + (r.messages ?? 0), 0),
+    topup_distinct_users: new Set(topups.map(r => r.user_id)).size,
+  };
+
+  const products = productsRes.data ?? [];
+  const withCogs = products.filter(p => p.cogs_cents != null).length;
+  const shopify = {
+    products_synced: products.length,
+    stores_with_products: new Set(products.map(p => p.user_id)).size,
+    cogs_coverage_pct: products.length > 0 ? Math.round((withCogs / products.length) * 1000) / 10 : 0,
+    avg_price_cents: products.length > 0
+      ? Math.round(products.reduce((s, p) => s + (p.price_cents ?? 0), 0) / products.length)
+      : 0,
+  };
+
+  const campaignRows = campaignsRes.data ?? [];
+  const statusCounts: Record<string, number> = { draft: 0, active: 0, paused: 0, failed: 0 };
+  const platformCounts: Record<string, number> = { meta: 0, google: 0, both: 0 };
+  let totalDailyBudget = 0;
+  for (const c of campaignRows) {
+    const status = (c.status as string) ?? 'draft';
+    if (status in statusCounts) statusCounts[status] += 1;
+    const platform = (c.platform as string) ?? 'meta';
+    if (platform in platformCounts) platformCounts[platform] += 1;
+    totalDailyBudget += Number(c.budget_daily ?? 0);
+  }
+  const campaigns = {
+    total: campaignRows.length,
+    by_status: statusCounts,
+    by_platform: platformCounts,
+    launched_count: campaignRows.filter(c => c.launched_at).length,
+    total_daily_budget: Math.round(totalDailyBudget * 100) / 100,
+  };
+
+  const funnel = {
+    public_store_scans: (publicScansRes.data ?? []).length,
+    store_intelligence_runs: (storeIntelRes.data ?? []).length,
+    creative_briefs_generated: (briefsRes.data ?? []).length,
+    optimizer_runs: (optimizerRunsRes.data ?? []).length,
+  };
+
+  const ugcRows = ugcRes.data ?? [];
+  const ugc = {
+    credits_used_this_month: ugcRows.reduce((s, r) => s + (r.used ?? 0), 0),
+    active_users_this_month: ugcRows.filter(r => (r.used ?? 0) > 0).length,
+  };
+
+  return {
+    generated_at: nowIso,
+    plans: { by_tier: planCounts, manual_grants: manualGrants, expiring_soon: expiringRes.data ?? [] },
+    integrations: integrationCounts,
+    auren,
+    shopify,
+    campaigns,
+    funnel,
+    ugc,
+  };
+}
+
 // ── set_plan ──────────────────────────────────────────────────────────────────
+/**
+ * expires_in_days: optional. When given, the grant auto-reverts to 'starter' once
+ * period_end passes — enforced by the manual_grant_expiry cron job (see migration
+ * 025_manual_grant_expiry.sql), which only ever touches rows with stripe_sub_id
+ * IS NULL, so it can never clobber a real paying subscriber. Omit (or pass 0/null)
+ * for a permanent grant, which also clears any previously-set expiry.
+ */
 async function handleSetPlan(body: Record<string, unknown>): Promise<Record<string, unknown>> {
   const targetUserId = String(body.target_user_id ?? '').trim();
   const plan = String(body.plan ?? '').trim();
   if (!targetUserId) throw new Error('target_user_id is required');
   if (!VALID_PLANS.has(plan)) throw new Error('Invalid plan');
 
+  const expiresInDaysRaw = body.expires_in_days;
+  let periodEnd: string | null = null;
+  if (expiresInDaysRaw != null && expiresInDaysRaw !== '') {
+    const days = Number(expiresInDaysRaw);
+    if (!Number.isFinite(days) || days <= 0 || days > 3650) {
+      throw new Error('expires_in_days must be a positive number of days (max 3650)');
+    }
+    periodEnd = new Date(Date.now() + days * 86_400_000).toISOString();
+  }
+
   await updateClerkMetadata(targetUserId, plan);
 
-  // Only user_id/plan are set — stripe_customer_id/stripe_sub_id are intentionally
-  // left untouched so a manual override doesn't clobber a real paying user's Stripe
-  // linkage. A subsequent Stripe webhook for that user can still overwrite this
-  // override later — that's the expected trade-off for a manual "grant/comp" action.
+  // Only user_id/plan/period_end are set — stripe_customer_id/stripe_sub_id are
+  // intentionally left untouched so a manual override doesn't clobber a real
+  // paying user's Stripe linkage. A subsequent Stripe webhook for that user can
+  // still overwrite this override later — that's the expected trade-off for a
+  // manual "grant/comp" action. period_end here is ONLY the comp-expiry date for
+  // manual grants (see cron job above) — for a real Stripe subscriber it would be
+  // overwritten again by the next webhook-driven billing-period update anyway.
   const { error } = await supabase.from('user_plans').upsert(
-    { user_id: targetUserId, plan },
+    { user_id: targetUserId, plan, period_end: periodEnd },
     { onConflict: 'user_id' },
   );
   if (error) throw new Error(`Failed to update user_plans: ${error.message}`);
 
-  return { ok: true, user_id: targetUserId, plan };
+  return { ok: true, user_id: targetUserId, plan, period_end: periodEnd };
 }
 
 // ── ban_user / unban_user ─────────────────────────────────────────────────────
@@ -305,6 +476,8 @@ Deno.serve(async (req) => {
         return okResponse(await handleListUsers(body), origin);
       case 'get_revenue':
         return okResponse(await handleGetRevenue(body), origin);
+      case 'get_platform_stats':
+        return okResponse(await handleGetPlatformStats(), origin);
       case 'set_plan':
         return okResponse(await handleSetPlan(body), origin);
       case 'ban_user':

@@ -22,9 +22,25 @@ interface AdminUser {
 
 const PLANS = ['starter', 'growth', 'scale'] as const;
 
+// Quick expiry choices for a manual grant. 'permanent' omits expires_in_days entirely
+// (admin-api treats that as "no expiry" and clears any previously-set one).
+const EXPIRY_CHOICES = [
+  { value: 'permanent', label: 'Permanent', days: null as number | null },
+  { value: '7',   label: '7 days',   days: 7 },
+  { value: '30',  label: '30 days',  days: 30 },
+  { value: '90',  label: '90 days',  days: 90 },
+  { value: '180', label: '180 days', days: 180 },
+  { value: '365', label: '1 year',   days: 365 },
+];
+
 function fmtDate(iso: string | null): string {
   if (!iso) return '-';
   return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function daysUntil(iso: string | null): number | null {
+  if (!iso) return null;
+  return Math.ceil((new Date(iso).getTime() - Date.now()) / 86_400_000);
 }
 
 // Local-preview-only sample rows — never used on a real deployment (see
@@ -45,6 +61,9 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Per-row pending expiry choice for the NEXT plan grant — 'permanent' by default.
+  // Read at grant time, not stored server-side until a grant actually happens.
+  const [expiryChoice, setExpiryChoice] = useState<Record<string, string>>({});
 
   async function load() {
     if (!session) {
@@ -70,14 +89,23 @@ export default function AdminUsersPage() {
     return users.filter(u => u.email.toLowerCase().includes(q));
   }, [users, query]);
 
-  async function handleSetPlan(user: AdminUser, plan: string) {
-    if (plan === user.plan) return;
-    if (!window.confirm(`Set ${user.email}'s plan to "${plan}"?`)) return;
+  async function handleSetPlan(user: AdminUser, plan: string, daysOverride?: number | null) {
+    if (plan === user.plan && daysOverride === undefined) return;
+    const choice = daysOverride !== undefined
+      ? daysOverride
+      : (EXPIRY_CHOICES.find(c => c.value === (expiryChoice[user.id] ?? 'permanent'))?.days ?? null);
+    const expiryLabel = choice ? `for ${choice} days` : 'permanently';
+    if (!window.confirm(`Set ${user.email}'s plan to "${plan}" ${expiryLabel}?`)) return;
     setBusyId(user.id);
-    const res = await adminFetch(session, 'set_plan', { target_user_id: user.id, plan });
+    const res = await adminFetch(session, 'set_plan', {
+      target_user_id: user.id,
+      plan,
+      ...(choice ? { expires_in_days: choice } : {}),
+    });
     setBusyId(null);
     if (!res.ok) { alert(res.error ?? 'Failed to update plan'); return; }
-    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, plan } : u));
+    const periodEnd = (res.data as { period_end?: string | null } | null)?.period_end ?? null;
+    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, plan, period_end: periodEnd } : u));
   }
 
   async function handleBanToggle(user: AdminUser) {
@@ -122,6 +150,7 @@ export default function AdminUsersPage() {
                 <tr>
                   <th className="px-7 py-4 font-semibold">Email</th>
                   <th className="px-7 py-4 font-semibold">Plan</th>
+                  <th className="px-7 py-4 font-semibold">Expires</th>
                   <th className="px-7 py-4 font-semibold">Status</th>
                   <th className="px-7 py-4 font-semibold">Signed up</th>
                   <th className="px-7 py-4 font-semibold">Last active</th>
@@ -130,28 +159,60 @@ export default function AdminUsersPage() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} className="px-7 py-12 text-center text-eph-muted">Loading…</td></tr>
+                  <tr><td colSpan={7} className="px-7 py-12 text-center text-eph-muted">Loading…</td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="px-7 py-12 text-center text-eph-muted">No users found.</td></tr>
+                  <tr><td colSpan={7} className="px-7 py-12 text-center text-eph-muted">No users found.</td></tr>
                 ) : (
-                  filtered.map(u => (
+                  filtered.map(u => {
+                    const remaining = daysUntil(u.period_end);
+                    return (
                     <tr key={u.id} className="border-b border-eph-border/60 transition-colors last:border-0 hover:bg-white/[0.025]">
                       <td className="px-7 py-4">
                         <div className="font-medium text-eph-text">{u.email || '(no email)'}</div>
                         {u.role && <div className="text-xs text-eph-muted">{u.role}</div>}
                       </td>
                       <td className="px-7 py-4">
-                        <select
-                          value={u.plan}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <select
+                            value={u.plan}
+                            disabled={busyId === u.id}
+                            onChange={(e) => handleSetPlan(u, e.target.value)}
+                            className="rounded-xl border border-eph-border bg-eph-surface2 px-2.5 py-1.5 text-sm text-eph-text disabled:opacity-50"
+                          >
+                            {PLANS.map(p => <option key={p} value={p}>{p}</option>)}
+                          </select>
+                          <select
+                            value={expiryChoice[u.id] ?? 'permanent'}
+                            disabled={busyId === u.id}
+                            onChange={(e) => setExpiryChoice(prev => ({ ...prev, [u.id]: e.target.value }))}
+                            title="Applied on the next plan change above"
+                            className="rounded-xl border border-eph-border bg-eph-surface2 px-2.5 py-1.5 text-xs text-eph-muted disabled:opacity-50"
+                          >
+                            {EXPIRY_CHOICES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                          </select>
+                          {!u.is_paying && u.plan !== 'starter' && (
+                            <Badge color="amber">manual grant</Badge>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleSetPlan(u, 'growth', 90)}
                           disabled={busyId === u.id}
-                          onChange={(e) => handleSetPlan(u, e.target.value)}
-                          className="rounded-xl border border-eph-border bg-eph-surface2 px-2.5 py-1.5 text-sm text-eph-text disabled:opacity-50"
+                          className="mt-1.5 rounded-lg border border-eph-primary/30 px-2 py-1 text-[11px] font-semibold text-eph-primary transition-colors hover:bg-eph-primary/10 disabled:opacity-50"
                         >
-                          {PLANS.map(p => <option key={p} value={p}>{p}</option>)}
-                        </select>
-                        {!u.is_paying && (
-                          <Badge className="ml-2" color="amber">manual grant</Badge>
-                        )}
+                          Reward: 3mo Growth
+                        </button>
+                      </td>
+                      <td className="px-7 py-4 text-eph-muted">
+                        {u.period_end ? (
+                          <div>
+                            <div>{fmtDate(u.period_end)}</div>
+                            {remaining !== null && (
+                              <div className={`text-xs ${remaining <= 7 ? 'text-eph-warning' : 'text-eph-subtle'}`}>
+                                {remaining >= 0 ? `${remaining}d left` : 'expired'}
+                              </div>
+                            )}
+                          </div>
+                        ) : '-'}
                       </td>
                       <td className="px-7 py-4">
                         {u.banned
@@ -170,7 +231,8 @@ export default function AdminUsersPage() {
                         </button>
                       </td>
                     </tr>
-                  ))
+                    );
+                  })
                 )}
               </tbody>
             </table>
