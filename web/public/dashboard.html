@@ -544,9 +544,11 @@ select.form-input{cursor:pointer}
 .ai-tool-steps { display:flex; flex-direction:column; gap:6px; margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
 .ai-tool-step { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--muted); }
 .ai-tool-step-icon { width:14px; height:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
-.ai-tool-step.done .ai-tool-step-icon { color:var(--success); }
+.ai-tool-step.done .ai-tool-step-icon { color:var(--primary); }
 .ai-tool-step.running .ai-tool-step-icon { color:var(--primary); animation:spin .8s linear infinite; }
+.ai-tool-step.error .ai-tool-step-icon { color:var(--danger); }
 .ai-tool-step.done { color:var(--text); }
+.ai-tool-step.error { color:var(--danger); }
 .ai-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; padding:6px 4px 14px; flex-shrink:0; }
 .ai-page.ai-active .ai-chips { justify-content:flex-start; padding:14px 4px; }
 .ai-chip { padding:7px 13px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; font-size:12.5px; color:var(--text); cursor:pointer; transition:all .2s; white-space:nowrap; font-family:'Inter',sans-serif; }
@@ -4490,14 +4492,31 @@ function aiAppendMsg(text, role, opts) {
   const div = document.createElement('div');
   div.className = `ai-msg ${role}`;
   if (role === 'bot') {
-    if (opts && opts.stream) { aiStreamReveal(div, text, opts.onDone); }
-    else { div.innerHTML = renderChatMarkdown(text); }
+    // Reply text lives in its own inner node so the tool-steps checklist (appended as a
+    // sibling below) never gets wiped out by aiStreamReveal's repeated innerHTML writes.
+    const textEl = document.createElement('div');
+    textEl.className = 'ai-msg-text';
+    div.appendChild(textEl);
+    if (opts && opts.stream) { aiStreamReveal(textEl, text, opts.onDone); }
+    else { textEl.innerHTML = renderChatMarkdown(text); }
   } else {
     div.textContent = text;
   }
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
   return div;
+}
+
+/** Streams reply text into an already-appended bot message div (created empty while tool
+ *  calls were still running). Reuses/creates the `.ai-msg-text` inner node. */
+function aiStreamRevealInto(msgEl, text, onDone) {
+  let textEl = msgEl.querySelector('.ai-msg-text');
+  if (!textEl) {
+    textEl = document.createElement('div');
+    textEl.className = 'ai-msg-text';
+    msgEl.insertBefore(textEl, msgEl.firstChild);
+  }
+  aiStreamReveal(textEl, text, onDone);
 }
 
 /** Spins/stops the small Auren mark in the page header — the only "is it working" cue, no per-message avatar. */
@@ -4538,10 +4557,17 @@ function aiAppendThinking() {
   return div;
 }
 
+const AI_TOOL_STEP_ICONS = {
+  done:    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>',
+  error:   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+  running: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>',
+};
+
 /**
  * Renders the tool-call trail under a bot message (e.g. "Pulled campaign performance",
- * "Analysed CTR trend") — ready for when the backend actually reports real tool calls.
- * steps: [{ label: string, status: 'running'|'done' }]
+ * "Analysed CTR trend"). Each step shows a spinning circle while running, then a checkmark
+ * in Ephermal cyan once done (or an X if the tool call failed).
+ * steps: [{ label: string, status: 'running'|'done'|'error' }]
  */
 function aiRenderToolSteps(msgEl, steps) {
   if (!steps || !steps.length) return;
@@ -4553,15 +4579,47 @@ function aiRenderToolSteps(msgEl, steps) {
   }
   wrap.innerHTML = steps.map(s => `
     <div class="ai-tool-step ${s.status}">
-      <span class="ai-tool-step-icon">${s.status === 'done'
-        ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><polyline points="20 6 9 17 4 12"/></svg>'
-        : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="12" height="12"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'}</span>
+      <span class="ai-tool-step-icon">${AI_TOOL_STEP_ICONS[s.status] || AI_TOOL_STEP_ICONS.running}</span>
       <span>${escHtml(s.label)}</span>
     </div>`).join('');
+  const box = document.getElementById('ai-messages');
+  if (box) box.scrollTop = box.scrollHeight;
+}
+
+/** Upserts one step's status by label in a live steps array, then re-renders. Used while
+ *  streaming tool_start/tool_done SSE events so the checklist updates in real time. */
+function aiUpsertToolStep(msgEl, steps, label, status) {
+  const existing = steps.find(s => s.label === label);
+  if (existing) existing.status = status;
+  else steps.push({ label, status });
+  aiRenderToolSteps(msgEl, steps);
+}
+
+/**
+ * Calls ai-assistant directly (NOT via cache-proxy — the proxy buffers the whole response
+ * into one JSON blob, which would defeat the point of streaming). Returns the raw fetch
+ * Response so the caller can read it as SSE, or null if no Clerk token is available.
+ * Retries once with a forced-fresh token on a 401, same policy as authFetch.
+ */
+async function aiChatFetch(payload) {
+  const doFetch = async (tok) => fetch(`${window.SUPABASE_FN}/ai-assistant`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tok}`, 'apikey': window.SUPABASE_ANON },
+    body: JSON.stringify(payload),
+  });
+  const token = await _getClerkToken(false);
+  if (!token) return null;
+  let res = await doFetch(token);
+  if (res.status === 401) {
+    const freshToken = await _getClerkToken(true);
+    if (freshToken) res = await doFetch(freshToken);
+  }
+  return res;
 }
 
 async function sendAIMessage() {
   if (!canAccess('ai')) { showUpgradeModal('ai'); return; }
+  try { window.RateLimit?.check('/ai', 20); } catch(e) { showToast(e.message, 'error'); return; }
   const input = document.getElementById('ai-input');
   const msg = input.value.trim();
   if (!msg) return;
@@ -4576,20 +4634,15 @@ async function sendAIMessage() {
   aurenSetActive(true);
   const btn = document.getElementById('ai-send-btn');
   btn.disabled = true;
+  const plan = getUserPlan();
   try {
     const userId = window.Clerk?.user?.id || '';
-    const plan = getUserPlan();
-    const r = await authFetch('/ai', {
-      method: 'POST',
-      body: JSON.stringify({ action: 'chat', message: msg, context: aiGetContext(), user_id: userId, plan })
-    });
+    const r = await aiChatFetch({ action: 'chat', message: msg, context: aiGetContext(), user_id: userId, plan });
     thinkingEl.remove();
-    if (r && r.ok) {
-      const d = await r.json();
-      const botEl = aiAppendMsg(d.reply || d.message || 'Done!', 'bot', { stream: true, onDone: () => aurenSetActive(false) });
-      if (d.tool_calls?.length) aiRenderToolSteps(botEl, d.tool_calls);
-      await recordAIMessage();
-    } else if (r && r.status === 429) {
+
+    if (!r) { aurenSetActive(false); aiAppendMsg("I'm having trouble connecting right now. Try again shortly.", 'bot'); return; }
+
+    if (r.status === 429) {
       aurenSetActive(false);
       const d = await r.json().catch(() => ({}));
       const limit = d.limit ?? null;
@@ -4597,10 +4650,57 @@ async function sendAIMessage() {
         ? `You've used all your AI messages this month (${limit} on ${plan} plan). Top up to keep going.`
         : (d.error || "You've hit a rate limit - try again in a moment."), 'bot');
       if (limit) aiShowTopupBanner(limit, plan);
-    } else {
-      aurenSetActive(false);
-      aiAppendMsg("I'm having trouble connecting right now. Try again shortly.", 'bot');
+      return;
     }
+
+    if (!r.ok || !r.body || !(r.headers.get('content-type') || '').includes('text/event-stream')) {
+      aurenSetActive(false);
+      const d = await r.json().catch(() => ({}));
+      aiAppendMsg(d.error || "I'm having trouble connecting right now. Try again shortly.", 'bot');
+      return;
+    }
+
+    // Live checklist: create an empty bot message now, fill in each tool step as its
+    // tool_start/tool_done SSE event arrives, then stream-reveal the reply text once
+    // the 'final' event lands.
+    const botEl = aiAppendMsg('', 'bot');
+    const steps = [];
+    let settled = false;
+
+    const reader = r.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      let sep;
+      while ((sep = buf.indexOf('\n\n')) !== -1) {
+        const frame = buf.slice(0, sep);
+        buf = buf.slice(sep + 2);
+        let event = 'message', data = null;
+        for (const line of frame.split('\n')) {
+          if (line.startsWith('event: ')) event = line.slice(7);
+          else if (line.startsWith('data: ')) { try { data = JSON.parse(line.slice(6)); } catch(e) { data = null; } }
+        }
+        if (!data) continue;
+
+        if (event === 'tool_start') {
+          aiUpsertToolStep(botEl, steps, data.label, 'running');
+        } else if (event === 'tool_done') {
+          aiUpsertToolStep(botEl, steps, data.label, data.status === 'error' ? 'error' : 'done');
+        } else if (event === 'final') {
+          settled = true;
+          aiStreamRevealInto(botEl, data.reply || 'Done!', () => aurenSetActive(false));
+          await recordAIMessage();
+        } else if (event === 'error') {
+          settled = true;
+          aurenSetActive(false);
+          aiStreamRevealInto(botEl, data.error || 'Something went wrong - please try again.');
+        }
+      }
+    }
+    if (!settled) { aurenSetActive(false); aiStreamRevealInto(botEl, "Connection dropped before Auren finished - please try again."); }
   } catch(e) {
     thinkingEl.remove();
     aurenSetActive(false);

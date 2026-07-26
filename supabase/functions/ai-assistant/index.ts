@@ -313,12 +313,17 @@ async function getStoreBrief(userId: string): Promise<Record<string, unknown> | 
   return data ?? null;
 }
 
-/** Runs the tool-use loop for the chat action. Returns the final reply text + tool call trail. */
+type ChatEmit = (event: string, data: Record<string, unknown>) => void;
+
+/** Runs the tool-use loop for the chat action. Returns the final reply text + tool call trail.
+ *  If `emit` is given, streams tool_start/tool_done events as each tool call happens, so the
+ *  UI can show a live checklist instead of only finding out about tool calls after the fact. */
 async function runChatWithTools(
   rawToken: string,
   userId: string,
   message: string,
   context: unknown,
+  emit?: ChatEmit,
 ): Promise<{ reply: string; tool_calls: ToolCallTrail[] }> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
 
@@ -395,13 +400,17 @@ Every campaign you launch is always created PAUSED regardless of what the user a
         trail.push({ label: `Unknown tool: ${use.name}`, status: 'error' });
       } else {
         const input = use.input ?? {};
+        const label = def.label(input);
+        emit?.('tool_start', { label });
         try {
           const result = await callInternal(def.fn, def.buildBody(input), rawToken);
           content = JSON.stringify(result).slice(0, 8000); // cap payload back to the model
-          trail.push({ label: def.label(input), status: 'done' });
+          trail.push({ label, status: 'done' });
+          emit?.('tool_done', { label, status: 'done' });
         } catch (e) {
           content = JSON.stringify({ error: e instanceof Error ? e.message : 'Tool call failed' });
-          trail.push({ label: def.label(input), status: 'error' });
+          trail.push({ label, status: 'error' });
+          emit?.('tool_done', { label, status: 'error' });
         }
       }
       resultBlocks.push({ type: 'tool_result', tool_use_id: use.id!, content });
@@ -459,9 +468,34 @@ Deno.serve(async (req) => {
         const message = String(body.message ?? '').trim();
         if (!message) return errResponse('message is required', 400, origin);
 
-        const { reply, tool_calls } = await runChatWithTools(rawToken, userId, message, body.context);
-        result = { reply, tool_calls, used: newCount, limit };
-        break;
+        // Streamed as SSE so the dashboard can show each tool call's checklist step live
+        // (spinner while running, checkmark once it resolves) instead of only learning
+        // about tool calls after the whole reply is already back.
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream({
+          async start(controller) {
+            const emit: ChatEmit = (event, data) => {
+              controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
+            };
+            try {
+              const { reply, tool_calls } = await runChatWithTools(rawToken, userId, message, body.context, emit);
+              emit('final', { reply, tool_calls, used: newCount, limit });
+            } catch (e) {
+              emit('error', { error: e instanceof Error ? e.message : 'AI error' });
+            } finally {
+              controller.close();
+            }
+          },
+        });
+
+        return new Response(stream, {
+          headers: {
+            ...corsHeaders(origin),
+            'Content-Type': 'text/event-stream; charset=utf-8',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+          },
+        });
       }
 
       case 'analyze': {

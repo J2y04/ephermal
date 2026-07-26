@@ -191,7 +191,8 @@ Deno.serve(async (req) => {
             };
           });
 
-          await supabase.from('shopify_products').upsert(rows, { onConflict: 'shopify_id,user_id' });
+          const { error: upsertError } = await supabase.from('shopify_products').upsert(rows, { onConflict: 'shopify_id,user_id' });
+          if (upsertError) throw new Error(`Failed to save synced products: ${upsertError.message}`);
         }
 
         // Update last sync time on user_integrations
