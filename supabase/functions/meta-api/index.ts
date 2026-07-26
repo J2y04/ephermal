@@ -594,6 +594,43 @@ Deno.serve(async (req) => {
       const body = postBody;
 
       switch (postAction) {
+        // Read actions are normally hit via GET from the dashboard, but Auren's tool-use
+        // dispatcher (ai-assistant) always calls internal functions with POST — without
+        // these cases every get_meta_overview/get_meta_campaigns call from Auren would 400
+        // with "Unknown action" despite valid credentials.
+        case 'overview':
+          return okResponse(await getOverview(accountId, token, userId), origin);
+
+        case 'campaigns':
+          return okResponse(await getCampaigns(accountId, token, userId), origin);
+
+        case 'creatives':
+          return okResponse(await getCreatives(accountId, token, userId, body.status ? String(body.status) : undefined), origin);
+
+        case 'audiences':
+          return okResponse(await getAudiences(accountId, token, userId), origin);
+
+        case 'pixel':
+          return okResponse(await getPixel(accountId, token), origin);
+
+        case 'analytics': {
+          const campaigns = await getCampaigns(accountId, token, userId);
+          const totals = campaigns.reduce(
+            (acc, c) => ({
+              spend:       acc.spend + (c.total_spend || 0),
+              impressions: acc.impressions + (c.impressions || 0),
+              clicks:      acc.clicks + (c.clicks || 0),
+              conversions: acc.conversions + (c.conversions || 0),
+            }),
+            { spend: 0, impressions: 0, clicks: 0, conversions: 0 },
+          );
+          const roasArr = campaigns.filter(c => c.roas > 0).map(c => c.roas);
+          const avgRoas = roasArr.length
+            ? roasArr.reduce((a: number, b: number) => a + b, 0) / roasArr.length
+            : 0;
+          return okResponse({ ...totals, roas: Math.round(avgRoas * 100) / 100, campaigns }, origin);
+        }
+
         case 'select_account': {
           const accountId2 = String(body.account_id ?? '');
           if (!accountId2) return errResponse('account_id required', 400, origin);
