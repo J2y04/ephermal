@@ -522,6 +522,18 @@ Return ONLY valid JSON, no markdown.`;
         break;
       }
 
+      case 'profit_summary': {
+        const report = body.report as Record<string, unknown> ?? {};
+        const system = `You are a plain-spoken profit analyst for a Shopify store owner.
+Given a JSON profit report (per-product margin_percent and a summary block), write a single short paragraph, 2-3 sentences, no headers or bullet points.
+Call out the average margin, name the strongest and weakest performing product by margin, and end with one concrete, specific suggestion (e.g. which product to scale ad spend on, or that more products still need a COGS value entered before the picture is complete).
+If the report has no products or no COGS set yet, say so plainly and tell them to sync products / set COGS instead of inventing numbers.`;
+
+        const reply = await callClaude(system, `Profit report: ${JSON.stringify(report).slice(0, 6000)}`, 220);
+        result = { summary: reply };
+        break;
+      }
+
       case 'generate_description': {
         const product = body.product as Record<string, unknown> ?? {};
         const system = `You are an expert copywriter for Meta Ads. Write high-converting ad copy.

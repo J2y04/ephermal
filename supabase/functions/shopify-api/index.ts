@@ -106,6 +106,35 @@ async function fetchAllProducts(
   return all;
 }
 
+/**
+ * Shopify's own "Cost per item" field lives on the InventoryItem resource, not on the
+ * product/variant object — fetched separately, in batches of up to 250 ids. Requires the
+ * read_inventory scope; if the merchant's stored token predates that scope being requested,
+ * this 403s and we just skip auto-fill for this sync rather than failing the whole thing.
+ */
+async function fetchInventoryCosts(
+  shop: string,
+  token: string,
+  inventoryItemIds: string[],
+): Promise<Map<string, string>> {
+  const costByItemId = new Map<string, string>();
+  for (let i = 0; i < inventoryItemIds.length; i += 250) {
+    const batch = inventoryItemIds.slice(i, i + 250);
+    const url = new URL(`https://${shop}/admin/api/${SHOPIFY_API_VERSION}/inventory_items.json`);
+    url.searchParams.set('ids', batch.join(','));
+    url.searchParams.set('limit', '250');
+    const res = await fetch(url.toString(), {
+      headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) continue; // missing scope or transient error — degrade gracefully, don't fail the sync
+    const data = await res.json().catch(() => ({})) as { inventory_items?: { id: number; cost?: string | null }[] };
+    for (const item of data.inventory_items ?? []) {
+      if (item.cost) costByItemId.set(String(item.id), item.cost);
+    }
+  }
+  return costByItemId;
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
 
@@ -162,6 +191,7 @@ Deno.serve(async (req) => {
       case 'sync_products': {
         // Fetch all products and upsert to shopify_products table
         const products = await fetchAllProducts(shop, token);
+        let cogsAutoFilled = 0;
 
         if (products.length > 0) {
           const rows = products.map(p => {
@@ -193,6 +223,34 @@ Deno.serve(async (req) => {
 
           const { error: upsertError } = await supabase.from('shopify_products').upsert(rows, { onConflict: 'shopify_id,user_id' });
           if (upsertError) throw new Error(`Failed to save synced products: ${upsertError.message}`);
+
+          // Auto-fill COGS from Shopify's own "Cost per item" field (InventoryItem.cost),
+          // where the merchant has already entered it there. Only fills products that
+          // don't already have a cogs_cents value in Ephermal — a manual entry/override
+          // here always wins over Shopify's value on every future sync.
+          const inventoryItemIds = products
+            .map(p => (p.variants as { inventory_item_id?: number }[])?.[0]?.inventory_item_id)
+            .filter((id): id is number => typeof id === 'number')
+            .map(String);
+
+          if (inventoryItemIds.length > 0) {
+            const costByItemId = await fetchInventoryCosts(shop, token, inventoryItemIds);
+            const fillResults = await Promise.all(products.map(async (p) => {
+              const variant = (p.variants as { inventory_item_id?: number }[])?.[0];
+              const cost = variant?.inventory_item_id != null ? costByItemId.get(String(variant.inventory_item_id)) : undefined;
+              if (!cost) return false;
+              const cogsCents = Math.round(parseFloat(cost) * 100);
+              if (!Number.isFinite(cogsCents)) return false;
+              const { data } = await supabase.from('shopify_products')
+                .update({ cogs_cents: cogsCents })
+                .eq('shopify_id', String(p.id))
+                .eq('user_id', userId)
+                .is('cogs_cents', null)
+                .select('id');
+              return !!data && data.length > 0;
+            }));
+            cogsAutoFilled = fillResults.filter(Boolean).length;
+          }
         }
 
         // Update last sync time on user_integrations
@@ -205,6 +263,7 @@ Deno.serve(async (req) => {
           shop,
           message: `Synced ${products.length} products from ${shop}`,
           products,
+          cogs_auto_filled: cogsAutoFilled,
         }, origin);
       }
 
