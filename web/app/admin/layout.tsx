@@ -41,6 +41,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     setLocalDev(isLocalDev());
   }, []);
 
+  // Root layout's <title> defaults to the marketing site's title (Ephermal: AI
+  // Marketing Agent for Shopify) since this admin panel shares the same Next.js
+  // app and this layout is a client component (can't export static `metadata`
+  // like a server layout could). Overwrite it directly instead.
+  useEffect(() => {
+    document.title = 'Ephermal Admin';
+  }, []);
+
   useEffect(() => {
     if (isLoaded && !isSignedIn && !redirecting && !localDev) {
       setRedirecting(true);

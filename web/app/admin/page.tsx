@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSession } from '@clerk/clerk-react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSession, useUser } from '@clerk/clerk-react';
 import { AreaChart } from '@tremor/react';
 import { adminFetch, isLocalDev } from './lib/adminFetch';
+import { getWayneGreeting } from './lib/wayneQuotes';
 import Reveal from './lib/Reveal';
 import Squircle from './lib/Squircle';
 
@@ -45,10 +46,15 @@ function KpiCell({ label, value }: { label: string; value: React.ReactNode }) {
  */
 export default function AdminOverviewPage() {
   const { session } = useSession();
+  const { user } = useUser();
   const [revenue, setRevenue] = useState<RevenueData | null>(null);
   const [userTotal, setUserTotal] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Picked once per page load, not on every re-render — a quote that changes
+  // mid-session would be a distraction, not a feature.
+  const wayne = useMemo(() => getWayneGreeting(user?.firstName), [user?.firstName]);
 
   useEffect(() => {
     if (!session) {
@@ -90,6 +96,11 @@ export default function AdminOverviewPage() {
   return (
     <div className="mx-auto max-w-[1600px] px-10 py-10">
       <Reveal>
+        <div className="text-lg font-semibold tracking-tight text-eph-text">{wayne.greeting}</div>
+        <div className="mt-0.5 text-sm italic text-eph-subtle">&ldquo;{wayne.quote}&rdquo;</div>
+      </Reveal>
+
+      <Reveal delay={0.03} className="mt-7">
         <h1 className="text-[22px] font-semibold tracking-tight text-eph-text">Overview</h1>
         <p className="mt-1 text-sm text-eph-muted">Live from Clerk, no cached values. Revenue lives on the Finance page.</p>
       </Reveal>
