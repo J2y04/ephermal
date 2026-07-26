@@ -36,6 +36,20 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 );
 
+/** ISO 8601 week key, e.g. "2026-W05" — Monday-start week. Mirrors the same helper
+ *  in ai-assistant/index.ts; kept as a local copy since each edge function deploys
+ *  independently and there's no shared date-utils module. */
+function isoWeekKey(d: Date = new Date()): string {
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7; // Mon=0 .. Sun=6
+  date.setUTCDate(date.getUTCDate() - dayNum + 3); // nearest Thursday
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const weekNum = 1 + Math.round(
+    ((date.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7,
+  );
+  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
+
 // AI top-up credit amounts by price ID
 // Keys: Stripe Price IDs for one-time top-up products
 // Values: number of AI messages to credit
@@ -145,18 +159,21 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
     throw new Error(`Unknown top-up price ID: ${priceId}`);
   }
 
-  // Current month key YYYY-MM (UTC)
-  const month = new Date().toISOString().slice(0, 7);
+  // ISO week key (e.g. "2026-W05") — matches ai-assistant's ai_credits period key,
+  // now that the usage limit resets weekly instead of monthly.
+  const week = isoWeekKey();
 
-  // Upsert into ai_topups table — idempotent by payment_intent_id
+  // Upsert into ai_topups table — idempotent by stripe_pi. Column names must match
+  // the actual ai_topups schema (id, user_id, month, messages, stripe_pi, created_at) —
+  // this previously wrote to payment_intent_id/credits, neither of which exist on the
+  // table, so every top-up insert silently failed and no purchased credits were ever
+  // recorded.
   const { error: insertErr } = await supabase.from('ai_topups').upsert({
-    payment_intent_id: paymentIntent.id,
+    stripe_pi: paymentIntent.id,
     user_id:   clerkUserId,
-    month,
-    credits,
-    amount_paid: paymentIntent.amount,
-    currency:    paymentIntent.currency,
-  }, { onConflict: 'payment_intent_id' });
+    month:     week,
+    messages:  credits,
+  }, { onConflict: 'stripe_pi' });
 
   if (insertErr) {
     console.error('Failed to insert ai_topup:', insertErr);

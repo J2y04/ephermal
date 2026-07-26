@@ -33,7 +33,7 @@ const supabase = createClient(
 
 const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_URL   = 'https://api.anthropic.com/v1/messages';
-const ANTHROPIC_MODEL = 'claude-sonnet-5';
+const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
 
 interface OptimizerRules {
   pause_below_roas:  number;

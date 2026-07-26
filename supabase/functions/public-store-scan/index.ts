@@ -23,7 +23,7 @@ import { rateLimitIp, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_URL   = 'https://api.anthropic.com/v1/messages';
-const ANTHROPIC_MODEL = 'claude-sonnet-5';
+const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
 const CACHE_HOURS     = 24;
 
 const supabase = createClient(

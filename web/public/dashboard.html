@@ -2365,8 +2365,9 @@ async function loadCreditsFromSupabase() {
   const clerkUserId = window.__clerk?.user?.id;
   if (!clerkUserId) return;
   const month = new Date().toISOString().slice(0, 7);
+  const aiWeek = isoWeekKey();
   try {
-    // Load UGC credits
+    // Load UGC credits (still monthly — tied to the Stripe billing cycle, unlike Auren's weekly reset)
     const { data: ugcData } = await sb
       .from('ugc_credits')
       .select('used')
@@ -2380,19 +2381,19 @@ async function loadCreditsFromSupabase() {
       .from('ai_credits')
       .select('used')
       .eq('user_id', clerkUserId)
-      .eq('month', month)
+      .eq('month', aiWeek)
       .maybeSingle();
-    if (aiData) localStorage.setItem('ai_used_' + month, String(aiData.used));
+    if (aiData) localStorage.setItem('ai_used_' + aiWeek, String(aiData.used));
 
-    // Load AI top-up pool for this month
+    // Load AI top-up pool for this week
     const { data: topupData } = await sb
       .from('ai_topups')
       .select('messages')
       .eq('user_id', clerkUserId)
-      .eq('month', month);
+      .eq('month', aiWeek);
     if (topupData) {
       const totalTopup = topupData.reduce((sum, r) => sum + (r.messages || 0), 0);
-      localStorage.setItem('ai_topup_' + month, String(totalTopup));
+      localStorage.setItem('ai_topup_' + aiWeek, String(totalTopup));
     }
   } catch(e) {}
 }
@@ -2491,22 +2492,30 @@ function renderPlanUI() {
 }
 
 // ── AI CREDITS BAR ────────────────────────────────────────────────────────────
-const AI_MSG_LIMITS = { starter: 50, growth: 300, scale: 999999 };
-function aiMsgLimit() { return AI_MSG_LIMITS[getUserPlan()] || 50; }
-function aiMsgUsedKey() { return 'ai_used_' + new Date().toISOString().slice(0, 7); }
-function aiTopupKey()   { return 'ai_topup_' + new Date().toISOString().slice(0, 7); }
+// Mirrors ai-assistant/index.ts's isoWeekKey() + PLAN_LIMITS — Auren's usage cap
+// resets weekly, not monthly, so the frontend progress bar needs the same period
+// key and the same numbers or it'll show a stale/wrong "X / Y" all week.
+function isoWeekKey(d) {
+  d = d || new Date();
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7; // Mon=0 .. Sun=6
+  date.setUTCDate(date.getUTCDate() - dayNum + 3); // nearest Thursday
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const weekNum = 1 + Math.round(((date.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
+  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
+const AI_MSG_LIMITS = { starter: 12, growth: 50, scale: 125 };
+function aiMsgLimit() { return AI_MSG_LIMITS[getUserPlan()] || 12; }
+function aiMsgUsedKey() { return 'ai_used_' + isoWeekKey(); }
+function aiTopupKey()   { return 'ai_topup_' + isoWeekKey(); }
 // Server-authoritative: reads from localStorage (populated by loadCreditsFromSupabase)
 function aiMsgUsed() { return parseInt(localStorage.getItem(aiMsgUsedKey()) || '0', 10); }
 function aiTopupCredits() { return parseInt(localStorage.getItem(aiTopupKey()) || '0', 10); }
 function aiEffectiveLimit() { return aiMsgLimit() + aiTopupCredits(); }
 
 function updateAICreditsBar() {
-  const plan = getUserPlan();
-  if (plan === 'scale') {
-    const wrap = document.getElementById('ai-credits-bar-wrap');
-    if (wrap) wrap.style.display = 'none';
-    return;
-  }
+  // Scale's weekly cap (125) is real and hittable, unlike the old 999999
+  // placeholder — no plan is exempt from showing the bar anymore.
   const limit = aiEffectiveLimit();
   const used = aiMsgUsed();
   const left = Math.max(0, limit - used);
@@ -2532,7 +2541,7 @@ async function recordAIMessage() {
   if (!sb) return;
   const clerkUserId = window.__clerk?.user?.id;
   if (!clerkUserId) return;
-  const month = new Date().toISOString().slice(0, 7);
+  const month = isoWeekKey();
   try {
     await sb.from('ai_credits').upsert(
       { user_id: clerkUserId, month, used: newUsed },
@@ -4685,7 +4694,7 @@ async function sendAIMessage() {
       const d = await r.json().catch(() => ({}));
       const limit = d.limit ?? null;
       aiAppendMsg(limit
-        ? `You've used all your AI messages this month (${limit} on ${plan} plan). Top up to keep going.`
+        ? `You've used all your AI messages this week (${limit} on ${plan} plan). Top up, or your quota refills next week.`
         : (d.error || "You've hit a rate limit - try again in a moment."), 'bot');
       if (limit) aiShowTopupBanner(limit, plan);
       return;
@@ -4753,8 +4762,8 @@ function aiShowTopupBanner(limit, plan) {
   const div = document.createElement('div');
   div.id = 'ai-topup-banner';
   div.style.cssText = 'margin:8px 0;padding:14px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:12px;text-align:center;font-size:13px;color:var(--warning)';
-  div.innerHTML = `<strong style="display:block;margin-bottom:6px">Monthly limit reached (${limit} messages)</strong>
-    <span style="color:var(--muted);font-size:12px">Top up for $5 = 200 extra messages this month</span><br>
+  div.innerHTML = `<strong style="display:block;margin-bottom:6px">Weekly limit reached (${limit} messages)</strong>
+    <span style="color:var(--muted);font-size:12px">Top up for $5 = 50 extra messages this week</span><br>
     <button onclick="if(!window.STRIPE_PRICES?.topup_5){showToast('Billing not configured. Contact support','error');return;}startCheckout(window.STRIPE_PRICES.topup_5)" style="display:inline-block;margin-top:10px;padding:8px 20px;background:var(--primary);color:#08080c;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Get 50 more messages</button>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;

@@ -40,12 +40,32 @@ const CHAT_MODEL     = 'claude-sonnet-5'; // the tool-use chat loop — reasonin
 const SUPABASE_ANON  = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 const FN_BASE        = `${Deno.env.get('SUPABASE_URL') ?? ''}/functions/v1`;
 
-// Plan → monthly AI message limits
+// Plan → weekly AI message limits. Resets every ISO week (Mon-Sun) rather than
+// monthly — a user who burns through their quota early in the month previously
+// had to wait weeks for the reset; weekly resets keep the wait short regardless
+// of when in the month they hit the cap.
 const PLAN_LIMITS: Record<string, number> = {
-  starter: 50,
-  growth:  200,
-  scale:   500,
+  starter: 12,
+  growth:  50,
+  scale:   125,
 };
+
+/**
+ * ISO 8601 week key, e.g. "2026-W05" — Monday-start week, used as the period
+ * bucket for ai_credits/ai_topups (same role the old "YYYY-MM" month string
+ * played; the DB column is still named `month` but is just an opaque period
+ * key, so no migration is needed to switch its format).
+ */
+function isoWeekKey(d: Date = new Date()): string {
+  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7; // Mon=0 .. Sun=6
+  date.setUTCDate(date.getUTCDate() - dayNum + 3); // nearest Thursday
+  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const weekNum = 1 + Math.round(
+    ((date.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7,
+  );
+  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
+}
 
 const STYLE_GUARD = '\n\nWriting style: write like a real advertising consultant, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
@@ -82,11 +102,11 @@ async function callClaude(
 
 /** Get user's plan and current AI usage */
 async function getUsage(userId: string): Promise<{ plan: string; used: number; limit: number }> {
-  const month = new Date().toISOString().slice(0, 7);
+  const week = isoWeekKey();
 
   const [planRes, creditsRes] = await Promise.all([
     supabase.from('user_plans').select('plan').eq('user_id', userId).single(),
-    supabase.from('ai_credits').select('used').eq('user_id', userId).eq('month', month).single(),
+    supabase.from('ai_credits').select('used').eq('user_id', userId).eq('month', week).single(),
   ]);
 
   const plan  = planRes.data?.plan ?? 'starter';
@@ -101,18 +121,18 @@ async function getUsage(userId: string): Promise<{ plan: string; used: number; l
  * Uses a DB-level atomic increment to prevent race conditions from concurrent requests.
  */
 async function atomicIncrementUsage(userId: string, limit: number): Promise<number | null> {
-  const month = new Date().toISOString().slice(0, 7);
+  const week = isoWeekKey();
 
   // Ensure row exists first (upsert with 0 if new)
   await supabase.from('ai_credits').upsert(
-    { user_id: userId, month, used: 0 },
+    { user_id: userId, month: week, used: 0 },
     { onConflict: 'user_id,month', ignoreDuplicates: true },
   );
 
   // Atomic conditional increment: only increments if used < limit
   const { data, error } = await supabase.rpc('increment_ai_usage', {
     p_user_id: userId,
-    p_month:   month,
+    p_month:   week,
     p_limit:   limit,
   });
 
@@ -125,9 +145,9 @@ async function atomicIncrementUsage(userId: string, limit: number): Promise<numb
   return data as number | null; // null = limit already hit; number = new count
 }
 
-/** JSON response for the monthly-limit case — includes `limit` so the UI can show the real upgrade prompt. */
+/** JSON response for the weekly-limit case — includes `limit` so the UI can show the real upgrade prompt. */
 function limitReachedResponse(origin: string | null, limit: number): Response {
-  return new Response(JSON.stringify({ error: `AI message limit reached (${limit}/month). Top up in billing.`, limit }), {
+  return new Response(JSON.stringify({ error: `AI message limit reached (${limit}/week). Top up in billing.`, limit }), {
     status: 429,
     headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
   });
