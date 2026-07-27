@@ -57,6 +57,14 @@ export default function DocsPage() {
             <a className="docs-nav-link" href="#lookalike">Lookalike audience</a>
             <a className="docs-nav-link" href="#pixel">Meta Pixel</a>
           </div>
+          <div className="docs-nav-group">
+            <div className="docs-nav-label">Google Search Ads</div>
+            <a className="docs-nav-link" href="#google-vs-meta">How it&apos;s different from Meta</a>
+            <a className="docs-nav-link" href="#keywords">Keywords &amp; match types</a>
+            <a className="docs-nav-link" href="#negative-keywords">Negative keywords</a>
+            <a className="docs-nav-link" href="#ad-extensions">Ad extensions</a>
+            <a className="docs-nav-link" href="#google-not-yet">What&apos;s not supported yet</a>
+          </div>
         </aside>
 
         <main className="docs-content">
@@ -244,7 +252,7 @@ export default function DocsPage() {
             </div>
             <div className="docs-term" id="creative">
               <h3>Creative</h3>
-              <p>The actual ad itself: the video, image, headline and copy a shopper sees. Ephermal&apos;s AI generates creatives (including UGC-style video ads) for you to review before they go live.</p>
+              <p>The actual ad itself: the headline, copy, and (on Meta) image a shopper sees. Ephermal&apos;s AI generates ad copy and UGC-style scripts for you to review before anything goes live. Video ad generation is coming soon and not yet available.</p>
             </div>
             <div className="docs-term" id="campaign-status">
               <h3>Live / Paused / Draft / Failed</h3>
@@ -265,6 +273,74 @@ export default function DocsPage() {
             <div className="docs-term" id="pixel">
               <h3>Meta Pixel</h3>
               <p>A small snippet of tracking code installed on your store that tells Meta when someone views a product, adds to cart, or completes a purchase after clicking your ad. It&apos;s what makes accurate ROAS reporting and audience building possible. Check its status on the Audience Intel page.</p>
+            </div>
+          </section>
+
+          {/* ── Google Search Ads ── */}
+          <section className="docs-section" id="google-vs-meta">
+            <h2>Google Search Ads</h2>
+            <p className="docs-section-sub">A genuinely different kind of advertising from Meta &mdash; worth understanding before you launch your first one.</p>
+            <div className="docs-step">
+              <div className="docs-step-num">1</div>
+              <div className="docs-step-body">
+                <h3>Meta is asset-based. Google Search is intent-based.</h3>
+                <p>On Meta, you upload an image or video and Meta shows it to people it thinks will like it, based on interests and behavior. There&apos;s no equivalent creative to upload for Google Search: instead, your ad is a few lines of text that appears when someone types a search that matches your chosen keywords. You&apos;re not interrupting a scroll, you&apos;re answering a search someone already typed. Same product, completely different mechanic and completely different ad format.</p>
+              </div>
+            </div>
+            <div className="docs-step">
+              <div className="docs-step-num">2</div>
+              <div className="docs-step-body">
+                <h3>Ranking works differently too</h3>
+                <p>A Meta ad&apos;s reach depends on your budget and the algorithm&apos;s read on relevance to an audience. A Google Search ad&apos;s position on the results page depends on your bid <em>and</em> Google&apos;s Quality Score, how well your keywords, ad copy, and landing page all match the searcher&apos;s intent. A well-matched, lower-bid ad can outrank a poorly-matched, higher-bid one.</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="docs-section" id="keywords">
+            <h2>Keywords &amp; match types</h2>
+            <div className="docs-term">
+              <h3>Keyword</h3>
+              <p>A word or phrase you&apos;re telling Google to show your ad for, e.g. &quot;waterproof running shoes.&quot; Ephermal&apos;s AI generates these from your product catalog when it builds a campaign.</p>
+            </div>
+            <div className="docs-term">
+              <h3>Match type</h3>
+              <p>How closely a shopper&apos;s search has to match your keyword for your ad to show. Ephermal uses a deliberate mix, not one blanket setting:</p>
+              <p><strong>Exact match</strong> &mdash; only very close variations of the keyword trigger your ad. Tightest control, used for your highest-intent, most specific terms.<br/>
+              <strong>Phrase match</strong> &mdash; searches containing your keyword phrase (with extra words before or after) trigger your ad. Broader reach while staying relevant.<br/>
+              <strong>Broad match</strong> &mdash; Google has the most latitude to match related searches. Used sparingly, only for genuine discovery terms, since it carries the most risk of showing your ad for an irrelevant search.</p>
+            </div>
+          </section>
+
+          <section className="docs-section" id="negative-keywords">
+            <h2>Negative keywords</h2>
+            <div className="docs-term">
+              <p>Terms you explicitly tell Google <em>not</em> to show your ad for, even if they&apos;d otherwise match. For example, if you sell full-price running shoes, you might exclude searches containing &quot;free&quot; or &quot;jobs&quot; or &quot;diy repair.&quot; Ephermal generates a negative keyword list automatically for every campaign it builds &mdash; without one, an account can burn real budget on clicks that were never going to buy anything.</p>
+            </div>
+          </section>
+
+          <section className="docs-section" id="ad-extensions">
+            <h2>Ad extensions</h2>
+            <div className="docs-term">
+              <p>Extra pieces of information Google can attach to your text ad to make it larger and more useful, at no extra cost. Ephermal generates three kinds for every campaign:</p>
+            </div>
+            <div className="docs-term">
+              <h3>Sitelinks</h3>
+              <p>Extra clickable links to specific pages on your store, e.g. Best Sellers, New Arrivals, Sale &mdash; letting a shopper jump straight to what they actually want instead of landing on your homepage.</p>
+            </div>
+            <div className="docs-term">
+              <h3>Callouts</h3>
+              <p>Short, non-clickable highlights like &quot;Free Shipping&quot; or &quot;30-Day Returns&quot; that add credibility and detail to the ad itself.</p>
+            </div>
+            <div className="docs-term">
+              <h3>Structured snippets</h3>
+              <p>A themed list under a fixed header (like Brands, Styles, or Types) showing specific things your store offers.</p>
+            </div>
+          </section>
+
+          <section className="docs-section" id="google-not-yet">
+            <h2>What&apos;s not supported yet</h2>
+            <div className="docs-callout">
+              Ephermal&apos;s Google integration currently builds <strong>Search</strong> campaigns only. Shopping, Performance Max, Display, and YouTube campaigns are not yet supported &mdash; if you&apos;ve used other tools that offer those, you won&apos;t find them here today. Search alone is genuinely useful (it&apos;s how your store shows up when a customer is actively searching for what you sell), but it&apos;s narrower than the full Google Ads product suite.
             </div>
           </section>
         </main>

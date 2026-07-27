@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "interlink-platforms",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "interlink-platforms"],
+      "port": 3001
+    },
+    {
+      "name": "ephermal-web",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "web", "--", "-p", "3002"],
+      "port": 3002
+    }
+  ]
+}
