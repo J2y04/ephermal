@@ -6211,13 +6211,13 @@ function renderTrackedCompetitors() {
   const el = document.getElementById('radar-tracked-list');
   if (!el) return;
   if (!list.length) {
-    el.innerHTML = '<div style=”font-size:12px;color:var(--muted);padding:4px 0”>No competitors tracked yet. Add brands or keywords above to auto-scan on every visit.</div>';
+    el.innerHTML = '<div style="font-size:12px;color:var(--muted);padding:4px 0">No competitors tracked yet. Add brands or keywords above to auto-scan on every visit.</div>';
     return;
   }
   el.innerHTML = list.map((c, i) =>
-    '<div style=”display:inline-flex;align-items:center;gap:6px;padding:5px 10px 5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:20px;font-size:12px;font-weight:600;color:var(--text)”>' +
-    escHtml(c.name) + '<span style=”font-size:10px;color:var(--muted);margin-left:2px”>' + escHtml(c.country) + '</span>' +
-    '<button onclick=”removeTrackedCompetitor(' + i + ')” style=”background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 0 0 4px;font-family:inherit” title=”Remove”>×</button>' +
+    '<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px 5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:20px;font-size:12px;font-weight:600;color:var(--text)">' +
+    escHtml(c.name) + '<span style="font-size:10px;color:var(--muted);margin-left:2px">' + escHtml(c.country) + '</span>' +
+    '<button onclick="removeTrackedCompetitor(' + i + ')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 0 0 4px;font-family:inherit" title="Remove">×</button>' +
     '</div>'
   ).join('');
 }
@@ -6309,9 +6309,9 @@ function renderAutoScanResults() {
   document.getElementById('radar-autoscan-title').textContent = totalAds + ' live ads across ' + competitors.length + ' competitor' + (competitors.length > 1 ? 's' : '');
   body.innerHTML = competitors.map(name => {
     const ads = _radarAutoAds[name];
-    if (!ads.length) return '<div style=”margin-bottom:16px;padding:12px 16px;border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--muted)”>No active ads found for <strong style=”color:var(--text)”>' + escHtml(name) + '</strong></div>';
-    return '<div style=”margin-bottom:20px”>' +
-      '<div style=”font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px”>' + escHtml(name) + ' · ' + ads.length + ' ad' + (ads.length > 1 ? 's' : '') + '</div>' +
+    if (!ads.length) return '<div style="margin-bottom:16px;padding:12px 16px;border:1px solid var(--border);border-radius:12px;font-size:12px;color:var(--muted)">No active ads found for <strong style="color:var(--text)">' + escHtml(name) + '</strong></div>';
+    return '<div style="margin-bottom:20px">' +
+      '<div style="font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">' + escHtml(name) + ' · ' + ads.length + ' ad' + (ads.length > 1 ? 's' : '') + '</div>' +
       ads.map((ad, i) => renderRadarAdCard(ad, 'auto_' + name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + i)).join('') +
     '</div>';
   }).join('');
@@ -6324,45 +6324,45 @@ function renderRadarAdCard(ad, uid) {
   const bodyText  = (ad.ad_creative_bodies || [])[0] || '';
   const title     = (ad.ad_creative_link_titles || [])[0] || '';
   const preview   = escHtml(bodyText.slice(0, 240));
-  const titleHtml = title ? '<div style=”font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px”>' + escHtml(title.slice(0, 100)) + '</div>' : '';
+  const titleHtml = title ? '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:6px">' + escHtml(title.slice(0, 100)) + '</div>' : '';
 
   // Platform badges (facebook, instagram, messenger, audience_network)
   const platforms = Array.isArray(ad.publisher_platforms) ? ad.publisher_platforms : [];
   const PLATFORM_LABELS = { facebook: 'FB', instagram: 'IG', messenger: 'MSG', audience_network: 'AN' };
   const platformBadges = platforms.map(p => {
     const label = PLATFORM_LABELS[p] || escHtml(p.slice(0,3).toUpperCase());
-    return '<span style=”font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(6,214,199,0.1);color:var(--primary);margin-right:4px”>' + label + '</span>';
+    return '<span style="font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(6,214,199,0.1);color:var(--primary);margin-right:4px">' + label + '</span>';
   }).join('');
 
   // Age label from creation time
   let ageLabel = '';
   if (ad.ad_creation_time) {
     const days = Math.round((Date.now() - new Date(ad.ad_creation_time).getTime()) / 86400000);
-    ageLabel = '<span style=”font-size:10px;color:var(--muted);margin-left:6px”>' + (days === 0 ? 'Today' : days + 'd ago') + '</span>';
+    ageLabel = '<span style="font-size:10px;color:var(--muted);margin-left:6px">' + (days === 0 ? 'Today' : days + 'd ago') + '</span>';
   }
 
   // Ad Library snapshot link
   const snapshotLink = ad.ad_snapshot_url
-    ? '<a href=”' + escHtml(ad.ad_snapshot_url) + '” target=”_blank” rel=”noopener” style=”font-size:11px;color:var(--primary);opacity:0.8;text-decoration:none;margin-left:auto;flex-shrink:0” title=”View in Meta Ad Library”>View ad ↗</a>'
+    ? '<a href="' + escHtml(ad.ad_snapshot_url) + '" target="_blank" rel="noopener" style="font-size:11px;color:var(--primary);opacity:0.8;text-decoration:none;margin-left:auto;flex-shrink:0" title="View in Meta Ad Library">View ad ↗</a>'
     : '';
 
-  return '<div style=”border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px”>' +
-    '<div style=”display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:' + (preview || title ? '10' : '0') + 'px”>' +
-      '<div style=”display:flex;flex-direction:column;gap:4px;min-width:0”>' +
-        '<div style=”display:flex;align-items:center;gap:4px;flex-wrap:wrap”>' +
-          '<span style=”font-size:13px;font-weight:700;color:var(--text)”>' + page + '</span>' +
+  return '<div style="border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:10px">' +
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:' + (preview || title ? '10' : '0') + 'px">' +
+      '<div style="display:flex;flex-direction:column;gap:4px;min-width:0">' +
+        '<div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap">' +
+          '<span style="font-size:13px;font-weight:700;color:var(--text)">' + page + '</span>' +
           ageLabel +
         '</div>' +
         (platformBadges ? '<div>' + platformBadges + '</div>' : '') +
       '</div>' +
-      '<div style=”display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px”>' +
+      '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-left:12px">' +
         snapshotLink +
-        '<button onclick=”analyzeRadarAd(\'' + uid + '\',this)” style=”font-size:11px;padding:5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:7px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap”>Analyze</button>' +
+        '<button onclick="analyzeRadarAd(\'' + uid + '\',this)" style="font-size:11px;padding:5px 12px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:7px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap">Analyze</button>' +
       '</div>' +
     '</div>' +
     titleHtml +
-    (preview ? '<p style=”font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.65;font-style:italic”>”' + preview + (bodyText.length > 240 ? '…' : '') + '”</p>' : '') +
-    '<div id=”radar-analysis-' + uid + '”></div>' +
+    (preview ? '<p style="font-size:12px;color:var(--muted);margin:0 0 8px;line-height:1.65;font-style:italic">“' + preview + (bodyText.length > 240 ? '…' : '') + '”</p>' : '') +
+    '<div id="radar-analysis-' + uid + '"></div>' +
     '</div>';
 }
 
@@ -6371,21 +6371,21 @@ function _renderAnalysisResult(d, elId) {
   if (!el) return;
   const ca = d.counter_ad || {};
   el.innerHTML =
-    '<div style=”margin-top:8px;padding:14px;background:rgba(6,214,199,0.05);border-radius:10px;border-left:2px solid var(--primary)”>' +
-      '<div style=”display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px”>' +
-        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Hook type</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.hook_type || '-') + '</div></div>' +
-        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Emotion</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.emotion || '-') + '</div></div>' +
-        '<div><div style=”font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px”>Their CTA</div><div style=”font-size:12px;font-weight:700;color:var(--text)”>' + escHtml(d.cta || '-') + '</div></div>' +
+    '<div style="margin-top:8px;padding:14px;background:rgba(6,214,199,0.05);border-radius:10px;border-left:2px solid var(--primary)">' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px">' +
+        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Hook type</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.hook_type || '-') + '</div></div>' +
+        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Emotion</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.emotion || '-') + '</div></div>' +
+        '<div><div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px">Their CTA</div><div style="font-size:12px;font-weight:700;color:var(--text)">' + escHtml(d.cta || '-') + '</div></div>' +
       '</div>' +
-      '<div style=”font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:' + (ca.headline ? '12px' : '0') + '”>' +
-        (d.counter_strategy ? '<span style=”color:var(--warning);font-weight:600”>Strategy: </span>' + escHtml(d.counter_strategy) : '') +
+      '<div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:' + (ca.headline ? '12px' : '0') + '">' +
+        (d.counter_strategy ? '<span style="color:var(--warning);font-weight:600">Strategy: </span>' + escHtml(d.counter_strategy) : '') +
       '</div>' +
       (ca.headline ?
-        '<div style=”background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.18);border-radius:8px;padding:12px 14px”>' +
-          '<div style=”font-size:10px;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px”>Your Counter Ad</div>' +
-          '<div style=”font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px”>' + escHtml(ca.headline) + '</div>' +
-          '<div style=”font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:8px”>' + escHtml(ca.body || '') + '</div>' +
-          '<div style=”font-size:11px;font-weight:700;color:var(--primary)”>' + escHtml(ca.cta || '') + '</div>' +
+        '<div style="background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.18);border-radius:8px;padding:12px 14px">' +
+          '<div style="font-size:10px;color:var(--primary);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Your Counter Ad</div>' +
+          '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">' + escHtml(ca.headline) + '</div>' +
+          '<div style="font-size:12px;color:var(--muted);line-height:1.65;margin-bottom:8px">' + escHtml(ca.body || '') + '</div>' +
+          '<div style="font-size:11px;font-weight:700;color:var(--primary)">' + escHtml(ca.cta || '') + '</div>' +
         '</div>'
       : '') +
     '</div>';
@@ -6412,7 +6412,7 @@ async function searchCompetitorAds() {
   if (!terms) { showToast('Enter a keyword or brand name', 'error'); return; }
   const country = document.getElementById('radar-country').value;
   const btn = document.getElementById('radar-search-btn');
-  const SVG_SEARCH = '<svg style=”width:14px;height:14px;flex-shrink:0;display:inline-block;vertical-align:middle” viewBox=”0 0 24 24” fill=”none” stroke=”currentColor” stroke-width=”2.5” stroke-linecap=”round” stroke-linejoin=”round”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg>';
+  const SVG_SEARCH = '<svg style="width:14px;height:14px;flex-shrink:0;display:inline-block;vertical-align:middle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
   btn.disabled = true;
   btn.innerHTML = SVG_SEARCH + '<span>Searching…</span>';
   document.getElementById('radar-no-meta').style.display = 'none';
@@ -6451,7 +6451,7 @@ async function searchCompetitorAds() {
   document.getElementById('radar-results-title').textContent = _radarAds.length + ' ads · “' + terms + '”';
 
   if (!_radarAds.length) {
-    bodyEl.innerHTML = '<div class=”empty-state”><svg viewBox=”0 0 24 24”><circle cx=”11” cy=”11” r=”8”/><line x1=”21” y1=”21” x2=”16.65” y2=”16.65”/></svg><p>No active ads found. Try a different keyword or country.</p></div>';
+    bodyEl.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><p>No active ads found. Try a different keyword or country.</p></div>';
   } else {
     bodyEl.innerHTML = _radarAds.map((ad, i) => renderRadarAdCard(ad, 'manual_' + i)).join('');
   }
@@ -6492,7 +6492,7 @@ function _renderRadarLoadMore(bodyEl) {
   const wrap = document.createElement('div');
   wrap.id = 'radar-load-more-wrap';
   wrap.style.cssText = 'text-align:center;margin-top:12px';
-  wrap.innerHTML = '<button id=”radar-load-more-btn” onclick=”loadMoreRadarAds()” style=”font-size:12px;padding:8px 20px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:8px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600”>Load more ads</button>';
+  wrap.innerHTML = '<button id="radar-load-more-btn" onclick="loadMoreRadarAds()" style="font-size:12px;padding:8px 20px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.2);border-radius:8px;color:var(--primary);cursor:pointer;font-family:inherit;font-weight:600">Load more ads</button>';
   bodyEl.appendChild(wrap);
 }
 
