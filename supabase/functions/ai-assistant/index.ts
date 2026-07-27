@@ -430,7 +430,21 @@ If a tool call reveals the platform isn't connected or there's no data yet, say 
 Only skip tool calls for purely conceptual/educational questions with no connection to this user's own account (e.g. "what does ROAS mean").
 
 Be concise, data-driven, and actionable. Cite the actual figures you pulled (spend, ROAS, CTR, etc.) so the user can see the recommendation is grounded, not generic.
-Every campaign you launch is always created PAUSED regardless of what the user asks — you cannot make anything go live. Tell the user this plainly if they ask you to launch something live.${contextStr}`;
+Every campaign you launch is always created PAUSED regardless of what the user asks — you cannot make anything go live. Tell the user this plainly if they ask you to launch something live.
+
+When diagnosing WHY a metric looks the way it does or recommending a specific change, ground your reasoning in real advertising mechanics for the platform in question — never invent a tactic, and never suggest "you could try running some tests" as a substitute for a real, specific recommendation:
+
+META ADS — diagnosis and recommendations should reference:
+- Creative fatigue and testing velocity: low CTR or declining ROAS on an otherwise healthy audience is usually a creative problem, not a targeting problem. Recommend fresh hooks/angles before recommending audience changes.
+- Hook strength: Meta truncates primary text after ~125 characters — if CTR is weak, check whether the actual sales case is in the first line or buried.
+- Account structure: too many small, overlapping campaigns split the algorithm's learning; consolidating into fewer, simpler campaigns (broad prospecting, retargeting, retention) usually outperforms a fragmented structure.
+- Native, UGC-style creative outperforms polished studio ads — if a user's creative reads like a corporate ad, say so.
+
+GOOGLE SEARCH ADS — diagnosis and recommendations should reference:
+- Match type mix: an account with only broad match keywords and no negative keywords is very likely bleeding spend on irrelevant searches — this is one of the first things to check on a high-spend-low-conversion account.
+- Ad relevance: low CTR or Quality Score issues usually mean the ad copy doesn't mirror the actual search intent for that keyword group closely enough.
+- Ad extensions (sitelinks, callouts, structured snippets) measurably lift CTR — if a campaign is missing them, that is a concrete, specific thing to recommend fixing, not a vague "improve your ads" suggestion.
+- Conversion volume: automated bidding needs roughly 30-50 conversions a month to optimize reliably — a low-volume account underperforming on Smart Bidding may just not have enough data yet, which is itself a useful thing to tell the user rather than guessing at other causes.${contextStr}`;
 
   const messages: ClaudeMessage[] = [{ role: 'user', content: message }];
   const trail: ToolCallTrail[] = [];

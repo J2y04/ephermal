@@ -218,16 +218,16 @@ export default function Home() {
               },
               {
                 icon: <><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></>,
-                title: 'Google Ads Automation',
-                desc: 'Launch and scale Search, Shopping and Performance Max campaigns on Google. Ephermal handles keyword selection, bidding, creative and budget allocation. Growth+ only.',
+                title: 'Google Search Ads',
+                desc: 'Launch Google Search campaigns that show up when your customers actively search for what you sell. Ephermal handles keyword research and match types, negative keywords, ad copy, and ad extensions. Growth+ only.',
                 tag: 'Powered by Google Ads API', delay: '4',
                 cite: { label: 'Google Ads API', href: 'https://developers.google.com/google-ads/api/docs/start' },
               },
               {
                 icon: <><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>,
                 title: 'Audience Intelligence',
-                desc: 'Ephermal builds custom audiences from your store data, then finds similar buyers across Meta and Google. Lookalike audiences, retargeting, and Pixel + CAPI. All automated.',
-                tag: 'Meta Pixel + CAPI · Google Signals', delay: '1',
+                desc: 'Ephermal builds lookalike audiences from your store data and finds similar buyers on Meta, and monitors your Meta Pixel status so you always know it\'s actually firing.',
+                tag: 'Meta Lookalike Audiences · Pixel Monitoring', delay: '1',
               },
               {
                 icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
@@ -316,7 +316,7 @@ export default function Home() {
                 {[
                   'Native Meta Ads API: no third-party middleware',
                   'Automated campaign creation & budget management',
-                  'Pixel + Conversions API for precise attribution',
+                  'Meta Pixel tracking, monitored so you know it\'s actually firing',
                   'Dynamic creative testing across all placements',
                 ].map((f, i) => (
                   <div key={i} className="meta-feat">
@@ -337,9 +337,9 @@ export default function Home() {
         <div className="container">
           <div className="meta-inner">
             <div className="meta-content" data-reveal="left" data-delay="1">
-              <h2 className="section-title">Google Ads,<br />fully automated.</h2>
+              <h2 className="section-title">Google Search Ads,<br />done properly.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                Unlock Google Search, Shopping and Performance Max campaigns on Growth and Scale. Ephermal connects to the official Google Ads API, selects keywords from your product catalog, allocates budget intelligently, and optimises bids in real time.
+                Unlock Google Search campaigns on Growth and Scale. Ephermal connects to the official Google Ads API, builds keyword-targeted search ads from your product catalog with a real match-type strategy, negative keywords, and ad extensions, and reports live performance back to your dashboard.
               </p>
               <div className="meta-platforms">
                 <div className="meta-platform-card">
@@ -350,18 +350,17 @@ export default function Home() {
                     <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                   </svg>
                   <div>
-                    <div className="meta-platform-name">Search &amp; Shopping</div>
-                    <div className="meta-platform-sub">Keywords · PMax · Smart Bidding</div>
+                    <div className="meta-platform-name">Search Network</div>
+                    <div className="meta-platform-sub">Keywords · Match Types · Negative Keywords</div>
                   </div>
                 </div>
                 <div className="meta-platform-card">
-                  <svg className="meta-platform-icon" viewBox="0 0 24 24" width="24" height="24">
-                    <path d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.54 3.6 12 3.6 12 3.6s-7.54 0-9.38.45A3.02 3.02 0 0 0 .5 6.19C.06 8.05.06 12 .06 12s0 3.95.44 5.81a3.02 3.02 0 0 0 2.12 2.14C4.46 20.4 12 20.4 12 20.4s7.54 0 9.38-.45a3.02 3.02 0 0 0 2.12-2.14C24 15.95 24 12 24 12s0-3.95-.5-5.81z" fill="#FF0000"/>
-                    <polygon points="9.75,15.5 15.75,12 9.75,8.5" fill="#ffffff"/>
+                  <svg className="meta-platform-icon" viewBox="0 0 24 24" fill="none" stroke="#4285F4" strokeWidth="2" width="24" height="24">
+                    <rect x="3" y="6" width="18" height="4" rx="1"/><rect x="3" y="14" width="10" height="4" rx="1"/>
                   </svg>
                   <div>
-                    <div className="meta-platform-name">YouTube &amp; Display</div>
-                    <div className="meta-platform-sub">Video · Responsive Display · Remarketing</div>
+                    <div className="meta-platform-name">Ad Extensions</div>
+                    <div className="meta-platform-sub">Sitelinks · Callouts · Structured Snippets</div>
                   </div>
                 </div>
               </div>
@@ -369,8 +368,8 @@ export default function Home() {
                 {[
                   'Google Ads API: native campaign creation',
                   'AI keyword research from your product catalog',
-                  'Performance Max with your UGC creatives',
-                  'Smart bidding: Target ROAS & Target CPA',
+                  'Negative keywords and ad extensions built into every campaign',
+                  'AI-optimised bidding to maximise conversions',
                 ].map((f, i) => (
                   <div key={i} className="meta-feat">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" width="16" height="16">
@@ -525,13 +524,13 @@ export default function Home() {
               <div className="section-label" style={{ color: '#96BF48' }}>Profit Tracker</div>
               <h2 className="section-title">You&apos;re probably<br />optimising the campaign<br />that&apos;s losing you money.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                You spent $800 on ads and made $3,200 in revenue. Great ROAS. But your pre-workout costs $46 to make and land on the door. At $59 retail, every 4× ROAS order was bleeding you $3.20 after platform fees. Enter your real COGS and Ephermal shifts every campaign bid to what actually keeps, not what just looks good in the dashboard.
+                You spent $800 on ads and made $3,200 in revenue. Great ROAS. But your pre-workout costs $46 to make and land on the door. At $59 retail, every 4× ROAS order was bleeding you $3.20 after platform fees. Enter your real COGS and Ephermal shows you exactly which products are actually profitable, not just which ones look good in the ROAS dashboard.
               </p>
               <div className="meta-features">
                 {[
                   'Enter COGS per product in seconds',
                   'Margin % and net profit calculated per SKU',
-                  'Campaigns bid harder on your highest-margin products',
+                  'Spot which products actually make money at a glance',
                   'Profit-per-ROAS-point surfaced in your dashboard',
                 ].map((f, i) => (
                   <div key={i} className="meta-feat">
@@ -737,12 +736,12 @@ export default function Home() {
               <div className="price-per">/ month, perfect for stores under $5K/month</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
-                15 UGC credits / month
+                15 AI script credits / month
               </div>
               <ul className="price-features">
                 {([
                   {f:'1 Shopify store'},
-                  {f:'15 UGC creatives / month'},
+                  {f:'15 AI ad scripts / month'},
                   {f:'Meta Ads automation'},
                   {f:'AI store analysis & brand brief'},
                   {f:'Live store sync'},
@@ -759,7 +758,6 @@ export default function Home() {
                   {f:'Profit Tracker',locked:true,badge:'Growth+'},
                   {f:'Bulk campaign management',locked:true,badge:'Scale'},
                   {f:'Multi-store consolidated view',locked:true,badge:'Scale'},
-                  {f:'White-label option',locked:true,badge:'Scale'},
                 ] as {f:string,locked?:boolean,badge?:string}[]).map(({f,locked,badge}) => (
                   <li key={f} style={locked?{opacity:0.42}:undefined}>
                     {locked
@@ -778,12 +776,12 @@ export default function Home() {
               <div className="price-per">/ month, for stores pushing toward $10K+</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
-                75 UGC credits / month
+                75 AI script credits / month
               </div>
               <ul className="price-features">
                 {([
                   {f:'3 Shopify stores'},
-                  {f:'75 UGC creatives / month'},
+                  {f:'75 AI ad scripts / month'},
                   {f:'Meta Ads automation'},
                   {f:'AI store analysis & brand brief'},
                   {f:'Live store sync'},
@@ -801,7 +799,6 @@ export default function Home() {
                   {f:'Priority AI agents'},
                   {f:'Bulk campaign management', locked:true, badge:'Scale'},
                   {f:'Multi-store consolidated view', locked:true, badge:'Scale'},
-                  {f:'White-label option', locked:true, badge:'Scale'},
                   {f:'Dedicated AI instance', locked:true, badge:'Scale'},
                 ] as {f:string,locked?:boolean,badge?:string}[]).map(({f,locked,badge}) => (
                   <li key={f} style={locked?{opacity:0.42}:undefined}>
@@ -821,10 +818,10 @@ export default function Home() {
               <div className="price-per">/ month, for established stores &amp; agencies</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
-                350 UGC credits / month
+                350 AI script credits / month
               </div>
               <ul className="price-features">
-                {['Unlimited stores','350 UGC creatives / month','Meta + Google Ads automation','AI store analysis & brand brief','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Audience Intelligence','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Priority AI agents','Bulk campaign management','Multi-store consolidated view','White-label option','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
+                {['Unlimited stores','350 AI ad scripts / month','Meta + Google Ads automation','AI store analysis & brand brief','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Audience Intelligence','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
                   <li key={f}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>{f}</li>
                 ))}
               </ul>
@@ -844,7 +841,7 @@ export default function Home() {
             ))}
           </div>
           <p className="price-credits-note">
-            Each plan includes monthly UGC credits as shown. Additional credit packs are available from inside your dashboard.
+            Each plan includes monthly AI script credits as shown — hooks, headlines and ad copy generated from your product catalog, not finished video or image creative. Additional credit packs are available from inside your dashboard.
           </p>
         </div>
       </section>

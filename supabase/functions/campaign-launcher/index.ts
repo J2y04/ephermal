@@ -91,8 +91,20 @@ async function prepareCampaign(
   const objective = String(body.objective ?? 'OUTCOME_SALES');
   const tone      = String(body.tone ?? 'authentic and conversational');
 
-  const system = `You are an elite performance marketing specialist writing ad campaigns.
-Generate complete, launch-ready campaign structures for Meta Ads and Google Ads.
+  const system = `You are an elite performance marketing specialist writing ad campaigns for small Shopify stores. Meta and Google Search are different products with different mechanics — apply the specific tactics below for each, don't write one generic ad and reuse it.
+
+META ADS TACTICS (apply these):
+- Creative variety is what drives performance, not targeting. Always produce distinct hooks/angles across the 3 ad variations — never 3 versions of the same idea. Use different angles: problem-first, curiosity, social proof, transformation.
+- Write like raw, native, UGC-style content, not a polished studio ad. Meta's algorithm and audiences both reward ads that read like an organic post or a genuine customer review, not corporate copy.
+- Lower-funnel ads convert best with a concrete anchor: a specific benefit or feature, a real number (rating, price, guarantee), and one clear CTA. Vague hype ("amazing!", "you'll love it!") converts worse than specifics ("30-day returns", "4.8 stars from 1,200+ buyers").
+- Primary text should hook in the first line — Meta truncates after ~125 characters before "See more", so the actual sales case must be in the first sentence, not built up to.
+
+GOOGLE SEARCH ADS TACTICS (apply these — this is keyword/intent advertising, not creative advertising):
+- Ad copy must mirror real search intent for each keyword theme, not just describe the product. Someone searching "waterproof running shoes" wants that phrase's promise addressed directly in the headline.
+- Keywords need a deliberate match-type mix, not one blanket type: exact match on the highest-intent, most specific terms (tight control, best ROI), phrase match on related variations (broader reach, still relevant), broad match sparingly for discovery only. Assign match_type per keyword based on how specific and high-intent it is.
+- Negative keywords are mandatory, not optional — list terms that would trigger the ad on irrelevant or non-buying-intent searches (e.g. "free", "jobs", "diy", "reviews" for a product that isn't reviewed content, wrong product categories). Skipping this burns budget on clicks that never convert.
+- Ad extensions (sitelinks, callouts, structured snippets) are one of the highest-leverage, most under-used levers in Search ads — they measurably lift CTR because they make a plain text ad visually and informationally richer. Always generate a real set, not filler: sitelinks should point to genuinely different site sections (e.g. Best Sellers, New Arrivals, Sale, Reviews), callouts should be short concrete non-clickable benefits (e.g. "Free Shipping", "30-Day Returns", "24/7 Support"), and structured snippets should use one relevant header (Brands, Styles, Types, or Amenities) with real values from the product.
+
 Return ONLY valid JSON. No markdown fences, no explanation.
 JSON schema:
 {
@@ -113,7 +125,11 @@ JSON schema:
     "ad_group_name": string,
     "headlines": string[],
     "descriptions": string[],
-    "keywords": string[],
+    "keywords": [ { "text": string, "match_type": "EXACT" | "PHRASE" | "BROAD" } ],
+    "negative_keywords": string[],
+    "sitelinks": [ { "link_text": string, "description1": string, "description2": string } ],
+    "callouts": string[],
+    "structured_snippet": { "header": "Brands" | "Styles" | "Types" | "Amenities", "values": string[] },
     "bid_strategy": string
   },
   "ugc_hook": string,
@@ -127,7 +143,8 @@ Daily budget: $${budget}
 Objective: ${objective}
 Tone: ${tone}
 Generate 3 distinct ad variations in meta.ads (different hooks/angles) so the campaign has real creative variety.
-Make headlines benefit-focused and scroll-stopping. Keep Meta primary text under 125 chars. Google headlines under 30 chars each.`;
+Make headlines benefit-focused and scroll-stopping. Keep Meta primary text under 125 chars. Google headlines under 30 chars each.
+For google.keywords, produce 8-15 keywords with a real match-type mix (mostly exact/phrase, broad only for genuine discovery terms), plus 5-10 negative_keywords, 3-4 sitelinks pointing to different real site sections, 4-6 callouts, and one structured_snippet with 3-5 values — all grounded in the actual product, not generic placeholders.`;
 
   const raw = await callClaude(system, userMsg, 1800);
   let copy: Record<string, unknown>;
@@ -211,9 +228,21 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
   const gCopy       = copy?.google as Record<string, unknown> ?? {};
   const budget      = Number(row.budget_daily ?? 20);
   const name        = String(gCopy.campaign_name ?? row.name);
-  const keywords    = (gCopy.keywords     as string[] | undefined) ?? [];
   const headlines   = (gCopy.headlines    as string[] | undefined) ?? [];
   const descriptions= (gCopy.descriptions as string[] | undefined) ?? [];
+
+  // Keywords carry a real match-type mix now (exact/phrase/broad) instead of everything
+  // hardcoded to BROAD — see the system prompt in prepareCampaign for why that matters.
+  // Older saved drafts (before this field existed) may still have plain string[] keywords;
+  // treat those as BROAD so a pre-existing draft doesn't fail to launch.
+  const rawKeywords = gCopy.keywords as unknown[] | undefined ?? [];
+  const keywords: { text: string; match_type: string }[] = rawKeywords.map(k =>
+    typeof k === 'string' ? { text: k, match_type: 'BROAD' } : k as { text: string; match_type: string },
+  ).filter(k => k?.text);
+  const negativeKeywords = (gCopy.negative_keywords as string[] | undefined) ?? [];
+  const sitelinks = (gCopy.sitelinks as { link_text: string; description1?: string; description2?: string }[] | undefined) ?? [];
+  const callouts  = (gCopy.callouts as string[] | undefined) ?? [];
+  const structuredSnippet = gCopy.structured_snippet as { header: string; values: string[] } | undefined;
 
   // 1. Budget
   const budgetRes  = await gAdsPost(rawCid, accessToken, devToken, 'campaignBudgets:mutate', {
@@ -236,10 +265,31 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
   }) as { results: { resourceName: string }[] };
   const adGroupRn  = (agRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
 
-  // 4. Keywords
+  // 4. Keywords — real match-type mix (exact/phrase for control, broad only where the AI
+  // judged it a genuine discovery term), not everything dumped in as BROAD.
+  const VALID_MATCH_TYPES = new Set(['EXACT', 'PHRASE', 'BROAD']);
   if (adGroupRn && keywords.length > 0) {
     await gAdsPost(rawCid, accessToken, devToken, 'adGroupCriteria:mutate', {
-      operations: keywords.slice(0, 20).map(kw => ({ create: { adGroup: adGroupRn, keyword: { text: kw.slice(0, 80), matchType: 'BROAD' }, status: 'ENABLED' } })),
+      operations: keywords.slice(0, 20).map(kw => ({
+        create: {
+          adGroup: adGroupRn,
+          keyword: {
+            text: kw.text.slice(0, 80),
+            matchType: VALID_MATCH_TYPES.has(kw.match_type) ? kw.match_type : 'BROAD',
+          },
+          status: 'ENABLED',
+        },
+      })),
+    });
+  }
+
+  // 4b. Negative keywords at the ad-group level — stops the campaign from spending on
+  // irrelevant/non-buying-intent searches. Previously not implemented at all.
+  if (adGroupRn && negativeKeywords.length > 0) {
+    await gAdsPost(rawCid, accessToken, devToken, 'adGroupCriteria:mutate', {
+      operations: negativeKeywords.slice(0, 15).map(text => ({
+        create: { adGroup: adGroupRn, negative: true, keyword: { text: text.slice(0, 80), matchType: 'BROAD' }, status: 'ENABLED' },
+      })),
     });
   }
 
@@ -248,6 +298,56 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
     await gAdsPost(rawCid, accessToken, devToken, 'adGroupAds:mutate', {
       operations: [{ create: { adGroup: adGroupRn, status: autoEnable ? 'ENABLED' : 'PAUSED', ad: { responsiveSearchAd: { headlines: headlines.slice(0,15).map(h => ({ text: h.slice(0,30) })), descriptions: descriptions.slice(0,4).map(d => ({ text: d.slice(0,90) })) } } } }],
     });
+  }
+
+  // 6. Ad extensions (sitelinks, callouts, structured snippets) — measurably lift CTR
+  // (10-25% per industry data) and were previously never created at all. Each asset is
+  // created once, then linked to the campaign via campaignAssets:mutate. Best-effort: a
+  // failure here shouldn't block the campaign itself from having launched successfully.
+  try {
+    const shop = integrations?.shopify_shop as string | undefined;
+    const siteUrl = shop ? `https://${shop}` : (Deno.env.get('APP_URL') ?? 'https://ephermal.app');
+    const assetOps: Record<string, unknown>[] = [];
+    for (const sl of sitelinks.slice(0, 4)) {
+      if (!sl.link_text) continue;
+      assetOps.push({ create: { sitelinkAsset: {
+        linkText: sl.link_text.slice(0, 25),
+        description1: (sl.description1 ?? '').slice(0, 35),
+        description2: (sl.description2 ?? '').slice(0, 35),
+      }, finalUrls: [siteUrl] } });
+    }
+    for (const co of callouts.slice(0, 6)) {
+      if (!co) continue;
+      assetOps.push({ create: { calloutAsset: { calloutText: co.slice(0, 25) } } });
+    }
+    if (structuredSnippet?.header && structuredSnippet.values?.length) {
+      assetOps.push({ create: { structuredSnippetAsset: {
+        header: structuredSnippet.header,
+        values: structuredSnippet.values.slice(0, 10).map(v => v.slice(0, 25)),
+      } } });
+    }
+
+    if (assetOps.length > 0) {
+      const assetRes = await gAdsPost(rawCid, accessToken, devToken, 'assets:mutate', { operations: assetOps }) as { results: { resourceName: string }[] };
+      const assetResourceNames = assetRes.results?.map(r => r.resourceName) ?? [];
+
+      // Map each created asset back to its field type in the same order they were requested.
+      const fieldTypes: string[] = [
+        ...sitelinks.slice(0, 4).filter(sl => sl.link_text).map(() => 'SITELINK'),
+        ...callouts.slice(0, 6).filter(Boolean).map(() => 'CALLOUT'),
+        ...(structuredSnippet?.header && structuredSnippet.values?.length ? ['STRUCTURED_SNIPPET'] : []),
+      ];
+
+      const linkOps = assetResourceNames.map((assetRn, i) => ({
+        create: { asset: assetRn, campaign: campaignRn, fieldType: fieldTypes[i] },
+      })).filter(op => op.create.fieldType);
+
+      if (linkOps.length > 0) {
+        await gAdsPost(rawCid, accessToken, devToken, 'campaignAssets:mutate', { operations: linkOps });
+      }
+    }
+  } catch (e) {
+    console.error(`campaign ${campaignId}: ad extensions failed (non-fatal, campaign still launched):`, e);
   }
 
   const { error: updateErr } = await supabase.from('launched_campaigns').update({ google_campaign_id: googleCampaignId, status: 'active', launched_at: new Date().toISOString() }).eq('id', campaignId).eq('user_id', userId);
@@ -262,6 +362,12 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
     : '';
 
   return { campaign_id: campaignId, google_campaign_id: googleCampaignId, status: 'active', enabled: autoEnable, note: `${baseNote}${dbWarning}` };
+}
+
+/** Final URL for sitelink assets — the merchant's own store, same fallback used elsewhere. */
+function linkUrlForGoogle(row: Record<string, unknown>): string {
+  const shop = (row.shop as string | undefined);
+  return shop ? `https://${shop}` : (Deno.env.get('APP_URL') ?? 'https://ephermal.app');
 }
 
 const META_CTA_MAP: Record<string, string> = {

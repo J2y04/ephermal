@@ -1438,29 +1438,10 @@ select.form-input{cursor:pointer}
       <div class="paywall-wrap" id="whitelabel-paywall-wrap">
         <div class="panel fade-in">
           <div class="panel-head"><div class="panel-title">Brand Settings</div></div>
-          <div style="padding:22px;display:flex;flex-direction:column;gap:24px">
-            <div class="form-row">
-              <div class="form-group"><label class="form-label">Brand Name</label><input class="form-input" id="wl-name-input" placeholder="Your Agency Name" oninput="updateWhitelabelPreview()"></div>
-              <div class="form-group">
-                <label class="form-label">Brand Primary Color</label>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <input type="color" id="wl-color-input" value="#06d6c7" style="width:44px;height:40px;border:1px solid var(--border);border-radius:8px;background:var(--surface2);cursor:pointer;padding:2px" oninput="const h=document.getElementById('wl-color-hex');if(h)h.value=this.value;updateWhitelabelPreview()">
-                  <input class="form-input" id="wl-color-hex" placeholder="#06d6c7" style="flex:1" oninput="syncColorFromHex(this)">
-                </div>
-              </div>
-            </div>
-            <div class="form-group"><label class="form-label">Logo URL</label><input class="form-input" id="wl-logo-input" placeholder="https://yourcdn.com/logo.png" type="url" oninput="updateWhitelabelPreview()"></div>
-            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:16px">
-              <div style="font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">Sidebar Preview</div>
-              <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:10px;padding:12px 16px;border:1px solid var(--border)">
-                <img id="wl-preview-logo" src="/ephermal.jpg" alt="Logo" style="width:28px;height:28px;border-radius:6px;object-fit:contain">
-                <span id="wl-preview-name" style="font-size:15px;font-weight:800;letter-spacing:-.3px">Ephermal</span>
-              </div>
-            </div>
-            <div style="display:flex;justify-content:flex-end;gap:8px">
-              <button class="btn-save" style="background:rgba(248,113,113,.12);color:var(--danger);border:1px solid rgba(248,113,113,.3)" onclick="resetWhitelabel()">Reset to Default</button>
-              <button class="btn-save" onclick="saveWhitelabel()">Save Brand Settings</button>
-            </div>
+          <div style="padding:32px 22px;text-align:center;color:var(--muted)">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom:12px;opacity:.6"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px">White-label is coming soon</div>
+            <div style="font-size:13px;max-width:360px;margin:0 auto">Real client-facing rebranding (custom logo, colors, and domain that your clients actually see) is still being built. Not available to configure yet.</div>
           </div>
         </div>
         <div class="paywall-lock" id="whitelabel-paywall" style="display:none">
@@ -2688,9 +2669,9 @@ function renderBillingPage() {
   const grid = document.getElementById('billing-plans-grid');
   if (!grid) return;
   const planCards = [
-    { id:'starter', name:'Starter', price:'$89', ugc:15, stores:'1', features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'White-label option',locked:true,badge:'Scale'}] },
-    { id:'growth',  name:'Growth',  price:'$199', ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'White-label option',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
-    { id:'scale',   name:'Scale',   price:'$349', ugc:350, stores:'∞', features:['Unlimited stores','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','White-label option','Dedicated AI instance','Custom integrations','Slack support'] },
+    { id:'starter', name:'Starter', price:'$89', ugc:15, stores:'1', features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'}] },
+    { id:'growth',  name:'Growth',  price:'$199', ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
+    { id:'scale',   name:'Scale',   price:'$349', ugc:350, stores:'∞', features:['Unlimited stores','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'] },
   ];
   grid.innerHTML = planCards.map(p => {
     const isCurrent = plan === p.id;
@@ -3278,7 +3259,7 @@ const campaignMap = {};
 
 function renderCampaignRow(c, _idx, readOnly) {
   campaignMap[c.id] = c;
-  const colors = {meta:'#1877F2', both:'#06d6c7'};
+  const colors = {meta:'#1877F2', google:'#4285F4', both:'#06d6c7'};
   const color = colors[c.platform] || 'var(--muted)';
   const roas = c.roas ? `<span class="camp-metric ${c.roas>=3?'green':'yellow'}">${c.roas.toFixed(1)}×</span>` : '<span class="camp-metric dim">-</span>';
   const spend = c.total_spend > 0 ? `<span class="camp-metric">$${fmt(c.total_spend)}</span>` : '<span class="camp-metric dim">-</span>';
@@ -3302,7 +3283,8 @@ function openCampaignDetail(id) {
   window.__campDetailId = id;
   const set = (elId, val) => { const e = document.getElementById(elId); if(e) e.textContent = val; };
   set('camp-modal-name', c.name);
-  set('camp-modal-sub', `Meta Ads · ${c.objective||'Campaign'} · ID ${c.id}`);
+  const platformLabel = c.platform === 'google' ? 'Google Ads' : c.platform === 'both' ? 'Meta + Google' : 'Meta Ads';
+  set('camp-modal-sub', `${platformLabel} · ${c.objective||'Campaign'} · ID ${c.id}`);
   const statusEl = document.getElementById('camp-modal-status');
   if (statusEl) { const sc = ['live','paused','failed'].includes(c.status)?c.status:'draft'; statusEl.className=`status-pill ${sc}`; statusEl.textContent=c.status; }
   const roasVal = c.roas ? `${c.roas.toFixed(1)}×` : '-';
@@ -4990,7 +4972,11 @@ async function bulkAction(action) {
   const label = action==='pause'?'Pausing':action==='enable'?'Enabling':'Scaling budgets for';
   showToast(`${label} ${bulkSelected.size} campaign${bulkSelected.size>1?'s':''}…`);
   try {
-    const r = await authFetch('/campaigns/bulk-action', {method:'POST', body:JSON.stringify({campaign_ids:[...bulkSelected], action, budget_multiplier:1.15})});
+    // action_type (not action) for the per-campaign op — meta-api's router reads the top-level
+    // "action" field from the body first (falls back to the URL query only if absent), so
+    // reusing "action" here for the sub-operation would silently hijack routing away from the
+    // bulk_action case entirely.
+    const r = await authFetch('/meta-api?action=bulk_action', {method:'POST', body:JSON.stringify({campaign_ids:[...bulkSelected], action_type: action, budget_multiplier:1.15})});
     if (r && r.ok) {
       const d = await r.json();
       showToast(d.message || `Bulk ${action} completed`);
@@ -5002,11 +4988,18 @@ async function bulkAction(action) {
 }
 
 // ── MULTI-STORE ──────────────────────────────────────────────────────────────
+// HONESTY NOTE (2026-07-28): this used to read a "connected_stores" localStorage key that
+// nothing in the app ever wrote, so it silently fell through to fabricating a single fake
+// "store" entry out of the one real connected store's data and presenting it as a multi-store
+// view. user_integrations is one row per user (see supabase/migrations/001_schema.sql) — a
+// user genuinely cannot have more than one connected store today, so there is nothing to
+// aggregate. This now shows the real single store honestly instead of pretending otherwise.
+// Real multi-store support needs a schema change (user_integrations moved to one-to-many)
+// plus a real backend aggregation endpoint — not done here, this is a display-honesty fix only.
 function loadMultiStore() {
   if (!canAccess('multistore')) return;
-  let stores; try { stores = JSON.parse(localStorage.getItem('connected_stores')||'[]'); } catch(e) { stores = []; }
   const setEl = (id, v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
-  setEl('ms-stores', stores.length || '1');
+  setEl('ms-stores', '1');
   setEl('ms-campaigns', allCampaigns.length || '-');
   const totalSpend = allCampaigns.reduce((a,c)=>a+(c.total_spend||0), 0);
   setEl('ms-spend', totalSpend > 0 ? '$'+fmt(totalSpend) : '-');
@@ -5015,14 +5008,17 @@ function loadMultiStore() {
   setEl('ms-roas', avgRoas > 0 ? avgRoas.toFixed(1)+'×' : '-');
   const listEl = document.getElementById('multistore-stores-list');
   if (!listEl) return;
-  const storeData = stores.length ? stores : [{
-    name: localStorage.getItem('last_analyzed_store') ? new URL(localStorage.getItem('last_analyzed_store')).hostname : 'Primary Store',
-    campaigns: allCampaigns.length, spend: totalSpend, roas: avgRoas
-  }];
-  listEl.innerHTML = storeData.map(s => `<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:12px;margin-bottom:8px">
-    <div><div style="font-size:13px;font-weight:700">${escHtml(String(s.name||s.domain||'Store'))}</div><div style="font-size:12px;color:var(--muted)">${s.campaigns||0} campaigns · $${fmt(s.spend||0)} spend</div></div>
-    <div style="text-align:right"><div style="font-size:18px;font-weight:800">${s.roas>0?Number(s.roas).toFixed(1)+'×':'-'}</div><div style="font-size:11px;color:var(--muted)">ROAS</div></div>
-  </div>`).join('');
+  const storeName = localStorage.getItem('last_analyzed_store')
+    ? new URL(localStorage.getItem('last_analyzed_store')).hostname
+    : 'Your store';
+  listEl.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:12px;margin-bottom:8px">
+      <div><div style="font-size:13px;font-weight:700">${escHtml(storeName)}</div><div style="font-size:12px;color:var(--muted)">${allCampaigns.length||0} campaigns · $${fmt(totalSpend)} spend</div></div>
+      <div style="text-align:right"><div style="font-size:18px;font-weight:800">${avgRoas>0?avgRoas.toFixed(1)+'×':'-'}</div><div style="font-size:11px;color:var(--muted)">ROAS</div></div>
+    </div>
+    <div style="padding:14px 16px;background:var(--surface2);border-radius:12px;border:1px dashed var(--border);text-align:center;color:var(--muted);font-size:12px">
+      Connecting and comparing multiple stores side by side is coming soon — today Ephermal manages one connected Shopify store per account.
+    </div>`;
 }
 
 // ── WHITE-LABEL ──────────────────────────────────────────────────────────────
