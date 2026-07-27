@@ -21,6 +21,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { requirePlan } from '../_shared/plan.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -162,6 +163,9 @@ Deno.serve(async (req) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
+
+  const gate = await requirePlan(userId, 'growth', origin, 'the profit tracker');
+  if (gate) return gate;
 
   const rl = await rateLimitTiered(userId, 'profit', [
     { max: 10, window: 60   },

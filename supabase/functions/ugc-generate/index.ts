@@ -81,6 +81,26 @@ async function getUsage(userId: string) {
   return { plan, used, limit };
 }
 
+/** Best-effort refund of one credit after a claimed slot's generation actually failed —
+ *  without this, an Anthropic API error (rate limit, timeout, outage) burned a credit for
+ *  nothing, silently shrinking the user's real remaining allowance. Same optimistic-lock
+ *  style as claimUsageSlot; a rare race under heavy concurrent use just means the refund
+ *  is skipped that one time, which is a far smaller problem than never refunding at all. */
+async function refundUsageSlot(userId: string): Promise<void> {
+  const month = new Date().toISOString().slice(0, 7);
+  try {
+    const { data } = await supabase.from('ugc_credits')
+      .select('used').eq('user_id', userId).eq('month', month).maybeSingle();
+    const current = data?.used ?? 0;
+    if (current <= 0) return;
+    await supabase.from('ugc_credits')
+      .update({ used: current - 1 })
+      .eq('user_id', userId).eq('month', month).eq('used', current);
+  } catch (e) {
+    console.warn('ugc-generate: credit refund failed (non-fatal):', e);
+  }
+}
+
 /** Atomically claim one credit. Returns false if the limit was already reached concurrently. */
 async function claimUsageSlot(userId: string, currentUsed: number, limit: number): Promise<boolean> {
   const month = new Date().toISOString().slice(0, 7);
@@ -464,6 +484,9 @@ Write launch-ready ad copy.`;
     return okResponse({ result, used: used + 1, limit }, origin);
   } catch (err) {
     console.error('ugc-generate error:', err);
+    // The credit was already claimed before this try block ran — refund it since the
+    // generation itself never actually happened.
+    await refundUsageSlot(userId);
     return errResponse('Generation error', 500, origin);
   }
 });

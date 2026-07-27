@@ -153,6 +153,37 @@ function limitReachedResponse(origin: string | null, limit: number): Response {
   });
 }
 
+async function getClerkEmail(userId: string): Promise<string | null> {
+  const secret = Deno.env.get('CLERK_SECRET_KEY');
+  if (!secret) return null;
+  try {
+    const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+      headers: { 'Authorization': `Bearer ${secret}` },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return null;
+    const user = await res.json() as { email_addresses?: { id: string; email_address: string }[]; primary_email_address_id?: string };
+    return user.email_addresses?.find(e => e.id === user.primary_email_address_id)?.email_address ?? null;
+  } catch { return null; }
+}
+
+/** Best-effort usage-threshold email — awaited (matches the same pattern already used for
+ *  plan_activated/ai_topup_receipt in stripe-webhook) rather than fire-and-forget, since an
+ *  un-awaited task can be killed by the runtime once the response has already been sent. */
+async function sendUsageEmail(template: 'ai_limit_80' | 'ai_limit_hit', userId: string): Promise<void> {
+  try {
+    const email = await getClerkEmail(userId);
+    if (!email) return;
+    await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+      body: JSON.stringify({ template, to: email, vars: { name: 'there' } }),
+    });
+  } catch (e) {
+    console.warn(`${template} email failed (non-fatal):`, e);
+  }
+}
+
 // ── Tool-use: give the AI real access to Ephermal's own backend ──────────────
 //
 // Each tool maps to an action on an existing edge function. The dispatcher calls
@@ -500,11 +531,17 @@ Deno.serve(async (req) => {
   const action = String(body.action ?? 'chat');
 
   // ── Atomic monthly usage check + increment ───────────────────────────────
-  const { plan } = await getUsage(userId);
+  const { plan, used: usedBefore } = await getUsage(userId);
   const limit = PLAN_LIMITS[plan] ?? 50;
   const newCount = await atomicIncrementUsage(userId, limit);
   if (newCount === null) {
+    await sendUsageEmail('ai_limit_hit', userId);
     return limitReachedResponse(origin, limit);
+  }
+  // Send the 80%-warning email exactly once per period — only on the request that actually
+  // crosses the threshold, not on every subsequent message once already above it.
+  if (usedBefore < limit * 0.8 && newCount >= limit * 0.8) {
+    await sendUsageEmail('ai_limit_80', userId);
   }
 
   try {

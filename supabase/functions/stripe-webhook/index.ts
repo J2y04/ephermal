@@ -247,6 +247,47 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   console.log(`✓ Plan set to ${effectivePlan} (sub status: ${status}) for ${clerkUserId}`);
 }
 
+async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+  const subId = invoice.subscription as string | null;
+  if (!subId) return; // one-off invoice, not a subscription — nothing to degrade or notify about
+
+  let clerkUserId: string | undefined;
+  try {
+    const subscription = await getStripe().subscriptions.retrieve(subId);
+    clerkUserId = subscription.metadata?.clerk_user_id;
+  } catch (e) {
+    console.error('handlePaymentFailed: failed to retrieve subscription', e);
+  }
+  if (!clerkUserId) return;
+
+  const attemptCount = invoice.attempt_count ?? 1;
+
+  // Fire failed-payment email (best-effort — don't fail the webhook if email fails).
+  // Access downgrade on repeated failure is already handled by handleSubscriptionUpdated
+  // once Stripe transitions the subscription to past_due/unpaid — this handler only notifies.
+  try {
+    const userEmail = invoice.customer_email;
+    if (userEmail) {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({
+          template: 'payment_failed',
+          to: userEmail,
+          vars: { name: 'there', attempt: String(attemptCount) },
+        }),
+      });
+    }
+  } catch (e) {
+    console.warn('Payment-failed email send failed (non-fatal):', e);
+  }
+
+  console.log(`✗ Payment failed for ${clerkUserId} (subscription ${subId}, attempt ${attemptCount})`);
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
@@ -287,6 +328,9 @@ Deno.serve(async (req) => {
         break;
       case 'payment_intent.succeeded':
         await handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+        break;
+      case 'invoice.payment_failed':
+        await handlePaymentFailed(event.data.object as Stripe.Invoice);
         break;
       default:
         // Acknowledge but ignore unhandled event types

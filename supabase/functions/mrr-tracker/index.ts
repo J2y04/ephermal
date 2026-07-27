@@ -17,6 +17,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { metaGet, parseConversions } from '../_shared/meta.ts';
+import { requirePlan } from '../_shared/plan.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 const SYNC_DAYS = 90;
@@ -38,7 +39,7 @@ function addTo(map: DailyMap, date: string, cents: number) {
 }
 
 // ── Shopify: daily revenue + order count ─────────────────────────────────────
-async function fetchShopifyDaily(userId: string): Promise<{ revenue: DailyMap; orders: DailyMap }> {
+async function fetchShopifyDaily(userId: string): Promise<{ revenue: DailyMap; orders: DailyMap; connected: boolean; error: string | null }> {
   const revenue: DailyMap = new Map();
   const orders: DailyMap = new Map();
 
@@ -49,11 +50,13 @@ async function fetchShopifyDaily(userId: string): Promise<{ revenue: DailyMap; o
     .maybeSingle();
   const token = creds?.shopify_token as string | undefined;
   const shop  = creds?.shopify_shop as string | undefined;
-  if (!token || !shop) return { revenue, orders };
+  // Not connected is the expected, error-free state for a user who hasn't linked Shopify yet.
+  if (!token || !shop) return { revenue, orders, connected: false, error: null };
 
   const createdMin = `${isoDaysAgo(SYNC_DAYS)}T00:00:00Z`;
   let pageInfo: string | null = null;
   let hasMore = true;
+  let error: string | null = null;
 
   while (hasMore) {
     const params: Record<string, string> = {
@@ -70,7 +73,15 @@ async function fetchShopifyDaily(userId: string): Promise<{ revenue: DailyMap; o
     const res = await fetch(url.toString(), {
       headers: { 'X-Shopify-Access-Token': token, 'Content-Type': 'application/json' },
     });
-    if (!res.ok) break;
+    if (!res.ok) {
+      // A connected store genuinely has zero orders sometimes (brand-new store — Ephermal's
+      // exact target user). Only flag as an error when the request itself failed, so the
+      // dashboard can tell "no sales yet" apart from "token expired, reconnect".
+      error = res.status === 401 || res.status === 403
+        ? 'Shopify token expired or revoked — reconnect in Settings'
+        : `Shopify API error (${res.status})`;
+      break;
+    }
 
     const data = await res.json() as { orders: { created_at: string; total_price: string }[] };
     for (const o of data.orders ?? []) {
@@ -85,11 +96,11 @@ async function fetchShopifyDaily(userId: string): Promise<{ revenue: DailyMap; o
     if (nextMatch) { pageInfo = decodeURIComponent(nextMatch[1]); } else { hasMore = false; }
   }
 
-  return { revenue, orders };
+  return { revenue, orders, connected: true, error };
 }
 
 // ── Meta: daily spend ─────────────────────────────────────────────────────────
-async function fetchMetaDaily(userId: string): Promise<{ spend: DailyMap; conversions: DailyMap }> {
+async function fetchMetaDaily(userId: string): Promise<{ spend: DailyMap; conversions: DailyMap; connected: boolean; error: string | null }> {
   const spend: DailyMap = new Map();
   const conversions: DailyMap = new Map();
   const { data: creds } = await supabase
@@ -99,8 +110,9 @@ async function fetchMetaDaily(userId: string): Promise<{ spend: DailyMap; conver
     .maybeSingle();
   const token     = creds?.meta_token as string | undefined;
   const accountId = creds?.meta_account as string | undefined;
-  if (!token || !accountId) return { spend, conversions };
+  if (!token || !accountId) return { spend, conversions, connected: false, error: null };
 
+  let error: string | null = null;
   try {
     const data = await metaGet<{ data: { spend?: string; date_start: string; actions?: { action_type: string; value: string }[] }[] }>(
       `/${accountId}/insights`,
@@ -118,12 +130,16 @@ async function fetchMetaDaily(userId: string): Promise<{ spend: DailyMap; conver
     }
   } catch (e) {
     console.error('mrr-tracker meta fetch error:', e);
+    // A connected ad account can genuinely have $0 spend (no active campaigns yet) — only
+    // flag an error when the Insights call itself failed, so the dashboard can distinguish
+    // "no spend yet" from "Meta token expired, reconnect".
+    error = 'Meta connection error — token may have expired, reconnect in Settings';
   }
-  return { spend, conversions };
+  return { spend, conversions, connected: true, error };
 }
 
 // ── Google Ads: daily spend ───────────────────────────────────────────────────
-async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conversions: DailyMap }> {
+async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conversions: DailyMap; connected: boolean; error: string | null }> {
   const spend: DailyMap = new Map();
   const conversions: DailyMap = new Map();
   const { data: creds } = await supabase
@@ -134,7 +150,12 @@ async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conv
   const refreshToken = creds?.google_refresh_token as string | undefined;
   const customerId   = creds?.google_ads_customer_id as string | undefined;
   const devToken      = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN') ?? '';
-  if (!refreshToken || !customerId || !devToken) return { spend, conversions };
+  // Not connected is the expected, error-free state for a user who hasn't linked Google Ads yet.
+  if (!refreshToken || !customerId) return { spend, conversions, connected: false, error: null };
+  if (!devToken) {
+    console.error('mrr-tracker: GOOGLE_ADS_DEVELOPER_TOKEN not configured');
+    return { spend, conversions, connected: true, error: 'Google Ads sync temporarily unavailable' };
+  }
 
   try {
     const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -147,8 +168,19 @@ async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conv
         grant_type:    'refresh_token',
       }).toString(),
     });
-    const tokenData = await tokenRes.json() as { access_token?: string };
-    if (!tokenData.access_token) return { spend, conversions };
+    const tokenData = await tokenRes.json() as { access_token?: string; error?: string };
+    if (!tokenData.access_token) {
+      // Distinguish a revoked/expired refresh token (real error the merchant must act on)
+      // from a genuinely $0-spend account — previously both silently returned empty maps,
+      // so the dashboard showed "$0 spend" for a merchant whose connection was actually broken.
+      const revoked = tokenData.error === 'invalid_grant';
+      return {
+        spend, conversions, connected: true,
+        error: revoked
+          ? 'Google Ads connection expired — reconnect in Settings'
+          : 'Google Ads token refresh failed — reconnect in Settings',
+      };
+    }
 
     const GADS = 'https://googleads.googleapis.com/v24';
     const res = await fetch(`${GADS}/customers/${customerId}/googleAds:search`, {
@@ -162,7 +194,14 @@ async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conv
         query: `SELECT segments.date, metrics.cost_micros, metrics.conversions FROM customer WHERE segments.date DURING LAST_90_DAYS`,
       }),
     });
-    if (!res.ok) return { spend, conversions };
+    if (!res.ok) {
+      return {
+        spend, conversions, connected: true,
+        error: res.status === 401 || res.status === 403
+          ? 'Google Ads access denied — reconnect in Settings'
+          : `Google Ads API error (${res.status})`,
+      };
+    }
     const data = await res.json() as { results?: { segments?: { date?: string }; metrics?: { costMicros?: string; conversions?: string } }[] };
     for (const row of data.results ?? []) {
       const date = row.segments?.date;
@@ -174,16 +213,18 @@ async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conv
     }
   } catch (e) {
     console.error('mrr-tracker google fetch error:', e);
+    return { spend, conversions, connected: true, error: 'Google Ads sync failed — try again later' };
   }
-  return { spend, conversions };
+  return { spend, conversions, connected: true, error: null };
 }
 
 async function handleSync(userId: string): Promise<Record<string, unknown>> {
-  const [{ revenue, orders }, meta, google] = await Promise.all([
+  const [shopify, meta, google] = await Promise.all([
     fetchShopifyDaily(userId),
     fetchMetaDaily(userId),
     fetchGoogleDaily(userId),
   ]);
+  const { revenue, orders } = shopify;
 
   const allDates = new Set<string>([...revenue.keys(), ...meta.spend.keys(), ...google.spend.keys()]);
   // Ensure every day in the window has a row, even if all-zero, so the chart has a continuous axis
@@ -205,10 +246,16 @@ async function handleSync(userId: string): Promise<Record<string, unknown>> {
   }
 
   return {
-    synced_days:      rows.length,
-    shopify_connected: revenue.size > 0 || orders.size > 0,
-    meta_connected:    meta.spend.size > 0,
-    google_connected:  google.spend.size > 0,
+    synced_days:       rows.length,
+    // Connectivity now reflects whether credentials exist, not whether any data came back —
+    // a brand-new store or a campaign with zero spend is a connected account with real zeros,
+    // not a disconnected one. See shopify/meta/google_error for actual sync failures.
+    shopify_connected: shopify.connected,
+    meta_connected:    meta.connected,
+    google_connected:  google.connected,
+    shopify_error:     shopify.error,
+    meta_error:        meta.error,
+    google_error:      google.error,
   };
 }
 
@@ -268,6 +315,9 @@ Deno.serve(async (req) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
+
+  const gate = await requirePlan(userId, 'growth', origin, 'the MRR tracker');
+  if (gate) return gate;
 
   const rl = await rateLimitTiered(userId, 'mrr-tracker', [
     { max: 5,  window: 60   },

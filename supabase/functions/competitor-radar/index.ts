@@ -20,6 +20,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rate-limit.ts';
+import { requirePlan } from '../_shared/plan.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -203,6 +204,9 @@ Deno.serve(async (req) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
+
+  const gate = await requirePlan(userId, 'growth', origin, 'competitor radar');
+  if (gate) return gate;
 
   if (bodyTooLarge(req, 32_768)) return errResponse('Request body too large', 413, origin);
 

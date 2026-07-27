@@ -4378,8 +4378,12 @@ async function syncMrrTracker() {
     if (!r.ok) { showToast(d.error || 'Sync failed', 'error'); return; }
     localStorage.setItem('mrr_last_sync_at', String(Date.now()));
     if (!d.shopify_connected) { showToast('Connect Shopify in Settings to track revenue', 'warn'); }
+    // Distinguish "genuinely $0 spend" from "connection broken" — a silently expired token
+    // used to show up identically to a real zero, quietly understating the revenue picture.
+    const syncError = d.shopify_error || d.meta_error || d.google_error;
+    if (syncError) { showToast(syncError, 'warn'); }
     await loadMrrTracker();
-    showToast('Synced. Revenue and ad spend up to date', 'success');
+    if (!syncError) showToast('Synced. Revenue and ad spend up to date', 'success');
   } catch (e) { showToast('Sync failed - please try again', 'error'); }
   finally {
     if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Sync Data'; }

@@ -191,6 +191,12 @@ async function gAdsPost(customerId: string, accessToken: string, devToken: strin
 async function launchToGoogle(userId: string, campaignId: string, autoEnable = false): Promise<Record<string, unknown>> {
   const { data: row } = await supabase.from('launched_campaigns').select('*').eq('id', campaignId).eq('user_id', userId).single();
   if (!row) throw new Error('Campaign not found');
+  // Guard against a retried/duplicate launch request (client timeout, double-click, network
+  // retry) creating a second real, spending Google Ads campaign for the same draft — this
+  // row previously had no status check at all before running the live mutate sequence.
+  if (row.status === 'active') {
+    throw new Error(`This campaign is already live on Google Ads (campaign ID: ${row.google_campaign_id ?? 'unknown'}). Manage it in Google Ads Manager instead of relaunching.`);
+  }
 
   const integrations = await getIntegrations(userId);
   const refreshToken = integrations?.google_refresh_token;
@@ -284,6 +290,10 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     .single();
 
   if (!row) throw new Error('Campaign not found');
+  // Same double-launch guard as launchToGoogle — see that function for why.
+  if (row.status === 'active') {
+    throw new Error(`This campaign is already live on Meta (campaign ID: ${row.platform_campaign_id ?? 'unknown'}). Manage it in Meta Ads Manager instead of relaunching.`);
+  }
 
   const integrations = await getIntegrations(userId);
   const token      = integrations?.meta_token;

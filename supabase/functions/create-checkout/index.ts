@@ -20,6 +20,7 @@
 
 import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId } from '../_shared/auth.ts';
+import { rateLimitTiered } from '../_shared/rate-limit.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -106,6 +107,19 @@ Deno.serve(async (req) => {
   // ── Verify clerk_user_id matches the authenticated JWT ───────────────────
   if (!jwtUserId || jwtUserId !== clerk_user_id) {
     return new Response('Unauthorized — user ID mismatch', { status: 403, headers: CORS_HEADERS });
+  }
+
+  // ── Rate limit: checkout session creation has no legitimate reason to be
+  // called rapidly — a tight cap here costs nothing for real users and closes
+  // off using this endpoint to hammer Stripe's API or enumerate price behavior.
+  const rl = await rateLimitTiered(jwtUserId, 'checkout', [
+    { max: 5,  window: 60   },
+    { max: 20, window: 3600 },
+  ]);
+  if (!rl.allowed) {
+    return new Response('Too many requests — please wait a moment and try again', {
+      status: 429, headers: CORS_HEADERS,
+    });
   }
 
   const appUrl   = Deno.env.get('APP_URL') ?? 'https://ephermal.app';

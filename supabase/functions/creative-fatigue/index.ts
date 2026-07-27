@@ -137,6 +137,35 @@ async function enrichFromMeta(
   );
 }
 
+/** Best-effort fatigue alert — awaited, matches the same pattern as stripe-webhook's
+ *  plan_activated/ai_topup_receipt emails rather than fire-and-forget. */
+async function sendFatigueAlertEmail(userId: string, count: number): Promise<void> {
+  try {
+    const secret = Deno.env.get('CLERK_SECRET_KEY');
+    if (!secret) return;
+    const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+      headers: { 'Authorization': `Bearer ${secret}` },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return;
+    const user = await res.json() as { email_addresses?: { id: string; email_address: string }[]; primary_email_address_id?: string };
+    const email = user.email_addresses?.find(e => e.id === user.primary_email_address_id)?.email_address;
+    if (!email) return;
+
+    await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
+      body: JSON.stringify({
+        template: 'fatigue_alert',
+        to: email,
+        vars: { name: 'there', count: String(count) },
+      }),
+    });
+  } catch (e) {
+    console.warn('fatigue_alert email failed (non-fatal):', e);
+  }
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
 
@@ -196,11 +225,25 @@ Deno.serve(async (req) => {
     };
   });
 
+  // Snapshot the previous levels before overwriting, so the alert email only fires for
+  // creatives that are *newly* critical this run — not every time the user reopens this
+  // page while an already-known-critical creative is still sitting there.
+  const { data: previousRows } = await supabase
+    .from('creative_fatigue')
+    .select('creative_id, level')
+    .eq('user_id', userId);
+  const previousCriticalIds = new Set((previousRows ?? []).filter(r => r.level === 'critical').map(r => r.creative_id));
+  const newlyCritical = results.filter(r => r.level === 'critical' && !previousCriticalIds.has(r.creative_id));
+
   // Persist to creative_fatigue table
   await supabase.from('creative_fatigue').upsert(
     results.map(r => ({ ...r, computed_at: new Date().toISOString() })),
     { onConflict: 'creative_id,user_id' },
   );
+
+  if (newlyCritical.length > 0) {
+    await sendFatigueAlertEmail(userId, newlyCritical.length);
+  }
 
   // Also update fatigue_score column on creatives table
   await Promise.allSettled(

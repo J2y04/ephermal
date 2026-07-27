@@ -23,6 +23,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts'
 import { redis, redisAvailable } from '../_shared/redis.ts'
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts'
+import { requirePlan } from '../_shared/plan.ts'
 
 const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v24'
 
@@ -155,6 +156,9 @@ Deno.serve(async (req: Request) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'))
   if (!userId) return errResponse('Unauthorized', 401, origin)
+
+  const gate = await requirePlan(userId, 'growth', origin, 'Google Ads management')
+  if (gate) return gate
 
   const rl = await rateLimitTiered(userId, 'google-api', [
     { max: 20, window: 60 },
