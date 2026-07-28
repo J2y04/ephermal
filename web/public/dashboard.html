@@ -1525,7 +1525,7 @@ select.form-input{cursor:pointer}
               <div class="budget-platform-card">
                 <div class="budget-platform-label" style="color:#4285F4">Google Ads</div>
                 <div class="budget-platform-amount" id="bud-google-daily">-</div>
-                <div style="font-size:12px;color:var(--muted);margin-top:2px">Search + Performance Max + Display</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">Search Network</div>
                 <div class="budget-alloc-bar"><div class="budget-alloc-fill" id="bud-google-bar" style="background:#4285F4;width:35%"></div></div>
               </div>
             </div>
@@ -1613,7 +1613,7 @@ select.form-input{cursor:pointer}
             <div class="paywall-lock" id="google-ads-paywall" style="display:none">
               <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <strong>Google Ads - Growth Plan</strong>
-              <span>Connect Google Ads to run campaigns across Search, Shopping and YouTube. Available on Growth and Scale plans.</span>
+              <span>Connect Google Ads to run keyword-targeted Search campaigns. Available on Growth and Scale plans.</span>
               <button class="btn-upgrade" onclick="showUpgradeModal('googleads')">Upgrade to Growth</button>
             </div>
           </div>
@@ -6795,20 +6795,35 @@ async function saveProfitCogs() {
   const inputs = document.querySelectorAll('#profit-table-body input[data-idx]');
   const items = [];
   inputs.forEach(inp => {
+    // A blank input means "never entered a COGS value" — skip it rather than defaulting to
+    // 0. Previously this sent cogs_cents:0 for every untouched product on every save, which
+    // silently overwrote real COGS data elsewhere in the catalog and inflated those products'
+    // margin to a fabricated 100% (0 cost = full price is profit). Only send rows the input
+    // actually has a value for, whether newly typed or already-set-and-unchanged.
+    const raw = inp.value.trim();
+    if (raw === '') return;
     const idx = parseInt(inp.getAttribute('data-idx'));
     const p = _profitProducts[idx];
     if (!p) return;
-    const val = parseFloat(inp.value);
-    items.push({ product_id: p.product_id, cogs_cents: isNaN(val) ? 0 : Math.round(val * 100) });
+    const val = parseFloat(raw);
+    if (isNaN(val) || val < 0) return;
+    items.push({ product_id: p.product_id, cogs_cents: Math.round(val * 100) });
   });
-  if (!items.length) { showToast('No products to save', 'error'); return; }
+  if (!items.length) { showToast('Enter at least one COGS value first', 'error'); return; }
 
   const r = await authFetch('/profit-tracker?action=bulk_set', {
     method: 'POST',
     body: JSON.stringify({ action: 'bulk_set', items })
   });
   if (!r || !r.ok) { showToast('Save failed', 'error'); return; }
-  showToast('COGS saved successfully');
+  const d = await r.json();
+  // Backend can return 200 with a partial success (e.g. some rows errored) — d.updated/d.total
+  // tell the real story; don't claim "saved successfully" if some rows silently failed.
+  if (typeof d.updated === 'number' && typeof d.total === 'number' && d.updated < d.total) {
+    showToast(`Saved ${d.updated} of ${d.total} - some products failed, check and retry`, 'warn');
+  } else {
+    showToast('COGS saved successfully');
+  }
   loadProfitReport();
 }
 

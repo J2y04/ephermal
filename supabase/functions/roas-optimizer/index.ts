@@ -25,6 +25,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { metaGet, metaPost, parseROAS } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { requirePlan } from '../_shared/plan.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -374,6 +375,13 @@ Deno.serve(async (req) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
+
+  // The UI gates ROAS Optimizer behind Growth+ (dashboard.html GATED.analytics = 'growth'),
+  // but this endpoint never enforced that server-side — a Starter user calling it directly
+  // could run the full analyze+apply flow, including real Meta budget/pause mutations, for
+  // free. Matches the requirePlan pattern already used correctly elsewhere (meta-api, google-api).
+  const planGate = await requirePlan(userId, 'growth', origin, 'ROAS optimization');
+  if (planGate) return planGate;
 
   const rl = await rateLimitTiered(userId, 'roas', [
     { max: 5,  window: 60   },
