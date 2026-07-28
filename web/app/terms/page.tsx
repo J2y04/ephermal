@@ -48,7 +48,7 @@ export default function TermsPage() {
 
         <div className="legal-section">
           <h2>3. Subscriptions &amp; Billing</h2>
-          <p>Ephermal operates on a monthly subscription model billed in advance. Prices are displayed on our pricing page in USD and are subject to change with 30 days&apos; notice. For EU/EEA merchants, currency conversion rates may affect the local-currency equivalent cost.</p>
+          <p>Ephermal operates on a monthly subscription model billed in advance. Prices are displayed on our pricing page in EUR and are subject to change with 30 days&apos; notice. For merchants billed in a different currency, exchange rates may affect the local-currency equivalent cost.</p>
           <ul>
             <li><strong>No free trial</strong>: all plans require payment upfront. Subscriptions begin immediately upon checkout completion.</li>
             <li><strong>Renewals</strong>: subscriptions renew automatically each billing period. You may cancel at any time; cancellation takes effect at the end of the current billing period with no pro-rata refund.</li>

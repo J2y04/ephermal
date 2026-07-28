@@ -37,17 +37,19 @@ export default function Home() {
       <section className="hero">
         <HeroMotion
           line1={['Your', 'First']}
-          line2={['$10K', 'Starts', 'Here.']}
-          sub={<>Built for Shopify stores chasing their first (or next) revenue milestone. Stop paying $3,000/month to an agency that doesn&apos;t know your store. Ephermal reads your catalog, writes your ads, and launches across Meta and Google. No guesswork. Live in 3 minutes.</>}
+          line2={['€10K', 'Starts', 'Here.']}
+          sub={<>Built for Shopify stores chasing their first (or next) revenue milestone. Stop paying €3,000/month to an agency that doesn&apos;t know your store. Ephermal reads your catalog, writes your ads, and launches across Meta and Google. No guesswork. Live in 3 minutes.</>}
           cta={<><a href="/auth/register.html" className="btn-primary">Get Started</a><a href="#how-it-works" className="btn-secondary">See how it works</a></>}
           oneLine
         />
         <p className="hero-proof" data-reveal data-delay="3">
           <span>No agency needed</span>
           <span className="dot" />
-          <span>From $89/month</span>
+          <span>From €89/month</span>
           <span className="dot" />
           <span>Any stage, any size</span>
+          <span className="dot" />
+          <span>Built &amp; based in Germany</span>
         </p>
 
         <div className="hero-floor-glow" />
@@ -57,11 +59,11 @@ export default function Home() {
       <div className="ticker-wrap">
         <div className="ticker-inner">
           {[
-            ['$89/mo', 'vs $3K agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
-            ['Your goal:', '$10K/month'], ['3 minutes', 'to first campaign'], ['Zero', 'agency fees'],
+            ['€89/mo', 'vs €3K agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
+            ['Your goal:', '€10K/month'], ['3 minutes', 'to first campaign'], ['Zero', 'agency fees'],
             ['AI-written', 'ad scripts'], ['Cancel', 'any time'], ['Shopify', 'native integration'],
-            ['$89/mo', 'vs $3K agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
-            ['Your goal:', '$10K/month'], ['3 minutes', 'to first campaign'], ['Zero', 'agency fees'],
+            ['€89/mo', 'vs €3K agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
+            ['Your goal:', '€10K/month'], ['3 minutes', 'to first campaign'], ['Zero', 'agency fees'],
             ['AI-written', 'ad scripts'], ['Cancel', 'any time'], ['Shopify', 'native integration'],
           ].map(([val, label], i) => (
             <span key={i} className="tick-item">
@@ -79,10 +81,10 @@ export default function Home() {
         <div className="container" style={{ textAlign: 'center' }}>
           <div className="section-label" data-reveal>Built with a clear goal</div>
           <h2 className="section-title" data-reveal data-delay="1">
-            Trying to hit your<br />first $10K month?
+            Trying to hit your<br />first €10K month?
           </h2>
           <p className="section-sub" style={{ margin: '0 auto 56px', maxWidth: '640px' }} data-reveal data-delay="2">
-            Ephermal is built for early-stage Shopify stores: brands doing $0 to $5K a month who want to grow fast without burning budget on trial-and-error. Not yet at $10K? That is exactly who we built this for. Already past it? Ephermal scales with you.
+            Ephermal is built for early-stage Shopify stores: brands doing €0 to €5K a month who want to grow fast without burning budget on trial-and-error. Not yet at €10K? That is exactly who we built this for. Already past it? Ephermal scales with you.
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: '16px', maxWidth: '920px', margin: '0 auto' }} data-reveal data-delay="3">
             {[
@@ -92,17 +94,17 @@ export default function Home() {
                 icon: <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
               },
               {
-                stage: '$1K – $5K / month',
+                stage: '€1K – €5K / month',
                 desc: 'Find what converts. Ephermal analyzes your store and doubles down on the products with the most margin to grow.',
                 icon: <path d="M18 20V10M12 20V4M6 20v-6" />,
               },
               {
-                stage: '$5K – $10K / month',
+                stage: '€5K – €10K / month',
                 desc: 'Scale what works. Profit-aware bidding keeps every ad dollar going to campaigns that actually earn, not just spend.',
                 icon: <><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></>,
               },
               {
-                stage: '$10K+ / month',
+                stage: '€10K+ / month',
                 desc: 'Multi-store. Multi-platform. Full analytics. Ephermal runs your entire ad operation while you focus on the brand.',
                 icon: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
               },
@@ -123,8 +125,8 @@ export default function Home() {
           <div className="compare-card bad">
             <div className="compare-label">The Old Way</div>
             <ul className="compare-list">
-              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>$3,000–$8,000/month to an agency that barely knows your store</li>
-              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Or $400–$800/month burned on trial-and-error alone</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>€3,000–€8,000/month to an agency that barely knows your store</li>
+              <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Or €400–€800/month burned on trial-and-error alone</li>
               <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Generic creatives from a template library nobody clicks</li>
               <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>Weekly agency reports with no real-time visibility</li>
               <li><span className="xi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></span>You explain your store to a stranger, again and again</li>
@@ -133,7 +135,7 @@ export default function Home() {
           <div className="compare-card good">
             <div className="compare-label">The Ephermal Way</div>
             <ul className="compare-list">
-              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>From $89/month, less than one wasted test campaign</li>
+              <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>From €89/month, less than one wasted test campaign</li>
               <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Live campaigns in under 60 seconds</li>
               <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Real UGC-style ads built from your actual products</li>
               <li><span className="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg></span>Profit-aware campaigns. Every ad dollar earns.</li>
@@ -407,7 +409,7 @@ export default function Home() {
               <div className="section-label" style={{ color: 'var(--accent)' }}>Competitor Radar</div>
               <h2 className="section-title">Your competitor just<br />launched a new ad.<br />You already know.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                Thursday morning. A competing store goes live with a new campaign. By the time you spot their creative in your own feed, they&apos;ve already spent $4,000 and locked the algorithm. Competitor Radar watches the Meta Ad Library around the clock. The moment they go live, you get the full breakdown. Hook decoded. Counter-play ready.
+                Thursday morning. A competing store goes live with a new campaign. By the time you spot their creative in your own feed, they&apos;ve already spent €4,000 and locked the algorithm. Competitor Radar watches the Meta Ad Library around the clock. The moment they go live, you get the full breakdown. Hook decoded. Counter-play ready.
               </p>
               <div className="meta-features">
                 {[
@@ -524,7 +526,7 @@ export default function Home() {
               <div className="section-label" style={{ color: '#96BF48' }}>Profit Tracker</div>
               <h2 className="section-title">You&apos;re probably<br />optimising the campaign<br />that&apos;s losing you money.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                You spent $800 on ads and made $3,200 in revenue. Great ROAS. But your pre-workout costs $46 to make and land on the door. At $59 retail, every 4× ROAS order was bleeding you $3.20 after platform fees. Enter your real COGS and Ephermal shows you exactly which products are actually profitable, not just which ones look good in the ROAS dashboard.
+                You spent €800 on ads and made €3,200 in revenue. Great ROAS. But your pre-workout costs €46 to make and land on the door. At €59 retail, every 4× ROAS order was bleeding you €3.20 after platform fees. Enter your real COGS and Ephermal shows you exactly which products are actually profitable, not just which ones look good in the ROAS dashboard.
               </p>
               <div className="meta-features">
                 {[
@@ -546,7 +548,7 @@ export default function Home() {
               <div style={{ background: 'rgba(150,191,72,0.06)', border: '1px solid rgba(150,191,72,0.2)', borderRadius: '20px', padding: '32px' }}>
                 <div style={{ marginBottom: '20px', padding: '11px 14px', background: 'rgba(var(--primary-rgb),0.05)', borderRadius: '10px', border: '1px solid rgba(var(--primary-rgb),0.12)' }}>
                   <div style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>ROAS 4.1× · looks great</div>
-                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>Pre-Workout 300g · $59 retail, $46 landed cost = 22% margin. Losing $3.20/order after fees.</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>Pre-Workout 300g · €59 retail, €46 landed cost = 22% margin. Losing €3.20/order after fees.</div>
                 </div>
                 <div style={{ fontSize: '11px', fontWeight: 700, color: '#96BF48', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '14px' }}>Real margin by product</div>
                 {[
@@ -566,7 +568,7 @@ export default function Home() {
                   </div>
                 ))}
                 <div style={{ marginTop: '14px', padding: '10px 12px', background: 'rgba(150,191,72,0.1)', borderRadius: '10px', fontSize: '12px', color: '#96BF48', fontWeight: 600 }}>
-                  Budget shifted → Protein Powder 1kg (+$2,400/day)
+                  Budget shifted → Protein Powder 1kg (+€2,400/day)
                 </div>
               </div>
             </div>
@@ -580,7 +582,7 @@ export default function Home() {
           <div data-reveal style={{ textAlign: 'center', marginBottom: '60px' }}>
             <h2 className="section-title">How many tools are open<br />in your browser right now?</h2>
             <p className="section-sub" style={{ margin: '0 auto' }}>
-              Agencies charge $3,000–$8,000 a month to run your ads. Going it alone means burning budget on guesswork. Ephermal replaces both. AI reads your store and runs the whole operation for $89 a month.
+              Agencies charge €3,000–€8,000 a month to run your ads. Going it alone means burning budget on guesswork. Ephermal replaces both. AI reads your store and runs the whole operation for €89 a month.
             </p>
           </div>
           {/* "The DIY cost" invoice */}
@@ -602,12 +604,12 @@ export default function Home() {
                 <span style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', textAlign: 'right' }}>Amount</span>
               </div>
               {[
-                { desc: 'Ad spend burned testing wrong audiences',   amount: '$400.00' },
-                { desc: 'Freelance copywriter for ad scripts',       amount: '$300.00' },
-                { desc: 'Ad creative & video editing tools',         amount: '$79.00'  },
-                { desc: 'Analytics & tracking subscriptions',        amount: '$49.00'  },
-                { desc: 'Courses and YouTube ads tutorials',         amount: '$199.00' },
-                { desc: 'Your time: 10 hrs/week figuring it out',   amount: '$1,000.00' },
+                { desc: 'Ad spend burned testing wrong audiences',   amount: '€400.00' },
+                { desc: 'Freelance copywriter for ad scripts',       amount: '€300.00' },
+                { desc: 'Ad creative & video editing tools',         amount: '€79.00'  },
+                { desc: 'Analytics & tracking subscriptions',        amount: '€49.00'  },
+                { desc: 'Courses and YouTube ads tutorials',         amount: '€199.00' },
+                { desc: 'Your time: 10 hrs/week figuring it out',   amount: '€1,000.00' },
               ].map((item, i) => (
                 <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr auto', padding: '11px 0', borderBottom: '1px solid rgba(255,255,255,0.04)', alignItems: 'center' }}>
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{item.desc}</span>
@@ -617,11 +619,11 @@ export default function Home() {
               <div style={{ marginTop: '16px', padding: '16px 20px', background: 'rgba(var(--primary-rgb),0.05)', border: '1px solid rgba(var(--primary-rgb),0.15)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>Monthly total</div>
-                  <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace', letterSpacing: '-1px' }}>$2,027.00</div>
+                  <div style={{ fontSize: '28px', fontWeight: 900, color: 'var(--primary)', fontFamily: 'monospace', letterSpacing: '-1px' }}>€2,027.00</div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '3px' }}>That&apos;s per year</div>
-                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(var(--primary-rgb),0.65)', fontFamily: 'monospace' }}>$24,324.00</div>
+                  <div style={{ fontSize: '20px', fontWeight: 800, color: 'rgba(var(--primary-rgb),0.65)', fontFamily: 'monospace' }}>€24,324.00</div>
                 </div>
               </div>
             </div>
@@ -631,7 +633,7 @@ export default function Home() {
           <div data-reveal style={{ maxWidth: '640px', margin: '0 auto', textAlign: 'center', padding: '36px 32px', background: 'linear-gradient(135deg, rgba(150,191,72,0.1), rgba(var(--primary-rgb),0.07))', border: '1px solid rgba(150,191,72,0.25)', borderRadius: '20px' }}>
             <div style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '10px' }}>No agency. No guesswork. Everything above, one tool.</div>
             <div style={{ fontSize: 'clamp(32px,5vw,48px)', fontWeight: 900, color: 'var(--text)', letterSpacing: '-1.5px', lineHeight: 1.1, marginBottom: '10px' }}>
-              Ephermal. <span style={{ color: 'var(--accent)' }}>$89/month.</span>
+              Ephermal. <span style={{ color: 'var(--accent)' }}>€89/month.</span>
             </div>
             <div style={{ fontSize: '14px', color: 'var(--muted)' }}>No agency fees. No contracts. Cancel any time.</div>
           </div>
@@ -673,9 +675,9 @@ export default function Home() {
           <div className="stats-grid">
             <StatsMotion stats={[
               { num: '3 min', label: 'From Shopify install to first campaign live' },
-              { num: '$89',   label: 'Per month, a fraction of any agency retainer' },
+              { num: '€89',   label: 'Per month, a fraction of any agency retainer' },
               { num: '2',     label: 'Ad platforms automated: Meta and Google Ads' },
-              { num: '$0',    label: 'Ad experience or agency contract required' },
+              { num: '€0',    label: 'Ad experience or agency contract required' },
             ]} />
           </div>
         </div>
@@ -695,7 +697,7 @@ export default function Home() {
               Built for small stores.<br />Works as you scale.
             </h3>
             <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.75 }}>
-              Ephermal is designed for Shopify stores in the early stages: brands making their first sales, chasing their first $10K month, figuring out what products the market actually wants. We speak your language. But we also grow with you: stores doing $50K+ a month use Ephermal for the same reason: a smart system beats a full-time agency team at a fraction of the cost. Whatever your stage, if you sell on Shopify, Ephermal runs your ads.
+              Ephermal is designed for Shopify stores in the early stages: brands making their first sales, chasing their first €10K month, figuring out what products the market actually wants. We speak your language. But we also grow with you: stores doing €50K+ a month use Ephermal for the same reason: a smart system beats a full-time agency team at a fraction of the cost. Whatever your stage, if you sell on Shopify, Ephermal runs your ads.
             </p>
           </div>
           <div className="quotes-grid" data-stagger>
@@ -732,8 +734,8 @@ export default function Home() {
           <div className="pricing-grid">
             <div className="price-card" data-spotlight>
               <div className="price-badge">Starter</div>
-              <div className="price-amount"><sup>$</sup>89</div>
-              <div className="price-per">/ month, perfect for stores under $5K/month</div>
+              <div className="price-amount"><sup>€</sup>89</div>
+              <div className="price-per">/ month, perfect for stores under €5K/month</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 15 AI script credits / month
@@ -772,8 +774,8 @@ export default function Home() {
             </div>
             <div className="price-card featured" data-spotlight>
               <div className="price-badge">Growth</div>
-              <div className="price-amount"><sup>$</sup>199</div>
-              <div className="price-per">/ month, for stores pushing toward $10K+</div>
+              <div className="price-amount"><sup>€</sup>199</div>
+              <div className="price-per">/ month, for stores pushing toward €10K+</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
                 75 AI script credits / month
@@ -814,7 +816,7 @@ export default function Home() {
             </div>
             <div className="price-card" data-spotlight>
               <div className="price-badge">Scale</div>
-              <div className="price-amount"><sup>$</sup>349</div>
+              <div className="price-amount"><sup>€</sup>349</div>
               <div className="price-per">/ month, for established stores &amp; agencies</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
@@ -852,7 +854,7 @@ export default function Home() {
       {/* ── Final CTA ── */}
       <section className="cta-section">
         <div className="cta-wrap" data-reveal>
-          <h2>Your first $10K is<br />one campaign away.</h2>
+          <h2>Your first €10K is<br />one campaign away.</h2>
           <p>Connect your store. Let AI run the ads. Watch the revenue grow.</p>
           <a href="/auth/register.html" className="btn-primary" style={{ fontSize: '18px', padding: '20px 48px' }}>
             Get Started
@@ -874,7 +876,7 @@ export default function Home() {
           <a href="/data-deletion">Data Deletion</a>
           <a href="mailto:hello@ephermal.app">Contact</a>
         </div>
-        <div className="footer-copy">© 2026 Interlink Platforms. All rights reserved.</div>
+        <div className="footer-copy">© 2026 Interlink Platforms. Built &amp; based in Germany. All rights reserved.</div>
       </footer>
     </>
   );

@@ -1673,7 +1673,7 @@ select.form-input{cursor:pointer}
             <div style="width:44px;height:44px;border-radius:12px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#08080c" id="billing-plan-icon">S</div>
             <div style="flex:1">
               <div style="font-size:17px;font-weight:800" id="billing-plan-name">Starter</div>
-              <div style="font-size:13px;color:var(--muted)" id="billing-plan-desc">$89/month · 15 UGC credits/month · 1 store</div>
+              <div style="font-size:13px;color:var(--muted)" id="billing-plan-desc">€89/month · 15 UGC credits/month · 1 store</div>
             </div>
             <span class="plan-badge" id="billing-plan-badge" style="font-size:12px;padding:5px 12px">STARTER</span>
           </div>
@@ -1962,8 +1962,8 @@ select.form-input{cursor:pointer}
         <label class="form-label">Daily Budget</label>
         <div class="budget-slider-wrap">
           <div class="budget-slider-top">
-            <div class="budget-slider-value"><span class="cur">$</span><span id="cb-budget-display">20</span></div>
-            <div class="budget-slider-range">$5 – $500/day</div>
+            <div class="budget-slider-value"><span class="cur">€</span><span id="cb-budget-display">20</span></div>
+            <div class="budget-slider-range">€5 – €500/day</div>
           </div>
           <input class="budget-slider" id="cb-budget" type="range" min="5" max="500" step="1" value="20"
             style="--fill:3.03%"
@@ -2060,7 +2060,7 @@ select.form-input{cursor:pointer}
     </div>
     <div class="modal-title">Upgrade to <span id="upgrade-modal-plan">Growth</span></div>
     <div class="modal-sub">Unlock advanced analytics, campaign management, store analysis and more.</div>
-    <div style="font-size:32px;font-weight:900;margin-bottom:6px"><span id="upgrade-modal-price">$199</span><span style="font-size:14px;font-weight:400;color:var(--muted)">/month</span></div>
+    <div style="font-size:32px;font-weight:900;margin-bottom:6px"><span id="upgrade-modal-price">€199</span><span style="font-size:14px;font-weight:400;color:var(--muted)">/month</span></div>
     <div class="modal-actions" style="justify-content:center">
       <button class="btn-secondary" onclick="document.getElementById('upgrade-modal').classList.remove('open')">Maybe later</button>
       <a id="upgrade-modal-link" href="#" target="_blank" class="btn-save" style="text-decoration:none">Upgrade Now</a>
@@ -2311,7 +2311,7 @@ function showUpgradeModal(feature) {
   const req = GATED[feature] || 'growth';
   const plan = PLANS[req];
   document.getElementById('upgrade-modal-plan').textContent = plan.name;
-  document.getElementById('upgrade-modal-price').textContent = req === 'growth' ? '$199' : '$349';
+  document.getElementById('upgrade-modal-price').textContent = req === 'growth' ? '€199' : '€349';
   // Use checkout Edge Function if price IDs are configured, otherwise fall back to static link
   const upgradeLink = document.getElementById('upgrade-modal-link');
   const priceId = window.STRIPE_PRICES?.[req];
@@ -2676,7 +2676,7 @@ async function reactivateSubscription() {
 function renderBillingPage() {
   const plan = getUserPlan();
   const info = planInfo();
-  const descs = { starter: '$89/month · 15 UGC credits/month · 1 store', growth: '$199/month · 75 UGC credits/month · 3 stores', scale: '$349/month · 350 UGC credits/month · Unlimited stores' };
+  const descs = { starter: '€89/month · 15 UGC credits/month · 1 store', growth: '€199/month · 75 UGC credits/month · 3 stores', scale: '€349/month · 350 UGC credits/month · Unlimited stores' };
   const el = (id, txt) => { const e = document.getElementById(id); if(e) e.textContent = txt; };
   el('billing-plan-name', info.name);
   el('billing-plan-desc', descs[plan] || '');
@@ -2708,9 +2708,9 @@ function renderBillingPage() {
   const grid = document.getElementById('billing-plans-grid');
   if (!grid) return;
   const planCards = [
-    { id:'starter', name:'Starter', price:'$89', ugc:15, stores:'1', features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'}] },
-    { id:'growth',  name:'Growth',  price:'$199', ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
-    { id:'scale',   name:'Scale',   price:'$349', ugc:350, stores:'∞', features:['Unlimited stores','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'] },
+    { id:'starter', name:'Starter', price:'€89', ugc:15, stores:'1', features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'}] },
+    { id:'growth',  name:'Growth',  price:'€199', ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
+    { id:'scale',   name:'Scale',   price:'€349', ugc:350, stores:'∞', features:['Unlimited stores','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'] },
   ];
   grid.innerHTML = planCards.map(p => {
     const isCurrent = plan === p.id;
@@ -4805,7 +4805,7 @@ function aiShowTopupBanner(limit, plan) {
   div.id = 'ai-topup-banner';
   div.style.cssText = 'margin:8px 0;padding:14px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:12px;text-align:center;font-size:13px;color:var(--warning)';
   div.innerHTML = `<strong style="display:block;margin-bottom:6px">Weekly limit reached (${limit} messages)</strong>
-    <span style="color:var(--muted);font-size:12px">Top up for $5 = 50 extra messages this week</span><br>
+    <span style="color:var(--muted);font-size:12px">Top up for €5 = 50 extra messages this week</span><br>
     <button onclick="if(!window.STRIPE_PRICES?.topup_5){showToast('Billing not configured. Contact support','error');return;}startCheckout(window.STRIPE_PRICES.topup_5)" style="display:inline-block;margin-top:10px;padding:8px 20px;background:var(--primary);color:#08080c;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Get 50 more messages</button>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
@@ -5184,9 +5184,9 @@ function showSubModal() {
   const grid = document.getElementById('sub-gate-plans');
   if (grid && grid.children.length === 0) {
     const plans = [
-      { id:'starter', name:'Starter', price:'$89',  ugc:'15',  desc:'15 UGC credits · 1 store',       highlight: false },
-      { id:'growth',  name:'Growth',  price:'$199', ugc:'75',  desc:'75 UGC credits · 3 stores',       highlight: true  },
-      { id:'scale',   name:'Scale',   price:'$349', ugc:'350', desc:'350 UGC credits · Unlimited',      highlight: false },
+      { id:'starter', name:'Starter', price:'€89',  ugc:'15',  desc:'15 UGC credits · 1 store',       highlight: false },
+      { id:'growth',  name:'Growth',  price:'€199', ugc:'75',  desc:'75 UGC credits · 3 stores',       highlight: true  },
+      { id:'scale',   name:'Scale',   price:'€349', ugc:'350', desc:'350 UGC credits · Unlimited',      highlight: false },
     ];
     grid.innerHTML = plans.map(p => `
       <div style="border:1px solid ${p.highlight?'#06d6c7':'var(--border)'};border-radius:14px;padding:18px;text-align:center;${p.highlight?'background:rgba(6,214,199,0.08);':''}transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">

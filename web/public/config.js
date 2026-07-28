@@ -40,12 +40,12 @@
   // Stripe Price IDs — used by create-checkout Edge Function for server-side sessions
   // Replace these with your actual Price IDs from Stripe Dashboard → Products
   window.STRIPE_PRICES = {
-    starter:    'price_REPLACE_STARTER',   // $89/mo recurring
-    growth:     'price_REPLACE_GROWTH',    // $199/mo recurring
-    scale:      'price_REPLACE_SCALE',     // $349/mo recurring
-    topup_5:    'price_REPLACE_TOPUP5',    // $5 one-time = 50 AI messages
-    topup_10:   'price_REPLACE_TOPUP10',   // $10 one-time = 120 AI messages
-    topup_20:   'price_REPLACE_TOPUP20',   // $20 one-time = 280 AI messages
+    starter:    'price_REPLACE_STARTER',   // €89/mo recurring
+    growth:     'price_REPLACE_GROWTH',    // €199/mo recurring
+    scale:      'price_REPLACE_SCALE',     // €349/mo recurring
+    topup_5:    'price_REPLACE_TOPUP5',    // €5 one-time = 50 AI messages
+    topup_10:   'price_REPLACE_TOPUP10',   // €10 one-time = 120 AI messages
+    topup_20:   'price_REPLACE_TOPUP20',   // €20 one-time = 280 AI messages
   };
 
   // Supabase Edge Function base (auto-constructed from SUPABASE_URL after it's set below)
