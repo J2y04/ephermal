@@ -3939,13 +3939,23 @@ async function dashStartShopifyOAuth() {
   const params = new URLSearchParams({ client_id: window.SHOPIFY_APP_KEY, scope: 'read_products,read_orders,read_analytics,read_customers,read_themes,read_inventory', redirect_uri: window.SHOPIFY_CALLBACK_URL, state });
   window.location.href = `https://${shop}/admin/oauth/authorize?${params}`;
 }
+// Maps an oauth error code to a user-facing message. connection_test_failed means the
+// OAuth exchange itself succeeded but the follow-up live API call (using the fresh
+// token) failed — different from a generic auth failure, so it gets a more specific
+// message pointing at permissions rather than "try again".
+function oauthErrorMessage(platform, code) {
+  if (code === 'connection_test_failed') {
+    return `Connected to ${platform}, but couldn't verify account access - your token may be missing required permissions. Please reconnect.`;
+  }
+  return `${platform} connection failed - please try again`;
+}
 async function checkShopifyReturn() {
   const p            = new URLSearchParams(window.location.search);
   const connected    = p.get('shopify_connected');
   const shopifyError = p.get('shopify_error');
   if (!connected && !shopifyError) return;
   window.history.replaceState({}, document.title, window.location.pathname);
-  if (shopifyError) { showToast('Shopify connection failed - please try again', 'error'); return; }
+  if (shopifyError) { showToast(oauthErrorMessage('Shopify', shopifyError), 'error'); return; }
   if (connected !== '1') return;
 
   const claimCode   = p.get('claim');
@@ -5524,7 +5534,7 @@ async function checkMetaOAuthReturn() {
   const metaError = p.get('meta_error');
   if (!connected && !metaError) return;
   window.history.replaceState({}, document.title, window.location.pathname);
-  if (metaError) { showToast('Meta connection failed - please try again', 'error'); return; }
+  if (metaError) { showToast(oauthErrorMessage('Meta', metaError), 'error'); return; }
 
   const claimCode   = p.get('claim');
   const returnNonce = p.get('nonce') || '';
@@ -5645,7 +5655,7 @@ async function checkGoogleOAuthReturn() {
   const googleError = p.get('google_error');
   if (!connected && !googleError) return;
   window.history.replaceState({}, document.title, window.location.pathname);
-  if (googleError) { showToast('Google Ads connection failed - please try again', 'error'); return; }
+  if (googleError) { showToast(oauthErrorMessage('Google Ads', googleError), 'error'); return; }
 
   const claimCode   = p.get('claim');
   const returnNonce = p.get('nonce') || '';

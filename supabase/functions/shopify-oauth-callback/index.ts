@@ -192,17 +192,25 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, returnPage, { shopify_error: 'network_error' })
   }
 
-  // ── Fetch shop display name ──────────────────────────────────────────────
+  // ── Connection checker: prove the fresh token actually works before we ────
+  // ever store it or tell the user they're connected. shop.json has no
+  // "legitimate empty result" case — any non-2xx here means the token is bad
+  // (wrong scope, revoked, malformed), so unlike the account-listing calls in
+  // the Meta/Google callbacks, a failure here is unconditionally fatal.
   let shopName = shop
   try {
     const shopRes  = await fetch(`https://${shop}/admin/api/2024-01/shop.json`, {
       headers: { 'X-Shopify-Access-Token': accessToken },
     })
+    if (!shopRes.ok) {
+      console.error('[shopify-oauth] Connection test failed:', shopRes.status, await shopRes.text())
+      return redirectTo(APP_URL, returnPage, { shopify_error: 'connection_test_failed' })
+    }
     const shopData = await shopRes.json()
     shopName = (shopData.shop?.name as string) || shop
   } catch (e) {
     console.error('[shopify-oauth] Shop info fetch threw:', e)
-    // Non-fatal — use raw domain as name
+    return redirectTo(APP_URL, returnPage, { shopify_error: 'connection_test_failed' })
   }
 
   // ── Persist to Supabase ──────────────────────────────────────────────────

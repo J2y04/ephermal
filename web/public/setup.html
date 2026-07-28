@@ -322,6 +322,17 @@ async function startShopifyOAuth() {
   window.location.href = `https://${shop}/admin/oauth/authorize?${params}`;
 }
 
+// Maps an oauth error code to a user-facing message. connection_test_failed means the
+// OAuth exchange itself succeeded but the follow-up live API call (using the fresh
+// token) failed — different from a generic auth failure, so it gets a more specific
+// message pointing at permissions rather than "try again".
+function oauthErrorMessage(platform, code) {
+  if (code === 'connection_test_failed') {
+    return `Connected to ${platform}, but couldn't verify account access - your token may be missing required permissions. Please reconnect.`;
+  }
+  return `${platform} connection failed - please try again.`;
+}
+
 // ── Handle Shopify callback return ────────────────────────────────────────────
 async function handleShopifyReturn() {
   const p = new URLSearchParams(window.location.search);
@@ -332,7 +343,7 @@ async function handleShopifyReturn() {
   window.history.replaceState({}, document.title, '/setup.html');
 
   if (shopifyError) {
-    document.getElementById('err-1').textContent = 'Shopify connection failed - please try again.';
+    document.getElementById('err-1').textContent = oauthErrorMessage('Shopify', shopifyError);
     return;
   }
 
@@ -429,7 +440,7 @@ async function checkMetaOAuthReturn() {
 
   const errEl = document.getElementById('err-2');
   if (metaError) {
-    if (errEl) errEl.textContent = 'Meta connection failed - please try again.';
+    if (errEl) errEl.textContent = oauthErrorMessage('Meta', metaError);
     return;
   }
 
@@ -544,7 +555,7 @@ async function checkGoogleOAuthReturn() {
   if (!p.get('google_connected') && !p.get('google_error')) return;
   history.replaceState({}, '', window.location.pathname);
   if (p.get('google_error')) {
-    document.getElementById('err-3').textContent = 'Google connection failed: ' + p.get('google_error');
+    document.getElementById('err-3').textContent = oauthErrorMessage('Google Ads', p.get('google_error'));
     return;
   }
   const claim = p.get('claim') || '';

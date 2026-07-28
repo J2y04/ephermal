@@ -134,7 +134,11 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, returnPage, { meta_error: 'network_error' })
   }
 
-  // ── Fetch the user's ad accounts ─────────────────────────────────────────
+  // ── Connection checker: prove the fresh token can actually reach the Meta ──
+  // Graph API before we store it or tell the user they're connected. A 2xx
+  // response with zero accounts is a legitimate state for a brand-new ad
+  // account (not a failure) — only a non-2xx status or a body-level `error`
+  // (bad/expired/under-scoped token) aborts the connection.
   let accounts: Array<{ id: string; name: string }> = []
   try {
     const accRes  = await fetch(
@@ -142,13 +146,17 @@ Deno.serve(async (req: Request) => {
       { headers: { 'Authorization': `Bearer ${accessToken}` } },
     )
     const accData = await accRes.json()
+    if (!accRes.ok || accData.error) {
+      console.error('[meta-oauth] Connection test failed:', accRes.status, JSON.stringify(accData.error ?? accData))
+      return redirectTo(APP_URL, returnPage, { meta_error: 'connection_test_failed' })
+    }
     accounts = (accData.data ?? []).map((a: any) => ({
       id:   a.id   as string,
       name: a.name as string,
     }))
   } catch (e) {
     console.error('[meta-oauth] Ad accounts fetch threw:', e)
-    // Non-fatal — continue with empty list; user will see warning in UI
+    return redirectTo(APP_URL, returnPage, { meta_error: 'connection_test_failed' })
   }
 
   // ── Fetch the user's Facebook Pages (needed to create real ad creatives) ──

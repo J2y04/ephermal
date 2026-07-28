@@ -155,7 +155,14 @@ Deno.serve(async (req: Request) => {
     return redirectTo(APP_URL, returnPage, { google_error: 'network_error' })
   }
 
-  // ── Fetch accessible Google Ads customer IDs (requires developer token) ───
+  // ── Connection checker: prove the fresh token can actually reach the ─────
+  // Google Ads API before we store it or tell the user they're connected.
+  // Only enforced when DEVELOPER_TOKEN is configured (unchanged gate) — that's
+  // a server-side infra prerequisite, not a user credential problem, so its
+  // absence still skips this check entirely rather than blocking the connect.
+  // A 2xx response with zero accessible customers is legitimate for a
+  // brand-new Google Ads login (not a failure) — only a non-2xx status or a
+  // body-level `error` (bad/expired token, invalid developer token) aborts.
   let customerId: string | null = null
   let customerIds: string[]     = []
 
@@ -171,6 +178,10 @@ Deno.serve(async (req: Request) => {
         },
       )
       const custData = await custRes.json()
+      if (!custRes.ok || custData.error) {
+        console.error('[google-oauth] Connection test failed:', custRes.status, JSON.stringify(custData.error ?? custData))
+        return redirectTo(APP_URL, returnPage, { google_error: 'connection_test_failed' })
+      }
 
       // resourceNames are like "customers/1234567890"
       if (Array.isArray(custData.resourceNames)) {
@@ -178,7 +189,8 @@ Deno.serve(async (req: Request) => {
         customerId  = customerIds[0] ?? null
       }
     } catch (e) {
-      console.warn('[google-oauth] Customer IDs fetch threw (non-fatal):', e)
+      console.error('[google-oauth] Customer IDs fetch threw:', e)
+      return redirectTo(APP_URL, returnPage, { google_error: 'connection_test_failed' })
     }
   }
 
