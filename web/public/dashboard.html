@@ -2466,6 +2466,11 @@ async function loadIntegrationsFromSupabase() {
     if (data.shopify_shop  && !localStorage.getItem('shopify_domain'))      localStorage.setItem('shopify_domain',      data.shopify_shop);
     if (data.google_refresh_token && !localStorage.getItem('google_token')) localStorage.setItem('google_token',        '1');
     if (data.google_ads_customer_id && !localStorage.getItem('google_account')) localStorage.setItem('google_account', data.google_ads_customer_id);
+    // Self-heal: this sync only ever fills empty keys, so a stale local google_account
+    // (e.g. from the now-fixed dashSaveGoogleAccount bug, which used to "connect" without
+    // ever persisting server-side) would otherwise show a false "connected" badge forever.
+    // If the server has no customer ID on record, the local value can't be real — clear it.
+    if (!data.google_ads_customer_id && localStorage.getItem('google_account')) localStorage.removeItem('google_account');
     if (data.store_url     && !localStorage.getItem('last_analyzed_store')) localStorage.setItem('last_analyzed_store', data.store_url);
     // Auto-mark setup complete if any integration exists in DB
     if ((data.meta_token || data.shopify_token || data.google_ads_customer_id) && !localStorage.getItem('setup_complete')) {
@@ -5687,13 +5692,31 @@ async function checkGoogleOAuthReturn() {
   }
 }
 
-function dashSaveGoogleAccount() {
+async function dashSaveGoogleAccount() {
   const raw = (document.getElementById('dash-s-google-account')?.value || '').trim().replace(/-/g,'');
   if (!raw || !/^\d{8,10}$/.test(raw)) { showToast('Enter a valid Customer ID (8-10 digits)', 'warn'); return; }
-  localStorage.setItem('google_token', '1');
-  localStorage.setItem('google_account', raw);
-  const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display='none';
-  dashShowGoogleBadge(raw);
+  // Previously this only wrote to localStorage and never told the backend — the dashboard
+  // showed "Google Ads connected" while the database's google_ads_customer_id stayed null,
+  // so every real campaign/API call still 403'd with "not connected." Now it actually
+  // persists server-side (and the backend verifies the ID is real before saving it).
+  const btn = document.querySelector('#dash-google-cid-area button');
+  if (btn) { btn.disabled = true; btn.textContent = 'Verifying…'; }
+  try {
+    const r = await authFetch('/google/ads', {method:'POST', body:JSON.stringify({action:'save_customer_id', customer_id: raw})});
+    if (!r || !r.ok) {
+      const err = r ? await r.json().catch(()=>({})) : {};
+      showToast(err.error || 'Could not save Customer ID', 'error');
+      return;
+    }
+    localStorage.setItem('google_token', '1');
+    localStorage.setItem('google_account', raw);
+    const area = document.getElementById('dash-google-cid-area'); if (area) area.style.display='none';
+    dashShowGoogleBadge(raw);
+  } catch(e) {
+    showToast('Request failed - please try again', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Connect'; }
+  }
 }
 
 function dashShowGoogleBadge(cid, toast=true) {

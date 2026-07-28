@@ -101,6 +101,7 @@ const WRITE_ACTIONS = new Set([
   'disconnect', // disconnect-integration: clear a platform's stored credentials
   'launch_meta', 'launch_google', 'save_draft', 'update', 'delete', // campaign-launcher writes
   'apply', // roas-optimizer / budget-ai: pauses/scales real campaigns, must invalidate reads
+  'save_customer_id', // google-api: persist a manually-entered Google Ads Customer ID
 ]);
 
 // After a write, invalidate related read caches
@@ -128,6 +129,7 @@ const WRITE_INVALIDATES: Record<string, string[]> = {
   // re-run of "Optimize ROAS" within the 300s cache TTL showed stale pre-apply recommendations
   // (e.g. still suggesting "pause" for a campaign that was just paused).
   apply:              ['roas-optimizer:analyze', 'meta-api:campaigns', 'meta-api:overview'],
+  save_customer_id:   ['google-api:campaigns', 'google-api:analytics'],
 };
 
 const SUPABASE_URL  = Deno.env.get('SUPABASE_URL') ?? '';

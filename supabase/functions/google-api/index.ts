@@ -169,9 +169,6 @@ Deno.serve(async (req: Request) => {
   const devToken = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN')
   if (!devToken) return errResponse('Google Ads developer token not configured', 503, origin)
 
-  const creds = await getCredentials(userId)
-  if (!creds) return errResponse('Google Ads not connected. Connect in Settings.', 403, origin)
-
   const url = new URL(req.url)
   let postBody: Record<string, unknown> = {}
   if (req.method === 'POST') {
@@ -180,6 +177,73 @@ Deno.serve(async (req: Request) => {
   const action = req.method === 'GET'
     ? (url.searchParams.get('action') ?? 'campaigns')
     : String(postBody.action ?? '')
+
+  // ── save_customer_id: persist a manually-entered Customer ID ─────────────────
+  // Handled before the getCredentials() gate below, since this is precisely the
+  // path used when OAuth granted a refresh token but couldn't auto-resolve a
+  // customer ID (listAccessibleCustomers returned none) — at this point
+  // google_ads_customer_id is genuinely still null, so the normal full-creds
+  // gate would 403 before ever reaching this action. Previously the frontend
+  // (dashSaveGoogleAccount()) only wrote this to localStorage and never called
+  // any backend endpoint at all — the dashboard showed "Google Ads connected"
+  // while the database (and every real campaign/API action) still had no
+  // customer ID, so every subsequent Google Ads operation silently 403'd.
+  if (action === 'save_customer_id') {
+    const rawCid = String(postBody.customer_id ?? '').replace(/-/g, '')
+    if (!/^\d{8,10}$/.test(rawCid)) {
+      return errResponse('Customer ID must be 8-10 digits', 400, origin)
+    }
+
+    const { data: row } = await supabase
+      .from('user_integrations')
+      .select('google_refresh_token')
+      .eq('user_id', userId)
+      .single()
+    const refreshToken = row?.google_refresh_token as string | undefined
+    if (!refreshToken) return errResponse('Connect Google Ads via OAuth first, then add your Customer ID', 403, origin)
+
+    // Connection checker: verify this customer ID is actually accessible to the
+    // stored token before saving it — otherwise a typo or someone else's ID
+    // would silently "connect" and only fail later on a real campaign action.
+    let saveAccessToken: string
+    try {
+      saveAccessToken = await getAccessToken(refreshToken, userId)
+    } catch (e) {
+      console.error('[google-api] save_customer_id token refresh failed:', e)
+      return errResponse('Google token refresh failed — please reconnect Google Ads', 401, origin)
+    }
+    try {
+      const custRes = await fetch('https://googleads.googleapis.com/v17/customers:listAccessibleCustomers', {
+        headers: { 'Authorization': `Bearer ${saveAccessToken}`, 'developer-token': devToken },
+      })
+      const custData = await custRes.json()
+      if (!custRes.ok || custData.error) {
+        console.error('[google-api] save_customer_id accessible-customers check failed:', custRes.status, JSON.stringify(custData.error ?? custData))
+        return errResponse('Could not verify Google Ads access — please reconnect Google Ads', 403, origin)
+      }
+      const accessibleIds = (Array.isArray(custData.resourceNames) ? custData.resourceNames as string[] : [])
+        .map(r => r.replace('customers/', ''))
+      if (!accessibleIds.includes(rawCid)) {
+        return errResponse('That Customer ID is not accessible to your connected Google account. Double-check the ID.', 403, origin)
+      }
+    } catch (e) {
+      console.error('[google-api] save_customer_id verification threw:', e)
+      return errResponse('Could not verify Google Ads access — please try again', 502, origin)
+    }
+
+    const { error: updateErr } = await supabase
+      .from('user_integrations')
+      .update({ google_ads_customer_id: rawCid })
+      .eq('user_id', userId)
+    if (updateErr) {
+      console.error('[google-api] save_customer_id DB update failed:', updateErr.message)
+      return errResponse('Failed to save Customer ID', 500, origin)
+    }
+    return okResponse({ success: true, customer_id: rawCid }, origin)
+  }
+
+  const creds = await getCredentials(userId)
+  if (!creds) return errResponse('Google Ads not connected. Connect in Settings.', 403, origin)
 
   let accessToken: string
   try {
