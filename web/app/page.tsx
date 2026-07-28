@@ -38,7 +38,7 @@ export default function Home() {
         <HeroMotion
           line1={['Your', 'First']}
           line2={['€10K', 'Starts', 'Here.']}
-          sub={<>Built for Shopify stores chasing their first (or next) revenue milestone. Stop paying €3,000/month to an agency that doesn&apos;t know your store. Ephermal reads your catalog, writes your ads, and launches across Meta and Google. No guesswork. Live in 3 minutes.</>}
+          sub={<>Built for Shopify stores chasing their first (or next) revenue milestone. Most AI ad tools stop at Meta and chase ROAS. Ephermal also runs real Google Search ads, tracks true product margins so you scale what&apos;s actually profitable, and watches competitors before they outspend you. Live in 3 minutes.</>}
           cta={<><a href="/auth/register.html" className="btn-primary">Get Started</a><a href="#how-it-works" className="btn-secondary">See how it works</a></>}
           oneLine
         />
@@ -47,7 +47,7 @@ export default function Home() {
           <span className="dot" />
           <span>From €89/month</span>
           <span className="dot" />
-          <span>Any stage, any size</span>
+          <span>Meta + real Google Search ads</span>
           <span className="dot" />
           <span>Built &amp; based in Germany</span>
         </p>
@@ -59,11 +59,11 @@ export default function Home() {
       <div className="ticker-wrap">
         <div className="ticker-inner">
           {[
-            ['€89/mo', 'vs €3K agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
-            ['Your goal:', '€10K/month'], ['3 minutes', 'to first campaign'], ['Zero', 'agency fees'],
+            ['€89/mo', 'vs €3K agencies'], ['Real keywords', 'not just Meta'], ['Profit Tracker', 'true margin, not just ROAS'],
+            ['Competitor Radar', 'see their ads before they win'], ['Your goal:', '€10K/month'], ['3 minutes', 'to first campaign'],
             ['AI-written', 'ad scripts'], ['Cancel', 'any time'], ['Shopify', 'native integration'],
-            ['€89/mo', 'vs €3K agencies'], ['Meta Ads', 'fully automated'], ['Google Ads', 'on Growth+'],
-            ['Your goal:', '€10K/month'], ['3 minutes', 'to first campaign'], ['Zero', 'agency fees'],
+            ['€89/mo', 'vs €3K agencies'], ['Real keywords', 'not just Meta'], ['Profit Tracker', 'true margin, not just ROAS'],
+            ['Competitor Radar', 'see their ads before they win'], ['Your goal:', '€10K/month'], ['3 minutes', 'to first campaign'],
             ['AI-written', 'ad scripts'], ['Cancel', 'any time'], ['Shopify', 'native integration'],
           ].map(([val, label], i) => (
             <span key={i} className="tick-item">
@@ -195,7 +195,7 @@ export default function Home() {
         <div className="container">
           <div data-reveal>
             <h2 className="section-title">Your full ad engine.<br />One flat price.</h2>
-            <p className="section-sub" style={{ margin: '16px auto 0' }}>Everything a growing Shopify store needs to run real campaigns. No experience required, no agency needed.</p>
+            <p className="section-sub" style={{ margin: '16px auto 0' }}>Most AI ad tools stop at Meta and a ROAS number. Ephermal runs real Google Search campaigns, ties every decision to your actual product margin, and watches your competitors so you&apos;re never the last to know. No experience required, no agency needed.</p>
           </div>
           <div className="services-grid">
             {[
