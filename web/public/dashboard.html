@@ -127,6 +127,17 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .platform-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:8px}
 .platform-badge.meta{background:rgba(24,119,242,.12);color:#1877F2}
 .platform-badge.google{background:rgba(66,133,244,.12);color:#4285F4}
+/* ── Platform filter (segmented control) ── */
+.platform-filter{display:inline-flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;padding:4px}
+.platform-filter-btn{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+.platform-filter-btn:hover{color:var(--text)}
+.platform-filter-btn.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-contact)}
+.platform-filter-btn.active[data-platform="meta"]{color:#1877F2}
+.platform-filter-btn.active[data-platform="google"]{color:#4285F4}
+.platform-filter-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.platform-filter-dot.meta{background:#1877F2}
+.platform-filter-dot.google{background:#4285F4}
+.platform-filter-dot.all{background:var(--primary)}
 .ad-editor-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;position:relative}
 .ad-editor-card .ad-editor-remove{position:absolute;top:12px;right:12px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:4px;border-radius:6px;transition:all .15s}
 .ad-editor-card .ad-editor-remove:hover{color:var(--danger);background:rgba(248,113,113,.1)}
@@ -1004,7 +1015,17 @@ select.form-input{cursor:pointer}
 
       <!-- Campaigns + ads list -->
       <div class="panel fade-in" style="margin-bottom:20px">
-        <div class="panel-head"><div class="panel-title">Campaigns</div><button class="panel-action" onclick="loadLaunchAdsCampaigns()">Refresh ↺</button></div>
+        <div class="panel-head" style="flex-wrap:wrap;gap:12px">
+          <div class="panel-title">Campaigns</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
+            <div class="platform-filter" id="launch-platform-filter" role="tablist" aria-label="Filter by platform">
+              <button type="button" class="platform-filter-btn active" data-platform="all" onclick="setPlatformFilter('launch','all')"><span class="platform-filter-dot all"></span>All</button>
+              <button type="button" class="platform-filter-btn" data-platform="meta" onclick="setPlatformFilter('launch','meta')"><span class="platform-filter-dot meta"></span>Meta</button>
+              <button type="button" class="platform-filter-btn" data-platform="google" onclick="setPlatformFilter('launch','google')"><span class="platform-filter-dot google"></span>Google</button>
+            </div>
+            <button class="panel-action" onclick="loadLaunchAdsCampaigns()">Refresh ↺</button>
+          </div>
+        </div>
         <div id="launchads-list" style="padding:16px 22px">
           <div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet. Click "+ New Campaign" to start.</p></div>
         </div>
@@ -1382,7 +1403,12 @@ select.form-input{cursor:pointer}
               </div>
               <span id="bulk-selected-count" style="font-size:12px;background:rgba(6,214,199,0.12);color:var(--primary);font-weight:700;padding:3px 10px;border-radius:20px;display:none"></span>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-left:auto">
+            <div class="platform-filter" id="bulk-platform-filter" role="tablist" aria-label="Filter by platform" style="margin-left:auto">
+              <button type="button" class="platform-filter-btn active" data-platform="all" onclick="setPlatformFilter('bulk','all')"><span class="platform-filter-dot all"></span>All</button>
+              <button type="button" class="platform-filter-btn" data-platform="meta" onclick="setPlatformFilter('bulk','meta')"><span class="platform-filter-dot meta"></span>Meta</button>
+              <button type="button" class="platform-filter-btn" data-platform="google" onclick="setPlatformFilter('bulk','google')"><span class="platform-filter-dot google"></span>Google</button>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button onclick="bulkAction('pause')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s" onmouseover="this.style.background='rgba(248,113,113,.18)'" onmouseout="this.style.background='rgba(248,113,113,.1)'">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>Pause
               </button>
@@ -2233,6 +2259,19 @@ select.form-input{cursor:pointer}
 <script>
 let allCampaigns = [];
 let _campaignsLoaded = false;
+// ── Platform filter (Meta / Google / All) — shared by Launch Ads + Bulk Manager ──
+const platformFilters = { launch: 'all', bulk: 'all' };
+function matchesPlatformFilter(c, filter) {
+  if (filter === 'all') return true;
+  return c.platform === filter || c.platform === 'both';
+}
+function setPlatformFilter(scope, platform) {
+  platformFilters[scope] = platform;
+  const wrap = document.getElementById(`${scope}-platform-filter`);
+  if (wrap) wrap.querySelectorAll('.platform-filter-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.platform === platform));
+  if (scope === 'launch') { renderLaunchAdsList(); renderLaunchLiveTable(); }
+  else if (scope === 'bulk') loadBulkCampaigns();
+}
 const TITLES = {dashboard:'Dashboard',ai:'Auren',analytics:'Analytics',campaigns:'Launch Ads',creatives:'Creatives',analysis:'Store Analysis',audience:'Audience Intelligence',bulk:'Bulk Manager',budget:'Budget AI',launch:'Launch Campaign',multistore:'Multi-Store View',whitelabel:'White-label',settings:'Settings',billing:'Billing',products:'Store Products',competitorradar:'Competitor Radar',creativebrief:'Creative Brief AI',profittracker:'Profit Tracker',mrrtracker:'MRR Tracker'};
 
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
@@ -2767,7 +2806,7 @@ function navigate(page) {
     if (page === 'budget')  { /* ready to use on load */ }
     if (page === 'ai') { aiSetGreeting(); setTimeout(() => document.getElementById('ai-input')?.focus(), 300); }
     if (page === 'analysis') loadStoreIntelligence();
-    if (page === 'campaigns') { const b2 = document.getElementById('campaigns-body-full'); if (allCampaigns.length && b2) { b2.innerHTML = allCampaigns.map(renderCampaignRow).join(''); setTimeout(() => { document.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); } loadLaunchAdsCampaigns(); }
+    if (page === 'campaigns') { if (allCampaigns.length) renderLaunchLiveTable(); loadLaunchAdsCampaigns(); }
     if (page === 'settings') loadSettingsFields();
     if (page === 'audience') { loadPixelStatus(); loadAudiences(); }
     if (page === 'bulk') loadBulkCampaigns();
@@ -3376,11 +3415,28 @@ async function loadCampaigns() {
     const rowHtml = visible.length ? visible.map((c, i) => renderCampaignRow(c, i, isStarter)).join('') : '<div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div>';
     const html = rowHtml + upgradeBanner;
     const b1 = document.getElementById('campaigns-body'); if (b1) { b1.innerHTML = html; setTimeout(() => { b1.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); }
-    const b2 = document.getElementById('campaigns-body-full'); if (b2) { b2.innerHTML = html; setTimeout(() => { b2.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); }
+    renderLaunchLiveTable();
     _campaignsLoaded = true;
     // Refresh analytics charts if analytics page is currently visible
     if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts();
   } catch(e){ _campaignsLoaded = true; showLoadError(); }
+}
+
+// Renders the Launch Ads page's "Live Performance" table (#campaigns-body-full) from allCampaigns,
+// respecting platformFilters.launch — separate from #campaigns-body (Dashboard home), which stays
+// unfiltered since it's a summary widget, not the platform-specific workspace.
+function renderLaunchLiveTable() {
+  const b2 = document.getElementById('campaigns-body-full');
+  if (!b2) return;
+  const filtered = allCampaigns.filter(c => matchesPlatformFilter(c, platformFilters.launch));
+  const isStarter = getUserPlan() === 'starter';
+  const visible = isStarter ? filtered.slice(0, 3) : filtered;
+  const upgradeBanner = isStarter && filtered.length > 3
+    ? `<div style="text-align:center;padding:14px;background:rgba(6,214,199,.08);border:1px solid rgba(6,214,199,.2);border-radius:10px;margin-top:8px;font-size:12px;color:var(--muted)">Showing 3 of ${filtered.length} campaigns - <a href="#" onclick="showUpgradeModal('campaigns');return false" style="color:var(--primary);font-weight:600">Upgrade to Growth</a> for full access</div>` : '';
+  b2.innerHTML = (visible.length
+    ? visible.map((c, i) => renderCampaignRow(c, i, isStarter)).join('')
+    : '<div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div>') + upgradeBanner;
+  setTimeout(() => { b2.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0);
 }
 
 // ── LAUNCH CAMPAIGN ───────────────────────────────────────────────────────────
@@ -4921,7 +4977,7 @@ function loadBulkCampaigns() {
   if (!canAccess('bulk')) return;
   const el = document.getElementById('bulk-campaigns-list');
   if (!el) return;
-  // Update stat cards
+  // Update stat cards — always reflect the full account, not just the current platform filter
   const setEl = (id, v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
   setEl('bulk-stat-total', allCampaigns.length || '0');
   setEl('bulk-stat-live', allCampaigns.filter(c => c.status === 'live').length || '0');
@@ -4931,7 +4987,9 @@ function loadBulkCampaigns() {
   const cnt = document.getElementById('bulk-selected-count');
   if(cnt) { cnt.textContent=''; cnt.style.display='none'; }
   const chk = document.getElementById('bulk-select-all'); if(chk) chk.checked=false;
-  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px 12px">${allCampaigns.map(c => {
+  const filtered = allCampaigns.filter(c => matchesPlatformFilter(c, platformFilters.bulk));
+  if (!filtered.length) { el.innerHTML = `<div style="text-align:center;padding:24px 12px;font-size:12px;color:var(--muted)">No ${platformFilters.bulk === 'meta' ? 'Meta' : 'Google'} campaigns to manage</div>`; return; }
+  el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px 12px">${filtered.map(c => {
     const sc = ['live','paused','failed'].includes(c.status)?c.status:'draft';
     const platform = (c.platform||'meta').charAt(0).toUpperCase()+(c.platform||'meta').slice(1);
     const spendStr = c.total_spend > 0 ? ` · $${fmt(c.total_spend)} spend` : '';
@@ -4971,19 +5029,60 @@ async function bulkAction(action) {
   if (!bulkSelected.size) { showToast('Select at least one campaign first', 'error'); return; }
   const label = action==='pause'?'Pausing':action==='enable'?'Enabling':'Scaling budgets for';
   showToast(`${label} ${bulkSelected.size} campaign${bulkSelected.size>1?'s':''}…`);
+
+  // meta-api's bulk_action endpoint is Meta-only — routing a Google campaign_id through it fails
+  // the ownership check (or errors against Meta's API) since Google campaigns are never rows in
+  // the "campaigns" table it checks. Google campaigns have no bulk endpoint of their own, so we
+  // split the selection by platform and loop per-campaign for Google, reusing the exact call
+  // shape already proven in toggleCampaign() (/google/ads action:'toggle'|'budget').
+  const selectedIds = [...bulkSelected];
+  const metaIds = [];
+  const googleCampaigns = [];
+  for (const id of selectedIds) {
+    const c = allCampaigns.find(c => String(c.id) === id);
+    if (c?.platform === 'google') googleCampaigns.push(c); else metaIds.push(id);
+  }
+
+  let metaMsg = null, metaFailed = false;
+  let googleOk = 0, googleFailed = 0;
+
   try {
-    // action_type (not action) for the per-campaign op — meta-api's router reads the top-level
-    // "action" field from the body first (falls back to the URL query only if absent), so
-    // reusing "action" here for the sub-operation would silently hijack routing away from the
-    // bulk_action case entirely.
-    const r = await authFetch('/meta-api?action=bulk_action', {method:'POST', body:JSON.stringify({campaign_ids:[...bulkSelected], action_type: action, budget_multiplier:1.15})});
-    if (r && r.ok) {
-      const d = await r.json();
-      showToast(d.message || `Bulk ${action} completed`);
-      invalidateCache('campaigns');
-      await loadCampaigns();
-      loadBulkCampaigns();
-    } else { showToast('Bulk action failed - check credentials', 'error'); }
+    if (metaIds.length) {
+      // action_type (not action) for the per-campaign op — meta-api's router reads the top-level
+      // "action" field from the body first (falls back to the URL query only if absent), so
+      // reusing "action" here for the sub-operation would silently hijack routing away from the
+      // bulk_action case entirely.
+      const r = await authFetch('/meta-api?action=bulk_action', {method:'POST', body:JSON.stringify({campaign_ids:metaIds, action_type: action, budget_multiplier:1.15})});
+      if (r && r.ok) { const d = await r.json(); metaMsg = d.message || `${metaIds.length} Meta campaign${metaIds.length>1?'s':''} updated`; }
+      else metaFailed = true;
+    }
+
+    if (googleCampaigns.length) {
+      const results = await Promise.allSettled(googleCampaigns.map(c => {
+        if (action === 'scale_budget') {
+          const newBudget = Math.round((Number(c.daily_budget) || 0) * 1.15 * 100) / 100;
+          if (newBudget < 1) return Promise.reject(new Error('no budget to scale'));
+          return authFetch('/google/ads', {method:'POST', body:JSON.stringify({action:'budget', campaign_id:c.id, budget_usd:newBudget})});
+        }
+        const status = action === 'enable' ? 'ENABLED' : 'PAUSED';
+        return authFetch('/google/ads', {method:'POST', body:JSON.stringify({action:'toggle', campaign_id:c.id, status})});
+      }));
+      for (const res of results) {
+        if (res.status === 'fulfilled' && res.value?.ok) googleOk++; else googleFailed++;
+      }
+    }
+
+    const parts = [];
+    if (metaMsg) parts.push(metaMsg);
+    else if (metaFailed) parts.push(`${metaIds.length} Meta campaign${metaIds.length>1?'s':''} failed`);
+    if (googleOk) parts.push(`${googleOk} Google campaign${googleOk>1?'s':''} updated`);
+    if (googleFailed) parts.push(`${googleFailed} Google campaign${googleFailed>1?'s':''} failed`);
+    const anyOk = !!metaMsg || googleOk > 0;
+    showToast(parts.join(', ') || 'Bulk action failed - check credentials', anyOk ? 'success' : 'error');
+
+    invalidateCache('campaigns');
+    await loadCampaigns();
+    loadBulkCampaigns();
   } catch(e) { showToast('Request failed', 'error'); }
 }
 
@@ -5902,13 +6001,27 @@ async function loadLaunchAdsCampaigns() {
     const data = (r && r.ok) ? await r.json() : null;
     _launchAdsCampaigns = data?.campaigns || [];
   } catch(e) { _launchAdsCampaigns = []; }
+  renderLaunchAdsList();
+}
+
+// Render-only half of loadLaunchAdsCampaigns — used when just switching platformFilters.launch
+// so toggling the filter pill doesn't trigger a redundant network refetch.
+function renderLaunchAdsList() {
+  const listEl = document.getElementById('launchads-list');
+  if (!listEl) return;
 
   if (!_launchAdsCampaigns.length) {
     listEl.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet. Click "+ New Campaign" to start.</p></div>';
     return;
   }
 
-  listEl.innerHTML = _launchAdsCampaigns.map(c => {
+  const filtered = _launchAdsCampaigns.filter(c => matchesPlatformFilter(c, platformFilters.launch));
+  if (!filtered.length) {
+    listEl.innerHTML = `<div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No ${platformFilters.launch === 'meta' ? 'Meta' : 'Google'} campaigns yet.</p></div>`;
+    return;
+  }
+
+  listEl.innerHTML = filtered.map(c => {
     const adCount = (c.copy?.meta?.ads?.length || 0);
     const platforms = c.platform === 'both' ? ['meta','google'] : [c.platform];
     const badges = platforms.map(p => `<span class="platform-badge ${p}">${p === 'meta' ? 'Meta' : 'Google'}</span>`).join('');
@@ -6108,10 +6221,15 @@ async function openCampaignReview(campaignId) {
   const googleBtn = document.getElementById('cr-launch-google-btn');
   metaBtn.style.display = isDraft && (c.platform === 'meta' || c.platform === 'both') ? '' : 'none';
   googleBtn.style.display = isDraft && (c.platform === 'google' || c.platform === 'both') ? '' : 'none';
-  metaBtn.disabled = !metaConnected || plan === 'starter';
-  googleBtn.disabled = !googleConnected || plan !== 'scale';
-  metaBtn.title = !metaConnected ? 'Connect Meta Ads in Settings first' : (plan === 'starter' ? 'Upgrade to Growth to launch' : '');
-  googleBtn.title = !googleConnected ? 'Connect Google Ads in Settings first' : (plan !== 'scale' ? 'Upgrade to Scale to launch Google campaigns' : '');
+  // Must match campaign-launcher/index.ts's actual plan gating exactly (see its header comment):
+  // launch_meta is a Starter-tier action (core value for small stores, no gate); launch_google
+  // requires Growth+ (blocked only for starter). This previously disabled Meta for Starter and
+  // required exactly Scale for Google — both wrong, blocking paying users from features their
+  // plan already grants them.
+  metaBtn.disabled = !metaConnected;
+  googleBtn.disabled = !googleConnected || plan === 'starter';
+  metaBtn.title = !metaConnected ? 'Connect Meta Ads in Settings first' : '';
+  googleBtn.title = !googleConnected ? 'Connect Google Ads in Settings first' : (plan === 'starter' ? 'Upgrade to Growth to launch Google campaigns' : '');
   document.getElementById('cr-launch-note').textContent = isDraft
     ? 'Launches as PAUSED. Enable in the ad platform\'s manager when ready.'
     : `Launched ${c.launched_at ? new Date(c.launched_at).toLocaleDateString() : ''}. Manage status from the Live Performance table below.`;

@@ -557,13 +557,8 @@ async function checkGoogleOAuthReturn() {
   localStorage.removeItem('google_oauth_nonce');
   const userId = window.Clerk?.user?.id || '';
   if (!userId) { document.getElementById('err-3').textContent = 'Not signed in.'; return; }
-  const res = await fetch(`${window.SUPABASE_URL}/functions/v1/claim-oauth`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': window.SUPABASE_ANON },
-    body: JSON.stringify({ claim, user_id: userId, platform: 'google' }),
-  });
-  if (!res.ok) { document.getElementById('err-3').textContent = 'Google connection failed - please try again.'; return; }
-  const payload = await res.json();
+  const payload = await claimOAuth(claim, 'google');
+  if (!payload) { document.getElementById('err-3').textContent = 'Google connection failed - please try again.'; return; }
   if (payload.customer_id) localStorage.setItem('google_account', payload.customer_id);
   document.getElementById('btn-google').style.display = 'none';
   document.querySelector('#card-3 .oauth-info').style.display = 'none';

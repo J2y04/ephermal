@@ -214,7 +214,31 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
   if (row.status === 'active') {
     throw new Error(`This campaign is already live on Google Ads (campaign ID: ${row.google_campaign_id ?? 'unknown'}). Manage it in Google Ads Manager instead of relaunching.`);
   }
+  // Atomic claim: the read-then-write pattern above has a race window (two concurrent launch
+  // requests both read status='draft' before either writes 'active'), which could create two
+  // real, spending Google Ads campaigns for one draft. This compare-and-swap only succeeds if
+  // status is still exactly what we just read — a concurrent request loses the race here and
+  // gets a clear error instead of a duplicate live campaign. Reverted to 'failed' below if the
+  // actual Google Ads API calls error out after this point.
+  const { data: claimed } = await supabase.from('launched_campaigns')
+    .update({ status: 'active' })
+    .eq('id', campaignId).eq('user_id', userId).eq('status', row.status)
+    .select('id').maybeSingle();
+  if (!claimed) throw new Error('This campaign is already being launched — check its status in a moment.');
 
+  // Everything below is now guarded: if any step throws (missing credentials, a Google Ads API
+  // rejection, etc.), the claimed 'active' status is reverted to 'failed' so the row doesn't
+  // permanently look live when nothing was actually created — and the real error still
+  // propagates to the caller via rethrow.
+  try {
+    return await launchToGoogleInner(userId, campaignId, row, autoEnable);
+  } catch (e) {
+    await supabase.from('launched_campaigns').update({ status: 'failed' }).eq('id', campaignId).eq('user_id', userId);
+    throw e;
+  }
+}
+
+async function launchToGoogleInner(userId: string, campaignId: string, row: Record<string, unknown>, autoEnable: boolean): Promise<Record<string, unknown>> {
   const integrations = await getIntegrations(userId);
   const refreshToken = integrations?.google_refresh_token;
   const rawCid       = String(integrations?.google_ads_customer_id ?? '').replace(/-/g, '');
@@ -243,6 +267,17 @@ async function launchToGoogle(userId: string, campaignId: string, autoEnable = f
   const sitelinks = (gCopy.sitelinks as { link_text: string; description1?: string; description2?: string }[] | undefined) ?? [];
   const callouts  = (gCopy.callouts as string[] | undefined) ?? [];
   const structuredSnippet = gCopy.structured_snippet as { header: string; values: string[] } | undefined;
+
+  // Fail fast instead of creating an inert campaign. Manually-built drafts (no "Generate with
+  // AI") can reach here with keywords:[] and/or too few ad lines — without at least one keyword
+  // and a real ad, Google Search has nothing to match or show, so the campaign would previously
+  // still report success ("created as PAUSED") while silently being unable to ever serve.
+  if (keywords.length === 0) {
+    throw new Error('This campaign has no keywords, so Google Search has nothing to match it against. Add keywords (or use "Generate with AI") before launching.');
+  }
+  if (headlines.length < 3 || descriptions.length < 2) {
+    throw new Error('This campaign needs at least 3 headlines and 2 descriptions for Google to build an ad. Add more ad copy (or use "Generate with AI") before launching.');
+  }
 
   // 1. Budget
   const budgetRes  = await gAdsPost(rawCid, accessToken, devToken, 'campaignBudgets:mutate', {
@@ -400,7 +435,23 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
   if (row.status === 'active') {
     throw new Error(`This campaign is already live on Meta (campaign ID: ${row.platform_campaign_id ?? 'unknown'}). Manage it in Meta Ads Manager instead of relaunching.`);
   }
+  // Atomic claim — same compare-and-swap as launchToGoogle, see that function for why the
+  // plain read-then-write above isn't race-safe on its own.
+  const { data: claimed } = await supabase.from('launched_campaigns')
+    .update({ status: 'active' })
+    .eq('id', campaignId).eq('user_id', userId).eq('status', row.status)
+    .select('id').maybeSingle();
+  if (!claimed) throw new Error('This campaign is already being launched — check its status in a moment.');
 
+  try {
+    return await launchToMetaInner(userId, campaignId, row, autoEnable);
+  } catch (e) {
+    await supabase.from('launched_campaigns').update({ status: 'failed' }).eq('id', campaignId).eq('user_id', userId);
+    throw e;
+  }
+}
+
+async function launchToMetaInner(userId: string, campaignId: string, row: Record<string, unknown>, autoEnable: boolean): Promise<Record<string, unknown>> {
   const integrations = await getIntegrations(userId);
   const token      = integrations?.meta_token;
   const accountId  = integrations?.meta_account;
@@ -741,6 +792,11 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('campaign-launcher error:', err);
-    return errResponse('Campaign operation failed', 500, origin);
+    // Every throw in this file is an intentional, user-safe message (e.g. "This campaign is
+    // already live...", "Meta Ads not connected", AI-generation failures) — matching meta-api's
+    // convention of surfacing err.message instead of collapsing every failure into one generic
+    // string that leaves the user with zero actionable information.
+    const msg = err instanceof Error ? err.message : 'Campaign operation failed';
+    return errResponse(msg, 500, origin);
   }
 });

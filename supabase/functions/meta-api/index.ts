@@ -28,6 +28,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { requirePlan } from '../_shared/plan.ts';
 import {
   metaGet, metaPost, metaDelete,
   CAMPAIGN_FIELDS, CAMPAIGN_INSIGHT_FIELDS,
@@ -683,6 +684,8 @@ Deno.serve(async (req) => {
 
         case 'bulk_action':
         case 'bulk-action': {
+          const bulkGate = await requirePlan(userId, 'scale', origin, 'bulk campaign management');
+          if (bulkGate) return bulkGate;
           const ids = Array.isArray(body.campaign_ids) ? body.campaign_ids.map(String) : [];
           if (!ids.length) return errResponse('campaign_ids required', 400, origin);
           // BOLA guard: verify ALL campaign IDs belong to this user
@@ -697,11 +700,17 @@ Deno.serve(async (req) => {
           );
         }
 
-        case 'create_audience':
+        case 'create_audience': {
+          const audienceGate = await requirePlan(userId, 'growth', origin, 'custom audiences');
+          if (audienceGate) return audienceGate;
           return okResponse(await createAudience(accountId, token, userId, body), origin);
+        }
 
-        case 'create_lookalike':
+        case 'create_lookalike': {
+          const lookalikeGate = await requirePlan(userId, 'growth', origin, 'lookalike audiences');
+          if (lookalikeGate) return lookalikeGate;
           return okResponse(await createLookalike(accountId, token, userId, body), origin);
+        }
 
         case 'approve_creative':
         case 'approve':
