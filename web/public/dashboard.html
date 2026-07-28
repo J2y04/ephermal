@@ -1496,8 +1496,8 @@ select.form-input{cursor:pointer}
         <div class="budget-card fade-in" style="margin-bottom:20px">
           <div style="font-size:14px;font-weight:700;margin-bottom:16px">Calculate Your Optimal Budget</div>
           <div class="budget-input-row">
-            <div class="form-group"><label class="form-label">Monthly Revenue Goal ($)</label><input class="form-input" id="budget-revenue-goal" type="number" placeholder="e.g. 10000" min="100"></div>
-            <div class="form-group"><label class="form-label">Average Order Value ($)</label><input class="form-input" id="budget-aov" type="number" placeholder="e.g. 65" min="1"></div>
+            <div class="form-group"><label class="form-label">Monthly Revenue Goal (€)</label><input class="form-input" id="budget-revenue-goal" type="number" placeholder="e.g. 10000" min="100"></div>
+            <div class="form-group"><label class="form-label">Average Order Value (€)</label><input class="form-input" id="budget-aov" type="number" placeholder="e.g. 65" min="1"></div>
             <div class="form-group"><label class="form-label">Current ROAS (if known)</label><input class="form-input" id="budget-roas" type="number" placeholder="e.g. 2.5" step="0.1" min="0.5"></div>
             <div class="form-group"><label class="form-label">Campaign Period (days)</label><input class="form-input" id="budget-days" type="number" placeholder="30" min="7" max="90"></div>
           </div>
@@ -3246,14 +3246,14 @@ async function loadOverview() {
     const setVal = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
     const roasStr = d.roas > 0 ? `${d.roas.toFixed(1)}×` : '-';
     setVal('stat-roas', roasStr); setVal('a-roas', roasStr);
-    setVal('stat-spend', d.total_spend > 0 ? `$${fmt(d.total_spend)}` : '-');
+    setVal('stat-spend', d.total_spend > 0 ? `€${fmt(d.total_spend)}` : '-');
     setVal('stat-creatives', fmt(d.total_creatives));
     setVal('stat-conversions', fmt(d.total_conversions));
     setVal('a-impressions', fmt(d.total_impressions));
     setVal('a-clicks', fmt(d.total_clicks));
     setVal('a-conversions', fmt(d.total_conversions));
     updatePixelBanner(d.pixel_exists, d.pixel_active);
-    if (d.total_spend > 0) { const el = document.getElementById('stat-spend'); animateCounter(el, d.total_spend, v => `$${fmt(v)}`); }
+    if (d.total_spend > 0) { const el = document.getElementById('stat-spend'); animateCounter(el, d.total_spend, v => `€${fmt(v)}`); }
     if (d.total_creatives > 0) { const el = document.getElementById('stat-creatives'); animateCounter(el, d.total_creatives, v => fmt(Math.round(v))); }
     if (d.total_conversions > 0) { const el = document.getElementById('a-conversions'); animateCounter(el, d.total_conversions, v => fmt(Math.round(v))); }
     if (d.total_impressions > 0) { const el = document.getElementById('a-impressions'); animateCounter(el, d.total_impressions, v => fmt(Math.round(v))); }
@@ -3306,7 +3306,7 @@ function renderCampaignRow(c, _idx, readOnly) {
   const colors = {meta:'#1877F2', google:'#4285F4', both:'#06d6c7'};
   const color = colors[c.platform] || 'var(--muted)';
   const roas = c.roas ? `<span class="camp-metric ${c.roas>=3?'green':'yellow'}">${c.roas.toFixed(1)}×</span>` : '<span class="camp-metric dim">-</span>';
-  const spend = c.total_spend > 0 ? `<span class="camp-metric">$${fmt(c.total_spend)}</span>` : '<span class="camp-metric dim">-</span>';
+  const spend = c.total_spend > 0 ? `<span class="camp-metric">€${fmt(c.total_spend)}</span>` : '<span class="camp-metric dim">-</span>';
   const ctr = c.ctr ? `<span class="camp-metric ${c.ctr>=2?'green':'yellow'}">${c.ctr.toFixed(1)}%</span>` : '<span class="camp-metric dim">-</span>';
   const sc = ['live','paused','failed'].includes(c.status) ? c.status : 'draft';
   const isActive = c.status === 'live' || c.status === 'ACTIVE';
@@ -3336,11 +3336,11 @@ function openCampaignDetail(id) {
   if (roasEl) { roasEl.textContent=roasVal; roasEl.className=`val ${c.roas>=3?'green':c.roas>=1.5?'yellow':'red'}`; }
   const ctrEl = document.getElementById('cd-ctr');
   if (ctrEl) { ctrEl.textContent=c.ctr?`${c.ctr.toFixed(2)}%`:'-'; ctrEl.className=`val ${c.ctr>=2?'green':c.ctr>=1?'yellow':'red'}`; }
-  set('cd-spend', c.total_spend>0?`$${fmt(c.total_spend)}`:'-');
+  set('cd-spend', c.total_spend>0?`€${fmt(c.total_spend)}`:'-');
   set('cd-conv', c.conversions>0?fmt(c.conversions):'-');
   set('cd-impr', c.impressions>0?fmt(c.impressions):'-');
   set('cd-clicks', c.clicks>0?fmt(c.clicks):'-');
-  set('cd-budget', c.daily_budget?`$${fmt(c.daily_budget)}/day`:c.lifetime_budget?`$${fmt(c.lifetime_budget)} lifetime`:'-');
+  set('cd-budget', c.daily_budget?`€${fmt(c.daily_budget)}/day`:c.lifetime_budget?`€${fmt(c.lifetime_budget)} lifetime`:'-');
   set('cd-budget-label', c.lifetime_budget?'Lifetime Budget':'Daily Budget');
   const toggle = document.getElementById('cd-toggle');
   if (toggle) toggle.checked = c.status==='live'||c.status==='ACTIVE';
@@ -4339,7 +4339,7 @@ function renderMrrCharts(d) {
   }
 
   const revPoints = series.map(p => ({ date: shortDate(p.date), value: p.revenue_cents / 100 }));
-  if (revEl) revEl.innerHTML = buildLineChart(revPoints, { color: '#06d6c7', format: v => '$' + fmt(v), height: 150 });
+  if (revEl) revEl.innerHTML = buildLineChart(revPoints, { color: '#06d6c7', format: v => '€' + fmt(v), height: 150 });
 
   const roasPoints = series.filter(p => p.roas !== null).map(p => ({ date: shortDate(p.date), value: p.roas }));
   if (roasEl) roasEl.innerHTML = roasPoints.length
@@ -4354,8 +4354,8 @@ function renderMrrReport(d) {
   const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.textContent = val; };
   const mrr = (d.mrr_cents || 0) / 100;
   const spend = (d.total_spend_cents || 0) / 100;
-  set('mrr-stat-mrr', '$' + fmt(mrr));
-  set('mrr-stat-spend', '$' + fmt(spend));
+  set('mrr-stat-mrr', '€' + fmt(mrr));
+  set('mrr-stat-spend', '€' + fmt(spend));
   set('mrr-stat-roas', d.blended_roas !== null && d.blended_roas !== undefined ? d.blended_roas.toFixed(2) + '×' : '-');
   const growthEl = document.getElementById('mrr-stat-growth');
   if (growthEl) {
@@ -5007,7 +5007,7 @@ function loadBulkCampaigns() {
   el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px 12px">${filtered.map(c => {
     const sc = ['live','paused','failed'].includes(c.status)?c.status:'draft';
     const platform = (c.platform||'meta').charAt(0).toUpperCase()+(c.platform||'meta').slice(1);
-    const spendStr = c.total_spend > 0 ? ` · $${fmt(c.total_spend)} spend` : '';
+    const spendStr = c.total_spend > 0 ? ` · €${fmt(c.total_spend)} spend` : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(6,214,199,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
       <input type="checkbox" value="${escHtml(String(c.id))}" onchange="toggleBulkItem(this)" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:var(--primary)">
       <div style="width:8px;height:8px;border-radius:50%;background:${sc==='live'?'var(--success)':sc==='paused'?'var(--warning)':'var(--muted)'};flex-shrink:0"></div>
@@ -5116,7 +5116,7 @@ function loadMultiStore() {
   setEl('ms-stores', '1');
   setEl('ms-campaigns', allCampaigns.length || '-');
   const totalSpend = allCampaigns.reduce((a,c)=>a+(c.total_spend||0), 0);
-  setEl('ms-spend', totalSpend > 0 ? '$'+fmt(totalSpend) : '-');
+  setEl('ms-spend', totalSpend > 0 ? '€'+fmt(totalSpend) : '-');
   const roasArr = allCampaigns.filter(c=>c.roas>0).map(c=>c.roas);
   const avgRoas = roasArr.length ? roasArr.reduce((a,b)=>a+b,0)/roasArr.length : 0;
   setEl('ms-roas', avgRoas > 0 ? avgRoas.toFixed(1)+'×' : '-');
@@ -5127,7 +5127,7 @@ function loadMultiStore() {
     : 'Your store';
   listEl.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:12px;margin-bottom:8px">
-      <div><div style="font-size:13px;font-weight:700">${escHtml(storeName)}</div><div style="font-size:12px;color:var(--muted)">${allCampaigns.length||0} campaigns · $${fmt(totalSpend)} spend</div></div>
+      <div><div style="font-size:13px;font-weight:700">${escHtml(storeName)}</div><div style="font-size:12px;color:var(--muted)">${allCampaigns.length||0} campaigns · €${fmt(totalSpend)} spend</div></div>
       <div style="text-align:right"><div style="font-size:18px;font-weight:800">${avgRoas>0?avgRoas.toFixed(1)+'×':'-'}</div><div style="font-size:11px;color:var(--muted)">ROAS</div></div>
     </div>
     <div style="padding:14px 16px;background:var(--surface2);border-radius:12px;border:1px dashed var(--border);text-align:center;color:var(--muted);font-size:12px">
@@ -5782,11 +5782,11 @@ async function calculateBudget() {
     _budgetMetaDaily = data.daily_budget_meta || Math.round(_budgetDailyBudget * 0.65);
     _budgetGoogleDaily = data.daily_budget_google || Math.round(_budgetDailyBudget * 0.35);
 
-    document.getElementById('bud-daily-total').textContent = '$' + Math.round(_budgetDailyBudget);
+    document.getElementById('bud-daily-total').textContent = '€' + Math.round(_budgetDailyBudget);
     document.getElementById('bud-roas').textContent = (data.expected_roas || 2.5).toFixed(1) + '×';
-    document.getElementById('bud-revenue').textContent = '$' + Math.round(data.expected_revenue || goal).toLocaleString();
-    document.getElementById('bud-meta-daily').textContent = '$' + Math.round(data.daily_budget_meta || _budgetDailyBudget * 0.65) + '/day';
-    document.getElementById('bud-google-daily').textContent = '$' + Math.round(data.daily_budget_google || _budgetDailyBudget * 0.35) + '/day';
+    document.getElementById('bud-revenue').textContent = '€' + Math.round(data.expected_revenue || goal).toLocaleString();
+    document.getElementById('bud-meta-daily').textContent = '€' + Math.round(data.daily_budget_meta || _budgetDailyBudget * 0.65) + '/day';
+    document.getElementById('bud-google-daily').textContent = '€' + Math.round(data.daily_budget_google || _budgetDailyBudget * 0.35) + '/day';
 
     const metaPct = data.meta_allocation_pct || 65;
     const gPct    = data.google_allocation_pct || 35;
@@ -5828,7 +5828,7 @@ async function loadBudgetForecast() {
     const pts = data.projections || [];
     cells.innerHTML = pts.map(p => `
       <div class="forecast-cell">
-        <div class="val">$${Math.round(p.cumulative_revenue).toLocaleString()}</div>
+        <div class="val">€${Math.round(p.cumulative_revenue).toLocaleString()}</div>
         <div class="lbl">Day ${p.day} Revenue</div>
       </div>
     `).join('');
@@ -5906,7 +5906,7 @@ function onApplyBudgetCampaignChange() {
   const platform = opt.dataset.platform || 'meta';
   const budgetUsd = platform === 'google' ? _budgetGoogleDaily : _budgetMetaDaily;
 
-  document.getElementById('apply-budget-amount').textContent = '$' + Math.round(budgetUsd) + '/day';
+  document.getElementById('apply-budget-amount').textContent = '€' + Math.round(budgetUsd) + '/day';
   const badge = document.getElementById('apply-budget-platform-badge');
   if (badge) {
     badge.textContent = platform === 'meta' ? 'Meta Ads' : 'Google Ads';
@@ -5946,7 +5946,7 @@ async function confirmApplyBudget() {
 
     const data = r ? await r.json() : null;
     if (r && r.ok && data?.any_success) {
-      showToast(`Budget $${Math.round(budgetUsd)}/day applied to ${opt.dataset.name || campaignId}`, 'success');
+      showToast(`Budget €${Math.round(budgetUsd)}/day applied to ${opt.dataset.name || campaignId}`, 'success');
       closeApplyBudgetModal();
     } else {
       const errs = (data?.applied || []).filter(a => !a.success).map(a => a.error).join('; ');
@@ -5973,8 +5973,8 @@ async function loadBudgetHistory() {
     const rec = r.recommendation || {};
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">
       <div>
-        <span style="font-weight:600">$${Math.round(rec.daily_budget_total || 0)}/day</span>
-        <span style="color:var(--muted);margin-left:8px">Goal: $${(rec.revenue_goal || 0).toLocaleString()}</span>
+        <span style="font-weight:600">€${Math.round(rec.daily_budget_total || 0)}/day</span>
+        <span style="color:var(--muted);margin-left:8px">Goal: €${(rec.revenue_goal || 0).toLocaleString()}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span class="status-pill ${r.applied ? 'live' : 'draft'}">${r.applied ? 'Applied' : 'Draft'}</span>
@@ -6066,7 +6066,7 @@ function renderLaunchAdsList() {
       </div>
       <div class="launch-card-meta">
         ${badges}
-        <span>$${fmt(c.budget_daily || 0)}/day</span>
+        <span>€${fmt(c.budget_daily || 0)}/day</span>
         <span>${adCount} ad${adCount === 1 ? '' : 's'}</span>
         <span>${escHtml(c.objective || '')}</span>
       </div>
@@ -6228,7 +6228,7 @@ async function openCampaignReview(campaignId) {
   document.getElementById('cr-name').textContent = c.name;
   document.getElementById('cr-status').textContent = c.status;
   document.getElementById('cr-status').className = 'status-pill ' + (c.status === 'active' ? 'live' : c.status);
-  document.getElementById('cr-meta').textContent = `${c.objective || ''} · $${fmt(c.budget_daily || 0)}/day · ${c.platform}`;
+  document.getElementById('cr-meta').textContent = `${c.objective || ''} · €${fmt(c.budget_daily || 0)}/day · ${c.platform}`;
 
   const ads = c.copy?.meta?.ads || [];
   const adsList = document.getElementById('cr-ads-list');
@@ -6782,7 +6782,7 @@ function renderProfitTable() {
   }
   el.innerHTML =
     '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:0 0 10px;border-bottom:1px solid var(--border);margin-bottom:4px">' +
-      '<span>Product</span><span style="text-align:right;padding-right:24px">Price</span><span style="text-align:right;padding-right:24px">COGS ($)</span><span style="text-align:right">Margin</span>' +
+      '<span>Product</span><span style="text-align:right;padding-right:24px">Price</span><span style="text-align:right;padding-right:24px">COGS (€)</span><span style="text-align:right">Margin</span>' +
     '</div>' +
     _profitProducts.map((p, i) => {
       const price = ((p.price_cents || 0) / 100).toFixed(2);
@@ -6790,7 +6790,7 @@ function renderProfitTable() {
       const marginColor = p.margin_percent === null ? 'var(--muted)' : p.margin_percent >= 50 ? 'var(--success)' : p.margin_percent >= 25 ? 'var(--warning)' : 'var(--danger)';
       return '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">' +
         '<span style="font-size:13px;color:var(--text);padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(p.title || '') + '</span>' +
-        '<span style="font-size:13px;color:var(--muted);text-align:right;padding-right:24px">$' + price + '</span>' +
+        '<span style="font-size:13px;color:var(--muted);text-align:right;padding-right:24px">€' + price + '</span>' +
         '<span style="text-align:right;padding-right:24px"><input type="number" min="0" step="0.01" data-idx="' + i + '" value="' + (p.cogs_cents !== null ? (p.cogs_cents / 100).toFixed(2) : '') + '" placeholder="0.00" style="width:80px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;text-align:right"></span>' +
         '<span style="font-size:13px;font-weight:700;color:' + marginColor + ';text-align:right">' + margin + '</span>' +
       '</div>';
