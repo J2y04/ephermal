@@ -15,6 +15,10 @@
  * POST { action: 'set_plan', target_user_id, plan, expires_in_days? }
  * POST { action: 'ban_user',   target_user_id }
  * POST { action: 'unban_user', target_user_id }
+ * POST { action: 'get_user_detail', target_user_id }
+ * POST { action: 'disconnect_integration', target_user_id, platform: 'meta'|'shopify'|'google' }
+ * POST { action: 'grant_ugc_video_credits', target_user_id, credits }
+ * POST { action: 'cancel_subscription', target_user_id }
  *
  * Required env vars:
  *   CLERK_SECRET_KEY, STRIPE_SECRET_KEY
@@ -443,6 +447,136 @@ async function handleBanToggle(callerId: string, targetUserId: string, ban: bool
   return { ok: true, user_id: targetUserId, banned: ban };
 }
 
+// ── get_user_detail ──────────────────────────────────────────────────────────
+/** Everything about ONE user in one call — the list view only shows plan/status,
+ *  this is the "click into a user" view: integrations, credits (script + video +
+ *  top-ups), recent campaigns, and real Stripe subscription state if they have one. */
+async function handleGetUserDetail(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const targetUserId = String(body.target_user_id ?? '').trim();
+  if (!targetUserId) throw new Error('target_user_id is required');
+
+  const month = new Date().toISOString().slice(0, 7);
+
+  const [
+    clerkRes,
+    planRes,
+    integrationsRes,
+    ugcCreditsRes,
+    ugcVideoCreditsRes,
+    ugcVideoTopupsRes,
+    campaignsRes,
+    costLogRes,
+  ] = await Promise.all([
+    clerkFetch(`/users/${targetUserId}`),
+    supabase.from('user_plans').select('*').eq('user_id', targetUserId).maybeSingle(),
+    supabase.from('user_integrations').select('*').eq('user_id', targetUserId).maybeSingle(),
+    supabase.from('ugc_credits').select('used').eq('user_id', targetUserId).eq('month', month).maybeSingle(),
+    supabase.from('ugc_video_credits').select('used').eq('user_id', targetUserId).eq('month', month).maybeSingle(),
+    supabase.from('ugc_video_topups').select('id, credits, used, created_at').eq('user_id', targetUserId).order('created_at', { ascending: false }),
+    supabase.from('launched_campaigns').select('id, platform, status, budget_daily, launched_at').eq('user_id', targetUserId).order('launched_at', { ascending: false }).limit(20),
+    supabase.from('generation_cost_log').select('credit_type, provider, cost_eur, created_at').eq('user_id', targetUserId).order('created_at', { ascending: false }).limit(50),
+  ]);
+
+  if (!clerkRes.ok) throw new Error(`Clerk user lookup failed: ${clerkRes.status}`);
+  const clerkUser = await clerkRes.json() as ClerkUserRecord;
+
+  const plan = planRes.data as Record<string, unknown> | null;
+  const integrations = integrationsRes.data as Record<string, unknown> | null;
+  const topups = ugcVideoTopupsRes.data ?? [];
+  const topupRemaining = topups.reduce((s, t) => s + Math.max(0, (t.credits as number) - (t.used as number)), 0);
+  const costRows = costLogRes.data ?? [];
+  const totalCostEur = costRows.reduce((s, r) => s + Number(r.cost_eur ?? 0), 0);
+
+  return {
+    id: targetUserId,
+    email: primaryEmail(clerkUser),
+    created_at: new Date(clerkUser.created_at).toISOString(),
+    last_active_at: clerkUser.last_active_at ? new Date(clerkUser.last_active_at).toISOString() : null,
+    banned: !!clerkUser.banned,
+    role: clerkUser.public_metadata?.role ?? null,
+    plan: plan ?? { plan: 'starter', stripe_sub_id: null, period_end: null },
+    integrations: integrations ? {
+      shopify_connected: !!integrations.shopify_token,
+      shopify_shop: integrations.shopify_shop ?? null,
+      meta_connected: !!integrations.meta_token,
+      meta_account: integrations.meta_account ?? null,
+      meta_page_linked: !!integrations.meta_page_id,
+      google_connected: !!integrations.google_refresh_token,
+      google_customer_id: integrations.google_ads_customer_id ?? null,
+    } : { shopify_connected: false, meta_connected: false, google_connected: false },
+    credits: {
+      script_used_this_month: ugcCreditsRes.data?.used ?? 0,
+      video_used_this_month: ugcVideoCreditsRes.data?.used ?? 0,
+      video_topup_remaining: topupRemaining,
+      video_topup_packs: topups,
+    },
+    campaigns: campaignsRes.data ?? [],
+    cost_log_recent: costRows,
+    cost_log_total_eur: Math.round(totalCostEur * 100) / 100,
+  };
+}
+
+// ── disconnect_integration (admin-triggered) ────────────────────────────────
+const ADMIN_PLATFORM_COLUMNS: Record<string, Record<string, null>> = {
+  meta: { meta_token: null, meta_account: null, meta_page_id: null, meta_page_name: null, meta_page_token: null },
+  shopify: { shopify_token: null, shopify_shop: null, shopify_shop_name: null },
+  google: { google_refresh_token: null, google_ads_customer_id: null },
+};
+
+async function handleDisconnectIntegration(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const targetUserId = String(body.target_user_id ?? '').trim();
+  const platform = String(body.platform ?? '');
+  if (!targetUserId) throw new Error('target_user_id is required');
+  const columns = ADMIN_PLATFORM_COLUMNS[platform];
+  if (!columns) throw new Error('platform must be meta, shopify, or google');
+
+  const { error } = await supabase.from('user_integrations').update(columns).eq('user_id', targetUserId);
+  if (error) throw new Error(`Failed to disconnect: ${error.message}`);
+
+  return { ok: true, user_id: targetUserId, platform };
+}
+
+// ── grant_ugc_video_credits (comp extra video credits, e.g. thank a beta tester) ──
+async function handleGrantUgcVideoCredits(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const targetUserId = String(body.target_user_id ?? '').trim();
+  const credits = Number(body.credits ?? 0);
+  if (!targetUserId) throw new Error('target_user_id is required');
+  if (!Number.isFinite(credits) || credits <= 0 || credits > 1000) {
+    throw new Error('credits must be a positive number (max 1000)');
+  }
+
+  const month = new Date().toISOString().slice(0, 7);
+  // stripe_pi is left NULL for admin comps — the column's UNIQUE constraint allows
+  // multiple NULLs in Postgres, so this can never collide with a real top-up purchase.
+  const { error } = await supabase.from('ugc_video_topups').insert({
+    user_id: targetUserId, month, credits,
+  });
+  if (error) throw new Error(`Failed to grant credits: ${error.message}`);
+
+  return { ok: true, user_id: targetUserId, credits_granted: credits };
+}
+
+// ── cancel_subscription (admin-triggered, immediate) ────────────────────────
+async function handleCancelSubscription(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const targetUserId = String(body.target_user_id ?? '').trim();
+  if (!targetUserId) throw new Error('target_user_id is required');
+
+  const { data: plan } = await supabase.from('user_plans').select('stripe_sub_id').eq('user_id', targetUserId).maybeSingle();
+  const subId = plan?.stripe_sub_id as string | undefined;
+  if (!subId) throw new Error('This user has no active Stripe subscription to cancel');
+
+  await getStripe().subscriptions.cancel(subId);
+  // stripe-webhook's customer.subscription.deleted handler will independently revert
+  // this to 'starter' too, but we don't want the admin panel showing stale data until
+  // that webhook round-trips, so update it here as well.
+  const { error } = await supabase.from('user_plans')
+    .update({ plan: 'starter', period_end: null })
+    .eq('user_id', targetUserId);
+  if (error) console.warn('[admin-api] cancel_subscription: local plan revert failed (webhook will still catch it):', error.message);
+
+  return { ok: true, user_id: targetUserId, cancelled_subscription: subId };
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
 
@@ -484,6 +618,14 @@ Deno.serve(async (req) => {
         return okResponse(await handleBanToggle(userId, String(body.target_user_id ?? ''), true), origin);
       case 'unban_user':
         return okResponse(await handleBanToggle(userId, String(body.target_user_id ?? ''), false), origin);
+      case 'get_user_detail':
+        return okResponse(await handleGetUserDetail(body), origin);
+      case 'disconnect_integration':
+        return okResponse(await handleDisconnectIntegration(body), origin);
+      case 'grant_ugc_video_credits':
+        return okResponse(await handleGrantUgcVideoCredits(body), origin);
+      case 'cancel_subscription':
+        return okResponse(await handleCancelSubscription(body), origin);
       default:
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }

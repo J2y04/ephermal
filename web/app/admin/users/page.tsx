@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { useSession } from '@clerk/clerk-react';
 import { TextInput, Badge } from '@tremor/react';
 import { adminFetch, isLocalDev } from '../lib/adminFetch';
@@ -18,6 +18,25 @@ interface AdminUser {
   last_active_at: string | null;
   banned: boolean;
   role: string | null;
+}
+
+interface UserDetail {
+  id: string;
+  email: string;
+  plan: { plan: string; stripe_sub_id: string | null; period_end: string | null };
+  integrations: {
+    shopify_connected: boolean; shopify_shop?: string | null;
+    meta_connected: boolean; meta_account?: string | null; meta_page_linked?: boolean;
+    google_connected: boolean; google_customer_id?: string | null;
+  };
+  credits: {
+    script_used_this_month: number;
+    video_used_this_month: number;
+    video_topup_remaining: number;
+    video_topup_packs: { id: string; credits: number; used: number; created_at: string }[];
+  };
+  campaigns: { id: string; platform: string; status: string; budget_daily: number; launched_at: string | null }[];
+  cost_log_total_eur: number;
 }
 
 const PLANS = ['starter', 'growth', 'scale'] as const;
@@ -64,6 +83,10 @@ export default function AdminUsersPage() {
   // Per-row pending expiry choice for the NEXT plan grant — 'permanent' by default.
   // Read at grant time, not stored server-side until a grant actually happens.
   const [expiryChoice, setExpiryChoice] = useState<Record<string, string>>({});
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<UserDetail | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [grantAmount, setGrantAmount] = useState('5');
 
   async function load() {
     if (!session) {
@@ -119,6 +142,52 @@ export default function AdminUsersPage() {
     setUsers(prev => prev.map(u => u.id === user.id ? { ...u, banned: !user.banned } : u));
   }
 
+  async function toggleExpand(user: AdminUser) {
+    if (expandedId === user.id) { setExpandedId(null); setDetail(null); return; }
+    setExpandedId(user.id);
+    setDetail(null);
+    setDetailLoading(true);
+    const res = await adminFetch<UserDetail>(session, 'get_user_detail', { target_user_id: user.id });
+    setDetailLoading(false);
+    if (res.ok && res.data) setDetail(res.data);
+    else alert(res.error ?? 'Failed to load user detail');
+  }
+
+  async function refreshDetail(userId: string) {
+    const res = await adminFetch<UserDetail>(session, 'get_user_detail', { target_user_id: userId });
+    if (res.ok && res.data) setDetail(res.data);
+  }
+
+  async function handleDisconnect(user: AdminUser, platform: 'meta' | 'shopify' | 'google') {
+    if (!window.confirm(`Disconnect ${platform} for ${user.email}?`)) return;
+    setBusyId(user.id);
+    const res = await adminFetch(session, 'disconnect_integration', { target_user_id: user.id, platform });
+    setBusyId(null);
+    if (!res.ok) { alert(res.error ?? 'Failed to disconnect'); return; }
+    refreshDetail(user.id);
+  }
+
+  async function handleGrantCredits(user: AdminUser) {
+    const credits = Number(grantAmount);
+    if (!Number.isFinite(credits) || credits <= 0) { alert('Enter a positive number of credits'); return; }
+    if (!window.confirm(`Grant ${user.email} ${credits} extra UGC video credits?`)) return;
+    setBusyId(user.id);
+    const res = await adminFetch(session, 'grant_ugc_video_credits', { target_user_id: user.id, credits });
+    setBusyId(null);
+    if (!res.ok) { alert(res.error ?? 'Failed to grant credits'); return; }
+    refreshDetail(user.id);
+  }
+
+  async function handleCancelSubscription(user: AdminUser) {
+    if (!window.confirm(`Cancel ${user.email}'s Stripe subscription immediately? This cannot be undone from here.`)) return;
+    setBusyId(user.id);
+    const res = await adminFetch(session, 'cancel_subscription', { target_user_id: user.id });
+    setBusyId(null);
+    if (!res.ok) { alert(res.error ?? 'Failed to cancel subscription'); return; }
+    setUsers(prev => prev.map(u => u.id === user.id ? { ...u, plan: 'starter', is_paying: false, period_end: null } : u));
+    refreshDetail(user.id);
+  }
+
   return (
     <div className="mx-auto max-w-[1600px] px-10 py-10">
       <Reveal>
@@ -166,9 +235,15 @@ export default function AdminUsersPage() {
                   filtered.map(u => {
                     const remaining = daysUntil(u.period_end);
                     return (
-                    <tr key={u.id} className="border-b border-eph-border/60 transition-colors last:border-0 hover:bg-white/[0.025]">
+                    <Fragment key={u.id}>
+                    <tr className="border-b border-eph-border/60 transition-colors last:border-0 hover:bg-white/[0.025]">
                       <td className="px-7 py-4">
-                        <div className="font-medium text-eph-text">{u.email || '(no email)'}</div>
+                        <button
+                          onClick={() => toggleExpand(u)}
+                          className="font-medium text-eph-text underline decoration-dotted underline-offset-4 hover:text-eph-primary"
+                        >
+                          {u.email || '(no email)'}
+                        </button>
                         {u.role && <div className="text-xs text-eph-muted">{u.role}</div>}
                       </td>
                       <td className="px-7 py-4">
@@ -231,6 +306,95 @@ export default function AdminUsersPage() {
                         </button>
                       </td>
                     </tr>
+                    {expandedId === u.id && (
+                      <tr key={u.id + '-detail'} className="border-b border-eph-border/60 bg-white/[0.015]">
+                        <td colSpan={7} className="px-7 py-6">
+                          {detailLoading ? (
+                            <div className="text-sm text-eph-muted">Loading…</div>
+                          ) : !detail ? (
+                            <div className="text-sm text-eph-muted">Failed to load.</div>
+                          ) : (
+                            <div className="grid grid-cols-3 gap-8 text-sm">
+                              <div>
+                                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Integrations</div>
+                                <div className="space-y-2">
+                                  {(['shopify', 'meta', 'google'] as const).map(p => {
+                                    const connected = detail.integrations[`${p}_connected` as 'shopify_connected'];
+                                    return (
+                                      <div key={p} className="flex items-center justify-between gap-3">
+                                        <span className="capitalize text-eph-text">{p}</span>
+                                        {connected ? (
+                                          <div className="flex items-center gap-2">
+                                            <Badge color="emerald">connected</Badge>
+                                            <button
+                                              onClick={() => handleDisconnect(u, p)}
+                                              disabled={busyId === u.id}
+                                              className="rounded-lg border border-eph-border px-2 py-1 text-[11px] text-eph-muted hover:border-eph-danger hover:text-eph-danger disabled:opacity-50"
+                                            >
+                                              Disconnect
+                                            </button>
+                                          </div>
+                                        ) : <Badge color="gray">not connected</Badge>}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                                {u.is_paying && (
+                                  <button
+                                    onClick={() => handleCancelSubscription(u)}
+                                    disabled={busyId === u.id}
+                                    className="mt-4 rounded-lg border border-eph-danger/40 px-3 py-1.5 text-[11px] font-semibold text-eph-danger hover:bg-eph-danger/10 disabled:opacity-50"
+                                  >
+                                    Cancel Stripe subscription
+                                  </button>
+                                )}
+                              </div>
+                              <div>
+                                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Credits &amp; cost</div>
+                                <div className="space-y-1 text-eph-muted">
+                                  <div>Script credits used this month: <span className="text-eph-text">{detail.credits.script_used_this_month}</span></div>
+                                  <div>UGC video used this month: <span className="text-eph-text">{detail.credits.video_used_this_month}</span></div>
+                                  <div>Video top-up balance: <span className="text-eph-text">{detail.credits.video_topup_remaining}</span></div>
+                                  <div>Total provider cost logged: <span className="text-eph-text">€{detail.cost_log_total_eur.toFixed(2)}</span></div>
+                                </div>
+                                <div className="mt-4 flex items-center gap-2">
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    value={grantAmount}
+                                    onChange={(e) => setGrantAmount(e.target.value)}
+                                    className="w-16 rounded-lg border border-eph-border bg-eph-surface2 px-2 py-1.5 text-xs text-eph-text"
+                                  />
+                                  <button
+                                    onClick={() => handleGrantCredits(u)}
+                                    disabled={busyId === u.id}
+                                    className="rounded-lg border border-eph-primary/30 px-2.5 py-1.5 text-[11px] font-semibold text-eph-primary hover:bg-eph-primary/10 disabled:opacity-50"
+                                  >
+                                    Grant UGC video credits
+                                  </button>
+                                </div>
+                              </div>
+                              <div>
+                                <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Recent campaigns ({detail.campaigns.length})</div>
+                                {detail.campaigns.length === 0 ? (
+                                  <div className="text-eph-muted">None yet.</div>
+                                ) : (
+                                  <div className="space-y-1.5 text-eph-muted">
+                                    {detail.campaigns.slice(0, 8).map(c => (
+                                      <div key={c.id} className="flex items-center justify-between gap-3">
+                                        <span className="capitalize">{c.platform} · {c.status}</span>
+                                        <span className="text-eph-text">€{Number(c.budget_daily ?? 0).toFixed(2)}/day</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                    </Fragment>
                     );
                   })
                 )}
