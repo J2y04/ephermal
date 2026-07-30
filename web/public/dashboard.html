@@ -5891,6 +5891,16 @@ async function checkGoogleOAuthReturn() {
   const data   = await claimOAuth(claimCode, 'google');
   if (!data) { showToast('Google claim expired - please reconnect', 'error'); return; }
 
+  // The backend now refuses to report success at all when Google granted no
+  // refresh_token and none was already on file (see google-oauth-callback's
+  // no_refresh_token error path) - but this checks has_refresh_token directly
+  // too, defense in depth, since this exact gap previously let a claim with
+  // nothing real behind it still flip the "Token set" status on the dashboard.
+  if (data.has_refresh_token === false) {
+    showToast(oauthErrorMessage('Google Ads', 'no_refresh_token'), 'error');
+    return;
+  }
+
   // Mark OAuth as complete regardless of whether we have a customer ID yet
   localStorage.setItem('google_token', '1');
 
