@@ -42,9 +42,14 @@ Deno.serve(async (req) => {
     return new Response('Method not allowed', { status: 405, headers: CORS_HEADERS });
   }
 
-  const userId = await extractUserId(req.headers.get('Authorization'));
+  const authDiag: { reason?: string } = {};
+  const userId = await extractUserId(req.headers.get('Authorization'), authDiag);
   if (!userId) {
-    return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
+    console.error('[oauth-state-init] auth rejected — reason:', authDiag.reason);
+    return new Response(JSON.stringify({ error: 'Invalid or expired session', reason: authDiag.reason ?? 'unknown' }), {
+      status: 401,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    });
   }
 
   // Redis-backed rate limit (works across all instances unlike in-process maps)
