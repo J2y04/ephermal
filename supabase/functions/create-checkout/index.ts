@@ -19,7 +19,7 @@
  */
 
 import Stripe from 'https://esm.sh/stripe@14';
-import { extractUserId } from '../_shared/auth.ts';
+import { extractUserId, corsHeaders } from '../_shared/auth.ts';
 import { rateLimitTiered } from '../_shared/rate-limit.ts';
 
 let _stripe: Stripe | null = null;
@@ -64,13 +64,14 @@ const ALL_ALLOWED = new Set(
 // RFC-5321 email guard
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  Deno.env.get('APP_URL') ?? 'https://ephermal.app',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
-
 Deno.serve(async (req) => {
+  // Was a static single-origin header (always https://ephermal.app, since
+  // APP_URL was never actually set as a secret) instead of the shared
+  // multi-origin helper every other function uses — meant every checkout
+  // call from the real dashboard at https://dashboard.ephermal.app was
+  // silently CORS-blocked on the response. Same bug as oauth-state-init.
+  const CORS_HEADERS = corsHeaders(req.headers.get('origin'));
+
   // CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS_HEADERS });

@@ -16,7 +16,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { extractUserId, signOAuthState } from '../_shared/auth.ts';
+import { extractUserId, signOAuthState, corsHeaders } from '../_shared/auth.ts';
 import { rateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 const supabase = createClient(
@@ -28,13 +28,15 @@ const VALID_PLATFORMS = new Set(['meta', 'shopify', 'google']);
 const VALID_PAGES     = new Set(['setup', 'dashboard']);
 const HEX_NONCE_RE    = /^[0-9a-f]{32}$/i;
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin':  Deno.env.get('APP_URL') ?? 'https://ephermal.app',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey',
-};
-
 Deno.serve(async (req) => {
+  const origin = req.headers.get('origin');
+  // Was a static single-origin header (defaulting to https://ephermal.app since
+  // APP_URL was never actually set) instead of the shared multi-origin helper
+  // every other function uses — every call from the real dashboard, which lives
+  // on https://dashboard.ephermal.app, was silently CORS-blocked on the response
+  // regardless of auth state. This is what broke every "Continue with X" button.
+  const CORS_HEADERS = corsHeaders(origin);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
   }
