@@ -202,6 +202,28 @@ Deno.serve(async (req: Request) => {
   if (refreshToken)  upsertData.google_refresh_token   = refreshToken
   if (customerId)    upsertData.google_ads_customer_id = customerId
 
+  // Without a fresh refresh_token, only proceed as "connected" if a usable one
+  // is already on file (e.g. a re-auth that legitimately skipped reissuing it).
+  // Otherwise this redirect used to report google_connected=1 unconditionally
+  // as long as the DB write didn't error - even when nothing meaningful was
+  // ever captured from Google, silently landing the user back at a disconnected
+  // state with no explanation. Google omits refresh_token on re-consent for an
+  // account that still has an active (unrevoked) grant for this client, which
+  // is exactly what happens right after a disconnect+reconnect in the same
+  // session - our side clears the stored token, but Google's own grant record
+  // doesn't reset, so prompt=consent doesn't force a new one.
+  if (!refreshToken) {
+    const { data: existing } = await supabase
+      .from('user_integrations')
+      .select('google_refresh_token')
+      .eq('user_id', userId)
+      .maybeSingle()
+    if (!existing?.google_refresh_token) {
+      console.error('[google-oauth] No refresh_token from Google and none on file - not a real connection')
+      return redirectTo(APP_URL, returnPage, { google_error: 'no_refresh_token' })
+    }
+  }
+
   const { error: upsertErr } = await supabase
     .from('user_integrations')
     .upsert(upsertData, { onConflict: 'user_id' })

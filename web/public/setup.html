@@ -331,6 +331,9 @@ function oauthErrorMessage(platform, code) {
   if (code === 'connection_test_failed') {
     return `Connected to ${platform}, but couldn't verify account access - your token may be missing required permissions. Please reconnect.`;
   }
+  if (code === 'no_refresh_token') {
+    return `${platform} didn't grant a fresh connection - this usually happens right after disconnecting. Go to myaccount.google.com/permissions, remove Ephermal's access there, then reconnect.`;
+  }
   return `${platform} connection failed - please try again.`;
 }
 
