@@ -39,12 +39,22 @@ const ALLOWED_PRICES = new Set([
   Deno.env.get('STRIPE_PRICE_SCALE')   ?? 'price_REPLACE_SCALE',
 ]);
 
-// AI credit top-up price IDs (one-time payments)
-const TOPUP_PRICES = new Set([
+// AI message credit top-up price IDs (one-time payments)
+const AI_TOPUP_PRICES = new Set([
   Deno.env.get('STRIPE_PRICE_TOPUP_5')   ?? 'price_REPLACE_TOPUP5',
   Deno.env.get('STRIPE_PRICE_TOPUP_10')  ?? 'price_REPLACE_TOPUP10',
   Deno.env.get('STRIPE_PRICE_TOPUP_20')  ?? 'price_REPLACE_TOPUP20',
 ]);
+
+// UGC video credit top-up price IDs (one-time payments) — €7/credit,
+// packs of 5 (€35) and 15 (€105). Kept distinct from AI_TOPUP_PRICES so the
+// webhook can tell which credit pool to top up.
+const UGC_VIDEO_TOPUP_PRICES = new Set([
+  Deno.env.get('STRIPE_PRICE_UGC_TOPUP_5')  ?? 'price_REPLACE_UGC_TOPUP5',
+  Deno.env.get('STRIPE_PRICE_UGC_TOPUP_15') ?? 'price_REPLACE_UGC_TOPUP15',
+]);
+
+const TOPUP_PRICES = new Set([...AI_TOPUP_PRICES, ...UGC_VIDEO_TOPUP_PRICES]);
 
 // Combined allowlist — strip placeholder values so invalid IDs never reach Stripe
 const ALL_ALLOWED = new Set(
@@ -159,8 +169,10 @@ Deno.serve(async (req) => {
       // Pass clerk_user_id into subscription metadata so stripe-webhook can read it
       sessionParams.subscription_data = { metadata: { clerk_user_id } };
     } else {
-      // For top-up: add payment intent metadata
-      sessionParams.payment_intent_data = { metadata: { clerk_user_id, type: 'ai_topup', price_id } };
+      // For top-up: add payment intent metadata — type tells the webhook which
+      // credit pool to top up (AI chat messages vs UGC video credits).
+      const topupType = UGC_VIDEO_TOPUP_PRICES.has(price_id) ? 'ugc_video_topup' : 'ai_topup';
+      sessionParams.payment_intent_data = { metadata: { clerk_user_id, type: topupType, price_id } };
     }
 
     const session = await getStripe().checkout.sessions.create(sessionParams);

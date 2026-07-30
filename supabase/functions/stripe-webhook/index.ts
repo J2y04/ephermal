@@ -59,6 +59,12 @@ const TOPUP_CREDITS: Record<string, number> = {
   [Deno.env.get('STRIPE_PRICE_TOPUP_20') ?? 'price_REPLACE_TOPUP20']: 280,
 };
 
+// UGC video credit top-up amounts by price ID — €7/credit, packs of 5 (€35) and 15 (€105).
+const UGC_VIDEO_TOPUP_CREDITS: Record<string, number> = {
+  [Deno.env.get('STRIPE_PRICE_UGC_TOPUP_5')  ?? 'price_REPLACE_UGC_TOPUP5']:  5,
+  [Deno.env.get('STRIPE_PRICE_UGC_TOPUP_15') ?? 'price_REPLACE_UGC_TOPUP15']: 15,
+};
+
 const PRICE_TO_PLAN: Record<string, string> = {};
 const _pStarter = Deno.env.get('STRIPE_PRICE_STARTER');
 const _pGrowth  = Deno.env.get('STRIPE_PRICE_GROWTH');
@@ -142,8 +148,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 }
 
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  const topupType = paymentIntent.metadata?.type;
+  if (topupType === 'ugc_video_topup') return handleUgcVideoTopup(paymentIntent);
   // Only handle AI top-up payments — identified by type: 'ai_topup' in metadata
-  if (paymentIntent.metadata?.type !== 'ai_topup') return;
+  if (topupType !== 'ai_topup') return;
 
   const clerkUserId = paymentIntent.metadata?.clerk_user_id;
   if (!clerkUserId) throw new Error('Missing clerk_user_id in payment_intent metadata');
@@ -205,6 +213,62 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   }
 
   console.log(`✓ AI top-up: ${credits} credits → ${clerkUserId} (payment: ${paymentIntent.id})`);
+}
+
+/** Calendar month key (YYYY-MM, UTC) — matches ugc_video_credits' reset period,
+ *  which mirrors the existing ugc_credits (script credits) table: monthly, not weekly. */
+function monthKey(d: Date = new Date()): string {
+  return d.toISOString().slice(0, 7);
+}
+
+async function handleUgcVideoTopup(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  const clerkUserId = paymentIntent.metadata?.clerk_user_id;
+  if (!clerkUserId) throw new Error('Missing clerk_user_id in payment_intent metadata');
+
+  const priceId = paymentIntent.metadata?.price_id;
+  const credits = priceId != null ? UGC_VIDEO_TOPUP_CREDITS[priceId] : undefined;
+  if (credits === undefined) {
+    console.error(`Unknown UGC video top-up price ID "${priceId}" — check STRIPE_PRICE_UGC_TOPUP_* env vars.`);
+    throw new Error(`Unknown UGC video top-up price ID: ${priceId}`);
+  }
+
+  // Idempotent by stripe_pi (unique constraint on ugc_video_topups.stripe_pi).
+  const { error: insertErr } = await supabase.from('ugc_video_topups').upsert({
+    stripe_pi: paymentIntent.id,
+    user_id:   clerkUserId,
+    month:     monthKey(),
+    credits,
+  }, { onConflict: 'stripe_pi' });
+
+  if (insertErr) {
+    console.error('Failed to insert ugc_video_topup:', insertErr);
+    throw new Error('ugc_video_topup insert failed');
+  }
+
+  try {
+    const charge = paymentIntent.latest_charge
+      ? await getStripe().charges.retrieve(paymentIntent.latest_charge as string)
+      : null;
+    const userEmail = charge?.billing_details?.email;
+    if (userEmail) {
+      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+        },
+        body: JSON.stringify({
+          template: 'ugc_video_topup_receipt',
+          to: userEmail,
+          vars: { name: 'there', credits: String(credits) },
+        }),
+      });
+    }
+  } catch (e) {
+    console.warn('UGC video top-up email failed (non-fatal):', e);
+  }
+
+  console.log(`✓ UGC video top-up: ${credits} credits → ${clerkUserId} (payment: ${paymentIntent.id})`);
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {

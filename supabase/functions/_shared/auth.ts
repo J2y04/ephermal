@@ -123,9 +123,13 @@ export function corsHeaders(origin?: string | null): Record<string, string> {
   };
 }
 
-/** Return a JSON error response */
-export function errResponse(message: string, status: number, origin?: string | null): Response {
-  return new Response(JSON.stringify({ error: message }), {
+/** Return a JSON error response. Optional `extra` is merged into the body — e.g. structured
+ *  upsell data ({ out_of_credits: true, topup_prices: {...} }) the frontend can act on
+ *  without string-parsing the error message. */
+export function errResponse(
+  message: string, status: number, origin?: string | null, extra?: Record<string, unknown>,
+): Response {
+  return new Response(JSON.stringify({ error: message, ...(extra ?? {}) }), {
     status,
     headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
   });

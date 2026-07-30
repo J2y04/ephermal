@@ -752,7 +752,7 @@ export default function Home() {
                   {f:'Basic analytics'},
                   {f:'Google Ads automation',locked:true,badge:'Growth+'},
                   {f:'AI ad strategist chat',locked:true,badge:'Growth+'},
-                  {f:'AI UGC script writer',locked:true,badge:'Growth+'},
+                  {f:'AI UGC video ads',locked:true,badge:'Growth+'},
                   {f:'Audience Intelligence',locked:true,badge:'Growth+'},
                   {f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},
                   {f:'Competitor Radar (ad spy)',locked:true,badge:'Growth+'},
@@ -778,12 +778,13 @@ export default function Home() {
               <div className="price-per">/ month, for stores pushing toward €10K+</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
-                75 AI script credits / month
+                75 AI script credits + 18 UGC video ads / month
               </div>
               <ul className="price-features">
                 {([
                   {f:'3 Shopify stores'},
                   {f:'75 AI ad scripts / month'},
+                  {f:'18 real UGC video ads / month'},
                   {f:'Meta Ads automation'},
                   {f:'AI store analysis & brand brief'},
                   {f:'Live store sync'},
@@ -791,7 +792,6 @@ export default function Home() {
                   {f:'Creative approval workflow'},
                   {f:'Google Ads automation'},
                   {f:'AI ad strategist chat'},
-                  {f:'AI UGC script writer'},
                   {f:'Audience Intelligence'},
                   {f:'Full campaign analytics'},
                   {f:'Closed-loop ROAS optimization'},
@@ -820,10 +820,10 @@ export default function Home() {
               <div className="price-per">/ month, for established stores &amp; agencies</div>
               <div className="price-credits">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
-                350 AI script credits / month
+                350 AI script credits + 32 UGC video ads / month
               </div>
               <ul className="price-features">
-                {['Unlimited stores','350 AI ad scripts / month','Meta + Google Ads automation','AI store analysis & brand brief','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Audience Intelligence','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
+                {['Unlimited stores','350 AI ad scripts / month','32 real UGC video ads / month','Meta + Google Ads automation','AI store analysis & brand brief','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','Audience Intelligence','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
                   <li key={f}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>{f}</li>
                 ))}
               </ul>

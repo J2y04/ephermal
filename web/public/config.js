@@ -46,6 +46,8 @@
     topup_5:    'price_REPLACE_TOPUP5',    // €5 one-time = 50 AI messages
     topup_10:   'price_REPLACE_TOPUP10',   // €10 one-time = 120 AI messages
     topup_20:   'price_REPLACE_TOPUP20',   // €20 one-time = 280 AI messages
+    ugc_topup_5:  'price_REPLACE_UGC_TOPUP5',   // €35 one-time = 5 UGC video credits (€7/credit)
+    ugc_topup_15: 'price_REPLACE_UGC_TOPUP15',  // €105 one-time = 15 UGC video credits (€7/credit)
   };
 
   // Supabase Edge Function base (auto-constructed from SUPABASE_URL after it's set below)

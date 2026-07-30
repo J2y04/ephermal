@@ -8,7 +8,7 @@ Ephermal connects to a Shopify store via OAuth and reads the live product catalo
 
 1. **Store Analyzer** — reads live catalog, pricing, and bestsellers; generates a permanent brand-intelligence brief (summary, target audience, brand vibe, color palette, UGC creative direction)
 2. **Copy Agent** — writes headlines, hooks, and ad copy per product, grounded in the store's brand brief
-3. **UGC Agent** — generates creator-style ad scripts, hooks, and copy for video and image ads (script and copy generation today; automated video rendering is on the roadmap)
+3. **UGC Agent** — generates creator-style ad scripts, hooks, and copy for video and image ads, plus real finished 15-second 1080p UGC video ads via Higgsfield Marketing Studio (Growth and Scale plans)
 4. **Meta Agent** — creates and manages Facebook and Instagram campaigns via the Meta Marketing API
 5. **Google Agent** — creates and manages Google Search campaigns via the Google Ads API
 6. **Audience Agent** — builds custom and lookalike audiences from store data
@@ -24,9 +24,9 @@ Ephermal connects to a Shopify store via OAuth and reads the live product catalo
 
 ## Pricing
 
-- **Starter** — €89/month: Meta Ads automation, campaign launcher, AI store analysis & brand brief, 15 UGC credits/month, 1 store
-- **Growth** — €199/month: adds Google Ads, Auren (AI ad strategist chat), Audience Intelligence, Budget AI, Competitor Radar, Creative Brief AI, Profit Tracker, ROAS optimization, 75 UGC credits/month, 3 stores
-- **Scale** — €349/month: adds unlimited stores, bulk campaign management, multi-store consolidated view, dedicated AI instance, 350 UGC credits/month
+- **Starter** — €89/month: Meta Ads automation, campaign launcher, AI store analysis & brand brief, 15 AI script credits/month, 1 store (script/copy only, no video credits)
+- **Growth** — €199/month: adds Google Ads, Auren (AI ad strategist chat), Audience Intelligence, Budget AI, Competitor Radar, Creative Brief AI, Profit Tracker, ROAS optimization, 75 AI script credits/month, 18 real UGC video ads/month, 3 stores
+- **Scale** — €349/month: adds unlimited stores, bulk campaign management, multi-store consolidated view, dedicated AI instance, 350 AI script credits/month, 32 real UGC video ads/month
 
 All plans billed monthly. Cancel any time.
 
