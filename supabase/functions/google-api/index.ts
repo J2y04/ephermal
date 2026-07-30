@@ -213,8 +213,9 @@ Deno.serve(async (req: Request) => {
     try {
       saveAccessToken = await getAccessToken(refreshToken, userId)
     } catch (e) {
-      console.error('[google-api] save_customer_id token refresh failed:', e)
-      return errResponse('Google token refresh failed — please reconnect Google Ads', 401, origin)
+      const detail = e instanceof Error ? e.message : String(e)
+      console.error('[google-api] save_customer_id token refresh failed:', detail)
+      return errResponse(`Google token refresh failed - please reconnect Google Ads (${detail})`, 401, origin, { detail })
     }
     try {
       const custRes = await fetch('https://googleads.googleapis.com/v17/customers:listAccessibleCustomers', {
@@ -253,8 +254,9 @@ Deno.serve(async (req: Request) => {
   try {
     accessToken = await getAccessToken(creds.refreshToken, userId)
   } catch (e) {
-    console.error('[google-api] Token refresh failed:', e)
-    return errResponse('Google token refresh failed — please reconnect Google Ads', 401, origin)
+    const detail = e instanceof Error ? e.message : String(e)
+    console.error('[google-api] Token refresh failed:', detail)
+    return errResponse(`Google token refresh failed - please reconnect Google Ads (${detail})`, 401, origin, { detail })
   }
 
   const { customerId } = creds
