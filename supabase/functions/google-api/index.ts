@@ -77,9 +77,16 @@ async function getAccessToken(refreshToken: string, userId: string): Promise<str
     }).toString(),
   })
 
-  const data = await res.json()
-  if (data.error || !data.access_token) {
-    throw new Error(`Token refresh failed: ${data.error_description ?? data.error ?? 'unknown'}`)
+  // Capture the raw body before assuming it parses as JSON — a non-2xx from
+  // Google's token endpoint isn't guaranteed to be JSON (e.g. edge proxy errors,
+  // malformed requests), and a bare "Unexpected token" parse error was less
+  // useful than just showing what Google actually sent back.
+  const rawBody = await res.text()
+  let data: Record<string, unknown> = {}
+  try { data = JSON.parse(rawBody) } catch { /* fall through with raw text below */ }
+  if (!res.ok || data.error || !data.access_token) {
+    const detail = data.error_description ?? data.error ?? rawBody.slice(0, 200) ?? 'unknown'
+    throw new Error(`Token refresh failed (HTTP ${res.status}): ${detail}`)
   }
 
   const token = data.access_token as string
