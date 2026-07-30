@@ -2972,7 +2972,7 @@ async function authFetch(path, opts = {}) {
           },
           body: JSON.stringify({ path, method, body: reqBody, headers: extraHeaders, clerkToken: tok }),
         });
-        if (r.status === 401) return { retry401: true };
+        if (r.status === 401) { let b={}; try{b=await r.json();}catch{} return { retry401: true, body: b }; }
         if (r.status === 429) { showToast('Too many requests - slow down', 'error'); return { done: null }; }
         if (r.ok) {
           const data = await r.json();
@@ -2999,30 +2999,65 @@ async function authFetch(path, opts = {}) {
       ...(opts.headers || {}),
     };
     const r = await fetch((window.SUPABASE_FN || window.API_BASE || '') + path, { ...opts, headers: directHeaders });
-    if (r.status === 401) return { retry401: true };
+    if (r.status === 401) { let b={}; try{b=await r.clone().json();}catch{} return { retry401: true, body: b }; }
     if (r.status === 429) { showToast('Too many requests - slow down', 'error'); return { done: null }; }
     return { done: r };
   }
 
+  // Up to 3 total attempts (1 initial + 2 retries with a forced-fresh token each
+  // time) before giving up — this absorbs the transient cold-start JWKS races
+  // that cause an otherwise-valid token to intermittently 401. Each failed
+  // attempt's response body is kept so the final failure carries the real
+  // server-side reason instead of collapsing into a bare null.
   let result = await attempt(token);
   if (result.fallthrough) result = await directFallback(token);
 
-  if (result.retry401) {
-    // The token Clerk handed us was rejected server-side — force a genuinely fresh
-    // one (bypassing Clerk's cache) and retry exactly once before giving up. This
-    // is the fix for the dashboard silently showing no data on a stale/near-expiry
-    // token: previously a single 401 just gave up with no retry at all.
-    console.warn('[authFetch] 401 on', path, '- retrying with a forced-fresh token');
+  let lastAuthBody = result.body;
+  let attempts = 1;
+  while (result.retry401 && attempts < 3) {
+    attempts++;
+    console.warn('[authFetch] 401 on', path, `- retry ${attempts - 1}/2 with a forced-fresh token`);
+    if (attempts > 2) await new Promise(res => setTimeout(res, 400)); // brief backoff before the last try
     const freshToken = await _getClerkToken(true);
-    if (freshToken) {
-      let retryResult = await attempt(freshToken);
-      if (retryResult.fallthrough) retryResult = await directFallback(freshToken);
-      if (!retryResult.retry401) return retryResult.done;
-    }
-    return null;
+    if (!freshToken) break;
+    result = await attempt(freshToken);
+    if (result.fallthrough) result = await directFallback(freshToken);
+    if (result.body) lastAuthBody = result.body;
+  }
+
+  if (result.retry401) {
+    // Exhausted retries — surface the real server-side reason (e.g. "token_expired",
+    // "jwks_unavailable") instead of returning a bare null the caller can't explain.
+    return {
+      ok: false,
+      status: 401,
+      json: async () => lastAuthBody || { error: 'Invalid or expired session', reason: 'unknown' },
+      text: async () => JSON.stringify(lastAuthBody || {}),
+    };
   }
 
   return result.done;
+}
+
+/** Human-readable label for the machine-readable auth-rejection reasons cache-proxy /
+ *  google-api now return, so a 401 shows up as something actionable instead of a
+ *  generic "Could not save" toast with no clue what actually happened. */
+const AUTH_REASON_LABELS = {
+  token_expired:       'Your session expired - please sign out and back in, then try again.',
+  jwks_unavailable:     'Could not verify your session with our auth provider right now - please try again in a moment.',
+  unknown_signing_key: 'Your session is out of date - please sign out and back in, then try again.',
+  bad_signature:       'Your session could not be verified - please sign out and back in, then try again.',
+  issuer_mismatch:     'Your session is invalid - please sign out and back in, then try again.',
+  missing_token:       'You are not signed in - please sign in and try again.',
+  malformed_token:     'Your session is invalid - please sign out and back in, then try again.',
+};
+
+/** Turn a failed authFetch response into a specific, non-generic toast message. */
+function describeAuthOrApiError(err, r) {
+  if (r && r.status === 401) {
+    return AUTH_REASON_LABELS[err.reason] || err.error || 'Session check failed - please sign out and back in, then try again.';
+  }
+  return err.error || 'Something went wrong - please try again.';
 }
 
 /** Invalidate a cached action for the current user (called after write operations) */
@@ -5862,7 +5897,7 @@ async function dashSaveGoogleAccount() {
     const r = await authFetch('/google/ads', {method:'POST', body:JSON.stringify({action:'save_customer_id', customer_id: raw})});
     if (!r || !r.ok) {
       const err = r ? await r.json().catch(()=>({})) : {};
-      showToast(err.error || 'Could not save Customer ID', 'error');
+      showToast(describeAuthOrApiError(err, r), 'error');
       return;
     }
     localStorage.setItem('google_token', '1');

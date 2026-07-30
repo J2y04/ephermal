@@ -154,8 +154,12 @@ Deno.serve(async (req: Request) => {
     return new Response(null, { status: 204, headers: corsHeaders(origin) })
   }
 
-  const userId = await extractUserId(req.headers.get('Authorization'))
-  if (!userId) return errResponse('Unauthorized', 401, origin)
+  const authDiag: { reason?: string } = {}
+  const userId = await extractUserId(req.headers.get('Authorization'), authDiag)
+  if (!userId) {
+    console.error('[google-api] auth rejected — reason:', authDiag.reason)
+    return errResponse('Invalid or expired session', 401, origin, { reason: authDiag.reason ?? 'unknown' })
+  }
 
   const gate = await requirePlan(userId, 'growth', origin, 'Google Ads management')
   if (gate) return gate

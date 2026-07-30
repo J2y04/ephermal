@@ -271,9 +271,14 @@ Deno.serve(async (req) => {
   if (!rawToken || rawToken.length < 20) {
     return new Response('Unauthorized', { status: 401, headers: CORS_HEADERS });
   }
-  const userId = await extractUserId(`Bearer ${rawToken}`);
+  const authDiag: { reason?: string } = {};
+  const userId = await extractUserId(`Bearer ${rawToken}`, authDiag);
   if (!userId) {
-    return new Response('Invalid token', { status: 401, headers: CORS_HEADERS });
+    console.error('[cache-proxy] auth rejected — reason:', authDiag.reason, 'path:', path);
+    return new Response(JSON.stringify({ error: 'Invalid or expired session', reason: authDiag.reason ?? 'unknown' }), {
+      status: 401,
+      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    });
   }
 
   // Server-side rate limit: 60 req/min per user
