@@ -1674,7 +1674,7 @@ select.form-input{cursor:pointer}
             <div style="width:44px;height:44px;border-radius:12px;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#08080c" id="billing-plan-icon">S</div>
             <div style="flex:1">
               <div style="font-size:17px;font-weight:800" id="billing-plan-name">Starter</div>
-              <div style="font-size:13px;color:var(--muted)" id="billing-plan-desc">€89/month · 15 UGC credits/month · 1 store</div>
+              <div style="font-size:13px;color:var(--muted)" id="billing-plan-desc">€89/month · 15 AI script credits/month</div>
             </div>
             <span class="plan-badge" id="billing-plan-badge" style="font-size:12px;padding:5px 12px">STARTER</span>
           </div>
@@ -2303,14 +2303,17 @@ function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BAS
 
 // ── SUBSCRIPTION ──────────────────────────────────────────────────────────────
 const PLANS = {
-  starter: { name: 'Starter', color: '#8892b0', ugc: 15,  ugcVideo: 0,  stores: 1,        badge: 'STARTER' },
-  growth:  { name: 'Growth',  color: '#06d6c7', ugc: 75,  ugcVideo: 18, stores: 3,        badge: 'GROWTH'  },
-  scale:   { name: 'Scale',   color: '#06d6c7', ugc: 350, ugcVideo: 32, stores: Infinity,  badge: 'SCALE'   },
+  starter: { name: 'Starter', color: '#8892b0', ugc: 15,  ugcVideo: 0,  badge: 'STARTER' },
+  growth:  { name: 'Growth',  color: '#06d6c7', ugc: 75,  ugcVideo: 18, badge: 'GROWTH'  },
+  scale:   { name: 'Scale',   color: '#06d6c7', ugc: 350, ugcVideo: 32, badge: 'SCALE'   },
 };
 // campaigns (Launch Ads) and analysis (Store Analysis) are Starter-tier — core value for
 // small Shopify stores, not an upgrade-gated feature. Growth adds the advanced/analytical
 // tools; Scale is reserved for bulk/multi-store management, not for basic launch access.
-const GATED = { analytics: 'growth', ai: 'growth', googleads: 'growth', audience: 'growth', budget: 'growth', abtest: 'scale', bulk: 'scale', multistore: 'scale', whitelabel: 'scale', competitorradar: 'growth', creativebrief: 'growth', profittracker: 'growth', mrrtracker: 'growth', ugcvideo: 'growth' };
+// multistore is deliberately NOT gated to a plan — the page itself is honest that Ephermal
+// only supports one connected store per account today (see loadMultiStore()'s HONESTY NOTE),
+// so there is nothing real to sell as a paid perk here.
+const GATED = { analytics: 'growth', ai: 'growth', googleads: 'growth', audience: 'growth', budget: 'growth', abtest: 'scale', bulk: 'scale', whitelabel: 'scale', competitorradar: 'growth', creativebrief: 'growth', profittracker: 'growth', mrrtracker: 'growth', ugcvideo: 'growth' };
 const PLAN_RANK = { starter: 0, growth: 1, scale: 2 };
 function getUserPlan() {
   // Clerk publicMetadata is the ONLY source of truth (written server-side by Stripe webhook).
@@ -2734,9 +2737,9 @@ function renderBillingPage() {
   const plan = getUserPlan();
   const info = planInfo();
   const descs = {
-    starter: '€89/month · 15 AI script credits/month · 1 store',
-    growth:  '€199/month · 75 AI script credits + 18 UGC video ads/month · 3 stores',
-    scale:   '€349/month · 350 AI script credits + 32 UGC video ads/month · Unlimited stores',
+    starter: '€89/month · 15 AI script credits/month',
+    growth:  '€199/month · 75 AI script credits + 18 UGC video ads/month',
+    scale:   '€349/month · 350 AI script credits + 32 UGC video ads/month',
   };
   const el = (id, txt) => { const e = document.getElementById(id); if(e) e.textContent = txt; };
   el('billing-plan-name', info.name);
@@ -5352,9 +5355,9 @@ function showSubModal() {
   const grid = document.getElementById('sub-gate-plans');
   if (grid && grid.children.length === 0) {
     const plans = [
-      { id:'starter', name:'Starter', price:'€89',  ugc:'15',  desc:'15 UGC credits · 1 store',       highlight: false },
-      { id:'growth',  name:'Growth',  price:'€199', ugc:'75',  desc:'75 UGC credits · 3 stores',       highlight: true  },
-      { id:'scale',   name:'Scale',   price:'€349', ugc:'350', desc:'350 UGC credits · Unlimited',      highlight: false },
+      { id:'starter', name:'Starter', price:'€89',  ugc:'15',  desc:'15 AI script credits/month',       highlight: false },
+      { id:'growth',  name:'Growth',  price:'€199', ugc:'75',  desc:'75 AI script credits + 18 UGC videos',       highlight: true  },
+      { id:'scale',   name:'Scale',   price:'€349', ugc:'350', desc:'350 AI script credits + 32 UGC videos',      highlight: false },
     ];
     grid.innerHTML = plans.map(p => `
       <div style="border:1px solid ${p.highlight?'#06d6c7':'var(--border)'};border-radius:14px;padding:18px;text-align:center;${p.highlight?'background:rgba(6,214,199,0.08);':''}transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">

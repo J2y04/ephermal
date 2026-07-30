@@ -105,7 +105,7 @@ export default function Home() {
               },
               {
                 stage: '€10K+ / month',
-                desc: 'Multi-store. Multi-platform. Full analytics. Ephermal runs your entire ad operation while you focus on the brand.',
+                desc: 'Multi-platform. Full analytics. Bulk campaign management. Ephermal runs your entire ad operation while you focus on the brand.',
                 icon: <path d="M22 12h-4l-3 9L9 3l-3 9H2" />,
               },
             ].map((s, i) => (
@@ -742,7 +742,6 @@ export default function Home() {
               </div>
               <ul className="price-features">
                 {([
-                  {f:'1 Shopify store'},
                   {f:'15 AI ad scripts / month'},
                   {f:'Meta Ads automation'},
                   {f:'AI store analysis & brand brief'},
@@ -759,7 +758,6 @@ export default function Home() {
                   {f:'Creative Brief AI',locked:true,badge:'Growth+'},
                   {f:'Profit Tracker',locked:true,badge:'Growth+'},
                   {f:'Bulk campaign management',locked:true,badge:'Scale'},
-                  {f:'Multi-store consolidated view',locked:true,badge:'Scale'},
                 ] as {f:string,locked?:boolean,badge?:string}[]).map(({f,locked,badge}) => (
                   <li key={f} style={locked?{opacity:0.42}:undefined}>
                     {locked
@@ -782,7 +780,6 @@ export default function Home() {
               </div>
               <ul className="price-features">
                 {([
-                  {f:'3 Shopify stores'},
                   {f:'75 AI ad scripts / month'},
                   {f:'18 real UGC video ads / month'},
                   {f:'Meta Ads automation'},
@@ -798,10 +795,7 @@ export default function Home() {
                   {f:'Competitor Radar (ad spy)'},
                   {f:'Creative Brief AI'},
                   {f:'Profit Tracker'},
-                  {f:'Priority AI agents'},
                   {f:'Bulk campaign management', locked:true, badge:'Scale'},
-                  {f:'Multi-store consolidated view', locked:true, badge:'Scale'},
-                  {f:'Dedicated AI instance', locked:true, badge:'Scale'},
                 ] as {f:string,locked?:boolean,badge?:string}[]).map(({f,locked,badge}) => (
                   <li key={f} style={locked?{opacity:0.42}:undefined}>
                     {locked
@@ -823,7 +817,7 @@ export default function Home() {
                 350 AI script credits + 32 UGC video ads / month
               </div>
               <ul className="price-features">
-                {['Unlimited stores','350 AI ad scripts / month','32 real UGC video ads / month','Meta + Google Ads automation','AI store analysis & brand brief','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','Audience Intelligence','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'].map(f => (
+                {['350 AI ad scripts / month','32 real UGC video ads / month','Meta + Google Ads automation','AI store analysis & brand brief','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','Audience Intelligence','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Bulk campaign management','Custom integrations','Slack support'].map(f => (
                   <li key={f}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>{f}</li>
                 ))}
               </ul>
