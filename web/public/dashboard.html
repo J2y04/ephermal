@@ -4162,9 +4162,10 @@ async function dashStartShopifyOAuth() {
 // OAuth exchange itself succeeded but the follow-up live API call (using the fresh
 // token) failed — different from a generic auth failure, so it gets a more specific
 // message pointing at permissions rather than "try again".
-function oauthErrorMessage(platform, code) {
+function oauthErrorMessage(platform, code, detail) {
   if (code === 'connection_test_failed') {
-    return `Connected to ${platform}, but couldn't verify account access - your token may be missing required permissions. Please reconnect.`;
+    const base = `Connected to ${platform}, but couldn't verify account access - your token was saved, but you can't launch or manage campaigns until this is fixed.`;
+    return detail ? `${base} Reason: ${decodeURIComponent(detail)}` : `${base} Please reconnect.`;
   }
   if (code === 'no_refresh_token') {
     return `${platform} didn't grant a fresh connection - this usually happens right after disconnecting. Go to myaccount.google.com/permissions, remove Ephermal's access there, then reconnect.`;
@@ -5875,7 +5876,20 @@ async function checkGoogleOAuthReturn() {
   const googleError = p.get('google_error');
   if (!connected && !googleError) return;
   window.history.replaceState({}, document.title, window.location.pathname);
-  if (googleError) { showToast(oauthErrorMessage('Google Ads', googleError), 'error'); return; }
+  if (googleError) {
+    showToast(oauthErrorMessage('Google Ads', googleError, p.get('error_detail')), 'error');
+    // connection_test_failed still persisted a real refresh_token server-side
+    // (see google-oauth-callback) - reflect that here too, otherwise the UI
+    // stays stuck on "Continue with Google" even though a token now exists
+    // and the only remaining step is entering a Customer ID.
+    if (googleError === 'connection_test_failed') {
+      localStorage.setItem('google_token', '1');
+      const btn  = document.getElementById('dash-google-oauth-btn');  if (btn)  btn.style.display='none';
+      const area = document.getElementById('dash-google-cid-area');   if (area) area.style.display='';
+      refreshGoogleStatus(); updatePlatformBanner();
+    }
+    return;
+  }
 
   const claimCode   = p.get('claim');
   const returnNonce = p.get('nonce') || '';

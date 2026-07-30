@@ -166,6 +166,15 @@ Deno.serve(async (req: Request) => {
   let customerId: string | null = null
   let customerIds: string[]     = []
 
+  // If the connection check below fails, this stays set so we still persist
+  // the refresh_token we just legitimately obtained instead of discarding a
+  // working OAuth grant and forcing a full reconnect (including a fresh Google
+  // consent, which - per no_refresh_token above - may not even be available
+  // again without revoking access first) purely because the Ads API check
+  // failed. The user still needs to fix the underlying Ads-API issue, but
+  // shouldn't lose real access to be told to reconnect for it.
+  let connectionCheckError: string | null = null
+
   if (DEVELOPER_TOKEN) {
     try {
       const custRes  = await fetch(
@@ -179,18 +188,18 @@ Deno.serve(async (req: Request) => {
       )
       const custData = await custRes.json()
       if (!custRes.ok || custData.error) {
-        console.error('[google-oauth] Connection test failed:', custRes.status, JSON.stringify(custData.error ?? custData))
-        return redirectTo(APP_URL, returnPage, { google_error: 'connection_test_failed' })
-      }
-
-      // resourceNames are like "customers/1234567890"
-      if (Array.isArray(custData.resourceNames)) {
+        const detail = JSON.stringify(custData.error ?? custData)
+        console.error('[google-oauth] Connection test failed:', custRes.status, detail)
+        connectionCheckError = `HTTP ${custRes.status}: ${detail}`.slice(0, 500)
+      } else if (Array.isArray(custData.resourceNames)) {
+        // resourceNames are like "customers/1234567890"
         customerIds = (custData.resourceNames as string[]).map(r => r.replace('customers/', ''))
         customerId  = customerIds[0] ?? null
       }
     } catch (e) {
-      console.error('[google-oauth] Customer IDs fetch threw:', e)
-      return redirectTo(APP_URL, returnPage, { google_error: 'connection_test_failed' })
+      const detail = e instanceof Error ? e.message : String(e)
+      console.error('[google-oauth] Customer IDs fetch threw:', detail)
+      connectionCheckError = detail.slice(0, 500)
     }
   }
 
@@ -230,6 +239,17 @@ Deno.serve(async (req: Request) => {
 
   if (upsertErr) {
     console.error('[google-oauth] user_integrations upsert failed:', upsertErr.message)
+  }
+
+  // The refresh_token (if we got one) is now saved regardless of the outcome
+  // below - only the "you're fully connected" signal is gated on the Ads API
+  // actually working. Real detail goes in the redirect so it isn't silently
+  // lost to a log line the user can never see.
+  if (connectionCheckError) {
+    return redirectTo(APP_URL, returnPage, {
+      google_error:  'connection_test_failed',
+      error_detail:  connectionCheckError,
+    })
   }
 
   // ── Create one-time claim (tokens NEVER go in redirect URL) ───────────────

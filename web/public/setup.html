@@ -327,9 +327,10 @@ async function startShopifyOAuth() {
 // OAuth exchange itself succeeded but the follow-up live API call (using the fresh
 // token) failed — different from a generic auth failure, so it gets a more specific
 // message pointing at permissions rather than "try again".
-function oauthErrorMessage(platform, code) {
+function oauthErrorMessage(platform, code, detail) {
   if (code === 'connection_test_failed') {
-    return `Connected to ${platform}, but couldn't verify account access - your token may be missing required permissions. Please reconnect.`;
+    const base = `Connected to ${platform}, but couldn't verify account access - your token was saved, but you can't launch or manage campaigns until this is fixed.`;
+    return detail ? `${base} Reason: ${decodeURIComponent(detail)}` : `${base} Please reconnect.`;
   }
   if (code === 'no_refresh_token') {
     return `${platform} didn't grant a fresh connection - this usually happens right after disconnecting. Go to myaccount.google.com/permissions, remove Ephermal's access there, then reconnect.`;
