@@ -1502,7 +1502,7 @@ select.form-input{cursor:pointer}
             <div class="form-group"><label class="form-label">Campaign Period (days)</label><input class="form-input" id="budget-days" type="number" placeholder="30" min="7" max="90"></div>
           </div>
           <button class="btn-save" onclick="calculateBudget()" id="budget-calc-btn" style="display:inline-flex;align-items:center;gap:8px">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Calculate with AI
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-auren"/></svg>Calculate with AI
           </button>
         </div>
 
@@ -2017,7 +2017,7 @@ select.form-input{cursor:pointer}
     <div class="form-group" style="margin-top:6px">
       <label class="form-label">AI-Assisted (optional)</label>
       <button class="btn-secondary" style="width:100%" onclick="_cbGenerateWithAI()" id="cb-ai-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate ads with AI
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><use href="#icon-auren"/></svg>Generate ads with AI
       </button>
     </div>
 
@@ -2219,7 +2219,7 @@ select.form-input{cursor:pointer}
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
         <label class="form-label" id="ugc-desc-label" style="margin-bottom:0">Product Description</label>
         <button class="ai-gen-btn" onclick="aiGenerateDescription()" id="btn-ai-desc" style="display:none">
-          <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate with AI
+          <svg viewBox="0 0 24 24"><use href="#icon-auren"/></svg>Generate with AI
         </button>
       </div>
       <textarea class="form-input" id="ugc-description" rows="3" placeholder="e.g. Wireless noise-cancelling headphones with 40h battery life, perfect for commuters and remote workers…" style="resize:vertical"></textarea>
@@ -5076,7 +5076,7 @@ async function aiGenerateDescription() {
       showToast('AI generation failed - try writing manually', 'warn');
     }
   } catch(e) { showToast('Request failed - please try again', 'error'); }
-  finally { btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate with AI'; btn.disabled = false; }
+  finally { btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2"><use href="#icon-auren"/></svg>Generate with AI'; btn.disabled = false; }
 }
 
 function aiAskAboutStore() {
@@ -6013,7 +6013,11 @@ async function calculateBudget() {
   try {
     const plan = getUserPlan();
     const res = await authFetch('/budget', { method: 'POST', body: JSON.stringify({ action: 'calculate', revenue_goal: goal, aov, current_roas: roas, days, platforms: ['meta','google'] }) });
-    if (!res || !res.ok) { showToast('Budget AI not available. Check your AI configuration', 'error'); return; }
+    if (!res || !res.ok) {
+      const err = res ? await res.json().catch(()=>({})) : {};
+      showToast(describeAuthOrApiError(err, res), 'error');
+      return;
+    }
     const data = await res.json();
 
     _budgetRecId = data.recommendation_id;
@@ -6045,7 +6049,7 @@ async function calculateBudget() {
   } catch(e) {
     showToast('Budget calculation failed - ' + (e.message || 'try again'), 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Calculate with AI'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><use href="#icon-auren"/></svg>Calculate with AI'; }
   }
 }
 
@@ -6402,7 +6406,11 @@ async function _cbGenerateWithAI() {
   try {
     const product = { name: p.title || p.name || name, description: p.body_html ? p.body_html.replace(/<[^>]*>/g,'').slice(0,200) : (p.description || ''), price: parseFloat(p.variants?.[0]?.price || p.price || '0') || 0 };
     const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'prepare', product, audience: {}, budget, objective }) });
-    if (!r || !r.ok) { showToast('AI generation failed. Check your AI configuration', 'error'); return; }
+    if (!r || !r.ok) {
+      const err = r ? await r.json().catch(()=>({})) : {};
+      showToast(describeAuthOrApiError(err, r), 'error');
+      return;
+    }
     const data = await r.json();
     const ads = data.copy?.meta?.ads || [];
     if (ads.length) {
@@ -6414,7 +6422,7 @@ async function _cbGenerateWithAI() {
   } catch(e) {
     showToast('AI generation failed', 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>Generate ads with AI'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-2px"><use href="#icon-auren"/></svg>Generate ads with AI'; }
   }
 }
 
