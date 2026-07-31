@@ -24,9 +24,28 @@
  * Setup in Clerk Dashboard:
  *   1. Go to: Dashboard → Webhooks → Add Endpoint
  *   2. URL: https://twfgnqddoqeqrjhgioxd.supabase.co/functions/v1/clerk-webhook
- *   3. Events to subscribe: user.created
+ *   3. Events to subscribe: user.created, user.deleted
  *   4. Copy the Signing Secret → add as CLERK_WEBHOOK_SECRET secret in Supabase
  */
+
+import Stripe from 'https://esm.sh/stripe@14';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { USER_OWNED_TABLES } from '../_shared/user-owned-tables.ts';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+);
+
+let _stripe: Stripe | null = null;
+function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = Deno.env.get('STRIPE_SECRET_KEY');
+    if (!key) throw new Error('STRIPE_SECRET_KEY not configured');
+    _stripe = new Stripe(key, { apiVersion: '2024-04-10' });
+  }
+  return _stripe;
+}
 
 // ── Constant-time string comparison (prevents timing attacks) ────────────────
 function timingSafeEqual(a: string, b: string): boolean {
@@ -87,7 +106,38 @@ interface ClerkUserCreatedEvent {
   };
 }
 
-type ClerkEvent = ClerkUserCreatedEvent | { type: string; data: unknown };
+interface ClerkUserDeletedEvent {
+  type: 'user.deleted';
+  data: { id: string; deleted?: boolean };
+}
+
+type ClerkEvent = ClerkUserCreatedEvent | ClerkUserDeletedEvent | { type: string; data: unknown };
+
+// Out-of-band cleanup: the app's own delete-account endpoint (supabase/functions/
+// delete-account/index.ts) already handles the normal self-serve deletion flow (Stripe
+// cancel + row wipe + Clerk identity delete) triggered directly from the dashboard. This
+// handler exists for the gap that leaves — a user removed straight from the Clerk Dashboard
+// (or any other out-of-band path) never hits that endpoint, so without this the Stripe
+// subscription would keep billing and every DB row would stay orphaned to a Clerk identity
+// that no longer exists. The Clerk identity itself is already gone by the time this event
+// arrives, so unlike delete-account there's nothing to delete on Clerk's side here.
+async function cleanupDeletedUser(userId: string): Promise<void> {
+  const { data: plan } = await supabase.from('user_plans').select('stripe_sub_id').eq('user_id', userId).single();
+  const subId = plan?.stripe_sub_id as string | undefined;
+  if (subId) {
+    try {
+      await getStripe().subscriptions.cancel(subId);
+      console.log(`✓ Stripe subscription ${subId} cancelled for out-of-band Clerk deletion (${userId})`);
+    } catch (e) {
+      console.error(`Stripe cancel failed for out-of-band Clerk deletion of ${userId}:`, e);
+    }
+  }
+
+  for (const table of USER_OWNED_TABLES) {
+    const { error } = await supabase.from(table).delete().eq('user_id', userId);
+    if (error) console.error(`clerk-webhook user.deleted: failed to clear ${table} for ${userId}:`, error.message);
+  }
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function getPrimaryEmail(data: ClerkUserCreatedEvent['data']): string | null {
@@ -213,8 +263,10 @@ Deno.serve(async (req) => {
       }
 
       await sendWelcomeEmail(email, name);
+    } else if (event.type === 'user.deleted') {
+      const data = (event as ClerkUserDeletedEvent).data;
+      if (data.id) await cleanupDeletedUser(data.id);
     }
-    // Future events: user.deleted → cancel subscription, etc.
   } catch (err) {
     // Log server-side, return 200 so Clerk doesn't retry indefinitely
     console.error('Handler error for', event.type, ':', err);

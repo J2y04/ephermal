@@ -20,6 +20,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { USER_OWNED_TABLES } from '../_shared/user-owned-tables.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -35,16 +36,6 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
-
-// Every table that stores rows scoped to a Clerk user_id. Order doesn't matter —
-// none of these have foreign keys pointing at each other across tables.
-const USER_OWNED_TABLES = [
-  'ai_credits', 'ai_topups', 'audiences', 'budget_recommendations', 'campaigns',
-  'creative_briefs', 'creative_fatigue', 'creatives', 'launched_campaigns',
-  'oauth_claims', 'oauth_nonces', 'optimizer_rules', 'optimizer_runs',
-  'revenue_snapshots', 'shopify_products', 'store_intelligence', 'ugc_credits',
-  'user_integrations', 'user_plans',
-];
 
 async function cancelStripeSubscription(userId: string): Promise<void> {
   const { data: plan } = await supabase

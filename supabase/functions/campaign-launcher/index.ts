@@ -224,35 +224,59 @@ async function gAdsPost(customerId: string, accessToken: string, devToken: strin
   return res.json() as Promise<Record<string, unknown>>;
 }
 
+// meta_status/google_status track each platform's own launch state independently
+// ('draft'|'launching'|'active'|'failed'). The single shared `status` column is kept as a
+// rollup for existing UI/list-view code, computed from the two below — 'active' whenever
+// either platform is genuinely live, so a Google failure can never overwrite a real, live,
+// spending Meta launch (or vice versa). Previously both platforms gated on and wrote the
+// same shared `status`, so launching Meta then Google against the same row would make Google
+// see status='active' (from Meta) and refuse to run, or a later Google failure would stamp
+// 'failed' over a row that was genuinely live and spending on Meta.
+function computeOverallStatus(metaStatus: string, googleStatus: string): string {
+  if (metaStatus === 'active' || googleStatus === 'active') return 'active';
+  if (metaStatus === 'failed' || googleStatus === 'failed') return 'failed';
+  return 'draft';
+}
+
 async function launchToGoogle(userId: string, campaignId: string, autoEnable = false): Promise<Record<string, unknown>> {
   const { data: row } = await supabase.from('launched_campaigns').select('*').eq('id', campaignId).eq('user_id', userId).single();
   if (!row) throw new Error('Campaign not found');
+  const priorGoogleStatus = String(row.google_status ?? 'draft');
   // Guard against a retried/duplicate launch request (client timeout, double-click, network
   // retry) creating a second real, spending Google Ads campaign for the same draft — this
   // row previously had no status check at all before running the live mutate sequence.
-  if (row.status === 'active') {
+  if (priorGoogleStatus === 'active') {
     throw new Error(`This campaign is already live on Google Ads (campaign ID: ${row.google_campaign_id ?? 'unknown'}). Manage it in Google Ads Manager instead of relaunching.`);
   }
   // Atomic claim: the read-then-write pattern above has a race window (two concurrent launch
-  // requests both read status='draft' before either writes 'active'), which could create two
-  // real, spending Google Ads campaigns for one draft. This compare-and-swap only succeeds if
-  // status is still exactly what we just read — a concurrent request loses the race here and
-  // gets a clear error instead of a duplicate live campaign. Reverted to 'failed' below if the
-  // actual Google Ads API calls error out after this point.
+  // requests both read google_status='draft' before either writes 'launching'), which could
+  // create two real, spending Google Ads campaigns for one draft. This compare-and-swap only
+  // succeeds if google_status is still exactly what we just read — a concurrent request loses
+  // the race here and gets a clear error instead of a duplicate live campaign. Reverted to
+  // 'failed' below if the actual Google Ads API calls error out after this point. This is
+  // scoped to google_status only — it never touches meta_status or a Meta launch in progress
+  // on the same row.
   const { data: claimed } = await supabase.from('launched_campaigns')
-    .update({ status: 'active' })
-    .eq('id', campaignId).eq('user_id', userId).eq('status', row.status)
+    .update({ google_status: 'launching' })
+    .eq('id', campaignId).eq('user_id', userId).eq('google_status', priorGoogleStatus)
     .select('id').maybeSingle();
   if (!claimed) throw new Error('This campaign is already being launched — check its status in a moment.');
 
   // Everything below is now guarded: if any step throws (missing credentials, a Google Ads API
-  // rejection, etc.), the claimed 'active' status is reverted to 'failed' so the row doesn't
+  // rejection, etc.), the claimed status is reverted to 'failed' so the row doesn't
   // permanently look live when nothing was actually created — and the real error still
-  // propagates to the caller via rethrow.
+  // propagates to the caller via rethrow. The overall `status` rollup is recomputed from both
+  // platform statuses every time, so it never regresses a genuinely-live Meta launch.
   try {
-    return await launchToGoogleInner(userId, campaignId, row, autoEnable);
+    const result = await launchToGoogleInner(userId, campaignId, row, autoEnable);
+    await supabase.from('launched_campaigns')
+      .update({ status: computeOverallStatus(String(row.meta_status ?? 'draft'), 'active') })
+      .eq('id', campaignId).eq('user_id', userId);
+    return result;
   } catch (e) {
-    await supabase.from('launched_campaigns').update({ status: 'failed' }).eq('id', campaignId).eq('user_id', userId);
+    await supabase.from('launched_campaigns')
+      .update({ google_status: 'failed', status: computeOverallStatus(String(row.meta_status ?? 'draft'), 'failed') })
+      .eq('id', campaignId).eq('user_id', userId);
     throw e;
   }
 }
@@ -348,7 +372,12 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   if (!budgetRn) throw new Error('Failed to create Google Ads budget');
 
   // 2. Campaign
-  const campRes    = await gAdsPost(rawCid, accessToken, devToken, 'campaigns:mutate', {
+  // If campaign creation throws below, budgetRn is already a live object in the merchant's
+  // Google Ads account. The catch removes it so a failed launch never leaves an orphaned
+  // budget behind with no record of it anywhere.
+  let campRes: unknown;
+  try {
+    campRes = await gAdsPost(rawCid, accessToken, devToken, 'campaigns:mutate', {
     // maximizeConversions was rejected with OPERATION_NOT_PERMITTED_FOR_CONTEXT (a whole-
     // operation context error, not a field error) — a well-documented Google Ads API
     // behavior: fully-automated conversion-based strategies require the account to already
@@ -364,7 +393,15 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     // political ads, so this is always DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING - never a
     // per-launch choice. Confirmed via https://developers.google.com/google-ads/api/docs/api-policy/eu-par
     operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, manualCpc: {}, containsEuPoliticalAdvertising: 'DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
-  }, `campaign (${accountStateNote})`) as { results: { resourceName: string }[] };
+    }, `campaign (${accountStateNote})`) as { results: { resourceName: string }[] };
+  } catch (e) {
+    try {
+      await gAdsPost(rawCid, accessToken, devToken, 'campaignBudgets:mutate', { operations: [{ remove: budgetRn }] }, 'budget_cleanup');
+    } catch (cleanupErr) {
+      console.error(`campaign create failed AND orphaned budget cleanup failed — budget ${budgetRn} is live and unattached in Google Ads account ${rawCid}:`, cleanupErr);
+    }
+    throw e;
+  }
   const campaignRn = (campRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!campaignRn) throw new Error('Failed to create Google Ads campaign');
   const googleCampaignId = campaignRn.split('/').pop()!;
@@ -377,6 +414,11 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD', cpcBidMicros: '1000000' } }],
   }, 'ad_group') as { results: { resourceName: string }[] };
   const adGroupRn  = (agRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
+  // Unlike budgetRn/campaignRn above, a missing adGroupRn used to fail silently: every
+  // downstream step (keywords, negatives, the ad itself) is gated on `adGroupRn && ...` and
+  // just no-ops, yet the function still reported success ("created as PAUSED") for a campaign
+  // with no ad group, no keywords, and no ad — one that can never serve.
+  if (!adGroupRn) throw new Error('Failed to create Google Ads ad group');
 
   // 4. Keywords — real match-type mix (exact/phrase for control, broad only where the AI
   // judged it a genuine discovery term), not everything dumped in as BROAD.
@@ -468,7 +510,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     console.error(`campaign ${campaignId}: ad extensions failed (non-fatal, campaign still launched):`, e);
   }
 
-  const { error: updateErr } = await supabase.from('launched_campaigns').update({ google_campaign_id: googleCampaignId, status: 'active', launched_at: new Date().toISOString() }).eq('id', campaignId).eq('user_id', userId);
+  const { error: updateErr } = await supabase.from('launched_campaigns').update({ google_campaign_id: googleCampaignId, google_status: 'active', launched_at: new Date().toISOString() }).eq('id', campaignId).eq('user_id', userId);
 
   if (updateErr) {
     console.error(`CRITICAL: campaign ${campaignId} launched live on Google but DB update failed:`, updateErr);
@@ -514,22 +556,31 @@ async function launchToMeta(userId: string, campaignId: string, autoEnable = fal
     .single();
 
   if (!row) throw new Error('Campaign not found');
-  // Same double-launch guard as launchToGoogle — see that function for why.
-  if (row.status === 'active') {
+  const priorMetaStatus = String(row.meta_status ?? 'draft');
+  // Same double-launch guard as launchToGoogle — see that function for why. Scoped to
+  // meta_status only, independent of google_status, so a live Google launch on this row
+  // never blocks or gets clobbered by a Meta launch attempt and vice versa.
+  if (priorMetaStatus === 'active') {
     throw new Error(`This campaign is already live on Meta (campaign ID: ${row.platform_campaign_id ?? 'unknown'}). Manage it in Meta Ads Manager instead of relaunching.`);
   }
   // Atomic claim — same compare-and-swap as launchToGoogle, see that function for why the
   // plain read-then-write above isn't race-safe on its own.
   const { data: claimed } = await supabase.from('launched_campaigns')
-    .update({ status: 'active' })
-    .eq('id', campaignId).eq('user_id', userId).eq('status', row.status)
+    .update({ meta_status: 'launching' })
+    .eq('id', campaignId).eq('user_id', userId).eq('meta_status', priorMetaStatus)
     .select('id').maybeSingle();
   if (!claimed) throw new Error('This campaign is already being launched — check its status in a moment.');
 
   try {
-    return await launchToMetaInner(userId, campaignId, row, autoEnable);
+    const result = await launchToMetaInner(userId, campaignId, row, autoEnable);
+    await supabase.from('launched_campaigns')
+      .update({ status: computeOverallStatus('active', String(row.google_status ?? 'draft')) })
+      .eq('id', campaignId).eq('user_id', userId);
+    return result;
   } catch (e) {
-    await supabase.from('launched_campaigns').update({ status: 'failed' }).eq('id', campaignId).eq('user_id', userId);
+    await supabase.from('launched_campaigns')
+      .update({ meta_status: 'failed', status: computeOverallStatus('failed', String(row.google_status ?? 'draft')) })
+      .eq('id', campaignId).eq('user_id', userId);
     throw e;
   }
 }
@@ -643,7 +694,7 @@ async function launchToMetaInner(userId: string, campaignId: string, row: Record
     .update({
       platform_campaign_id: campaign.id,
       meta_adset_id:        adSet.id,
-      status:               'active',
+      meta_status:          'active',
       launched_at:          new Date().toISOString(),
     })
     .eq('id', campaignId)

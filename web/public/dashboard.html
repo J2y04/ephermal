@@ -2078,6 +2078,16 @@ select.form-input{cursor:pointer}
 
     <div id="cr-ads-list" style="margin-bottom:16px"></div>
 
+    <div id="cr-google-section" style="display:none;margin-bottom:16px">
+      <label class="form-label" style="margin:0">Google Search Keywords</label>
+      <div style="font-size:12px;color:var(--muted);margin:4px 0 8px">Search ads match against these keywords — a campaign with none can't launch to Google.</div>
+      <div id="cr-keywords-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+      <div id="cr-keyword-add-row" style="display:flex;gap:8px">
+        <input class="form-input" id="cr-keyword-input" placeholder="e.g. wireless earbuds" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();_crAddKeyword();}">
+        <button class="btn-secondary" onclick="_crAddKeyword()" style="padding:0 18px">Add</button>
+      </div>
+    </div>
+
     <div id="cr-draft-actions" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">
       <button class="btn-save" onclick="saveCampaignReviewEdits()" id="cr-save-btn">Save Changes</button>
       <button class="btn-primary btn" onclick="launchReviewedCampaign('meta')" id="cr-launch-meta-btn">Launch to Meta</button>
@@ -6418,7 +6428,7 @@ function _cbRenderKeywords() {
   if (!list) return;
   list.innerHTML = _cbKeywords.map((k, i) => `
     <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px">
-      ${escHtml(k.text)}${k.match_type ? `<span style="color:var(--muted);font-size:10px;text-transform:uppercase">${k.match_type}</span>` : ''}
+      ${escHtml(k.text)}${k.match_type ? `<span style="color:var(--muted);font-size:10px;text-transform:uppercase">${escHtml(k.match_type)}</span>` : ''}
       <span onclick="_cbRemoveKeyword(${i})" style="cursor:pointer;color:var(--muted);font-weight:700">×</span>
     </span>`).join('');
 }
@@ -6629,6 +6639,16 @@ async function openCampaignReview(campaignId) {
   // campaigns as if they were finished, with no way to fix the copy or try again.
   const isDraft = c.status === 'draft';
   const isEditable = isDraft || c.status === 'failed';
+
+  const targetsGoogle = c.platform === 'google' || c.platform === 'both';
+  const googleSection = document.getElementById('cr-google-section');
+  if (googleSection) googleSection.style.display = targetsGoogle ? '' : 'none';
+  const rawKw = c.copy?.google?.keywords || [];
+  _crKeywords = rawKw.map(k => typeof k === 'string' ? { text: k, match_type: 'PHRASE' } : { text: k.text || k.keyword || '', match_type: k.match_type || 'PHRASE' }).filter(k => k.text);
+  _crRenderKeywords();
+  const kwAddRow = document.getElementById('cr-keyword-add-row');
+  if (kwAddRow) kwAddRow.style.display = isEditable ? '' : 'none';
+
   adsList.innerHTML = ads.length ? ads.map((a, i) => `
     <div class="ad-editor-card">
       ${isEditable ? `<button class="ad-editor-remove" onclick="this.closest('.ad-editor-card').remove()">×</button>` : ''}
@@ -6671,6 +6691,40 @@ async function openCampaignReview(campaignId) {
 function closeCampaignReview() {
   document.getElementById('campaign-review-modal').classList.remove('open');
   _crCampaign = null;
+  _crKeywords = [];
+}
+
+// Mirrors _cbRenderKeywords/_cbAddKeyword/_cbRemoveKeyword for the campaign-builder modal -
+// the review modal previously had no way to see, add, or remove Google keywords at all, so
+// a campaign that failed to launch to Google because it had none (or bad ones) could never
+// actually be fixed from "edit and retry below" despite the UI promising exactly that.
+let _crKeywords = [];
+
+function _crRenderKeywords() {
+  const list = document.getElementById('cr-keywords-list');
+  if (!list) return;
+  list.innerHTML = _crKeywords.map((k, i) => `
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px">
+      ${escHtml(k.text)}${k.match_type ? `<span style="color:var(--muted);font-size:10px;text-transform:uppercase">${escHtml(k.match_type)}</span>` : ''}
+      <span onclick="_crRemoveKeyword(${i})" style="cursor:pointer;color:var(--muted);font-weight:700">×</span>
+    </span>`).join('');
+}
+
+function _crAddKeyword() {
+  const input = document.getElementById('cr-keyword-input');
+  const text = input?.value.trim();
+  if (!text) return;
+  if (!_crKeywords.some(k => k.text.toLowerCase() === text.toLowerCase())) {
+    _crKeywords.push({ text, match_type: 'PHRASE' });
+    _crRenderKeywords();
+  }
+  input.value = '';
+  input.focus();
+}
+
+function _crRemoveKeyword(i) {
+  _crKeywords.splice(i, 1);
+  _crRenderKeywords();
 }
 
 function _crCollectAds() {
@@ -6685,7 +6739,24 @@ function _crCollectAds() {
 async function saveCampaignReviewEdits() {
   if (!_crCampaign) return;
   const ads = _crCollectAds();
-  const copy = { ..._crCampaign.copy, meta: { ..._crCampaign.copy?.meta, ads }, google: { ..._crCampaign.copy?.google, headlines: ads.map(a=>a.headline).filter(Boolean).slice(0,15), descriptions: ads.map(a=>a.primary_text).filter(Boolean).slice(0,4) } };
+  // Same fallback rule as saveCampaignDraft: prefer the AI's real Google-specific headlines/
+  // descriptions already on the campaign and only derive from Meta ad copy when Google has
+  // none - overwriting good Google copy with Meta-derived copy on every edit was silently
+  // reproducing the "needs at least 3 headlines and 2 descriptions" launch failure.
+  const existingGHeadlines = _crCampaign.copy?.google?.headlines;
+  const existingGDescriptions = _crCampaign.copy?.google?.descriptions;
+  const gHeadlines = (existingGHeadlines && existingGHeadlines.length) ? existingGHeadlines : ads.map(a=>a.headline).filter(Boolean).slice(0,15);
+  const gDescriptions = (existingGDescriptions && existingGDescriptions.length) ? existingGDescriptions : ads.map(a=>a.primary_text).filter(Boolean).slice(0,4);
+  const targetsGoogle = _crCampaign.platform === 'google' || _crCampaign.platform === 'both';
+  if (targetsGoogle && (gHeadlines.length < 3 || gDescriptions.length < 2)) {
+    showToast('Google needs at least 3 headlines and 2 descriptions - use "Generate with AI" in the builder or add more Meta ads before saving', 'warn');
+    return;
+  }
+  if (targetsGoogle && !_crKeywords.length) {
+    showToast('Add at least one Google Search keyword before saving', 'warn');
+    return;
+  }
+  const copy = { ..._crCampaign.copy, meta: { ..._crCampaign.copy?.meta, ads }, google: { ..._crCampaign.copy?.google, headlines: gHeadlines, descriptions: gDescriptions, keywords: _crKeywords } };
   const btn = document.getElementById('cr-save-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
