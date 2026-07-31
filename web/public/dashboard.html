@@ -6622,15 +6622,21 @@ async function openCampaignReview(campaignId) {
 
   const ads = c.copy?.meta?.ads || [];
   const adsList = document.getElementById('cr-ads-list');
+  // A campaign whose launch attempt threw (status:'failed', reverted server-side by
+  // campaign-launcher's atomic claim/revert guard) never actually went live - the backend
+  // guard only blocks relaunching a genuinely 'active' campaign. Treating 'failed' the same
+  // as 'draft' here (editable, launchable) was missing entirely: the UI locked failed
+  // campaigns as if they were finished, with no way to fix the copy or try again.
   const isDraft = c.status === 'draft';
+  const isEditable = isDraft || c.status === 'failed';
   adsList.innerHTML = ads.length ? ads.map((a, i) => `
     <div class="ad-editor-card">
-      ${isDraft ? `<button class="ad-editor-remove" onclick="this.closest('.ad-editor-card').remove()">×</button>` : ''}
-      <div class="form-group" style="margin-bottom:10px"><label class="form-label">Headline</label><input class="form-input cr-ad-headline" value="${escHtml(a.headline||'')}" ${isDraft?'':'disabled'}></div>
-      <div class="form-group" style="margin-bottom:10px"><label class="form-label">Primary Text</label><textarea class="form-input cr-ad-primary" style="height:60px;resize:vertical" ${isDraft?'':'disabled'}>${escHtml(a.primary_text||'')}</textarea></div>
+      ${isEditable ? `<button class="ad-editor-remove" onclick="this.closest('.ad-editor-card').remove()">×</button>` : ''}
+      <div class="form-group" style="margin-bottom:10px"><label class="form-label">Headline</label><input class="form-input cr-ad-headline" value="${escHtml(a.headline||'')}" ${isEditable?'':'disabled'}></div>
+      <div class="form-group" style="margin-bottom:10px"><label class="form-label">Primary Text</label><textarea class="form-input cr-ad-primary" style="height:60px;resize:vertical" ${isEditable?'':'disabled'}>${escHtml(a.primary_text||'')}</textarea></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="form-group"><label class="form-label">Description</label><input class="form-input cr-ad-description" value="${escHtml(a.description||'')}" ${isDraft?'':'disabled'}></div>
-        <div class="form-group"><label class="form-label">CTA</label><input class="form-input cr-ad-cta" value="${escHtml(a.cta||'')}" ${isDraft?'':'disabled'}></div>
+        <div class="form-group"><label class="form-label">Description</label><input class="form-input cr-ad-description" value="${escHtml(a.description||'')}" ${isEditable?'':'disabled'}></div>
+        <div class="form-group"><label class="form-label">CTA</label><input class="form-input cr-ad-cta" value="${escHtml(a.cta||'')}" ${isEditable?'':'disabled'}></div>
       </div>
     </div>`).join('') : '<div class="empty-state" style="padding:20px 0"><p>No ads on this campaign</p></div>';
 
@@ -6638,12 +6644,12 @@ async function openCampaignReview(campaignId) {
   const metaConnected   = !document.getElementById('toggle-meta')?.disabled;
   const googleConnected = !document.getElementById('toggle-google')?.disabled;
   const plan = getUserPlan();
-  document.getElementById('cr-save-btn').style.display = isDraft ? '' : 'none';
-  document.getElementById('cr-delete-btn').style.display = isDraft ? '' : 'none';
+  document.getElementById('cr-save-btn').style.display = isEditable ? '' : 'none';
+  document.getElementById('cr-delete-btn').style.display = isEditable ? '' : 'none';
   const metaBtn = document.getElementById('cr-launch-meta-btn');
   const googleBtn = document.getElementById('cr-launch-google-btn');
-  metaBtn.style.display = isDraft && (c.platform === 'meta' || c.platform === 'both') ? '' : 'none';
-  googleBtn.style.display = isDraft && (c.platform === 'google' || c.platform === 'both') ? '' : 'none';
+  metaBtn.style.display = isEditable && (c.platform === 'meta' || c.platform === 'both') ? '' : 'none';
+  googleBtn.style.display = isEditable && (c.platform === 'google' || c.platform === 'both') ? '' : 'none';
   // Must match campaign-launcher/index.ts's actual plan gating exactly (see its header comment):
   // launch_meta is a Starter-tier action (core value for small stores, no gate); launch_google
   // requires Growth+ (blocked only for starter). This previously disabled Meta for Starter and
@@ -6653,7 +6659,9 @@ async function openCampaignReview(campaignId) {
   googleBtn.disabled = !googleConnected || plan === 'starter';
   metaBtn.title = !metaConnected ? 'Connect Meta Ads in Settings first' : '';
   googleBtn.title = !googleConnected ? 'Connect Google Ads in Settings first' : (plan === 'starter' ? 'Upgrade to Growth to launch Google campaigns' : '');
-  document.getElementById('cr-launch-note').textContent = isDraft
+  document.getElementById('cr-launch-note').textContent = c.status === 'failed'
+    ? 'The last launch attempt failed - edit and retry below, or check the error you received for what to fix.'
+    : isDraft
     ? 'Launches as PAUSED. Enable in the ad platform\'s manager when ready.'
     : `Launched ${c.launched_at ? new Date(c.launched_at).toLocaleDateString() : ''}. Manage status from the Live Performance table below.`;
 

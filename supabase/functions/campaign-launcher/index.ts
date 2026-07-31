@@ -677,7 +677,11 @@ async function updateDraft(userId: string, campaignId: string, body: Record<stri
     .eq('user_id', userId)
     .maybeSingle();
   if (!existing) throw new Error('Campaign not found');
-  if (existing.status !== 'draft') throw new Error('Only draft campaigns can be edited. This campaign has already been launched');
+  // A campaign whose launch attempt threw is reverted to 'failed' by launchToGoogle/
+  // launchToMeta's own atomic claim/revert guard - it never actually went live, so blocking
+  // edits on it with a message claiming it's "already been launched" was simply wrong, and
+  // left no way to fix bad copy or retry a failed launch at all.
+  if (existing.status !== 'draft' && existing.status !== 'failed') throw new Error('Only draft or failed campaigns can be edited. This campaign has already been launched');
 
   const updates: Record<string, unknown> = {};
   if (body.name !== undefined)         updates.name = String(body.name).trim();
@@ -708,7 +712,7 @@ async function deleteDraft(userId: string, campaignId: string): Promise<Record<s
     .eq('user_id', userId)
     .maybeSingle();
   if (!existing) throw new Error('Campaign not found');
-  if (existing.status !== 'draft') throw new Error('Only draft campaigns can be deleted. Pause or remove launched campaigns from the ad platform directly');
+  if (existing.status !== 'draft' && existing.status !== 'failed') throw new Error('Only draft or failed campaigns can be deleted. Pause or remove launched campaigns from the ad platform directly');
 
   const { error } = await supabase
     .from('launched_campaigns')
