@@ -30,6 +30,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { metaPost, metaGet } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -42,7 +43,7 @@ const MAIN_MODEL    = 'claude-haiku-4-5-20251001';
 
 const STYLE_GUARD = '\n\nWriting style: write like a real media buyer, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
-async function callClaude(system: string, user: string, maxTokens = 1500): Promise<string> {
+async function callClaude(userId: string, system: string, user: string, maxTokens = 1500): Promise<string> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -62,7 +63,8 @@ async function callClaude(system: string, user: string, maxTokens = 1500): Promi
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { content: { type: string; text?: string }[] };
+  const data = await res.json() as { content: { type: string; text?: string }[]; usage?: { input_tokens: number; output_tokens: number } };
+  if (data.usage) await recordAIUsage(userId, MAIN_MODEL, data.usage.input_tokens, data.usage.output_tokens);
   return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
@@ -150,7 +152,7 @@ For google.keywords, produce 8-15 keywords with a real match-type mix (mostly ex
   // 8-15 keywords, 5-10 negatives, 3-4 sitelinks, 4-6 callouts, snippet) - Haiku
   // was plausibly getting cut off mid-JSON, which JSON.parse can't distinguish
   // from a genuinely malformed response. Bumped to 3000 with real headroom.
-  const raw = await callClaude(system, userMsg, 3000);
+  const raw = await callClaude(userId, system, userMsg, 3000);
   let copy: Record<string, unknown>;
   try {
     // Defensive: strip markdown code fences in case the model wraps the JSON
@@ -719,6 +721,10 @@ Deno.serve(async (req) => {
     switch (action) {
       case 'prepare': {
         if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
+        // This call was previously completely ungated - unlike Auren chat, it had
+        // no usage limit at all. Now shares the same real cost-based budget.
+        const budgetCheck = await checkAIBudget(userId);
+        if (!budgetCheck.ok) return errResponse(budgetCheck.message, 429, origin, { usage: budgetCheck.status });
         return okResponse(await prepareCampaign(userId, body), origin);
       }
 

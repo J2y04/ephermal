@@ -777,7 +777,7 @@ select.form-input{cursor:pointer}
       <div class="credits-bar-track"><div class="credits-bar-fill" id="credits-bar-fill" style="width:0%;background:var(--primary)"></div></div>
     </div>
     <div class="credits-bar-wrap" id="ai-credits-bar-wrap" style="margin-top:6px">
-      <div class="credits-bar-label"><span>AI Messages</span><strong id="ai-credits-label">- / -</strong></div>
+      <div class="credits-bar-label"><span>AI Usage</span><strong id="ai-credits-label">-%</strong></div>
       <div class="credits-bar-track"><div class="credits-bar-fill" id="ai-credits-bar-fill" style="width:0%;background:var(--accent)"></div></div>
     </div>
     <div class="user-pill" style="margin-top:8px">
@@ -1707,6 +1707,25 @@ select.form-input{cursor:pointer}
           </div>
         </div>
       </div>
+      <div class="panel fade-in" style="margin-top:20px">
+        <div class="panel-head"><div class="panel-title">AI Usage</div></div>
+        <div style="padding:24px;display:flex;flex-direction:column;gap:16px">
+          <div style="font-size:13px;color:var(--muted)">Every "Generate with AI" action (campaigns, budget calculator, ad copy, Auren chat) draws from this. Resets weekly. Based on real usage cost, not a message count.</div>
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px">
+              <span style="font-size:13px;font-weight:600" id="billing-ai-usage-pct">-%</span>
+              <span style="font-size:12px;color:var(--muted)" id="billing-ai-usage-detail">-</span>
+            </div>
+            <div class="credits-bar-track" style="height:8px"><div class="credits-bar-fill" id="billing-ai-usage-fill" style="width:0%;background:var(--accent);height:100%"></div></div>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button onclick="startCheckout('ai_usage_topup_25')" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)">+25% usage</button>
+            <button onclick="startCheckout('ai_usage_topup_50')" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)">+50% usage</button>
+            <button onclick="startCheckout('ai_usage_topup_75')" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)">+75% usage</button>
+            <button onclick="startCheckout('ai_usage_topup_100')" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)">+100% usage</button>
+          </div>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px" id="billing-plans-grid">
         <!-- rendered by JS -->
       </div>
@@ -2432,27 +2451,10 @@ async function loadCreditsFromSupabase() {
       .eq('month', month)
       .maybeSingle();
     if (ugcData) localStorage.setItem('ugc_used_' + month, String(ugcData.used));
-
-    // Load AI message credits (server-side - cannot be spoofed)
-    const { data: aiData } = await sb
-      .from('ai_credits')
-      .select('used')
-      .eq('user_id', clerkUserId)
-      .eq('month', aiWeek)
-      .maybeSingle();
-    if (aiData) localStorage.setItem('ai_used_' + aiWeek, String(aiData.used));
-
-    // Load AI top-up pool for this week
-    const { data: topupData } = await sb
-      .from('ai_topups')
-      .select('messages')
-      .eq('user_id', clerkUserId)
-      .eq('month', aiWeek);
-    if (topupData) {
-      const totalTopup = topupData.reduce((sum, r) => sum + (r.messages || 0), 0);
-      localStorage.setItem('ai_topup_' + aiWeek, String(totalTopup));
-    }
   } catch(e) {}
+  // AI usage (real $ cost, not messages) is service-role-only server-side now -
+  // no client Supabase table to read directly, fetched through ai-assistant instead.
+  refreshAIUsageBar();
 }
 
 async function loadVideoCreditsFromSupabase() {
@@ -2585,50 +2587,40 @@ function isoWeekKey(d) {
   const weekNum = 1 + Math.round(((date.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7);
   return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 }
-const AI_MSG_LIMITS = { starter: 12, growth: 50, scale: 125 };
-function aiMsgLimit() { return AI_MSG_LIMITS[getUserPlan()] || 12; }
-function aiMsgUsedKey() { return 'ai_used_' + isoWeekKey(); }
-function aiTopupKey()   { return 'ai_topup_' + isoWeekKey(); }
-// Server-authoritative: reads from localStorage (populated by loadCreditsFromSupabase)
-function aiMsgUsed() { return parseInt(localStorage.getItem(aiMsgUsedKey()) || '0', 10); }
-function aiTopupCredits() { return parseInt(localStorage.getItem(aiTopupKey()) || '0', 10); }
-function aiEffectiveLimit() { return aiMsgLimit() + aiTopupCredits(); }
+// AI usage is real $ cost tracked server-side (see supabase/functions/_shared/ai-usage.ts),
+// shown as a Claude-style percentage of the plan's weekly budget - not a message
+// count. The server computes and returns the authoritative percentage after every
+// AI call (in the SSE 'final' event, in each action's JSON response as `_usage`,
+// and via the dedicated `usage_status` action below), so the client never does
+// its own usage math or increments anything locally.
+let _lastAIUsage = null;
 
-function updateAICreditsBar() {
-  // Scale's weekly cap (125) is real and hittable, unlike the old 999999
-  // placeholder — no plan is exempt from showing the bar anymore.
-  const limit = aiEffectiveLimit();
-  const used = aiMsgUsed();
-  const left = Math.max(0, limit - used);
-  const pct = limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+function renderAIUsageBar(usage) {
+  if (!usage) return;
+  _lastAIUsage = usage;
+  const pct = Math.min(100, usage.percentUsed);
+  const color = usage.percentUsed > 85 ? 'var(--danger)' : usage.percentUsed > 65 ? 'var(--warning)' : 'var(--accent)';
+
   const label = document.getElementById('ai-credits-label');
   const fill = document.getElementById('ai-credits-bar-fill');
-  const topup = aiTopupCredits();
-  if (label) label.textContent = topup > 0 ? `${left} / ${limit} (+${topup} top-up)` : `${left} / ${limit}`;
-  if (fill) {
-    fill.style.width = pct + '%';
-    fill.style.background = pct > 85 ? 'var(--danger)' : pct > 65 ? 'var(--warning)' : 'var(--accent)';
-  }
+  if (label) label.textContent = `${Math.round(usage.percentUsed)}%`;
+  if (fill) { fill.style.width = pct + '%'; fill.style.background = color; }
+
+  // Billing page panel (same data, fuller detail line) - both elements are
+  // optional since this fires from pages that don't render the Billing panel.
+  const bPct = document.getElementById('billing-ai-usage-pct');
+  const bDetail = document.getElementById('billing-ai-usage-detail');
+  const bFill = document.getElementById('billing-ai-usage-fill');
+  if (bPct) bPct.textContent = `${Math.round(usage.percentUsed)}% used`;
+  if (bDetail) bDetail.textContent = usage.topupUsd > 0
+    ? `Resets weekly · includes +${Math.round((usage.topupUsd / usage.baseBudgetUsd) * 100)}% top-up`
+    : 'Resets weekly';
+  if (bFill) { bFill.style.width = pct + '%'; bFill.style.background = color; }
 }
 
-/** Increment AI usage in localStorage and sync to Supabase (best-effort) */
-async function recordAIMessage() {
-  const key = aiMsgUsedKey();
-  const newUsed = aiMsgUsed() + 1;
-  localStorage.setItem(key, String(newUsed));
-  updateAICreditsBar();
-  // Sync to Supabase ai_credits table (server-authoritative increment)
-  const sb = getSupabase();
-  if (!sb) return;
-  const clerkUserId = window.__clerk?.user?.id;
-  if (!clerkUserId) return;
-  const month = isoWeekKey();
-  try {
-    await sb.from('ai_credits').upsert(
-      { user_id: clerkUserId, month, used: newUsed },
-      { onConflict: 'user_id,month' }
-    );
-  } catch(e) {}
+async function refreshAIUsageBar() {
+  const r = await authFetch('/ai', { method: 'POST', body: JSON.stringify({ action: 'usage_status' }) });
+  if (r && r.ok) renderAIUsageBar(await r.json());
 }
 
 // ── STRIPE CHECKOUT ──────────────────────────────────────────────────────────
@@ -4967,11 +4959,12 @@ async function sendAIMessage() {
     if (r.status === 429) {
       aurenSetActive(false);
       const d = await r.json().catch(() => ({}));
-      const limit = d.limit ?? null;
-      aiAppendMsg(limit
-        ? `You've used all your AI messages this week (${limit} on ${plan} plan). Top up, or your quota refills next week.`
+      if (d.usage) renderAIUsageBar(d.usage);
+      const isUsageLimit = !!d.usage;
+      aiAppendMsg(isUsageLimit
+        ? `You've used your AI usage for this week (${Math.round(d.usage.percentUsed)}%). Buy more usage or wait for your weekly reset.`
         : (d.error || "You've hit a rate limit - try again in a moment."), 'bot');
-      if (limit) aiShowTopupBanner(limit, plan);
+      if (isUsageLimit) aiShowTopupBanner(plan);
       return;
     }
 
@@ -5014,7 +5007,7 @@ async function sendAIMessage() {
         } else if (event === 'final') {
           settled = true;
           aiStreamRevealInto(botEl, data.reply || 'Done!', () => aurenSetActive(false));
-          await recordAIMessage();
+          renderAIUsageBar(data.usage);
         } else if (event === 'error') {
           settled = true;
           aurenSetActive(false);
@@ -5030,16 +5023,22 @@ async function sendAIMessage() {
   } finally { btn.disabled = false; }
 }
 
-function aiShowTopupBanner(limit, plan) {
+function aiShowTopupBanner(plan) {
   const box = document.getElementById('ai-messages');
   const existing = document.getElementById('ai-topup-banner');
   if (existing) return;
   const div = document.createElement('div');
   div.id = 'ai-topup-banner';
   div.style.cssText = 'margin:8px 0;padding:14px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:12px;text-align:center;font-size:13px;color:var(--warning)';
-  div.innerHTML = `<strong style="display:block;margin-bottom:6px">Weekly limit reached (${limit} messages)</strong>
-    <span style="color:var(--muted);font-size:12px">Top up for €5 = 50 extra messages this week</span><br>
-    <button onclick="if(!window.STRIPE_PRICES?.topup_5){showToast('Billing not configured. Contact support','error');return;}startCheckout(window.STRIPE_PRICES.topup_5)" style="display:inline-block;margin-top:10px;padding:8px 20px;background:var(--primary);color:#08080c;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif">Get 50 more messages</button>`;
+  const btnStyle = 'padding:7px 14px;background:var(--primary);color:#08080c;border-radius:8px;border:none;font-size:12px;font-weight:700;cursor:pointer;font-family:\'Inter\',sans-serif';
+  div.innerHTML = `<strong style="display:block;margin-bottom:6px">Weekly AI usage limit reached</strong>
+    <span style="color:var(--muted);font-size:12px">Buy more usage for this week, or it refills automatically next week</span>
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:10px;flex-wrap:wrap">
+      <button style="${btnStyle}" onclick="startCheckout('ai_usage_topup_25')">+25%</button>
+      <button style="${btnStyle}" onclick="startCheckout('ai_usage_topup_50')">+50%</button>
+      <button style="${btnStyle}" onclick="startCheckout('ai_usage_topup_75')">+75%</button>
+      <button style="${btnStyle}" onclick="startCheckout('ai_usage_topup_100')">+100%</button>
+    </div>`;
   box.appendChild(div);
   box.scrollTop = box.scrollHeight;
 }
@@ -5068,10 +5067,11 @@ async function aiGenerateDescription() {
       const d = await r.json();
       ta.value = d.description || d.text || '';
       ta.dispatchEvent(new Event('input'));
-      await recordAIMessage();
+      renderAIUsageBar(d._usage);
     } else if (r && r.status === 429) {
       const d = await r.json().catch(() => ({}));
-      showToast(d.error || 'AI message limit reached - top up to continue', 'warn');
+      if (d.usage) renderAIUsageBar(d.usage);
+      showToast(d.error || 'AI usage limit reached - buy more usage to continue', 'warn');
     } else {
       showToast('AI generation failed - try writing manually', 'warn');
     }
@@ -7015,6 +7015,7 @@ async function loadProfitAISummary(summary, products) {
     if (!r || !r.ok) { card.style.display = 'none'; return; }
     const d = await r.json();
     box.textContent = d.summary || '';
+    renderAIUsageBar(d._usage);
   } catch (e) {
     card.style.display = 'none';
   }

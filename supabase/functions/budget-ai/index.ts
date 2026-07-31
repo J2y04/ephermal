@@ -24,6 +24,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { metaPost } from '../_shared/meta.ts';
+import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -36,7 +37,7 @@ const BUDGET_MODEL  = 'claude-haiku-4-5-20251001';
 
 const STYLE_GUARD = '\n\nWriting style: write like a real CFO, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
-async function callClaude(system: string, user: string): Promise<string> {
+async function callClaude(userId: string, system: string, user: string): Promise<string> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -56,7 +57,8 @@ async function callClaude(system: string, user: string): Promise<string> {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { content: { type: string; text?: string }[] };
+  const data = await res.json() as { content: { type: string; text?: string }[]; usage?: { input_tokens: number; output_tokens: number } };
+  if (data.usage) await recordAIUsage(userId, BUDGET_MODEL, data.usage.input_tokens, data.usage.output_tokens);
   return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
@@ -98,7 +100,7 @@ JSON schema:
 - Active platforms: ${platforms.join(', ')}
 Use industry benchmarks. Account for learning phase (first 7 days). Include Meta vs Google split reasoning.`;
 
-  const raw  = await callClaude(system, userMsg);
+  const raw  = await callClaude(userId, system, userMsg);
   let result: Record<string, unknown>;
   try {
     const json = raw.trim();
@@ -222,6 +224,8 @@ Deno.serve(async (req) => {
     switch (action) {
       case 'calculate': {
         if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
+        const budgetCheck = await checkAIBudget(userId);
+        if (!budgetCheck.ok) return errResponse(budgetCheck.message, 429, origin, { usage: budgetCheck.status });
         const result = await handleCalculate(userId, body);
         return okResponse(result, origin);
       }

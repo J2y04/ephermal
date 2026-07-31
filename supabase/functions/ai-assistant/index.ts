@@ -27,6 +27,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rate-limit.ts';
+import { checkAIBudget, recordAIUsage, getAIUsageStatus } from '../_shared/ai-usage.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -40,37 +41,13 @@ const CHAT_MODEL     = 'claude-sonnet-5'; // the tool-use chat loop — reasonin
 const SUPABASE_ANON  = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 const FN_BASE        = `${Deno.env.get('SUPABASE_URL') ?? ''}/functions/v1`;
 
-// Plan → weekly AI message limits. Resets every ISO week (Mon-Sun) rather than
-// monthly — a user who burns through their quota early in the month previously
-// had to wait weeks for the reset; weekly resets keep the wait short regardless
-// of when in the month they hit the cap.
-const PLAN_LIMITS: Record<string, number> = {
-  starter: 12,
-  growth:  50,
-  scale:   125,
-};
-
-/**
- * ISO 8601 week key, e.g. "2026-W05" — Monday-start week, used as the period
- * bucket for ai_credits/ai_topups (same role the old "YYYY-MM" month string
- * played; the DB column is still named `month` but is just an opaque period
- * key, so no migration is needed to switch its format).
- */
-function isoWeekKey(d: Date = new Date()): string {
-  const date = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-  const dayNum = (date.getUTCDay() + 6) % 7; // Mon=0 .. Sun=6
-  date.setUTCDate(date.getUTCDate() - dayNum + 3); // nearest Thursday
-  const firstThursday = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
-  const weekNum = 1 + Math.round(
-    ((date.getTime() - firstThursday.getTime()) / 86400000 - 3 + ((firstThursday.getUTCDay() + 6) % 7)) / 7,
-  );
-  return `${date.getUTCFullYear()}-W${String(weekNum).padStart(2, '0')}`;
-}
-
 const STYLE_GUARD = '\n\nWriting style: write like a real advertising consultant, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
-/** Simple single-turn Claude call — used by analyze/generate_description (no tools). */
+/** Simple single-turn Claude call — used by analyze/generate_description (no tools).
+ *  Records real token usage against the caller's weekly AI budget before
+ *  returning, so cost tracking can never be skipped by a call site forgetting to. */
 async function callClaude(
+  userId: string,
   systemPrompt: string,
   userMessage: string,
   maxTokens = 1024,
@@ -96,61 +73,9 @@ async function callClaude(
     throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
 
-  const data = await res.json() as { content: { type: string; text?: string }[] };
+  const data = await res.json() as { content: { type: string; text?: string }[]; usage?: { input_tokens: number; output_tokens: number } };
+  if (data.usage) await recordAIUsage(userId, MODEL, data.usage.input_tokens, data.usage.output_tokens);
   return data.content?.find(c => c.type === 'text')?.text ?? '';
-}
-
-/** Get user's plan and current AI usage */
-async function getUsage(userId: string): Promise<{ plan: string; used: number; limit: number }> {
-  const week = isoWeekKey();
-
-  const [planRes, creditsRes] = await Promise.all([
-    supabase.from('user_plans').select('plan').eq('user_id', userId).single(),
-    supabase.from('ai_credits').select('used').eq('user_id', userId).eq('month', week).single(),
-  ]);
-
-  const plan  = planRes.data?.plan ?? 'starter';
-  const used  = creditsRes.data?.used ?? 0;
-  const limit = PLAN_LIMITS[plan] ?? 50;
-
-  return { plan, used, limit };
-}
-
-/**
- * Atomically increment AI usage. Returns new count, or null if limit already hit.
- * Uses a DB-level atomic increment to prevent race conditions from concurrent requests.
- */
-async function atomicIncrementUsage(userId: string, limit: number): Promise<number | null> {
-  const week = isoWeekKey();
-
-  // Ensure row exists first (upsert with 0 if new)
-  await supabase.from('ai_credits').upsert(
-    { user_id: userId, month: week, used: 0 },
-    { onConflict: 'user_id,month', ignoreDuplicates: true },
-  );
-
-  // Atomic conditional increment: only increments if used < limit
-  const { data, error } = await supabase.rpc('increment_ai_usage', {
-    p_user_id: userId,
-    p_month:   week,
-    p_limit:   limit,
-  });
-
-  if (error) {
-    // Fail closed — if usage tracking is broken, block the request rather than give free access
-    console.error('atomicIncrementUsage error:', error);
-    return null;
-  }
-
-  return data as number | null; // null = limit already hit; number = new count
-}
-
-/** JSON response for the weekly-limit case — includes `limit` so the UI can show the real upgrade prompt. */
-function limitReachedResponse(origin: string | null, limit: number): Response {
-  return new Response(JSON.stringify({ error: `AI message limit reached (${limit}/week). Top up in billing.`, limit }), {
-    status: 429,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
-  });
 }
 
 async function getClerkEmail(userId: string): Promise<string | null> {
@@ -448,69 +373,83 @@ GOOGLE SEARCH ADS — diagnosis and recommendations should reference:
 
   const messages: ClaudeMessage[] = [{ role: 'user', content: message }];
   const trail: ToolCallTrail[] = [];
+  // A tool-use conversation makes one real Anthropic call per round - all of
+  // them cost real money and must all count against the user's budget, not
+  // just the first/last. Accumulated here and recorded once via try/finally
+  // so a mid-loop failure still charges for the rounds that did complete,
+  // instead of silently under-counting cost on any error path.
+  let totalInputTokens = 0;
+  let totalOutputTokens = 0;
 
-  for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-    const res = await fetch(ANTHROPIC_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type':      'application/json',
-        'x-api-key':         ANTHROPIC_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model:      CHAT_MODEL,
-        max_tokens: 1200,
-        system:     system + STYLE_GUARD,
-        messages,
-        tools:      TOOLS,
-      }),
-    });
+  try {
+    for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+      const res = await fetch(ANTHROPIC_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type':      'application/json',
+          'x-api-key':         ANTHROPIC_KEY,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model:      CHAT_MODEL,
+          max_tokens: 1200,
+          system:     system + STYLE_GUARD,
+          messages,
+          tools:      TOOLS,
+        }),
+      });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
-    }
-
-    const data = await res.json() as { content: ClaudeContentBlock[]; stop_reason: string };
-    const toolUses = data.content.filter(b => b.type === 'tool_use');
-
-    if (data.stop_reason !== 'tool_use' || toolUses.length === 0) {
-      const text = data.content.find(b => b.type === 'text')?.text ?? '';
-      return { reply: text, tool_calls: trail };
-    }
-
-    messages.push({ role: 'assistant', content: data.content });
-
-    // Anthropic tool_result blocks require `tool_use_id` + `content`, one per tool_use
-    // block in the preceding assistant turn, in the same order.
-    const resultBlocks: { type: string; tool_use_id: string; content: string }[] = [];
-    for (const use of toolUses) {
-      const def = TOOL_DISPATCH[use.name ?? ''];
-      let content: string;
-      if (!def) {
-        content = JSON.stringify({ error: `Unknown tool: ${use.name}` });
-        trail.push({ label: `Unknown tool: ${use.name}`, status: 'error' });
-      } else {
-        const input = use.input ?? {};
-        const label = def.label(input);
-        emit?.('tool_start', { label, platform: def.platform });
-        try {
-          const result = await callInternal(def.fn, def.buildBody(input), rawToken);
-          content = JSON.stringify(result).slice(0, 8000); // cap payload back to the model
-          trail.push({ label, status: 'done' });
-          emit?.('tool_done', { label, status: 'done', platform: def.platform });
-        } catch (e) {
-          content = JSON.stringify({ error: e instanceof Error ? e.message : 'Tool call failed' });
-          trail.push({ label, status: 'error' });
-          emit?.('tool_done', { label, status: 'error', platform: def.platform });
-        }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
       }
-      resultBlocks.push({ type: 'tool_result', tool_use_id: use.id!, content });
-    }
-    messages.push({ role: 'user', content: resultBlocks } as unknown as ClaudeMessage);
-  }
 
-  return { reply: "I've made several tool calls but need another step to finish — ask me to continue and I'll pick up where I left off.", tool_calls: trail };
+      const data = await res.json() as { content: ClaudeContentBlock[]; stop_reason: string; usage?: { input_tokens: number; output_tokens: number } };
+      if (data.usage) { totalInputTokens += data.usage.input_tokens; totalOutputTokens += data.usage.output_tokens; }
+      const toolUses = data.content.filter(b => b.type === 'tool_use');
+
+      if (data.stop_reason !== 'tool_use' || toolUses.length === 0) {
+        const text = data.content.find(b => b.type === 'text')?.text ?? '';
+        return { reply: text, tool_calls: trail };
+      }
+
+      messages.push({ role: 'assistant', content: data.content });
+
+      // Anthropic tool_result blocks require `tool_use_id` + `content`, one per tool_use
+      // block in the preceding assistant turn, in the same order.
+      const resultBlocks: { type: string; tool_use_id: string; content: string }[] = [];
+      for (const use of toolUses) {
+        const def = TOOL_DISPATCH[use.name ?? ''];
+        let content: string;
+        if (!def) {
+          content = JSON.stringify({ error: `Unknown tool: ${use.name}` });
+          trail.push({ label: `Unknown tool: ${use.name}`, status: 'error' });
+        } else {
+          const input = use.input ?? {};
+          const label = def.label(input);
+          emit?.('tool_start', { label, platform: def.platform });
+          try {
+            const result = await callInternal(def.fn, def.buildBody(input), rawToken);
+            content = JSON.stringify(result).slice(0, 8000); // cap payload back to the model
+            trail.push({ label, status: 'done' });
+            emit?.('tool_done', { label, status: 'done', platform: def.platform });
+          } catch (e) {
+            content = JSON.stringify({ error: e instanceof Error ? e.message : 'Tool call failed' });
+            trail.push({ label, status: 'error' });
+            emit?.('tool_done', { label, status: 'error', platform: def.platform });
+          }
+        }
+        resultBlocks.push({ type: 'tool_result', tool_use_id: use.id!, content });
+      }
+      messages.push({ role: 'user', content: resultBlocks } as unknown as ClaudeMessage);
+    }
+
+    return { reply: "I've made several tool calls but need another step to finish — ask me to continue and I'll pick up where I left off.", tool_calls: trail };
+  } finally {
+    if (totalInputTokens > 0 || totalOutputTokens > 0) {
+      await recordAIUsage(userId, CHAT_MODEL, totalInputTokens, totalOutputTokens);
+    }
+  }
 }
 
 Deno.serve(async (req) => {
@@ -544,19 +483,20 @@ Deno.serve(async (req) => {
 
   const action = String(body.action ?? 'chat');
 
-  // ── Atomic monthly usage check + increment ───────────────────────────────
-  const { plan, used: usedBefore } = await getUsage(userId);
-  const limit = PLAN_LIMITS[plan] ?? 50;
-  const newCount = await atomicIncrementUsage(userId, limit);
-  if (newCount === null) {
+  // ── Real cost-based usage check (replaces the old message-count limit) ───
+  // usage_status is a read-only query, exempt from the budget gate itself.
+  if (action === 'usage_status') {
+    return okResponse(await getAIUsageStatus(userId), origin);
+  }
+  const budgetCheck = await checkAIBudget(userId);
+  if (!budgetCheck.ok) {
     await sendUsageEmail('ai_limit_hit', userId);
-    return limitReachedResponse(origin, limit);
+    return new Response(JSON.stringify({ error: budgetCheck.message, usage: budgetCheck.status }), {
+      status: 429,
+      headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+    });
   }
-  // Send the 80%-warning email exactly once per period — only on the request that actually
-  // crosses the threshold, not on every subsequent message once already above it.
-  if (usedBefore < limit * 0.8 && newCount >= limit * 0.8) {
-    await sendUsageEmail('ai_limit_80', userId);
-  }
+  const percentBefore = budgetCheck.status.percentUsed;
 
   try {
     let result: unknown;
@@ -577,7 +517,9 @@ Deno.serve(async (req) => {
             };
             try {
               const { reply, tool_calls } = await runChatWithTools(rawToken, userId, message, body.context, emit);
-              emit('final', { reply, tool_calls, used: newCount, limit });
+              const usageAfter = await getAIUsageStatus(userId);
+              if (percentBefore < 80 && usageAfter.percentUsed >= 80) await sendUsageEmail('ai_limit_80', userId);
+              emit('final', { reply, tool_calls, usage: usageAfter });
             } catch (e) {
               emit('error', { error: e instanceof Error ? e.message : 'AI error' });
             } finally {
@@ -611,7 +553,7 @@ Analyze the provided store URL and return a structured JSON object with these ex
 - roas_target: realistic ROAS target for first 90 days
 Return ONLY valid JSON, no markdown.`;
 
-        const reply = await callClaude(system, `Analyze this Shopify store: ${url}`, 1500);
+        const reply = await callClaude(userId, system, `Analyze this Shopify store: ${url}`, 1500);
         try {
           result = JSON.parse(reply);
         } catch {
@@ -627,7 +569,7 @@ Given a JSON profit report (per-product margin_percent and a summary block), wri
 Call out the average margin, name the strongest and weakest performing product by margin, and end with one concrete, specific suggestion (e.g. which product to scale ad spend on, or that more products still need a COGS value entered before the picture is complete).
 If the report has no products or no COGS set yet, say so plainly and tell them to sync products / set COGS instead of inventing numbers.`;
 
-        const reply = await callClaude(system, `Profit report: ${JSON.stringify(report).slice(0, 6000)}`, 220);
+        const reply = await callClaude(userId, system, `Profit report: ${JSON.stringify(report).slice(0, 6000)}`, 220);
         result = { summary: reply };
         break;
       }
@@ -639,6 +581,7 @@ Return a JSON object with: headline (max 40 chars), primary_text (max 125 chars)
 Make it punchy, benefit-focused, and scroll-stopping. Return ONLY valid JSON.`;
 
         const reply = await callClaude(
+          userId,
           system,
           `Write Meta ad copy for this product: ${JSON.stringify(product)}`,
           512,
@@ -655,7 +598,9 @@ Make it punchy, benefit-focused, and scroll-stopping. Return ONLY valid JSON.`;
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
 
-    return okResponse(result, origin);
+    const usageAfter = await getAIUsageStatus(userId);
+    if (percentBefore < 80 && usageAfter.percentUsed >= 80) await sendUsageEmail('ai_limit_80', userId);
+    return okResponse({ ...(result as Record<string, unknown>), _usage: usageAfter }, origin);
 
   } catch (err) {
     console.error('ai-assistant error:', err);

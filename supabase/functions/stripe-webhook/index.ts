@@ -21,6 +21,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
+import { topupCostUsd } from '../_shared/ai-usage.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -150,6 +151,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<void> {
   const topupType = paymentIntent.metadata?.type;
   if (topupType === 'ugc_video_topup') return handleUgcVideoTopup(paymentIntent);
+  if (topupType === 'ai_usage_topup') return handleAIUsageTopup(paymentIntent);
   // Only handle AI top-up payments — identified by type: 'ai_topup' in metadata
   if (topupType !== 'ai_topup') return;
 
@@ -213,6 +215,40 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   }
 
   console.log(`✓ AI top-up: ${credits} credits → ${clerkUserId} (payment: ${paymentIntent.id})`);
+}
+
+/** AI usage top-up — adds a percentage of the user's weekly AI cost budget for
+ *  the current week only (see _shared/ai-usage.ts). Price was computed
+ *  server-side at checkout time from the user's plan at that moment; the
+ *  extra budget granted here is recomputed from their CURRENT plan, which
+ *  could differ if they changed plans between checkout and webhook delivery
+ *  (rare, and either direction is a minor rounding difference, not a real
+ *  exploit — the amount charged is fixed regardless). */
+async function handleAIUsageTopup(paymentIntent: Stripe.PaymentIntent): Promise<void> {
+  const clerkUserId = paymentIntent.metadata?.clerk_user_id;
+  const percent = Number(paymentIntent.metadata?.percent ?? 0);
+  if (!clerkUserId) throw new Error('Missing clerk_user_id in payment_intent metadata');
+  if (![25, 50, 75, 100].includes(percent)) throw new Error(`Invalid AI usage topup percent: ${percent}`);
+
+  const { data: planRow } = await supabase.from('user_plans').select('plan').eq('user_id', clerkUserId).maybeSingle();
+  const plan = planRow?.plan ?? 'starter';
+  const extraCostMicros = Math.round(topupCostUsd(plan, percent) * 1_000_000);
+  const week = isoWeekKey();
+
+  const { error: insertErr } = await supabase.from('ai_usage_topups').upsert({
+    stripe_pi:         paymentIntent.id,
+    user_id:           clerkUserId,
+    period:            week,
+    extra_cost_micros: extraCostMicros,
+    percent,
+  }, { onConflict: 'stripe_pi' });
+
+  if (insertErr) {
+    console.error('Failed to insert ai_usage_topup:', insertErr);
+    throw new Error('ai_usage_topup insert failed');
+  }
+
+  console.log(`✓ AI usage top-up: +${percent}% (${plan}) → ${clerkUserId} (payment: ${paymentIntent.id})`);
 }
 
 /** Calendar month key (YYYY-MM, UTC) — matches ugc_video_credits' reset period,

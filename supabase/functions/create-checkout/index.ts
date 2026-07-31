@@ -19,8 +19,15 @@
  */
 
 import Stripe from 'https://esm.sh/stripe@14';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders } from '../_shared/auth.ts';
 import { rateLimitTiered } from '../_shared/rate-limit.ts';
+import { topupPriceEurCents, TOPUP_PERCENTS } from '../_shared/ai-usage.ts';
+
+const supabase = createClient(
+  Deno.env.get('SUPABASE_URL')!,
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+);
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -100,8 +107,17 @@ Deno.serve(async (req) => {
     });
   }
 
+  // AI usage top-ups don't have a fixed Stripe Price ID - the price depends on
+  // the user's plan (25% of a Starter budget costs less than 25% of a Scale
+  // budget), so it's computed server-side and passed to Stripe as inline
+  // price_data instead of a pre-created price. "ai_usage_topup_<percent>" is
+  // a synthetic ID, never sent to Stripe directly.
+  const aiUsageTopupMatch = /^ai_usage_topup_(\d+)$/.exec(price_id);
+  const aiUsageTopupPercent = aiUsageTopupMatch ? Number(aiUsageTopupMatch[1]) : null;
+  const isAIUsageTopup = aiUsageTopupPercent !== null && (TOPUP_PERCENTS as readonly number[]).includes(aiUsageTopupPercent);
+
   // ── Validate price_id against allowlist ──────────────────────────────────
-  if (!ALL_ALLOWED.has(price_id)) {
+  if (!isAIUsageTopup && !ALL_ALLOWED.has(price_id)) {
     return new Response('Invalid price', { status: 400, headers: CORS_HEADERS });
   }
 
@@ -134,7 +150,7 @@ Deno.serve(async (req) => {
   }
 
   const appUrl   = Deno.env.get('APP_URL') ?? 'https://ephermal.app';
-  const isTopup  = TOPUP_PRICES.has(price_id);
+  const isTopup  = TOPUP_PRICES.has(price_id) || isAIUsageTopup;
 
   try {
     // Lookup or create Stripe customer to de-duplicate by clerk_user_id
@@ -154,9 +170,29 @@ Deno.serve(async (req) => {
       customerId = customer.id;
     }
 
+    let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[];
+    let topupType = '';
+    if (isAIUsageTopup) {
+      const { data: planRow } = await supabase.from('user_plans').select('plan').eq('user_id', clerk_user_id).maybeSingle();
+      const plan = planRow?.plan ?? 'starter';
+      const amountCents = topupPriceEurCents(plan, aiUsageTopupPercent!);
+      lineItems = [{
+        price_data: {
+          currency: 'eur',
+          product_data: { name: `+${aiUsageTopupPercent}% AI usage (this week)` },
+          unit_amount: amountCents,
+        },
+        quantity: 1,
+      }];
+      topupType = 'ai_usage_topup';
+    } else {
+      lineItems = [{ price: price_id, quantity: 1 }];
+      topupType = UGC_VIDEO_TOPUP_PRICES.has(price_id) ? 'ugc_video_topup' : 'ai_topup';
+    }
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       mode:        isTopup ? 'payment' : 'subscription',
-      line_items:  [{ price: price_id, quantity: 1 }],
+      line_items:  lineItems,
       success_url: `${appUrl}/dashboard.html?checkout=success&plan=${encodeURIComponent(price_id)}`,
       cancel_url:  `${appUrl}/dashboard.html?checkout=cancelled`,
       metadata: { clerk_user_id },
@@ -171,9 +207,12 @@ Deno.serve(async (req) => {
       sessionParams.subscription_data = { metadata: { clerk_user_id } };
     } else {
       // For top-up: add payment intent metadata — type tells the webhook which
-      // credit pool to top up (AI chat messages vs UGC video credits).
-      const topupType = UGC_VIDEO_TOPUP_PRICES.has(price_id) ? 'ugc_video_topup' : 'ai_topup';
-      sessionParams.payment_intent_data = { metadata: { clerk_user_id, type: topupType, price_id } };
+      // credit pool to top up (AI chat messages vs UGC video credits vs AI usage %).
+      sessionParams.payment_intent_data = {
+        metadata: isAIUsageTopup
+          ? { clerk_user_id, type: topupType, percent: String(aiUsageTopupPercent) }
+          : { clerk_user_id, type: topupType, price_id },
+      };
     }
 
     const session = await getStripe().checkout.sessions.create(sessionParams);
