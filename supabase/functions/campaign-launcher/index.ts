@@ -206,7 +206,12 @@ async function getGoogleAccessToken(refreshToken: string): Promise<string> {
   return data.access_token;
 }
 
-async function gAdsPost(customerId: string, accessToken: string, devToken: string, endpoint: string, body: unknown): Promise<Record<string, unknown>> {
+// step: which of the 7 sequential mutate calls this is (budget/campaign/ad_group/keywords/
+// negatives/ad/assets) — every OPERATION_NOT_PERMITTED_FOR_CONTEXT / INVALID_ARGUMENT error
+// so far has pointed at "operations[0]" with no field name, which is genuinely ambiguous
+// about which of the 7 calls actually failed. Labeling removes that ambiguity for good
+// instead of guessing which step it is from timing alone.
+async function gAdsPost(customerId: string, accessToken: string, devToken: string, endpoint: string, body: unknown, step: string): Promise<Record<string, unknown>> {
   const res = await fetch(`${GOOGLE_ADS_API}/customers/${customerId}/${endpoint}`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${accessToken}`, 'developer-token': devToken, 'Content-Type': 'application/json' },
@@ -214,7 +219,7 @@ async function gAdsPost(customerId: string, accessToken: string, devToken: strin
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({})) as Record<string, unknown>;
-    throw new Error(JSON.stringify(err.error ?? err));
+    throw new Error(`[step: ${step}] ${JSON.stringify(err.error ?? err)}`);
   }
   return res.json() as Promise<Record<string, unknown>>;
 }
@@ -301,7 +306,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   // Confirmed via https://developers.google.com/google-ads/api/docs/campaigns/budgets/share-budgets
   const budgetRes  = await gAdsPost(rawCid, accessToken, devToken, 'campaignBudgets:mutate', {
     operations: [{ create: { name: `${name} Budget`, amountMicros: String(Math.round(budget * 1_000_000)), deliveryMethod: 'STANDARD', explicitlyShared: false } }],
-  }) as { results: { resourceName: string }[] };
+  }, 'budget') as { results: { resourceName: string }[] };
   const budgetRn   = (budgetRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!budgetRn) throw new Error('Failed to create Google Ads budget');
 
@@ -322,7 +327,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     // political ads, so this is always DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING - never a
     // per-launch choice. Confirmed via https://developers.google.com/google-ads/api/docs/api-policy/eu-par
     operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, manualCpc: {}, containsEuPoliticalAdvertising: 'DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
-  }) as { results: { resourceName: string }[] };
+  }, 'campaign') as { results: { resourceName: string }[] };
   const campaignRn = (campRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!campaignRn) throw new Error('Failed to create Google Ads campaign');
   const googleCampaignId = campaignRn.split('/').pop()!;
@@ -333,7 +338,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   // budgets these campaigns launch with — merchants can adjust it in Google Ads Manager.
   const agRes      = await gAdsPost(rawCid, accessToken, devToken, 'adGroups:mutate', {
     operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD', cpcBidMicros: '1000000' } }],
-  }) as { results: { resourceName: string }[] };
+  }, 'ad_group') as { results: { resourceName: string }[] };
   const adGroupRn  = (agRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
 
   // 4. Keywords — real match-type mix (exact/phrase for control, broad only where the AI
@@ -351,7 +356,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
           status: 'ENABLED',
         },
       })),
-    });
+    }, 'keywords');
   }
 
   // 4b. Negative keywords at the ad-group level — stops the campaign from spending on
@@ -361,7 +366,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
       operations: negativeKeywords.slice(0, 15).map(text => ({
         create: { adGroup: adGroupRn, negative: true, keyword: { text: text.slice(0, 80), matchType: 'BROAD' }, status: 'ENABLED' },
       })),
-    });
+    }, 'negative_keywords');
   }
 
   // The merchant's own store, used as the ad's landing page and as the sitelinks' target.
@@ -375,7 +380,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   if (adGroupRn && headlines.length >= 3 && descriptions.length >= 2) {
     await gAdsPost(rawCid, accessToken, devToken, 'adGroupAds:mutate', {
       operations: [{ create: { adGroup: adGroupRn, status: autoEnable ? 'ENABLED' : 'PAUSED', ad: { finalUrls: [siteUrl], responsiveSearchAd: { headlines: headlines.slice(0,15).map(h => ({ text: h.slice(0,30) })), descriptions: descriptions.slice(0,4).map(d => ({ text: d.slice(0,90) })) } } } }],
-    });
+    }, 'responsive_search_ad');
   }
 
   // 6. Ad extensions (sitelinks, callouts, structured snippets) — measurably lift CTR
@@ -404,7 +409,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     }
 
     if (assetOps.length > 0) {
-      const assetRes = await gAdsPost(rawCid, accessToken, devToken, 'assets:mutate', { operations: assetOps }) as { results: { resourceName: string }[] };
+      const assetRes = await gAdsPost(rawCid, accessToken, devToken, 'assets:mutate', { operations: assetOps }, 'assets') as { results: { resourceName: string }[] };
       const assetResourceNames = assetRes.results?.map(r => r.resourceName) ?? [];
 
       // Map each created asset back to its field type in the same order they were requested.
@@ -419,7 +424,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
       })).filter(op => op.create.fieldType);
 
       if (linkOps.length > 0) {
-        await gAdsPost(rawCid, accessToken, devToken, 'campaignAssets:mutate', { operations: linkOps });
+        await gAdsPost(rawCid, accessToken, devToken, 'campaignAssets:mutate', { operations: linkOps }, 'campaign_assets');
       }
     }
   } catch (e) {
