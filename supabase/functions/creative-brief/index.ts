@@ -18,6 +18,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
+import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -31,7 +32,7 @@ const HIGGSFIELD_KEY  = Deno.env.get('HIGGSFIELD_API_KEY') ?? ''; // used for im
 
 const STYLE_GUARD = '\n\nWriting style: write like a real creative director, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
-async function callClaude(system: string, user: string, maxTokens = 2000): Promise<string> {
+async function callClaude(userId: string, system: string, user: string, maxTokens = 2000): Promise<string> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -51,7 +52,8 @@ async function callClaude(system: string, user: string, maxTokens = 2000): Promi
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { content: { type: string; text?: string }[] };
+  const data = await res.json() as { content: { type: string; text?: string }[]; usage?: { input_tokens: number; output_tokens: number } };
+  if (data.usage) await recordAIUsage(userId, ANTHROPIC_MODEL, data.usage.input_tokens, data.usage.output_tokens);
   return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
@@ -107,7 +109,7 @@ Generate a complete creative brief with this exact JSON structure:
 Base hooks on the product price points and inventory. Reference campaign objectives if available.
 Return ONLY valid JSON.`;
 
-  const raw = await callClaude(system, userMsg, 2000);
+  const raw = await callClaude(userId, system, userMsg, 2000);
 
   let brief: Record<string, unknown>;
   try {
@@ -185,6 +187,8 @@ Deno.serve(async (req) => {
     switch (action) {
       case 'generate': {
         if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
+        const budgetCheck = await checkAIBudget(userId);
+        if (!budgetCheck.ok) return errResponse(budgetCheck.message, 429, origin, { usage: budgetCheck.status });
         return okResponse(await handleGenerate(userId), origin);
       }
 

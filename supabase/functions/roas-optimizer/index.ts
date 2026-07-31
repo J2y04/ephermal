@@ -26,6 +26,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { metaGet, metaPost, parseROAS } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
+import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -216,7 +217,7 @@ async function analyzeCampaigns(
 // and asks Claude to reason about the whole account — not just per-campaign
 // thresholds in isolation.
 
-async function callClaude(system: string, user: string): Promise<string> {
+async function callClaude(userId: string, system: string, user: string): Promise<string> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -236,7 +237,8 @@ async function callClaude(system: string, user: string): Promise<string> {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { content: { type: string; text?: string }[] };
+  const data = await res.json() as { content: { type: string; text?: string }[]; usage?: { input_tokens: number; output_tokens: number } };
+  if (data.usage) await recordAIUsage(userId, ANTHROPIC_MODEL, data.usage.input_tokens, data.usage.output_tokens);
   return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
@@ -328,7 +330,7 @@ ${JSON.stringify(mrrContext, null, 2)}
 Audience intelligence (${plan === 'scale' ? 'Scale plan' : 'not available on this plan'}):
 ${JSON.stringify(audienceIntel, null, 2)}`;
 
-  const raw = await callClaude(system, userMsg);
+  const raw = await callClaude(userId, system, userMsg);
   let parsed: { campaigns?: unknown[]; account_summary?: string };
   try {
     const json = raw.replace(/```json\s*|```/g, '').trim();
@@ -399,6 +401,8 @@ Deno.serve(async (req) => {
       case 'analyze': {
         const token   = await getMetaToken(userId);
         if (!token)   return errResponse('Meta not connected', 403, origin);
+        const budgetCheck = await checkAIBudget(userId);
+        if (!budgetCheck.ok) return errResponse(budgetCheck.message, 429, origin, { usage: budgetCheck.status });
         const rules   = applyOverrides(await loadRules(userId), body);
         const actions = await analyzeCampaigns(userId, token, rules);
 
