@@ -295,9 +295,9 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
 
   // 1. Budget
   // explicitlyShared defaults to true (a budget meant to be split across multiple
-  // campaigns) when omitted, and a shared budget is incompatible with the per-campaign
-  // maximizeConversions strategy set below (BIDDING_STRATEGY_TYPE_INCOMPATIBLE_WITH_SHARED_BUDGET).
-  // This budget is 1:1 with its own campaign, so it must be explicitly non-shared.
+  // campaigns) when omitted, and a shared budget is incompatible with per-campaign
+  // bidding strategies (BIDDING_STRATEGY_TYPE_INCOMPATIBLE_WITH_SHARED_BUDGET). This
+  // budget is 1:1 with its own campaign, so it must be explicitly non-shared.
   // Confirmed via https://developers.google.com/google-ads/api/docs/campaigns/budgets/share-budgets
   const budgetRes  = await gAdsPost(rawCid, accessToken, devToken, 'campaignBudgets:mutate', {
     operations: [{ create: { name: `${name} Budget`, amountMicros: String(Math.round(budget * 1_000_000)), deliveryMethod: 'STANDARD', explicitlyShared: false } }],
@@ -307,10 +307,13 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
 
   // 2. Campaign
   const campRes    = await gAdsPost(rawCid, accessToken, devToken, 'campaigns:mutate', {
-    // biddingStrategyType is a read-only descriptor, not a setter — the API rejects a
-    // create with only that field set ("campaign_bidding_strategy" REQUIRED). The actual
-    // scheme has to be set via its own oneof field; maximizeConversions: {} both selects
-    // MAXIMIZE_CONVERSIONS and satisfies the oneof in one shot.
+    // maximizeConversions was rejected with OPERATION_NOT_PERMITTED_FOR_CONTEXT (a whole-
+    // operation context error, not a field error) — a well-documented Google Ads API
+    // behavior: fully-automated conversion-based strategies require the account to already
+    // have conversion tracking history, which a merchant connecting Google Ads for the
+    // first time through Ephermal never has. manualCpc has no such prerequisite and is the
+    // standard default for a brand-new account — it needs a bid set on the ad group
+    // (added below) since it doesn't infer one from conversion data.
     //
     // containsEuPoliticalAdvertising became a required field on every new campaign under
     // Google's EU Political Advertising Regulation enforcement (mandatory since 2025-09-03,
@@ -318,20 +321,18 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     // mutates, not just this one). Ephermal only runs commercial e-commerce ads, never
     // political ads, so this is always DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING - never a
     // per-launch choice. Confirmed via https://developers.google.com/google-ads/api/docs/api-policy/eu-par
-    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, maximizeConversions: {}, containsEuPoliticalAdvertising: 'DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
+    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, manualCpc: {}, containsEuPoliticalAdvertising: 'DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
   }) as { results: { resourceName: string }[] };
   const campaignRn = (campRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!campaignRn) throw new Error('Failed to create Google Ads campaign');
   const googleCampaignId = campaignRn.split('/').pop()!;
 
   // 3. Ad group
-  // cpcBidMicros (a manual per-ad-group bid) is incompatible with the campaign's
-  // maximizeConversions bidding set above - that's a fully automated strategy that
-  // doesn't take manual bids at all, and the API rejects the combination outright.
-  // Confirmed via https://developers.google.com/google-ads/api/docs/campaigns/bidding/overview
-  // and real-world API error reports for this exact field/strategy pairing.
+  // manualCpc (unlike maximizeConversions) doesn't infer a bid from conversion data, so
+  // it needs one set explicitly. $1.00 default click bid, in line with the $20+/day
+  // budgets these campaigns launch with — merchants can adjust it in Google Ads Manager.
   const agRes      = await gAdsPost(rawCid, accessToken, devToken, 'adGroups:mutate', {
-    operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD' } }],
+    operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD', cpcBidMicros: '1000000' } }],
   }) as { results: { resourceName: string }[] };
   const adGroupRn  = (agRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
 
