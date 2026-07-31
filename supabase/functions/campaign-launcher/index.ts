@@ -276,7 +276,10 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   // instead of guessing a further cause: a manager (MCC) account can't have campaigns
   // created on it directly, and Google Ads accounts have a real "pending/disabled" state
   // before onboarding finishes that specifically blocks campaign creation while still
-  // allowing budget objects and reads.
+  // allowing budget objects and reads. accountStateNote gets appended to the campaign-create
+  // error below if it still throws, so the answer reaches the user's error modal directly -
+  // console.error output isn't retrievable from outside this function.
+  let accountStateNote = '';
   try {
     const searchRes = await fetch(`${GOOGLE_ADS_API}/customers/${rawCid}/googleAds:search`, {
       method: 'POST',
@@ -286,7 +289,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     const searchData = await searchRes.json().catch(() => ({})) as Record<string, unknown>;
     if (searchRes.ok) {
       const cust = (searchData.results as Array<{ customer?: Record<string, unknown> }> | undefined)?.[0]?.customer;
-      console.error(`campaign ${campaignId}: google account state check —`, JSON.stringify(cust));
+      accountStateNote = `account state: ${JSON.stringify(cust)}`;
       if (cust?.manager === true) {
         throw new Error('Your connected Google Ads customer ID is a manager (MCC) account, not a client account — campaigns can only be created on a client account. In Settings, reconnect using the specific client account ID you advertise from, not the manager account.');
       }
@@ -294,11 +297,11 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
         throw new Error(`Your Google Ads account status is "${cust.status}", not ENABLED — this blocks campaign creation until account setup (billing, verification) finishes in Google Ads directly.`);
       }
     } else {
-      console.error(`campaign ${campaignId}: google account state check failed (non-fatal, continuing) —`, JSON.stringify(searchData));
+      accountStateNote = `account state check failed: ${JSON.stringify(searchData)}`;
     }
   } catch (e) {
     if (e instanceof Error && (e.message.includes('manager (MCC)') || e.message.includes('not ENABLED'))) throw e;
-    console.error(`campaign ${campaignId}: google account state check errored (non-fatal, continuing) —`, e);
+    accountStateNote = `account state check errored: ${e instanceof Error ? e.message : String(e)}`;
   }
 
   const copy        = row.copy as Record<string, unknown>;
@@ -361,7 +364,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     // political ads, so this is always DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING - never a
     // per-launch choice. Confirmed via https://developers.google.com/google-ads/api/docs/api-policy/eu-par
     operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, manualCpc: {}, containsEuPoliticalAdvertising: 'DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
-  }, 'campaign') as { results: { resourceName: string }[] };
+  }, `campaign (${accountStateNote})`) as { results: { resourceName: string }[] };
   const campaignRn = (campRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!campaignRn) throw new Error('Failed to create Google Ads campaign');
   const googleCampaignId = campaignRn.split('/').pop()!;
