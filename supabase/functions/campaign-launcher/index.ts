@@ -267,6 +267,40 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   if (!devToken) throw new Error('Google Ads developer token not configured');
 
   const accessToken = await getGoogleAccessToken(refreshToken);
+
+  // Pre-flight account check. campaignBudgets:mutate has succeeded on every attempt so far
+  // while campaigns:mutate alone throws OPERATION_NOT_PERMITTED_FOR_CONTEXT with no field
+  // named - if this were a missing login-customer-id header (the other real candidate),
+  // budget creation would fail identically since it's the same customer ID and token. That
+  // rules login-customer-id out. Reading the account's actual state directly settles this
+  // instead of guessing a further cause: a manager (MCC) account can't have campaigns
+  // created on it directly, and Google Ads accounts have a real "pending/disabled" state
+  // before onboarding finishes that specifically blocks campaign creation while still
+  // allowing budget objects and reads.
+  try {
+    const searchRes = await fetch(`${GOOGLE_ADS_API}/customers/${rawCid}/googleAds:search`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${accessToken}`, 'developer-token': devToken, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: 'SELECT customer.id, customer.manager, customer.test_account, customer.status, customer.currency_code, customer.time_zone FROM customer LIMIT 1' }),
+    });
+    const searchData = await searchRes.json().catch(() => ({})) as Record<string, unknown>;
+    if (searchRes.ok) {
+      const cust = (searchData.results as Array<{ customer?: Record<string, unknown> }> | undefined)?.[0]?.customer;
+      console.error(`campaign ${campaignId}: google account state check —`, JSON.stringify(cust));
+      if (cust?.manager === true) {
+        throw new Error('Your connected Google Ads customer ID is a manager (MCC) account, not a client account — campaigns can only be created on a client account. In Settings, reconnect using the specific client account ID you advertise from, not the manager account.');
+      }
+      if (typeof cust?.status === 'string' && cust.status !== 'ENABLED') {
+        throw new Error(`Your Google Ads account status is "${cust.status}", not ENABLED — this blocks campaign creation until account setup (billing, verification) finishes in Google Ads directly.`);
+      }
+    } else {
+      console.error(`campaign ${campaignId}: google account state check failed (non-fatal, continuing) —`, JSON.stringify(searchData));
+    }
+  } catch (e) {
+    if (e instanceof Error && (e.message.includes('manager (MCC)') || e.message.includes('not ENABLED'))) throw e;
+    console.error(`campaign ${campaignId}: google account state check errored (non-fatal, continuing) —`, e);
+  }
+
   const copy        = row.copy as Record<string, unknown>;
   const gCopy       = copy?.google as Record<string, unknown> ?? {};
   const budget      = Number(row.budget_daily ?? 20);
