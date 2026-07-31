@@ -302,7 +302,11 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
 
   // 2. Campaign
   const campRes    = await gAdsPost(rawCid, accessToken, devToken, 'campaigns:mutate', {
-    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, biddingStrategyType: 'MAXIMIZE_CONVERSIONS', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
+    // biddingStrategyType is a read-only descriptor, not a setter — the API rejects a
+    // create with only that field set ("campaign_bidding_strategy" REQUIRED). The actual
+    // scheme has to be set via its own oneof field; maximizeConversions: {} both selects
+    // MAXIMIZE_CONVERSIONS and satisfies the oneof in one shot.
+    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, maximizeConversions: {}, networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
   }) as { results: { resourceName: string }[] };
   const campaignRn = (campRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!campaignRn) throw new Error('Failed to create Google Ads campaign');
