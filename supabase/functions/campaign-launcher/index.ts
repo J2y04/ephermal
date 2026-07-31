@@ -146,11 +146,22 @@ Generate 3 distinct ad variations in meta.ads (different hooks/angles) so the ca
 Make headlines benefit-focused and scroll-stopping. Keep Meta primary text under 125 chars. Google headlines under 30 chars each.
 For google.keywords, produce 8-15 keywords with a real match-type mix (mostly exact/phrase, broad only for genuine discovery terms), plus 5-10 negative_keywords, 3-4 sitelinks pointing to different real site sections, 4-6 callouts, and one structured_snippet with 3-5 values — all grounded in the actual product, not generic placeholders.`;
 
-  const raw = await callClaude(system, userMsg, 1800);
+  // 1800 was too tight for this schema (3 Meta ad variants + full Google set:
+  // 8-15 keywords, 5-10 negatives, 3-4 sitelinks, 4-6 callouts, snippet) - Haiku
+  // was plausibly getting cut off mid-JSON, which JSON.parse can't distinguish
+  // from a genuinely malformed response. Bumped to 3000 with real headroom.
+  const raw = await callClaude(system, userMsg, 3000);
   let copy: Record<string, unknown>;
   try {
-    copy = JSON.parse(raw);
-  } catch {
+    // Defensive: strip markdown code fences in case the model wraps the JSON
+    // despite the "no markdown fences" instruction - cheap insurance, and the
+    // one other realistic cause of a parse failure besides truncation.
+    const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+    copy = JSON.parse(cleaned);
+  } catch (e) {
+    console.error('[campaign-launcher] prepare: failed to parse AI response as JSON.',
+      'Parse error:', e instanceof Error ? e.message : String(e),
+      'Raw response (first 2000 chars):', raw.slice(0, 2000));
     throw new Error('AI returned invalid campaign structure');
   }
 
