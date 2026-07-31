@@ -346,10 +346,17 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     });
   }
 
+  // The merchant's own store, used as the ad's landing page and as the sitelinks' target.
+  const shop = integrations?.shopify_shop as string | undefined;
+  const siteUrl = shop ? `https://${shop}` : (Deno.env.get('APP_URL') ?? 'https://ephermal.app');
+
   // 5. Responsive Search Ad
+  // Per https://developers.google.com/google-ads/api/docs/responsive-search-ads/create-responsive-search-ads,
+  // Ad.final_urls is required — at least one URL — separately from responsive_search_ad
+  // itself; omitting it fails with a REQUIRED field error just like the bidding strategy did.
   if (adGroupRn && headlines.length >= 3 && descriptions.length >= 2) {
     await gAdsPost(rawCid, accessToken, devToken, 'adGroupAds:mutate', {
-      operations: [{ create: { adGroup: adGroupRn, status: autoEnable ? 'ENABLED' : 'PAUSED', ad: { responsiveSearchAd: { headlines: headlines.slice(0,15).map(h => ({ text: h.slice(0,30) })), descriptions: descriptions.slice(0,4).map(d => ({ text: d.slice(0,90) })) } } } }],
+      operations: [{ create: { adGroup: adGroupRn, status: autoEnable ? 'ENABLED' : 'PAUSED', ad: { finalUrls: [siteUrl], responsiveSearchAd: { headlines: headlines.slice(0,15).map(h => ({ text: h.slice(0,30) })), descriptions: descriptions.slice(0,4).map(d => ({ text: d.slice(0,90) })) } } } }],
     });
   }
 
@@ -358,8 +365,6 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   // created once, then linked to the campaign via campaignAssets:mutate. Best-effort: a
   // failure here shouldn't block the campaign itself from having launched successfully.
   try {
-    const shop = integrations?.shopify_shop as string | undefined;
-    const siteUrl = shop ? `https://${shop}` : (Deno.env.get('APP_URL') ?? 'https://ephermal.app');
     const assetOps: Record<string, unknown>[] = [];
     for (const sl of sitelinks.slice(0, 4)) {
       if (!sl.link_text) continue;
