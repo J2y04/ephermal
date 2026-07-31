@@ -145,7 +145,8 @@ Daily budget: $${budget}
 Objective: ${objective}
 Tone: ${tone}
 Generate 3 distinct ad variations in meta.ads (different hooks/angles) so the campaign has real creative variety.
-Make headlines benefit-focused and scroll-stopping. Keep Meta primary text under 125 chars. Google headlines under 30 chars each.
+Make headlines benefit-focused and scroll-stopping. Keep Meta primary text under 125 chars.
+For google.headlines, produce exactly 8 distinct headlines, each 30 characters or fewer — Google Ads requires a minimum of 3 to build a responsive search ad, so 8 gives real headroom and rotation variety, not a bare minimum. For google.descriptions, produce exactly 4 distinct descriptions, each 90 characters or fewer (Google's minimum is 2). Every headline and description must be unique text, not the Meta ad copy re-cut to fit — Search ad copy must speak to search intent per GOOGLE SEARCH ADS TACTICS above, not just be shortened social copy.
 For google.keywords, produce 8-15 keywords with a real match-type mix (mostly exact/phrase, broad only for genuine discovery terms), plus 5-10 negative_keywords, 3-4 sitelinks pointing to different real site sections, 4-6 callouts, and one structured_snippet with 3-5 values — all grounded in the actual product, not generic placeholders.`;
 
   // 1800 was too tight for this schema (3 Meta ad variants + full Google set:

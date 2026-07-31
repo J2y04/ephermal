@@ -6492,9 +6492,20 @@ async function _cbGenerateWithAI() {
     const kws = google.keywords || [];
     if (kws.length) {
       _cbKeywords = kws.map(k => typeof k === 'string' ? { text: k, match_type: 'PHRASE' } : { text: k.text || k.keyword || '', match_type: k.match_type || 'PHRASE' }).filter(k => k.text);
-      _cbGoogleExtras = { negative_keywords: google.negative_keywords, sitelinks: google.sitelinks, callouts: google.callouts, structured_snippet: google.structured_snippet };
       _cbRenderKeywords();
     }
+    // Google's headlines/descriptions are AI-generated to Google's own length limits
+    // (<=30/<=90 chars) - use them as-is instead of deriving from the Meta ad copy above,
+    // which was too short/too few to ever pass campaign-launcher's 3-headline/2-description
+    // minimum and caused every AI-generated Google launch to fail.
+    const gHeadlines = (google.headlines || []).filter(Boolean);
+    const gDescriptions = (google.descriptions || []).filter(Boolean);
+    _cbGoogleExtras = {
+      negative_keywords: google.negative_keywords, sitelinks: google.sitelinks,
+      callouts: google.callouts, structured_snippet: google.structured_snippet,
+      headlines: gHeadlines.length ? gHeadlines : undefined,
+      descriptions: gDescriptions.length ? gDescriptions : undefined,
+    };
     if (!document.getElementById('cb-name').value) document.getElementById('cb-name').value = data.copy?.campaign_name || '';
     showToast('AI generated ' + ads.length + ' ad variation(s)' + (kws.length ? ` + ${kws.length} keyword(s)` : ''), 'success');
   } catch(e) {
@@ -6514,16 +6525,30 @@ async function saveCampaignDraft() {
   if (useMeta && !ads.length) { showToast('Add at least one Meta ad', 'warn'); return; }
   if (useGoogle && !_cbKeywords.length) { showToast('Add at least one Google Search keyword', 'warn'); return; }
 
+  // Prefer the AI's own Google-specific headlines/descriptions (written to Google's
+  // 30/90-char limits) over deriving them from Meta ad copy - Meta primary text run
+  // through Google's limits was too short/too few to ever clear campaign-launcher's
+  // 3-headline/2-description minimum, which is what caused the launch failure.
+  const gHeadlines = _cbGoogleExtras.headlines || ads.map(a=>a.headline).filter(Boolean).slice(0,15);
+  const gDescriptions = _cbGoogleExtras.descriptions || ads.map(a=>a.primary_text).filter(Boolean).slice(0,4);
+  if (useGoogle && (gHeadlines.length < 3 || gDescriptions.length < 2)) {
+    showToast('Google needs at least 3 headlines and 2 descriptions - use "Generate with AI" or add more Meta ads', 'warn');
+    return;
+  }
+
   const platform = useMeta && useGoogle ? 'both' : (useMeta ? 'meta' : 'google');
   const copy = {
     campaign_name: name,
     meta: { campaign_name: name, adset_name: `${name} Ad Set`, targeting: { geo_locations: { countries: ['US'] } }, ads },
     google: {
       campaign_name: name, ad_group_name: `${name} Ad Group`,
-      headlines: ads.map(a=>a.headline).filter(Boolean).slice(0,15),
-      descriptions: ads.map(a=>a.primary_text).filter(Boolean).slice(0,4),
+      headlines: gHeadlines,
+      descriptions: gDescriptions,
       keywords: _cbKeywords,
-      ..._cbGoogleExtras,
+      negative_keywords: _cbGoogleExtras.negative_keywords,
+      sitelinks: _cbGoogleExtras.sitelinks,
+      callouts: _cbGoogleExtras.callouts,
+      structured_snippet: _cbGoogleExtras.structured_snippet,
     },
   };
 
