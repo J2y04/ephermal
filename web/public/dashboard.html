@@ -2015,7 +2015,7 @@ select.form-input{cursor:pointer}
           <input type="checkbox" id="cb-platform-meta" checked class="chk-fancy">Meta
         </label>
         <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px" id="cb-platform-google-wrap">
-          <input type="checkbox" id="cb-platform-google" class="chk-fancy">Google
+          <input type="checkbox" id="cb-platform-google" class="chk-fancy" onchange="_cbTogglePlatformSections()">Google
         </label>
       </div>
     </div>
@@ -2027,11 +2027,30 @@ select.form-input{cursor:pointer}
       </select>
     </div>
 
-    <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px">
-      <label class="form-label" style="margin:0">Ads</label>
-      <button class="panel-action" onclick="_cbAddAd()">+ Add Ad</button>
+    <!-- Meta is creative-driven (ad variations, hooks, angles) - Google Search is
+         intent/keyword-driven (match a real search query, not a scroll-stopping ad).
+         Kept as two distinct sections rather than one shared form, since cramming
+         Google's keyword model into Meta's ad-copy model is exactly what silently
+         dropped every AI-generated Google keyword on the floor before this. -->
+    <div id="cb-meta-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px">
+        <label class="form-label" style="margin:0">Meta Ads</label>
+        <button class="panel-action" onclick="_cbAddAd()">+ Add Ad</button>
+      </div>
+      <div id="cb-ads-list"></div>
     </div>
-    <div id="cb-ads-list"></div>
+
+    <div id="cb-google-section" style="display:none">
+      <div class="form-group" style="margin:20px 0 10px">
+        <label class="form-label" style="margin:0">Google Search Keywords</label>
+        <div style="font-size:12px;color:var(--muted);margin:4px 0 8px">Search ads match against these keywords, not the Meta ad copy above — a campaign with none can't launch to Google.</div>
+        <div id="cb-keywords-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <input class="form-input" id="cb-keyword-input" placeholder="e.g. wireless earbuds" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();_cbAddKeyword();}">
+          <button class="btn-secondary" onclick="_cbAddKeyword()" style="padding:0 18px">Add</button>
+        </div>
+      </div>
+    </div>
 
     <div class="form-group" style="margin-top:6px">
       <label class="form-label">AI-Assisted (optional)</label>
@@ -6333,7 +6352,59 @@ function openCampaignBuilder() {
   _cbAddAd();
   _cbPopulateProductSelect();
   refreshPlatformToggles();
+  _cbResetKeywords();
+  _cbTogglePlatformSections();
   document.getElementById('campaign-builder-modal').classList.add('open');
+}
+
+// ── Google Search keywords ───────────────────────────────────────────────────
+// Kept separate from the Meta ad-copy fields deliberately - Search ads match
+// against these keywords, not against headline/primary_text, so treating them
+// as one shared form (as the AI-generate path used to) meant Google's real
+// generated keywords were captured server-side and then never shown or saved.
+let _cbKeywords = []; // [{ text, match_type }]
+// Extra Google fields the AI generates but this modal doesn't expose an editor
+// for yet (negatives, sitelinks, callouts, structured_snippet) - captured so a
+// launch still gets the full richer set the AI produced, not just keywords.
+let _cbGoogleExtras = {};
+
+function _cbResetKeywords() {
+  _cbKeywords = [];
+  _cbGoogleExtras = {};
+  _cbRenderKeywords();
+}
+
+function _cbTogglePlatformSections() {
+  const google = document.getElementById('cb-platform-google')?.checked;
+  const el = document.getElementById('cb-google-section');
+  if (el) el.style.display = google ? '' : 'none';
+}
+
+function _cbRenderKeywords() {
+  const list = document.getElementById('cb-keywords-list');
+  if (!list) return;
+  list.innerHTML = _cbKeywords.map((k, i) => `
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px">
+      ${escHtml(k.text)}${k.match_type ? `<span style="color:var(--muted);font-size:10px;text-transform:uppercase">${k.match_type}</span>` : ''}
+      <span onclick="_cbRemoveKeyword(${i})" style="cursor:pointer;color:var(--muted);font-weight:700">×</span>
+    </span>`).join('');
+}
+
+function _cbAddKeyword() {
+  const input = document.getElementById('cb-keyword-input');
+  const text = input?.value.trim();
+  if (!text) return;
+  if (!_cbKeywords.some(k => k.text.toLowerCase() === text.toLowerCase())) {
+    _cbKeywords.push({ text, match_type: 'PHRASE' });
+    _cbRenderKeywords();
+  }
+  input.value = '';
+  input.focus();
+}
+
+function _cbRemoveKeyword(i) {
+  _cbKeywords.splice(i, 1);
+  _cbRenderKeywords();
 }
 
 function closeCampaignBuilder() {
@@ -6417,8 +6488,15 @@ async function _cbGenerateWithAI() {
       document.getElementById('cb-ads-list').innerHTML = '';
       ads.forEach(a => _cbAddAd(a));
     }
+    const google = data.copy?.google || {};
+    const kws = google.keywords || [];
+    if (kws.length) {
+      _cbKeywords = kws.map(k => typeof k === 'string' ? { text: k, match_type: 'PHRASE' } : { text: k.text || k.keyword || '', match_type: k.match_type || 'PHRASE' }).filter(k => k.text);
+      _cbGoogleExtras = { negative_keywords: google.negative_keywords, sitelinks: google.sitelinks, callouts: google.callouts, structured_snippet: google.structured_snippet };
+      _cbRenderKeywords();
+    }
     if (!document.getElementById('cb-name').value) document.getElementById('cb-name').value = data.copy?.campaign_name || '';
-    showToast('AI generated ' + ads.length + ' ad variation(s)', 'success');
+    showToast('AI generated ' + ads.length + ' ad variation(s)' + (kws.length ? ` + ${kws.length} keyword(s)` : ''), 'success');
   } catch(e) {
     showToast('AI generation failed', 'error');
   } finally {
@@ -6433,13 +6511,20 @@ async function saveCampaignDraft() {
   const useGoogle = document.getElementById('cb-platform-google')?.checked && !document.getElementById('cb-platform-google').disabled;
   if (!useMeta && !useGoogle) { showToast('Enable at least one connected platform', 'warn'); return; }
   const ads = _cbCollectAds();
-  if (!ads.length) { showToast('Add at least one ad', 'warn'); return; }
+  if (useMeta && !ads.length) { showToast('Add at least one Meta ad', 'warn'); return; }
+  if (useGoogle && !_cbKeywords.length) { showToast('Add at least one Google Search keyword', 'warn'); return; }
 
   const platform = useMeta && useGoogle ? 'both' : (useMeta ? 'meta' : 'google');
   const copy = {
     campaign_name: name,
     meta: { campaign_name: name, adset_name: `${name} Ad Set`, targeting: { geo_locations: { countries: ['US'] } }, ads },
-    google: { campaign_name: name, ad_group_name: `${name} Ad Group`, headlines: ads.map(a=>a.headline).filter(Boolean).slice(0,15), descriptions: ads.map(a=>a.primary_text).filter(Boolean).slice(0,4), keywords: [] },
+    google: {
+      campaign_name: name, ad_group_name: `${name} Ad Group`,
+      headlines: ads.map(a=>a.headline).filter(Boolean).slice(0,15),
+      descriptions: ads.map(a=>a.primary_text).filter(Boolean).slice(0,4),
+      keywords: _cbKeywords,
+      ..._cbGoogleExtras,
+    },
   };
 
   const btn = document.getElementById('cb-save-btn');
