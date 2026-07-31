@@ -4708,6 +4708,39 @@ function _confirmModalResolve(result) {
   if (_confirmModalPending) { _confirmModalPending(result); _confirmModalPending = null; }
 }
 
+// Toasts truncate and auto-dismiss in 4.5s - useless for a long API error someone
+// needs to actually read and copy (e.g. into a bug report or a Loom video). This
+// keeps the full text on screen, selectable, until dismissed, and copies it to the
+// clipboard automatically so "I couldn't copy it" can't happen again.
+function showErrorDetail(message, title = 'Something went wrong') {
+  document.getElementById('confirm-modal-title').textContent = title;
+  const body = document.getElementById('confirm-modal-body');
+  body.textContent = message;
+  body.style.whiteSpace = 'pre-wrap';
+  body.style.wordBreak = 'break-word';
+  body.style.userSelect = 'text';
+  body.style.fontFamily = "'JetBrains Mono', monospace";
+  body.style.fontSize = '12px';
+  body.style.maxHeight = '300px';
+  body.style.overflowY = 'auto';
+  const cancelBtn = document.getElementById('confirm-modal-cancel');
+  cancelBtn.style.display = 'none';
+  const okBtn = document.getElementById('confirm-modal-ok');
+  okBtn.textContent = 'Copy & Close';
+  okBtn.style.background = '';
+  okBtn.style.borderColor = '';
+  document.getElementById('confirm-modal').classList.add('open');
+  return new Promise((resolve) => {
+    _confirmModalPending = () => {
+      navigator.clipboard?.writeText(message).catch(() => {});
+      body.style.whiteSpace = ''; body.style.wordBreak = ''; body.style.userSelect = '';
+      body.style.fontFamily = ''; body.style.fontSize = ''; body.style.maxHeight = ''; body.style.overflowY = '';
+      cancelBtn.style.display = '';
+      resolve();
+    };
+  });
+}
+
 // ── EPHERMAL AI ──────────────────────────────────────────────────────────────
 // Full-page chat (moved from a floating panel — see nav item "Ephermal AI" at the
 // top of the sidebar). aiRenderToolSteps() is ready for the real tool-calling agent
@@ -6665,7 +6698,12 @@ async function launchReviewedCampaign(platform) {
   if (btn) { btn.disabled = true; btn.textContent = 'Launching…'; }
   try {
     const r = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action, campaign_id: _crCampaign.id }) });
-    if (!r || !r.ok) { const e = r ? await r.json().catch(()=>({})) : {}; showToast(e.error || 'Launch failed', 'error'); return; }
+    if (!r || !r.ok) {
+      const e = r ? await r.json().catch(()=>({})) : {};
+      const msg = e.error || 'Launch failed';
+      if (msg.length > 60) showErrorDetail(msg, 'Launch failed'); else showToast(msg, 'error');
+      return;
+    }
     showToast(`Campaign launched to ${platform === 'meta' ? 'Meta' : 'Google'} as PAUSED`, 'success');
     closeCampaignReview();
     loadLaunchAdsCampaigns();

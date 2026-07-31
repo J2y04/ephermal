@@ -313,8 +313,13 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   const googleCampaignId = campaignRn.split('/').pop()!;
 
   // 3. Ad group
+  // cpcBidMicros (a manual per-ad-group bid) is incompatible with the campaign's
+  // maximizeConversions bidding set above - that's a fully automated strategy that
+  // doesn't take manual bids at all, and the API rejects the combination outright.
+  // Confirmed via https://developers.google.com/google-ads/api/docs/campaigns/bidding/overview
+  // and real-world API error reports for this exact field/strategy pairing.
   const agRes      = await gAdsPost(rawCid, accessToken, devToken, 'adGroups:mutate', {
-    operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD', cpcBidMicros: '1000000' } }],
+    operations: [{ create: { name: String(gCopy.ad_group_name ?? `${name} Ad Group`), campaign: campaignRn, status: 'ENABLED', type: 'SEARCH_STANDARD' } }],
   }) as { results: { resourceName: string }[] };
   const adGroupRn  = (agRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
 
