@@ -294,8 +294,13 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
   }
 
   // 1. Budget
+  // explicitlyShared defaults to true (a budget meant to be split across multiple
+  // campaigns) when omitted, and a shared budget is incompatible with the per-campaign
+  // maximizeConversions strategy set below (BIDDING_STRATEGY_TYPE_INCOMPATIBLE_WITH_SHARED_BUDGET).
+  // This budget is 1:1 with its own campaign, so it must be explicitly non-shared.
+  // Confirmed via https://developers.google.com/google-ads/api/docs/campaigns/budgets/share-budgets
   const budgetRes  = await gAdsPost(rawCid, accessToken, devToken, 'campaignBudgets:mutate', {
-    operations: [{ create: { name: `${name} Budget`, amountMicros: String(Math.round(budget * 1_000_000)), deliveryMethod: 'STANDARD' } }],
+    operations: [{ create: { name: `${name} Budget`, amountMicros: String(Math.round(budget * 1_000_000)), deliveryMethod: 'STANDARD', explicitlyShared: false } }],
   }) as { results: { resourceName: string }[] };
   const budgetRn   = (budgetRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!budgetRn) throw new Error('Failed to create Google Ads budget');
@@ -306,7 +311,14 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     // create with only that field set ("campaign_bidding_strategy" REQUIRED). The actual
     // scheme has to be set via its own oneof field; maximizeConversions: {} both selects
     // MAXIMIZE_CONVERSIONS and satisfies the oneof in one shot.
-    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, maximizeConversions: {}, networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
+    //
+    // containsEuPoliticalAdvertising became a required field on every new campaign under
+    // Google's EU Political Advertising Regulation enforcement (mandatory since 2025-09-03,
+    // and from 2026-04-01 an undeclared campaign anywhere on the account blocks ALL campaign
+    // mutates, not just this one). Ephermal only runs commercial e-commerce ads, never
+    // political ads, so this is always DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING - never a
+    // per-launch choice. Confirmed via https://developers.google.com/google-ads/api/docs/api-policy/eu-par
+    operations: [{ create: { name, advertisingChannelType: 'SEARCH', status: autoEnable ? 'ENABLED' : 'PAUSED', campaignBudget: budgetRn, maximizeConversions: {}, containsEuPoliticalAdvertising: 'DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING', networkSettings: { targetGoogleSearch: true, targetSearchNetwork: true, targetContentNetwork: false } } }],
   }) as { results: { resourceName: string }[] };
   const campaignRn = (campRes as unknown as { results: { resourceName: string }[] }).results?.[0]?.resourceName;
   if (!campaignRn) throw new Error('Failed to create Google Ads campaign');
