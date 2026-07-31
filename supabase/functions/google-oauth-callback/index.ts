@@ -177,8 +177,14 @@ Deno.serve(async (req: Request) => {
 
   if (DEVELOPER_TOKEN) {
     try {
+      // v17 (hardcoded here until now) was sunset June 2025 - every request to it gets
+      // Google's generic 404 HTML page, not a JSON error. res.json() on an HTML body
+      // throws "Unexpected token '<' ... is not valid JSON", which is exactly the
+      // opaque error this whole connection-check was built to avoid. Every other
+      // Google Ads call in this codebase already uses v24 (campaign-launcher,
+      // budget-ai, mrr-tracker, google-api) - this was the one leftover literal.
       const custRes  = await fetch(
-        'https://googleads.googleapis.com/v17/customers:listAccessibleCustomers',
+        'https://googleads.googleapis.com/v24/customers:listAccessibleCustomers',
         {
           headers: {
             'Authorization':   `Bearer ${accessToken}`,
@@ -186,9 +192,11 @@ Deno.serve(async (req: Request) => {
           },
         },
       )
-      const custData = await custRes.json()
+      const rawCustBody = await custRes.text()
+      let custData: Record<string, unknown> = {}
+      try { custData = JSON.parse(rawCustBody) } catch { /* fall through with raw text below */ }
       if (!custRes.ok || custData.error) {
-        const detail = JSON.stringify(custData.error ?? custData)
+        const detail = JSON.stringify(custData.error ?? custData) || rawCustBody.slice(0, 300)
         console.error('[google-oauth] Connection test failed:', custRes.status, detail)
         connectionCheckError = `HTTP ${custRes.status}: ${detail}`.slice(0, 500)
       } else if (Array.isArray(custData.resourceNames)) {

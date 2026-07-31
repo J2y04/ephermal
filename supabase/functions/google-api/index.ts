@@ -225,13 +225,19 @@ Deno.serve(async (req: Request) => {
       return errResponse(`Google token refresh failed - please reconnect Google Ads (${detail})`, 401, origin, { detail })
     }
     try {
-      const custRes = await fetch('https://googleads.googleapis.com/v17/customers:listAccessibleCustomers', {
+      const custRes = await fetch(`${GOOGLE_ADS_API}/customers:listAccessibleCustomers`, {
         headers: { 'Authorization': `Bearer ${saveAccessToken}`, 'developer-token': devToken },
       })
-      const custData = await custRes.json()
+      // v17 (hardcoded here until now) was sunset June 2025 - Google serves a 404 HTML
+      // page for it, not a JSON error, so res.json() below would throw a confusing
+      // "Unexpected token '<'" instead of ever reaching the real error-detail path.
+      const rawCustBody = await custRes.text()
+      let custData: Record<string, unknown> = {}
+      try { custData = JSON.parse(rawCustBody) } catch { /* fall through with raw text below */ }
       if (!custRes.ok || custData.error) {
-        console.error('[google-api] save_customer_id accessible-customers check failed:', custRes.status, JSON.stringify(custData.error ?? custData))
-        return errResponse('Could not verify Google Ads access — please reconnect Google Ads', 403, origin)
+        const detail = JSON.stringify(custData.error ?? custData) || rawCustBody.slice(0, 300)
+        console.error('[google-api] save_customer_id accessible-customers check failed:', custRes.status, detail)
+        return errResponse(`Could not verify Google Ads access — please reconnect Google Ads (HTTP ${custRes.status}: ${detail.slice(0, 200)})`, 403, origin)
       }
       const accessibleIds = (Array.isArray(custData.resourceNames) ? custData.resourceNames as string[] : [])
         .map(r => r.replace('customers/', ''))
