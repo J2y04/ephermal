@@ -223,6 +223,12 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'calculate': {
+        // Budget AI is gated to Growth+ client-side (dashboard.html GATED.budget = 'growth'),
+        // but this action — the default when no `action` is sent — had no server-side check,
+        // unlike allocate/forecast/apply below. A Starter user could call it directly and run
+        // a real Anthropic call for free; checkAIBudget only caps weekly spend, it doesn't
+        // enforce plan tier.
+        if (plan === 'starter') return errResponse('Upgrade to Growth to access Budget AI', 403, origin);
         if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
         const budgetCheck = await checkAIBudget(userId);
         if (!budgetCheck.ok) return errResponse(budgetCheck.message, 429, origin, { usage: budgetCheck.status });

@@ -128,7 +128,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         growth:  'plan_activated_growth',
         scale:   'plan_activated_scale',
       };
-      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+      const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -140,6 +140,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
           vars: { name: userName },
         }),
       });
+      // fetch() only rejects on a network-level failure, not on an HTTP error status — send-email
+      // returns ordinary error responses (missing config, bad template, Resend failure) that would
+      // otherwise vanish silently with the webhook still logging success.
+      if (!res.ok) console.error(`plan_activated email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
     }
   } catch (e) {
     console.warn('Email send failed (non-fatal):', e);
@@ -197,7 +201,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
       : null;
     const userEmail = charge?.billing_details?.email;
     if (userEmail) {
-      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+      const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -209,6 +213,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
           vars: { name: 'there', credits: String(credits) },
         }),
       });
+      if (!res.ok) console.error(`ai_topup_receipt email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
     }
   } catch (e) {
     console.warn('Top-up email failed (non-fatal):', e);
@@ -287,7 +292,7 @@ async function handleUgcVideoTopup(paymentIntent: Stripe.PaymentIntent): Promise
       : null;
     const userEmail = charge?.billing_details?.email;
     if (userEmail) {
-      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+      const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -299,6 +304,7 @@ async function handleUgcVideoTopup(paymentIntent: Stripe.PaymentIntent): Promise
           vars: { name: 'there', credits: String(credits) },
         }),
       });
+      if (!res.ok) console.error(`ugc_video_topup_receipt email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
     }
   } catch (e) {
     console.warn('UGC video top-up email failed (non-fatal):', e);
@@ -368,7 +374,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
   try {
     const userEmail = invoice.customer_email;
     if (userEmail) {
-      await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+      const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -380,6 +386,9 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
           vars: { name: 'there', attempt: String(attemptCount) },
         }),
       });
+      // Highest-trust email in this file — a user whose card fails deserves to know. Log loudly
+      // on failure since this previously vanished with zero trace on any non-2xx from send-email.
+      if (!res.ok) console.error(`payment_failed email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
     }
   } catch (e) {
     console.warn('Payment-failed email send failed (non-fatal):', e);

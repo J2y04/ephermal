@@ -537,6 +537,10 @@ Deno.serve(async (req: Request) => {
     }
   } catch (err) {
     console.error('[google-api] error:', err)
-    return errResponse('Google Ads API error', 500, origin)
+    // gaqlSearch/gadsPost already embed the real Google Ads error (code, message) in err.message —
+    // discarding it here for a generic string, unlike meta-api/shopify-api's equivalent catches,
+    // made every failure (permission denied, invalid argument, auth) look identical to the caller.
+    const msg = err instanceof Error ? err.message : 'Google Ads API error'
+    return errResponse(msg, 500, origin)
   }
 })

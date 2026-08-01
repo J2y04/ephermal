@@ -79,6 +79,11 @@ const CACHE_TTL: Record<string, number> = {
   'meta-api:analytics':         300,
   'meta-api:insights':          300,
   'shopify-api:products':       180,
+  // orders/shop had no entry at all (scoped or legacy), so ttl always resolved to 0 and every
+  // dashboard read bypassed Redis, eating into shopify-api's own shared 20/min, 120/hour rate
+  // limit across all its actions.
+  'shopify-api:orders':         60,
+  'shopify-api:shop':           600,
   'google-api:campaigns':       60,
   'google-api:analytics':       300,
   'creative-fatigue:analyze':   300,

@@ -791,6 +791,20 @@ select.form-input{cursor:pointer}
     </div>
   </div>
 </aside>
+<script>
+// The sidebar nav (and Sign out) are plain divs with onclick handlers - not natively focusable
+// and don't fire click on Enter/Space, so keyboard-only and screen-reader users can't reach any
+// of the app's primary navigation. Applied programmatically to every div.nav-item + .logout-btn
+// rather than hand-editing 18 markup lines, so new nav items inherit this for free.
+document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').forEach(el => {
+  if (el.tagName === 'A') return; // Docs & Help is already a real <a href>
+  el.setAttribute('role', 'button');
+  el.setAttribute('tabindex', '0');
+  el.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); el.click(); }
+  });
+});
+</script>
 
 <div class="main">
   <div class="topbar">
@@ -1409,13 +1423,13 @@ select.form-input{cursor:pointer}
               <button type="button" class="platform-filter-btn" data-platform="google" onclick="setPlatformFilter('bulk','google')"><span class="platform-filter-dot google"></span>Google</button>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <button onclick="bulkAction('pause')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s" onmouseover="this.style.background='rgba(248,113,113,.18)'" onmouseout="this.style.background='rgba(248,113,113,.1)'">
+              <button onclick="bulkAction('pause',event)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s" onmouseover="this.style.background='rgba(248,113,113,.18)'" onmouseout="this.style.background='rgba(248,113,113,.1)'">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>Pause
               </button>
-              <button onclick="bulkAction('enable')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s" onmouseover="this.style.background='rgba(52,211,153,.18)'" onmouseout="this.style.background='rgba(52,211,153,.1)'">
+              <button onclick="bulkAction('enable',event)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:rgba(52,211,153,.1);color:var(--success);border:1px solid rgba(52,211,153,.2);border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:background .2s" onmouseover="this.style.background='rgba(52,211,153,.18)'" onmouseout="this.style.background='rgba(52,211,153,.1)'">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>Enable
               </button>
-              <button onclick="bulkAction('scale_budget')" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--primary);color:#08080c;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 15px rgba(6,214,199,.25)" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(6,214,199,.35)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(6,214,199,.25)'">
+              <button onclick="bulkAction('scale_budget',event)" style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--primary);color:#08080c;border:none;border-radius:9px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:transform .2s,box-shadow .2s;box-shadow:0 4px 15px rgba(6,214,199,.25)" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(6,214,199,.35)'" onmouseout="this.style.transform='none';this.style.boxShadow='0 4px 15px rgba(6,214,199,.25)'">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>Scale +15%
               </button>
             </div>
@@ -1570,7 +1584,7 @@ select.form-input{cursor:pointer}
             <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="s-name" placeholder="Your name"></div>
             <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="s-email" placeholder="your@email.com" readonly style="opacity:.6"></div>
           </div>
-          <div style="display:flex;justify-content:flex-end"><button class="btn-save" onclick="saveProfile()">Save Changes</button></div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn-save" id="s-profile-save-btn" onclick="saveProfile()">Save Changes</button></div>
         </div>
       </div>
       <div class="panel fade-in" style="margin-top:20px">
@@ -1907,7 +1921,7 @@ select.form-input{cursor:pointer}
           <div class="page-title">Profit Tracker</div>
           <div class="page-subtitle">COGS auto-fills from Shopify's "Cost per item" field when it's set there — edit any value below to override</div>
         </div>
-        <button onclick="saveProfitCogs()" class="btn btn-primary" style="padding:10px 20px">Save COGS</button>
+        <button id="profit-cogs-save-btn" onclick="saveProfitCogs()" class="btn btn-primary" style="padding:10px 20px">Save COGS</button>
       </div>
       <div id="profit-summary-wrap" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px"></div>
       <div class="card" style="margin-bottom:20px">
@@ -2159,6 +2173,20 @@ select.form-input{cursor:pointer}
     <div class="modal-actions">
       <button class="btn-secondary" id="confirm-modal-cancel" onclick="_confirmModalResolve(false)">Cancel</button>
       <button class="btn-save" id="confirm-modal-ok" onclick="_confirmModalResolve(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- PASSWORD CONFIRM MODAL (replaces window.prompt() for changePassword) -->
+<div class="modal-overlay" id="pw-confirm-modal">
+  <div class="modal" style="max-width:400px">
+    <button class="modal-close" onclick="_pwConfirmResolve(null)">×</button>
+    <div class="modal-title">Confirm your password</div>
+    <div class="modal-sub" style="margin-bottom:14px">Enter your current password to change it.</div>
+    <div class="form-group"><input class="form-input" id="pw-confirm-input" type="password" placeholder="Current password" onkeydown="if(event.key==='Enter'){event.preventDefault();_pwConfirmResolve(document.getElementById('pw-confirm-input').value);}"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="_pwConfirmResolve(null)">Cancel</button>
+      <button class="btn-save" onclick="_pwConfirmResolve(document.getElementById('pw-confirm-input').value)">Confirm</button>
     </div>
   </div>
 </div>
@@ -3401,6 +3429,9 @@ async function loadOverview() {
     setVal('a-conversions', fmt(d.total_conversions));
     updatePixelBanner(d.pixel_exists, d.pixel_active);
     if (d.total_spend > 0) { const el = document.getElementById('stat-spend'); animateCounter(el, d.total_spend, v => `€${fmt(v)}`); }
+    // Distinguishes "your Meta token expired" from "you genuinely have €0 spend" — both used to
+    // render identically as zeroed stat cards with no indication anything was wrong.
+    if (d.auth_error) showToast('Your Meta Ads connection has expired — reconnect in Settings to see live data.', 'warn');
     if (d.total_creatives > 0) { const el = document.getElementById('stat-creatives'); animateCounter(el, d.total_creatives, v => fmt(Math.round(v))); }
     if (d.total_conversions > 0) { const el = document.getElementById('a-conversions'); animateCounter(el, d.total_conversions, v => fmt(Math.round(v))); }
     if (d.total_impressions > 0) { const el = document.getElementById('a-impressions'); animateCounter(el, d.total_impressions, v => fmt(Math.round(v))); }
@@ -3546,7 +3577,14 @@ async function loadCampaigns() {
   try {
     const rMeta = await authFetch('/meta/read?action=campaigns');
     if (!rMeta || !rMeta.ok) { _campaignsLoaded = true; showLoadError(); if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts(); return; }
-    const metaCampaigns = await rMeta.json();
+    const metaResult = await rMeta.json();
+    // getCampaigns now returns {data, stale, auth_error, error} instead of a bare array, so a
+    // dead/expired Meta token can be told apart from a genuinely empty account instead of both
+    // silently rendering as "no campaigns" — surface that distinction to the user.
+    const metaCampaigns = Array.isArray(metaResult) ? metaResult : (metaResult.data ?? []);
+    if (metaResult && metaResult.auth_error) {
+      showToast('Your Meta Ads connection has expired — reconnect in Settings to see live campaign data.', 'warn');
+    }
 
     // Fetch Google campaigns if Growth+ and credentials set
     let googleCampaigns = [];
@@ -4372,25 +4410,46 @@ async function saveProfile() {
   const parts = name.split(/\s+/);
   const firstName = parts[0];
   const lastName = parts.slice(1).join(' ') || '';
+  const btn = document.getElementById('s-profile-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
   try {
     if (!window.__clerk?.user) { showToast('Not signed in', 'error'); return; }
     await window.__clerk.user.update({ firstName, lastName });
     loadUser();
     showToast('Profile updated');
   } catch(e) { showToast(e.message || 'Update failed', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; } }
+}
+
+// Styled replacement for window.prompt() — a raw browser prompt() for a password field is
+// unmasked, unstyled, and inconsistent with every other confirmation in the app, and can be
+// silently blocked by some browsers with no explanation shown to the user.
+let _pwConfirmPending = null;
+function showPasswordConfirm() {
+  document.getElementById('pw-confirm-input').value = '';
+  document.getElementById('pw-confirm-modal').classList.add('open');
+  setTimeout(() => document.getElementById('pw-confirm-input')?.focus(), 50);
+  return new Promise((resolve) => { _pwConfirmPending = resolve; });
+}
+function _pwConfirmResolve(value) {
+  document.getElementById('pw-confirm-modal').classList.remove('open');
+  if (_pwConfirmPending) { _pwConfirmPending(value || null); _pwConfirmPending = null; }
 }
 
 async function changePassword() {
   const newPass = document.getElementById('s-pass').value;
   if (!newPass || newPass.length < 8) { showToast('Password must be at least 8 characters', 'error'); return; }
   if (!/[A-Z]/.test(newPass) || !/[0-9]/.test(newPass)) { showToast('Password must have an uppercase letter and a number', 'error'); return; }
-  const currentPass = prompt('Enter your current password to confirm:');
+  const currentPass = await showPasswordConfirm();
   if (!currentPass) return;
+  const btn = document.querySelector('#page-settings .btn-save[onclick="changePassword()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Updating…'; }
   try {
     await window.__clerk.user.updatePassword({ newPassword: newPass, currentPassword: currentPass });
     document.getElementById('s-pass').value = '';
     showToast('Password updated');
   } catch(e) { showToast(e.message || 'Failed to update password', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = 'Update Password'; } }
 }
 
 // ── CHARTS ───────────────────────────────────────────────────────────────────
@@ -5319,11 +5378,17 @@ function toggleBulkAll(masterCheck) {
   }
 }
 
-async function bulkAction(action) {
+async function bulkAction(action, evt) {
   if (!canAccess('bulk')) { showUpgradeModal('bulk'); return; }
   if (!bulkSelected.size) { showToast('Select at least one campaign first', 'error'); return; }
   const label = action==='pause'?'Pausing':action==='enable'?'Enabling':'Scaling budgets for';
   showToast(`${label} ${bulkSelected.size} campaign${bulkSelected.size>1?'s':''}…`);
+
+  // This mutates real, live ad spend across every selected Meta/Google campaign — a rapid
+  // double-click here with no visual feedback (previously just a toast) could fire duplicate
+  // pause/enable toggles or stack multiple 15% budget scale-ups on the same campaigns.
+  const btn = evt?.currentTarget;
+  if (btn) { btn.disabled = true; btn.style.opacity = '.6'; btn.style.cursor = 'default'; }
 
   // meta-api's bulk_action endpoint is Meta-only — routing a Google campaign_id through it fails
   // the ownership check (or errors against Meta's API) since Google campaigns are never rows in
@@ -5379,6 +5444,7 @@ async function bulkAction(action) {
     await loadCampaigns();
     loadBulkCampaigns();
   } catch(e) { showToast('Request failed', 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.style.opacity = ''; btn.style.cursor = 'pointer'; } }
 }
 
 // ── MULTI-STORE ──────────────────────────────────────────────────────────────
@@ -7309,20 +7375,26 @@ async function saveProfitCogs() {
   });
   if (!items.length) { showToast('Enter at least one COGS value first', 'error'); return; }
 
-  const r = await authFetch('/profit-tracker?action=bulk_set', {
-    method: 'POST',
-    body: JSON.stringify({ action: 'bulk_set', items })
-  });
-  if (!r || !r.ok) { showToast('Save failed', 'error'); return; }
-  const d = await r.json();
-  // Backend can return 200 with a partial success (e.g. some rows errored) — d.updated/d.total
-  // tell the real story; don't claim "saved successfully" if some rows silently failed.
-  if (typeof d.updated === 'number' && typeof d.total === 'number' && d.updated < d.total) {
-    showToast(`Saved ${d.updated} of ${d.total} - some products failed, check and retry`, 'warn');
-  } else {
-    showToast('COGS saved successfully');
+  const btn = document.getElementById('profit-cogs-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    const r = await authFetch('/profit-tracker?action=bulk_set', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'bulk_set', items })
+    });
+    if (!r || !r.ok) { showToast('Save failed', 'error'); return; }
+    const d = await r.json();
+    // Backend can return 200 with a partial success (e.g. some rows errored) — d.updated/d.total
+    // tell the real story; don't claim "saved successfully" if some rows silently failed.
+    if (typeof d.updated === 'number' && typeof d.total === 'number' && d.updated < d.total) {
+      showToast(`Saved ${d.updated} of ${d.total} - some products failed, check and retry`, 'warn');
+    } else {
+      showToast('COGS saved successfully');
+    }
+    loadProfitReport();
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save COGS'; }
   }
-  loadProfitReport();
 }
 
 </script>

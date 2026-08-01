@@ -18,6 +18,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
+import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -41,6 +42,11 @@ Deno.serve(async (req) => {
 
   const userId = await extractUserId(req.headers.get('Authorization'));
   if (!userId) return errResponse('Unauthorized', 401, origin);
+
+  const rl = await rateLimitTiered(userId, 'cancel-subscription', [
+    { max: 6, window: 60 }, { max: 20, window: 3600 },
+  ]);
+  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { /* empty body → default action */ }
@@ -86,9 +92,13 @@ Deno.serve(async (req) => {
   }
 
   if (action === 'cancel') {
-    // Guard: only allow cancellation when Stripe subscription is actually active/trialing
-    // (not plan field which may be stale; use live Stripe status instead)
-    if (subscription.status !== 'active' && subscription.status !== 'trialing') {
+    // Guard: allow cancellation for any live Stripe status except already-'canceled' (handled
+    // above). Previously only 'active'/'trialing' were allowed, which blocked self-service
+    // cancellation for a subscription stuck in 'past_due'/'unpaid' (failed card, Stripe still
+    // retrying) — exactly the case where a user most needs to be able to cancel, and where
+    // EU as-easy-to-cancel-as-to-subscribe law (see header comment) applies hardest.
+    const CANCELLABLE_STATUSES = new Set(['active', 'trialing', 'past_due', 'unpaid', 'incomplete']);
+    if (!CANCELLABLE_STATUSES.has(subscription.status)) {
       return errResponse('No active subscription to cancel', 400, origin);
     }
 

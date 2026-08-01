@@ -508,8 +508,12 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
+    // Unlike the sibling AI functions (budget-ai, competitor-radar, creative-fatigue,
+    // profit-tracker), this returned the raw caught error text to the client — callClaude()
+    // throws raw Anthropic error text and metaGet/metaPost throw raw Meta error text, so an
+    // Anthropic overload or a Meta API failure surfaced provider-internal wording straight to
+    // a Shopify store owner instead of a clean message.
     console.error('roas-optimizer error:', err);
-    const msg = err instanceof Error ? err.message : 'Optimizer error';
-    return errResponse(msg, 500, origin);
+    return errResponse('ROAS optimizer error', 500, origin);
   }
 });

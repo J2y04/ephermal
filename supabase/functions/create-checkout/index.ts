@@ -153,7 +153,12 @@ Deno.serve(async (req) => {
   const isTopup  = TOPUP_PRICES.has(price_id) || isAIUsageTopup;
 
   try {
-    // Lookup or create Stripe customer to de-duplicate by clerk_user_id
+    // Lookup or create Stripe customer to de-duplicate by clerk_user_id. customers.search is
+    // Stripe's own eventually-consistent search API (their docs note results can lag writes by
+    // a few seconds) — two near-simultaneous requests (double-click, client retry) can both find
+    // zero results and each call customers.create, producing two Stripe Customers for the same
+    // clerk_user_id. A stable idempotency key keyed only on clerk_user_id closes that race: any
+    // retry of "create the customer for this user" always resolves to the one already created.
     const existing = await getStripe().customers.search({
       query: `metadata['clerk_user_id']:'${clerk_user_id}'`,
       limit: 1,
@@ -166,7 +171,7 @@ Deno.serve(async (req) => {
       const customer = await getStripe().customers.create({
         email: email.trim(),
         metadata: { clerk_user_id },
-      });
+      }, { idempotencyKey: `customer-create-${clerk_user_id}` });
       customerId = customer.id;
     }
 
@@ -215,7 +220,14 @@ Deno.serve(async (req) => {
       };
     }
 
-    const session = await getStripe().checkout.sessions.create(sessionParams);
+    // Bucketed idempotency key: retries of the same checkout attempt (double-click, client
+    // timeout retry, mobile network hiccup) within a 5-minute window resolve to the same Stripe
+    // Checkout Session instead of creating a duplicate; a genuinely new checkout a few minutes
+    // later still gets a fresh session.
+    const idempotencyBucket = Math.floor(Date.now() / 300_000);
+    const session = await getStripe().checkout.sessions.create(sessionParams, {
+      idempotencyKey: `checkout-${clerk_user_id}-${price_id}-${idempotencyBucket}`,
+    });
 
     console.log(`✓ Checkout session created [${isTopup?'topup':'subscription'}] for ${clerk_user_id} — ${session.id}`);
 

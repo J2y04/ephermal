@@ -30,7 +30,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
 import {
-  metaGet, metaPost, metaDelete,
+  metaGet, metaPost, metaDelete, MetaApiError,
   CAMPAIGN_FIELDS, CAMPAIGN_INSIGHT_FIELDS,
   CREATIVE_FIELDS, AUDIENCE_FIELDS,
   parseROAS, parseConversions,
@@ -91,6 +91,12 @@ async function getOverview(accountId: string, token: string, userId: string) {
     ? campaignRes.value.data ?? []
     : [];
 
+  // Distinguish "your Meta token is dead, reconnect" from "you genuinely have zero campaigns" —
+  // both previously looked identical (zeroed KPIs, 200 OK), same bug class already fixed once in
+  // mrr-tracker this session. Only flagged when the rejection actually looks auth-shaped, so a
+  // one-off Meta API hiccup doesn't wrongly prompt a reconnect.
+  const authError = campaignRes.status === 'rejected' && campaignRes.reason instanceof MetaApiError && campaignRes.reason.isAuthError;
+
   let totalSpend = 0, totalImpressions = 0, totalClicks = 0,
       totalConversions = 0, roasSum = 0, roasCount = 0;
 
@@ -139,6 +145,7 @@ async function getOverview(accountId: string, token: string, userId: string) {
     pixel_last_fired:  pixel?.last_fired_time ?? null,
     campaign_count:    campaigns.length,
     period_days:       30,
+    auth_error:        authError,
   };
 }
 
@@ -162,8 +169,11 @@ async function getCampaigns(accountId: string, token: string, userId: string) {
     );
     metaCampaigns = res.data ?? [];
   } catch (e) {
-    // Return cached data if Meta call fails
-    return cached ?? [];
+    // A bare cached-or-empty array here looked identical to "genuinely zero campaigns" whether
+    // the failure was a token expiring or a one-off API hiccup — same silent-failure shape as
+    // getOverview above. Surface enough for the caller to tell them apart instead of a plain array.
+    const authError = e instanceof MetaApiError && e.isAuthError;
+    return { data: cached ?? [], stale: true, auth_error: authError, error: e instanceof Error ? e.message : 'Meta API error' };
   }
 
   const rows = metaCampaigns.map(c => {
@@ -206,7 +216,7 @@ async function getCampaigns(accountId: string, token: string, userId: string) {
     await supabase.from('campaigns').upsert(rows, { onConflict: 'id,user_id' });
   }
 
-  return rows;
+  return { data: rows, stale: false, auth_error: false, error: null };
 }
 
 async function getCreatives(accountId: string, token: string, userId: string, status?: string) {
@@ -568,7 +578,7 @@ Deno.serve(async (req) => {
 
         case 'analytics': {
           // Re-use campaigns data enriched with insights
-          const campaigns = await getCampaigns(accountId, token, userId);
+          const { data: campaigns, auth_error } = await getCampaigns(accountId, token, userId);
           const totals = campaigns.reduce(
             (acc, c) => ({
               spend:       acc.spend + (c.total_spend || 0),
@@ -582,7 +592,7 @@ Deno.serve(async (req) => {
           const avgRoas = roasArr.length
             ? roasArr.reduce((a: number, b: number) => a + b, 0) / roasArr.length
             : 0;
-          return okResponse({ ...totals, roas: Math.round(avgRoas * 100) / 100, campaigns }, origin);
+          return okResponse({ ...totals, roas: Math.round(avgRoas * 100) / 100, campaigns, auth_error }, origin);
         }
 
         default:
@@ -615,7 +625,7 @@ Deno.serve(async (req) => {
           return okResponse(await getPixel(accountId, token), origin);
 
         case 'analytics': {
-          const campaigns = await getCampaigns(accountId, token, userId);
+          const { data: campaigns, auth_error } = await getCampaigns(accountId, token, userId);
           const totals = campaigns.reduce(
             (acc, c) => ({
               spend:       acc.spend + (c.total_spend || 0),
@@ -629,7 +639,7 @@ Deno.serve(async (req) => {
           const avgRoas = roasArr.length
             ? roasArr.reduce((a: number, b: number) => a + b, 0) / roasArr.length
             : 0;
-          return okResponse({ ...totals, roas: Math.round(avgRoas * 100) / 100, campaigns }, origin);
+          return okResponse({ ...totals, roas: Math.round(avgRoas * 100) / 100, campaigns, auth_error }, origin);
         }
 
         case 'select_account': {

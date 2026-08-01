@@ -12,6 +12,27 @@ export interface MetaError {
   error: { message: string; type: string; code: number; fbtrace_id: string };
 }
 
+// Meta error codes that specifically mean "this token/permission is dead", not "something else
+// went wrong" — 190=expired/invalid access token, 102/463/467=session invalidated, 200=missing
+// permission. Distinguishing these lets callers tell "reconnect your account" apart from a
+// generic API hiccup, instead of both looking like an empty/zeroed account (the exact bug class
+// already found and fixed once in mrr-tracker this session).
+const AUTH_ERROR_CODES = new Set([190, 102, 200, 463, 467]);
+
+export class MetaApiError extends Error {
+  isAuthError: boolean;
+  constructor(message: string, opts: { type?: string; code?: number } = {}) {
+    super(message);
+    this.name = 'MetaApiError';
+    this.isAuthError = opts.type === 'OAuthException' || AUTH_ERROR_CODES.has(opts.code ?? -1);
+  }
+}
+
+function throwMetaError(data: unknown, status: number): never {
+  const err = (data as MetaError)?.error;
+  throw new MetaApiError(err?.message ?? `Meta API error ${status}`, { type: err?.type, code: err?.code });
+}
+
 /** GET from Meta Graph API */
 export async function metaGet<T = unknown>(
   path: string,
@@ -23,10 +44,7 @@ export async function metaGet<T = unknown>(
 
   const res = await fetch(url.toString(), { headers: { 'Authorization': `Bearer ${token}` } });
   const data = await res.json() as T | MetaError;
-  if (!res.ok || 'error' in (data as object)) {
-    const msg = (data as MetaError).error?.message ?? `Meta API error ${res.status}`;
-    throw new Error(msg);
-  }
+  if (!res.ok || 'error' in (data as object)) throwMetaError(data, res.status);
   return data as T;
 }
 
@@ -44,10 +62,7 @@ export async function metaPost<T = unknown>(
     body: JSON.stringify(body),
   });
   const data = await res.json() as T | MetaError;
-  if (!res.ok || 'error' in (data as object)) {
-    const msg = (data as MetaError).error?.message ?? `Meta API error ${res.status}`;
-    throw new Error(msg);
-  }
+  if (!res.ok || 'error' in (data as object)) throwMetaError(data, res.status);
   return data as T;
 }
 
@@ -63,10 +78,7 @@ export async function metaDelete<T = unknown>(
     headers: { 'Authorization': `Bearer ${token}` },
   });
   const data = await res.json() as T | MetaError;
-  if (!res.ok || 'error' in (data as object)) {
-    const msg = (data as MetaError).error?.message ?? `Meta API error ${res.status}`;
-    throw new Error(msg);
-  }
+  if (!res.ok || 'error' in (data as object)) throwMetaError(data, res.status);
   return data as T;
 }
 

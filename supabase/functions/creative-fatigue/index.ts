@@ -152,7 +152,7 @@ async function sendFatigueAlertEmail(userId: string, count: number): Promise<voi
     const email = user.email_addresses?.find(e => e.id === user.primary_email_address_id)?.email_address;
     if (!email) return;
 
-    await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+    const emailRes = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}` },
       body: JSON.stringify({
@@ -161,6 +161,9 @@ async function sendFatigueAlertEmail(userId: string, count: number): Promise<voi
         vars: { name: 'there', count: String(count) },
       }),
     });
+    // fetch() only rejects on network failure, not on an HTTP error status — without this check
+    // a user with real ad fatigue who should be alerted gets nothing, with zero trace in logs.
+    if (!emailRes.ok) console.error(`fatigue_alert email failed for ${userId}: ${emailRes.status} ${await emailRes.text().catch(() => '')}`);
   } catch (e) {
     console.warn('fatigue_alert email failed (non-fatal):', e);
   }
@@ -186,12 +189,14 @@ Deno.serve(async (req) => {
   ]);
   if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
 
-  // Load launched creatives from DB
-  const { data: creatives, error: dbErr } = await supabase
-    .from('creatives')
-    .select('*')
-    .eq('user_id', userId)
-    .in('status', ['launched', 'approved']);
+  // Load launched creatives and the Meta token in parallel — neither depends on the other's
+  // result (the token read only needs userId), so awaiting them sequentially was adding one
+  // avoidable extra round trip to every fatigue-analysis request before enrichFromMeta even
+  // started. Meta token always from DB — never from request headers.
+  const [{ data: creatives, error: dbErr }, { data: _tokenRow }] = await Promise.all([
+    supabase.from('creatives').select('*').eq('user_id', userId).in('status', ['launched', 'approved']),
+    supabase.from('user_integrations').select('meta_token').eq('user_id', userId).single(),
+  ]);
 
   if (dbErr) {
     console.error('creative-fatigue creatives fetch error:', dbErr);
@@ -201,12 +206,6 @@ Deno.serve(async (req) => {
     return okResponse({ results: [], message: 'No launched creatives found' }, origin);
   }
 
-  // Meta token always from DB — never from request headers
-  const { data: _tokenRow } = await supabase
-    .from('user_integrations')
-    .select('meta_token')
-    .eq('user_id', userId)
-    .single();
   const metaToken = _tokenRow?.meta_token ?? '';
 
   // Enrich with live Meta insights if token available

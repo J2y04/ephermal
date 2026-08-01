@@ -412,8 +412,12 @@ async function handleSetPlan(body: Record<string, unknown>): Promise<Record<stri
     periodEnd = new Date(Date.now() + days * 86_400_000).toISOString();
   }
 
-  await updateClerkMetadata(targetUserId, plan);
-
+  // Supabase is the source of truth every plan check reads from (_shared/plan.ts), so write it
+  // first: if this upsert fails, nothing has changed anywhere and the admin's 500 is accurate.
+  // Previously Clerk metadata was updated first — a subsequent DB failure left Clerk already
+  // showing the new plan while Supabase (and every server-side gate) still had the old one, with
+  // no rollback, silently diverging the two systems on every partial failure.
+  //
   // Only user_id/plan/period_end are set — stripe_customer_id/stripe_sub_id are
   // intentionally left untouched so a manual override doesn't clobber a real
   // paying user's Stripe linkage. A subsequent Stripe webhook for that user can
@@ -426,6 +430,8 @@ async function handleSetPlan(body: Record<string, unknown>): Promise<Record<stri
     { onConflict: 'user_id' },
   );
   if (error) throw new Error(`Failed to update user_plans: ${error.message}`);
+
+  await updateClerkMetadata(targetUserId, plan);
 
   return { ok: true, user_id: targetUserId, plan, period_end: periodEnd };
 }
