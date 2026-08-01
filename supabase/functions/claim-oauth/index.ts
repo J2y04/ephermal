@@ -22,6 +22,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { extractUserId } from '../_shared/auth.ts'
+import { rateLimit } from '../_shared/rate-limit.ts'
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
 // Allow the production domain + Vercel previews during development.
@@ -77,6 +78,12 @@ Deno.serve(async (req: Request) => {
   if (!verifiedUserId) {
     return json({ error: 'unauthorized' }, 401, origin)
   }
+
+  // Every claim is already scoped to this exact verified user_id, so brute-forcing another
+  // user's claim isn't possible regardless of request volume - this is defense-in-depth /
+  // cost-control consistency with every other endpoint, not a security-critical gate.
+  const rl = await rateLimit(verifiedUserId, 'claim-oauth', 10, 60)
+  if (!rl.allowed) return json({ error: 'rate_limited' }, 429, origin)
 
   // ── Parse request body ───────────────────────────────────────────────────
   let body: { claim?: unknown; platform?: unknown }
