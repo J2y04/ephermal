@@ -44,6 +44,7 @@ export default function DocsPage() {
             <a className="docs-nav-link" href="#spend">Ad spend</a>
             <a className="docs-nav-link" href="#mrr">MRR</a>
             <a className="docs-nav-link" href="#orders">Orders</a>
+            <a className="docs-nav-link" href="#cogs">Cost of Goods (COGS)</a>
           </div>
           <div className="docs-nav-group">
             <div className="docs-nav-label">Campaigns &amp; Creative</div>
@@ -236,11 +237,17 @@ export default function DocsPage() {
             </div>
             <div className="docs-term" id="mrr">
               <h3>MRR <code>Monthly Recurring Revenue</code></h3>
-              <p>Here, MRR tracks your Shopify store&apos;s revenue over a rolling 30-day window, shown alongside your ad spend for the same period so you can see the two side by side.</p>
+              <p>Here, MRR tracks your Shopify store&apos;s revenue over a rolling 30-day window, shown alongside your ad spend and estimated margin for the same period so you can see all three side by side. Margin only shows once you&apos;ve entered <a href="#cogs">Cost of Goods</a> for at least one product.</p>
             </div>
             <div className="docs-term" id="orders">
               <h3>Orders</h3>
               <p>The number of paid orders placed on your Shopify store in the selected time window.</p>
+            </div>
+            <div className="docs-term" id="cogs">
+              <h3>COGS <code>Cost of Goods Sold</code></h3>
+              <p>What it actually costs you to have one unit of a product ready to sell: manufacturing or wholesale price, plus freight and packaging per unit. It does not include ad spend, Shopify fees, or overhead like rent, those come out of margin separately.</p>
+              <p>COGS auto-fills from Shopify&apos;s own &quot;Cost per item&quot; field when you&apos;ve set it there, or you can enter it directly on the Profit Tracker page. It&apos;s the input that makes margin tracking work at all: without it, Profit Tracker and MRR Tracker have no way to know what any of your revenue actually cost you.</p>
+              <p>Margin shown across Ephermal is a <strong>catalog-average estimate</strong> (your entered costs, averaged across products, applied to revenue), not exact per-order accounting, since Shopify doesn&apos;t report which specific products made up a given order&apos;s revenue. Treat it as directionally useful, not penny-precise.</p>
             </div>
           </section>
 

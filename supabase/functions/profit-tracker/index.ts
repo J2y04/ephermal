@@ -22,6 +22,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
+import { computeProductMargin, computeCatalogMargin } from '../_shared/margin.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -108,19 +109,12 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
   }[];
 
   const enriched = rows.map(p => {
-    const price  = p.price_cents ?? 0;
-    const cogs   = p.cogs_cents ?? 0;
-    const hasCogs = (p.cogs_cents ?? null) !== null && p.cogs_cents! >= 0;
-
-    const profitPerUnitCents   = hasCogs ? price - cogs : null;
-    const marginPercent        = hasCogs && price > 0
-      ? Math.round(((price - cogs) / price) * 10000) / 100
-      : null;
+    const { hasCogs, profitPerUnitCents, marginPercent } = computeProductMargin(p);
 
     return {
       product_id:           p.product_id,
       title:                p.title,
-      price_cents:          price,
+      price_cents:          p.price_cents ?? 0,
       cogs_cents:           p.cogs_cents ?? null,
       profit_per_unit_cents: profitPerUnitCents,
       margin_percent:       marginPercent,
@@ -137,25 +131,20 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
     return b.margin_percent - a.margin_percent;
   });
 
-  const withCogs = enriched.filter(p => p.has_cogs);
-  const avgMargin = withCogs.length > 0
-    ? Math.round(
-        withCogs.reduce((sum, p) => sum + (p.margin_percent ?? 0), 0) / withCogs.length * 100,
-      ) / 100
-    : null;
+  const { avgMarginPercent, productsWithCogs, totalProducts } = computeCatalogMargin(rows);
 
   // estimated_profit_per_roas_point: if you spend $1 and get ROAS of 1,
   // profit earned = avg margin on revenue. So at ROAS=1 per $1 spend → $1 revenue × avg_margin%
-  const estimatedProfitPerRoasPoint = avgMargin !== null
-    ? Math.round(avgMargin * 100) / 10000  // as a decimal (e.g. 0.35 for 35%)
+  const estimatedProfitPerRoasPoint = avgMarginPercent !== null
+    ? Math.round(avgMarginPercent * 100) / 10000  // as a decimal (e.g. 0.35 for 35%)
     : null;
 
   return {
     products: enriched,
     summary: {
-      total_products:           enriched.length,
-      total_products_with_cogs: withCogs.length,
-      avg_margin_percent:       avgMargin,
+      total_products:           totalProducts,
+      total_products_with_cogs: productsWithCogs,
+      avg_margin_percent:       avgMarginPercent,
       estimated_profit_per_roas_point: estimatedProfitPerRoasPoint,
     },
   };

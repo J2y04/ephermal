@@ -1111,6 +1111,17 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
     <!-- MRR TRACKER -->
     <div class="page" id="page-mrrtracker">
       <div class="paywall-wrap" id="mrrtracker-paywall-wrap">
+      <div class="meta-connect-banner" id="cogs-connect-banner-mrr" style="display:none">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="text">
+          <strong>Add Cost of Goods to see real margin</strong>
+          <span>Revenue, spend, and ROAS above are already live - margin needs your product costs first. <a href="/docs#cogs" target="_blank" rel="noopener" style="color:var(--primary)">What is COGS?</a></span>
+        </div>
+        <div class="platform-btns">
+          <button class="btn-save" style="padding:8px 16px;font-size:12px;white-space:nowrap" onclick="navigate('profittracker')">Enter Cost of Goods</button>
+          <button class="panel-action" style="padding:8px 10px" onclick="dismissCogsBanner('mrr')" title="Dismiss for now">✕</button>
+        </div>
+      </div>
       <div class="page-header">
         <div>
           <div class="page-title">MRR Tracker</div>
@@ -1142,6 +1153,13 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
           <div class="stat-value" id="mrr-stat-orders">-</div>
           <div class="stat-label">Paid Shopify orders</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-label">Estimated Margin (30d) <a href="/docs#cogs" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><div class="stat-icon" style="background:rgba(6,214,199,0.1)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div>
+          <div id="mrr-margin-body">
+            <div class="stat-value" id="mrr-stat-margin">-</div>
+            <div class="stat-label" id="mrr-stat-margin-sub">-</div>
+          </div>
+        </div>
       </div>
 
       <div class="panel fade-in" style="margin-bottom:20px">
@@ -1158,6 +1176,11 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
       <div class="panel fade-in" style="margin-bottom:20px">
         <div class="panel-head"><div class="panel-title">ROAS Over Time</div></div>
         <div style="padding:16px 22px" id="mrr-roas-chart"><div class="empty-state" style="padding:30px 0"><p>No spend data yet. Connect Meta/Google and sync</p></div></div>
+      </div>
+
+      <div class="panel fade-in" style="margin-bottom:20px">
+        <div class="panel-head"><div class="panel-title">Margin Over Time <span style="font-size:11px;font-weight:600;color:var(--muted);text-transform:none;letter-spacing:0">(estimated)</span></div></div>
+        <div style="padding:16px 22px" id="mrr-margin-chart"><div class="empty-state" style="padding:30px 0"><p>Enter Cost of Goods to see margin trend</p></div></div>
       </div>
 
       <div class="card">
@@ -1519,8 +1542,8 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
         <div class="budget-card fade-in" style="margin-bottom:20px">
           <div style="font-size:14px;font-weight:700;margin-bottom:16px">Calculate Your Optimal Budget</div>
           <div class="budget-input-row">
-            <div class="form-group"><label class="form-label">Monthly Revenue Goal (€)</label><input class="form-input" id="budget-revenue-goal" type="number" placeholder="e.g. 10000" min="100"></div>
-            <div class="form-group"><label class="form-label">Average Order Value (€)</label><input class="form-input" id="budget-aov" type="number" placeholder="e.g. 65" min="1"></div>
+            <div class="form-group"><label class="form-label" id="budget-goal-label">Monthly Revenue Goal (€)</label><input class="form-input" id="budget-revenue-goal" type="number" placeholder="e.g. 10000" min="100"></div>
+            <div class="form-group"><label class="form-label" id="budget-aov-label">Average Order Value (€)</label><input class="form-input" id="budget-aov" type="number" placeholder="e.g. 65" min="1"></div>
             <div class="form-group"><label class="form-label">Current ROAS (if known)</label><input class="form-input" id="budget-roas" type="number" placeholder="e.g. 2.5" step="0.1" min="0.5"></div>
             <div class="form-group"><label class="form-label">Campaign Period (days)</label><input class="form-input" id="budget-days" type="number" placeholder="30" min="7" max="90"></div>
           </div>
@@ -1594,6 +1617,26 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
             <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="s-email" placeholder="your@email.com" readonly style="opacity:.6"></div>
           </div>
           <div style="display:flex;justify-content:flex-end"><button class="btn-save" id="s-profile-save-btn" onclick="saveProfile()">Save Changes</button></div>
+        </div>
+      </div>
+      <div class="panel fade-in" style="margin-top:20px">
+        <div class="panel-head"><div class="panel-title">Preferences</div></div>
+        <div class="settings-form">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Currency</label>
+              <select class="form-input" id="s-currency" style="cursor:pointer">
+                <option value="EUR">EUR (€)</option>
+                <option value="USD">USD ($)</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Language</label>
+              <select class="form-input" id="s-language" disabled style="cursor:not-allowed;opacity:.6">
+                <option value="en">English</option>
+              </select>
+            </div>
+          </div>
+          <div style="font-size:12px;color:var(--muted)">Currency changes how amounts are displayed everywhere - your plan is still billed in EUR. More languages coming soon.</div>
+          <div style="display:flex;justify-content:flex-end"><button class="btn-save" id="s-preferences-save-btn" onclick="savePreferences()">Save Preferences</button></div>
         </div>
       </div>
       <div class="panel fade-in" style="margin-top:20px">
@@ -1725,8 +1768,8 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
             <div class="camp-stat-box"><div class="label">Top-up Balance</div><div class="val" id="bv-credits-topup">0</div></div>
           </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
-            <button onclick="if(!window.STRIPE_PRICES?.ugc_topup_5){showToast('Billing not configured. Contact support','error');return;}startCheckout(window.STRIPE_PRICES.ugc_topup_5)" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)">+5 credits · €35</button>
-            <button onclick="if(!window.STRIPE_PRICES?.ugc_topup_15){showToast('Billing not configured. Contact support','error');return;}startCheckout(window.STRIPE_PRICES.ugc_topup_15)" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)">+15 credits · €105</button>
+            <button onclick="if(!window.STRIPE_PRICES?.ugc_topup_5){showToast('Billing not configured. Contact support','error');return;}startCheckout(window.STRIPE_PRICES.ugc_topup_5)" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)" id="ugc-topup-5-btn">+5 credits · €35</button>
+            <button onclick="if(!window.STRIPE_PRICES?.ugc_topup_15){showToast('Billing not configured. Contact support','error');return;}startCheckout(window.STRIPE_PRICES.ugc_topup_15)" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)" id="ugc-topup-15-btn">+15 credits · €105</button>
           </div>
         </div>
       </div>
@@ -1925,6 +1968,17 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
     <!-- ── PROFIT TRACKER ────────────────────────────────────────────────── -->
     <div class="page" id="page-profittracker">
       <div class="paywall-wrap" id="profittracker-paywall-wrap">
+      <div class="meta-connect-banner" id="cogs-connect-banner-profit" style="display:none">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div class="text">
+          <strong>No Cost of Goods entered yet</strong>
+          <span>Margin and profit numbers below (and on MRR Tracker) stay blank until at least one product has a real cost. <a href="/docs#cogs" target="_blank" rel="noopener" style="color:var(--primary)">What is COGS?</a></span>
+        </div>
+        <div class="platform-btns">
+          <button class="btn-save" style="padding:8px 16px;font-size:12px;white-space:nowrap" onclick="document.getElementById('profit-table-body')?.scrollIntoView({behavior:'smooth',block:'start'})">Jump to products</button>
+          <button class="panel-action" style="padding:8px 10px" onclick="dismissCogsBanner('profit')" title="Dismiss for now">✕</button>
+        </div>
+      </div>
       <div class="page-header">
         <div>
           <div class="page-title">Profit Tracker</div>
@@ -2021,12 +2075,12 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
         <label class="form-label">Daily Budget</label>
         <div class="budget-slider-wrap">
           <div class="budget-slider-top">
-            <div class="budget-slider-value"><span class="cur">€</span><span id="cb-budget-display">20</span></div>
-            <div class="budget-slider-range">€5 – €500/day</div>
+            <div class="budget-slider-value"><span class="cur" id="cb-budget-cur">€</span><span id="cb-budget-display">20</span></div>
+            <div class="budget-slider-range" id="cb-budget-range">€5 – €500/day</div>
           </div>
           <input class="budget-slider" id="cb-budget" type="range" min="5" max="500" step="1" value="20"
             style="--fill:3.03%"
-            oninput="document.getElementById('cb-budget-display').textContent=this.value;this.style.setProperty('--fill',((this.value-this.min)/(this.max-this.min)*100)+'%')">
+            oninput="document.getElementById('cb-budget-display').textContent=budgetSliderDisplay(this.value);this.style.setProperty('--fill',((this.value-this.min)/(this.max-this.min)*100)+'%')">
         </div>
       </div>
     </div>
@@ -2433,7 +2487,7 @@ function showUpgradeModal(feature) {
   const req = GATED[feature] || 'growth';
   const plan = PLANS[req];
   document.getElementById('upgrade-modal-plan').textContent = plan.name;
-  document.getElementById('upgrade-modal-price').textContent = req === 'growth' ? '€199' : '€349';
+  document.getElementById('upgrade-modal-price').textContent = curFmtBilling(req === 'growth' ? 199 : 349);
   // Use checkout Edge Function if price IDs are configured, otherwise fall back to static link
   const upgradeLink = document.getElementById('upgrade-modal-link');
   const priceId = window.STRIPE_PRICES?.[req];
@@ -2597,10 +2651,11 @@ async function loadIntegrationsFromSupabase() {
   try {
     const { data } = await sb
       .from('user_integrations')
-      .select('meta_token, meta_account, shopify_token, shopify_shop, shopify_shop_name, google_refresh_token, google_ads_customer_id, store_url')
+      .select('meta_token, meta_account, shopify_token, shopify_shop, shopify_shop_name, google_refresh_token, google_ads_customer_id, store_url, currency')
       .eq('user_id', clerkUserId)
       .single();
     if (!data) return;
+    if (data.currency      && !localStorage.getItem('currency'))            localStorage.setItem('currency',            data.currency);
     if (data.meta_token    && !localStorage.getItem('meta_token'))          localStorage.setItem('meta_token',          data.meta_token);
     if (data.meta_account  && !localStorage.getItem('meta_account'))        localStorage.setItem('meta_account',        data.meta_account);
     if (data.shopify_token && !localStorage.getItem('shopify_token'))       localStorage.setItem('shopify_token',       data.shopify_token);
@@ -2652,7 +2707,7 @@ function renderPlanUI() {
   const ugcRem = document.getElementById('ugc-credits-remaining');
   if (ugcRem) ugcRem.textContent = `${left} credit${left !== 1 ? 's' : ''}`;
   // AI credits bar
-  updateAICreditsBar();
+  refreshAIUsageBar();
   // Billing page
   renderBillingPage();
 }
@@ -2813,13 +2868,15 @@ function renderBillingPage() {
   const plan = getUserPlan();
   const info = planInfo();
   const descs = {
-    starter: '€89/month · 15 AI script credits/month',
-    growth:  '€199/month · 75 AI script credits + 18 UGC video ads/month',
-    scale:   '€349/month · 350 AI script credits + 32 UGC video ads/month',
+    starter: `${curFmtBilling(89)}/month · 15 AI script credits/month`,
+    growth:  `${curFmtBilling(199)}/month · 75 AI script credits + 18 UGC video ads/month`,
+    scale:   `${curFmtBilling(349)}/month · 350 AI script credits + 32 UGC video ads/month`,
   };
   const el = (id, txt) => { const e = document.getElementById(id); if(e) e.textContent = txt; };
   el('billing-plan-name', info.name);
   el('billing-plan-desc', descs[plan] || '');
+  el('ugc-topup-5-btn', `+5 credits · ${curFmtBilling(35)}`);
+  el('ugc-topup-15-btn', `+15 credits · ${curFmtBilling(105)}`);
   el('billing-plan-icon', info.name.charAt(0));
   const bb = document.getElementById('billing-plan-badge');
   if (bb) { bb.textContent = info.badge; bb.style.background = info.color + '22'; bb.style.color = info.color; }
@@ -2856,9 +2913,9 @@ function renderBillingPage() {
   const grid = document.getElementById('billing-plans-grid');
   if (!grid) return;
   const planCards = [
-    { id:'starter', name:'Starter', price:'€89', ugc:15, stores:'1', features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'}] },
-    { id:'growth',  name:'Growth',  price:'€199', ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
-    { id:'scale',   name:'Scale',   price:'€349', ugc:350, stores:'∞', features:['Unlimited stores','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'] },
+    { id:'starter', name:'Starter', price:curFmtBilling(89), ugc:15, stores:'1', features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'}] },
+    { id:'growth',  name:'Growth',  price:curFmtBilling(199), ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
+    { id:'scale',   name:'Scale',   price:curFmtBilling(349), ugc:350, stores:'∞', features:['Unlimited stores','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'] },
   ];
   grid.innerHTML = planCards.map(p => {
     const isCurrent = plan === p.id;
@@ -2951,7 +3008,10 @@ function navigate(page) {
     }
     if (page === 'billing') renderBillingPage();
     if (page === 'creatives') { loadAllCreatives(); runFatigueAnalysis(); }
-    if (page === 'budget')  { /* ready to use on load */ }
+    if (page === 'budget')  {
+      const gl = document.getElementById('budget-goal-label'); if (gl) gl.textContent = `Monthly Revenue Goal (${curSym()})`;
+      const al = document.getElementById('budget-aov-label');  if (al) al.textContent = `Average Order Value (${curSym()})`;
+    }
     if (page === 'ai') { aiSetGreeting(); setTimeout(() => document.getElementById('ai-input')?.focus(), 300); }
     if (page === 'analysis') loadStoreIntelligence();
     if (page === 'campaigns') { if (allCampaigns.length) renderLaunchLiveTable(); loadLaunchAdsCampaigns(); }
@@ -3300,6 +3360,60 @@ function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&
 function fmt(n, d = 0) { if (n == null || n === '') return '-'; return Number(n).toLocaleString('en-US', {maximumFractionDigits:d, minimumFractionDigits:d}); }
 function timeSince(iso) { const s = Math.floor((Date.now()-new Date(iso))/1000); if (s<60) return `${s}s ago`; if (s<3600) return `${Math.floor(s/60)}m ago`; if (s<86400) return `${Math.floor(s/3600)}h ago`; return `${Math.floor(s/86400)}d ago`; }
 
+// ── CURRENCY ──────────────────────────────────────────────────────────────────
+// All money is stored, billed, and computed in EUR internally everywhere (Stripe,
+// ad spend, budgets, campaign daily budgets). Currency here is a DISPLAY-ONLY
+// preference - curFmt() converts an EUR amount for rendering, curToEur() converts
+// a value the user typed while viewing USD back to EUR before it's sent anywhere.
+// Never used as, or treated as, a source of truth for money actually stored/charged.
+window.__fxRateUsd = 1.08; // fallback until (or unless) the live rate loads
+async function loadFxRate() {
+  try {
+    const res = await fetch(`${window.SUPABASE_URL}/functions/v1/fx-rate`, {
+      headers: { apikey: window.SUPABASE_ANON }
+    });
+    if (!res.ok) return;
+    const d = await res.json();
+    if (typeof d?.rate === 'number' && d.rate > 0) window.__fxRateUsd = d.rate;
+  } catch(e) {}
+}
+loadFxRate();
+function getCurrency() { return localStorage.getItem('currency') === 'USD' ? 'USD' : 'EUR'; }
+/** Format a EUR amount for display in the user's chosen currency. */
+function curFmt(amountEur, d = 0) {
+  if (amountEur == null || amountEur === '') return '-';
+  return getCurrency() === 'USD'
+    ? '$' + fmt(Number(amountEur) * window.__fxRateUsd, d)
+    : '€' + fmt(amountEur, d);
+}
+/** Convert a value typed while viewing USD back to EUR before sending it anywhere. */
+function curToEur(amount) {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return n;
+  return getCurrency() === 'USD' ? n / window.__fxRateUsd : n;
+}
+/** Convert a known-EUR amount to a bare number in the display currency (no symbol) -
+ *  for pre-filling an editable input, where curFmt()'s symbol prefix isn't wanted. */
+function curToDisplay(amountEur) {
+  const n = Number(amountEur);
+  if (!Number.isFinite(n)) return n;
+  return getCurrency() === 'USD' ? n * window.__fxRateUsd : n;
+}
+/** Currency symbol for input labels/placeholders. */
+function curSym() { return getCurrency() === 'USD' ? '$' : '€'; }
+/** For amounts Stripe actually charges (plan price, credit top-ups) - billing is EUR-only
+ *  regardless of display currency, so a converted USD figure is an estimate, not the real
+ *  charge. Mark it "≈" rather than show an unmarked number that could read as a promise. */
+function curFmtBilling(amountEur, d = 0) {
+  return (getCurrency() === 'USD' ? '≈' : '') + curFmt(amountEur, d);
+}
+/** Bare converted number (no symbol) for the campaign-builder budget slider - the slider's
+ *  own min/max/step/value stay EUR always (that's the real number sent to campaign-launcher),
+ *  only the readout next to it is translated for display. */
+function budgetSliderDisplay(eurValue) {
+  return fmt(getCurrency() === 'USD' ? Number(eurValue) * window.__fxRateUsd : Number(eurValue));
+}
+
 function animateCounter(el, target, formatter, duration = 1600) {
   if (!el || isNaN(target) || target <= 0) return;
   const start = performance.now();
@@ -3447,14 +3561,14 @@ async function loadOverview() {
     const setVal = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
     const roasStr = d.roas > 0 ? `${d.roas.toFixed(1)}×` : '-';
     setVal('stat-roas', roasStr); setVal('a-roas', roasStr);
-    setVal('stat-spend', d.total_spend > 0 ? `€${fmt(d.total_spend)}` : '-');
+    setVal('stat-spend', d.total_spend > 0 ? curFmt(d.total_spend) : '-');
     setVal('stat-creatives', fmt(d.total_creatives));
     setVal('stat-conversions', fmt(d.total_conversions));
     setVal('a-impressions', fmt(d.total_impressions));
     setVal('a-clicks', fmt(d.total_clicks));
     setVal('a-conversions', fmt(d.total_conversions));
     updatePixelBanner(d.pixel_exists, d.pixel_active);
-    if (d.total_spend > 0) { const el = document.getElementById('stat-spend'); animateCounter(el, d.total_spend, v => `€${fmt(v)}`); }
+    if (d.total_spend > 0) { const el = document.getElementById('stat-spend'); animateCounter(el, d.total_spend, v => curFmt(v)); }
     // Distinguishes "your Meta token expired" from "you genuinely have €0 spend" — both used to
     // render identically as zeroed stat cards with no indication anything was wrong.
     if (d.auth_error) showToast('Your Meta Ads connection has expired — reconnect in Settings to see live data.', 'warn');
@@ -3510,7 +3624,7 @@ function renderCampaignRow(c, _idx, readOnly) {
   const colors = {meta:'#1877F2', google:'#4285F4', both:'#06d6c7'};
   const color = colors[c.platform] || 'var(--muted)';
   const roas = c.roas ? `<span class="camp-metric ${c.roas>=3?'green':'yellow'}">${c.roas.toFixed(1)}×</span>` : '<span class="camp-metric dim">-</span>';
-  const spend = c.total_spend > 0 ? `<span class="camp-metric">€${fmt(c.total_spend)}</span>` : '<span class="camp-metric dim">-</span>';
+  const spend = c.total_spend > 0 ? `<span class="camp-metric">${curFmt(c.total_spend)}</span>` : '<span class="camp-metric dim">-</span>';
   const ctr = c.ctr ? `<span class="camp-metric ${c.ctr>=2?'green':'yellow'}">${c.ctr.toFixed(1)}%</span>` : '<span class="camp-metric dim">-</span>';
   const sc = ['live','paused','failed'].includes(c.status) ? c.status : 'draft';
   const isActive = c.status === 'live' || c.status === 'ACTIVE';
@@ -3554,11 +3668,11 @@ function openCampaignDetail(id) {
   if (roasEl) { roasEl.textContent=roasVal; roasEl.className=`val ${c.roas>=3?'green':c.roas>=1.5?'yellow':'red'}`; }
   const ctrEl = document.getElementById('cd-ctr');
   if (ctrEl) { ctrEl.textContent=c.ctr?`${c.ctr.toFixed(2)}%`:'-'; ctrEl.className=`val ${c.ctr>=2?'green':c.ctr>=1?'yellow':'red'}`; }
-  set('cd-spend', c.total_spend>0?`€${fmt(c.total_spend)}`:'-');
+  set('cd-spend', c.total_spend>0?curFmt(c.total_spend):'-');
   set('cd-conv', c.conversions>0?fmt(c.conversions):'-');
   set('cd-impr', c.impressions>0?fmt(c.impressions):'-');
   set('cd-clicks', c.clicks>0?fmt(c.clicks):'-');
-  set('cd-budget', c.daily_budget?`€${fmt(c.daily_budget)}/day`:c.lifetime_budget?`€${fmt(c.lifetime_budget)} lifetime`:'-');
+  set('cd-budget', c.daily_budget?`${curFmt(c.daily_budget)}/day`:c.lifetime_budget?`${curFmt(c.lifetime_budget)} lifetime`:'-');
   set('cd-budget-label', c.lifetime_budget?'Lifetime Budget':'Daily Budget');
   const toggle = document.getElementById('cd-toggle');
   if (toggle) toggle.checked = c.status==='live'||c.status==='ACTIVE';
@@ -3964,6 +4078,7 @@ function renderUGCCreditsInfo() {
     const topup = ugcVideoTopupRemaining();
     infoEl.style.display = 'block';
     infoEl.innerHTML = `<span style="color:var(--primary);font-weight:600">1 UGC video credit</span> will be used · <span>${left + topup}</span> remaining this month${topup > 0 ? ` (${topup} from top-up)` : ''}.`;
+    topupEl.innerHTML = `Out of video credits this month. <a href="javascript:void(0)" onclick="closeUGCModal();document.getElementById('nav-billing')?.click()" style="color:var(--warning);font-weight:700;text-decoration:underline">Top up in Billing</a> - 5 for ${curFmtBilling(35)} or 15 for ${curFmtBilling(105)}.`;
     topupEl.style.display = (left + topup) <= 0 ? 'block' : 'none';
   } else {
     const left = ugcCreditsLeft();
@@ -4362,6 +4477,7 @@ function _loadSettingsFieldsInner() {
   }
   const su = document.getElementById('s-store-url'); if (su) su.value = localStorage.getItem('last_analyzed_store') || '';
   refreshDashShopifyState();
+  const cur = document.getElementById('s-currency'); if (cur) cur.value = getCurrency();
   // Show/hide Google Ads paywall
   const paywall = document.getElementById('google-ads-paywall');
   const fields = document.getElementById('google-ads-fields');
@@ -4375,6 +4491,34 @@ function _loadSettingsFieldsInner() {
   const analysisLocked = !canAccess('analysis');
   if (analysisPaywall) analysisPaywall.style.display = analysisLocked ? 'flex' : 'none';
   if (analysisForm) { analysisForm.style.opacity = analysisLocked ? '0.25' : '1'; analysisForm.style.pointerEvents = analysisLocked ? 'none' : ''; }
+}
+
+async function savePreferences() {
+  const btn = document.getElementById('s-preferences-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  const currency = document.getElementById('s-currency')?.value === 'USD' ? 'USD' : 'EUR';
+  const currencyChanged = getCurrency() !== currency;
+  try {
+    localStorage.setItem('currency', currency);
+    const sb = getSupabase();
+    const clerkUserId = window.__clerk?.user?.id;
+    if (sb && clerkUserId) {
+      await sb.from('user_integrations').upsert({ user_id: clerkUserId, currency }, { onConflict: 'user_id' });
+    }
+    if (currencyChanged) {
+      // Money is rendered by dozens of independent call sites across every page - a full
+      // reload is the only way to guarantee every one of them re-reads the new currency
+      // immediately, rather than showing a stale symbol until the user happens to navigate away.
+      showToast('Preferences saved - refreshing to apply…');
+      setTimeout(() => window.location.reload(), 900);
+    } else {
+      showToast('Preferences saved!');
+      if (btn) { btn.disabled = false; btn.textContent = 'Save Preferences'; }
+    }
+  } catch(e) {
+    showToast('Failed to save preferences', 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Save Preferences'; }
+  }
 }
 
 async function saveIntegrations() {
@@ -4431,6 +4575,25 @@ function updatePixelBanner(pixelExists, pixelActive) {
   // "exists but never fired" and "doesn't exist at all" both mean the same
   // thing in practice: no usable purchase-conversion signal reaching Meta.
   banner.style.display = (hasMeta && !pixelActive && !dismissed) ? 'flex' : 'none';
+}
+
+/** Shared COGS reminder on Profit Tracker + MRR Tracker - same dismissible,
+ *  reappears-next-session pattern as the pixel banner above. One sessionStorage key
+ *  covers both page instances, since dismissing "you haven't entered COGS" on one
+ *  page shouldn't require dismissing it again on the other. Only nags while ZERO
+ *  products have COGS set - once a merchant has started, it stays out of the way. */
+function dismissCogsBanner(page) {
+  const banner = document.getElementById('cogs-connect-banner-' + page);
+  if (banner) banner.style.display = 'none';
+  sessionStorage.setItem('cogs_banner_dismissed', '1');
+}
+function updateCogsBanner(productsWithCogs) {
+  const dismissed = sessionStorage.getItem('cogs_banner_dismissed') === '1';
+  const show = productsWithCogs === 0 && !dismissed;
+  ['mrr', 'profit'].forEach(page => {
+    const banner = document.getElementById('cogs-connect-banner-' + page);
+    if (banner) banner.style.display = show ? 'flex' : 'none';
+  });
 }
 
 // ── GOOGLE ADS STATUS ─────────────────────────────────────────────────────────
@@ -4685,23 +4848,32 @@ function setMrrPeriod(days) {
 
 function renderMrrCharts(d) {
   const series = (d.series || []).slice(-_mrrPeriodDays);
-  const revEl  = document.getElementById('mrr-revenue-chart');
-  const roasEl = document.getElementById('mrr-roas-chart');
+  const revEl    = document.getElementById('mrr-revenue-chart');
+  const roasEl   = document.getElementById('mrr-roas-chart');
+  const marginEl = document.getElementById('mrr-margin-chart');
   const shortDate = iso => { try { return new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' }); } catch { return iso; } };
 
   if (!d.has_data || !series.length) {
     if (revEl)  revEl.innerHTML  = '<div class="empty-state" style="padding:30px 0"><p>No revenue data yet. Click Sync Data</p></div>';
     if (roasEl) roasEl.innerHTML = '<div class="empty-state" style="padding:30px 0"><p>No spend data yet. Connect Meta/Google and sync</p></div>';
+    if (marginEl) marginEl.innerHTML = '<div class="empty-state" style="padding:30px 0"><p>No revenue data yet. Click Sync Data</p></div>';
     return;
   }
 
   const revPoints = series.map(p => ({ date: shortDate(p.date), value: p.revenue_cents / 100 }));
-  if (revEl) revEl.innerHTML = buildLineChart(revPoints, { color: '#06d6c7', format: v => '€' + fmt(v), height: 150 });
+  if (revEl) revEl.innerHTML = buildLineChart(revPoints, { color: '#06d6c7', format: v => curFmt(v), height: 150 });
 
   const roasPoints = series.filter(p => p.roas !== null).map(p => ({ date: shortDate(p.date), value: p.roas }));
   if (roasEl) roasEl.innerHTML = roasPoints.length
     ? buildLineChart(roasPoints, { color: '#fbbf24', format: v => v.toFixed(2) + '×', height: 150 })
     : '<div class="empty-state" style="padding:30px 0"><p>No spend data yet. Connect Meta/Google and sync</p></div>';
+
+  if (marginEl) {
+    const marginPoints = series.filter(p => p.margin_cents !== null && p.margin_cents !== undefined).map(p => ({ date: shortDate(p.date), value: p.margin_cents / 100 }));
+    marginEl.innerHTML = marginPoints.length
+      ? buildLineChart(marginPoints, { color: '#34d399', format: v => curFmt(v), height: 150 })
+      : '<div class="empty-state" style="padding:30px 0"><p>Enter Cost of Goods to see margin trend</p></div>';
+  }
 
   revealCharts();
 }
@@ -4711,9 +4883,26 @@ function renderMrrReport(d) {
   const set = (elId, val) => { const e = document.getElementById(elId); if (e) e.textContent = val; };
   const mrr = (d.mrr_cents || 0) / 100;
   const spend = (d.total_spend_cents || 0) / 100;
-  set('mrr-stat-mrr', '€' + fmt(mrr));
-  set('mrr-stat-spend', '€' + fmt(spend));
+  set('mrr-stat-mrr', curFmt(mrr));
+  set('mrr-stat-spend', curFmt(spend));
   set('mrr-stat-roas', d.blended_roas !== null && d.blended_roas !== undefined ? d.blended_roas.toFixed(2) + '×' : '-');
+
+  // Estimated Margin card: gate on whether ANY product has COGS entered, not on has_data -
+  // revenue/spend/ROAS above work fine without COGS, only margin needs it.
+  const marginBody = document.getElementById('mrr-margin-body');
+  if (marginBody) {
+    if (!d.products_with_cogs) {
+      marginBody.innerHTML = '<div style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px">Enter Cost of Goods to unlock</div>' +
+        '<button class="panel-action" style="font-size:11px;padding:5px 10px" onclick="navigate(\'profittracker\')">Enter Cost of Goods →</button>';
+    } else {
+      const marginPct = d.margin_pct;
+      const marginCents = (d.margin_cents || 0) / 100;
+      marginBody.innerHTML =
+        '<div class="stat-value">' + (marginPct !== null && marginPct !== undefined ? marginPct.toFixed(1) + '%' : '-') + '</div>' +
+        '<div class="stat-label">' + (marginCents ? curFmt(marginCents) + ' estimated' : 'Estimated') + '</div>';
+    }
+  }
+  updateCogsBanner(d.products_with_cogs || 0);
   const growthEl = document.getElementById('mrr-stat-growth');
   if (growthEl) {
     if (d.mrr_growth_pct === null || d.mrr_growth_pct === undefined) {
@@ -5280,7 +5469,16 @@ async function loadPixelStatus() {
     // getPixel() returns a single flat object ({exists, active, id, name, last_fired, code}),
     // not a list — there's only ever one pixel per ad account.
     const p = await r.json();
-    if (!p.exists) { el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">No Meta Pixel found on your ad account.</p>'; return; }
+    if (!p.exists) {
+      el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:4px 0">No Meta Pixel found on your ad account.</p>';
+      const statPixelMissing = document.getElementById('aud-stat-pixel');
+      const statSubMissing = document.getElementById('aud-stat-pixel-sub');
+      const dotMissing = document.getElementById('aud-pixel-dot');
+      if (statPixelMissing) { statPixelMissing.textContent = 'Not found'; statPixelMissing.style.color = 'var(--muted)'; }
+      if (statSubMissing) statSubMissing.textContent = 'No pixel configured';
+      if (dotMissing) { dotMissing.style.background = 'var(--muted)'; dotMissing.style.boxShadow = 'none'; }
+      return;
+    }
     const ok = !!p.active;
     // Update stat card
     const statPixel = document.getElementById('aud-stat-pixel');
@@ -5405,7 +5603,7 @@ function loadBulkCampaigns() {
   el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px 12px">${filtered.map(c => {
     const sc = ['live','paused','failed'].includes(c.status)?c.status:'draft';
     const platform = (c.platform||'meta').charAt(0).toUpperCase()+(c.platform||'meta').slice(1);
-    const spendStr = c.total_spend > 0 ? ` · €${fmt(c.total_spend)} spend` : '';
+    const spendStr = c.total_spend > 0 ? ` · ${curFmt(c.total_spend)} spend` : '';
     return `<div style="display:flex;align-items:center;gap:12px;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:11px;transition:border-color .2s" onmouseover="this.style.borderColor='rgba(6,214,199,0.3)'" onmouseout="this.style.borderColor='var(--border)'">
       <input type="checkbox" value="${escHtml(String(c.id))}" onchange="toggleBulkItem(this)" style="width:16px;height:16px;cursor:pointer;flex-shrink:0;accent-color:var(--primary)">
       <div style="width:8px;height:8px;border-radius:50%;background:${sc==='live'?'var(--success)':sc==='paused'?'var(--warning)':'var(--muted)'};flex-shrink:0"></div>
@@ -5521,7 +5719,7 @@ function loadMultiStore() {
   setEl('ms-stores', '1');
   setEl('ms-campaigns', allCampaigns.length || '-');
   const totalSpend = allCampaigns.reduce((a,c)=>a+(c.total_spend||0), 0);
-  setEl('ms-spend', totalSpend > 0 ? '€'+fmt(totalSpend) : '-');
+  setEl('ms-spend', totalSpend > 0 ? curFmt(totalSpend) : '-');
   const roasArr = allCampaigns.filter(c=>c.roas>0).map(c=>c.roas);
   const avgRoas = roasArr.length ? roasArr.reduce((a,b)=>a+b,0)/roasArr.length : 0;
   setEl('ms-roas', avgRoas > 0 ? avgRoas.toFixed(1)+'×' : '-');
@@ -5532,7 +5730,7 @@ function loadMultiStore() {
     : 'Your store';
   listEl.innerHTML = `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--surface2);border-radius:12px;margin-bottom:8px">
-      <div><div style="font-size:13px;font-weight:700">${escHtml(storeName)}</div><div style="font-size:12px;color:var(--muted)">${allCampaigns.length||0} campaigns · €${fmt(totalSpend)} spend</div></div>
+      <div><div style="font-size:13px;font-weight:700">${escHtml(storeName)}</div><div style="font-size:12px;color:var(--muted)">${allCampaigns.length||0} campaigns · ${curFmt(totalSpend)} spend</div></div>
       <div style="text-align:right"><div style="font-size:18px;font-weight:800">${avgRoas>0?avgRoas.toFixed(1)+'×':'-'}</div><div style="font-size:11px;color:var(--muted)">ROAS</div></div>
     </div>
     <div style="padding:14px 16px;background:var(--surface2);border-radius:12px;border:1px dashed var(--border);text-align:center;color:var(--muted);font-size:12px">
@@ -5604,9 +5802,9 @@ function showSubModal() {
   const grid = document.getElementById('sub-gate-plans');
   if (grid && grid.children.length === 0) {
     const plans = [
-      { id:'starter', name:'Starter', price:'€89',  ugc:'15',  desc:'15 AI script credits/month',       highlight: false },
-      { id:'growth',  name:'Growth',  price:'€199', ugc:'75',  desc:'75 AI script credits + 18 UGC videos',       highlight: true  },
-      { id:'scale',   name:'Scale',   price:'€349', ugc:'350', desc:'350 AI script credits + 32 UGC videos',      highlight: false },
+      { id:'starter', name:'Starter', price:curFmtBilling(89),  ugc:'15',  desc:'15 AI script credits/month',       highlight: false },
+      { id:'growth',  name:'Growth',  price:curFmtBilling(199), ugc:'75',  desc:'75 AI script credits + 18 UGC videos',       highlight: true  },
+      { id:'scale',   name:'Scale',   price:curFmtBilling(349), ugc:'350', desc:'350 AI script credits + 32 UGC videos',      highlight: false },
     ];
     grid.innerHTML = plans.map(p => `
       <div style="border:1px solid ${p.highlight?'#06d6c7':'var(--border)'};border-radius:14px;padding:18px;text-align:center;${p.highlight?'background:rgba(6,214,199,0.08);':''}transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
@@ -6187,8 +6385,10 @@ let _budgetMetaDaily = 0;
 let _budgetGoogleDaily = 0;
 
 async function calculateBudget() {
-  const goal = parseFloat(document.getElementById('budget-revenue-goal')?.value || '0');
-  const aov  = parseFloat(document.getElementById('budget-aov')?.value || '50');
+  // Inputs are typed in whichever currency the label shows - backend math (and every
+  // downstream campaign budget) is EUR-only, so convert immediately at the boundary.
+  const goal = curToEur(parseFloat(document.getElementById('budget-revenue-goal')?.value || '0'));
+  const aov  = curToEur(parseFloat(document.getElementById('budget-aov')?.value || '50'));
   const roas = parseFloat(document.getElementById('budget-roas')?.value || '2.5');
   const days = parseInt(document.getElementById('budget-days')?.value || '30', 10);
 
@@ -6212,11 +6412,11 @@ async function calculateBudget() {
     _budgetMetaDaily = data.daily_budget_meta || Math.round(_budgetDailyBudget * 0.65);
     _budgetGoogleDaily = data.daily_budget_google || Math.round(_budgetDailyBudget * 0.35);
 
-    document.getElementById('bud-daily-total').textContent = '€' + Math.round(_budgetDailyBudget);
+    document.getElementById('bud-daily-total').textContent = curFmt(_budgetDailyBudget);
     document.getElementById('bud-roas').textContent = (data.expected_roas || 2.5).toFixed(1) + '×';
-    document.getElementById('bud-revenue').textContent = '€' + Math.round(data.expected_revenue || goal).toLocaleString();
-    document.getElementById('bud-meta-daily').textContent = '€' + Math.round(data.daily_budget_meta || _budgetDailyBudget * 0.65) + '/day';
-    document.getElementById('bud-google-daily').textContent = '€' + Math.round(data.daily_budget_google || _budgetDailyBudget * 0.35) + '/day';
+    document.getElementById('bud-revenue').textContent = curFmt(data.expected_revenue || goal);
+    document.getElementById('bud-meta-daily').textContent = curFmt(data.daily_budget_meta || _budgetDailyBudget * 0.65) + '/day';
+    document.getElementById('bud-google-daily').textContent = curFmt(data.daily_budget_google || _budgetDailyBudget * 0.35) + '/day';
 
     const metaPct = data.meta_allocation_pct || 65;
     const gPct    = data.google_allocation_pct || 35;
@@ -6258,7 +6458,7 @@ async function loadBudgetForecast() {
     const pts = data.projections || [];
     cells.innerHTML = pts.map(p => `
       <div class="forecast-cell">
-        <div class="val">€${Math.round(p.cumulative_revenue).toLocaleString()}</div>
+        <div class="val">${curFmt(p.cumulative_revenue)}</div>
         <div class="lbl">Day ${p.day} Revenue</div>
       </div>
     `).join('');
@@ -6336,7 +6536,7 @@ function onApplyBudgetCampaignChange() {
   const platform = opt.dataset.platform || 'meta';
   const budgetUsd = platform === 'google' ? _budgetGoogleDaily : _budgetMetaDaily;
 
-  document.getElementById('apply-budget-amount').textContent = '€' + Math.round(budgetUsd) + '/day';
+  document.getElementById('apply-budget-amount').textContent = curFmt(budgetUsd) + '/day';
   const badge = document.getElementById('apply-budget-platform-badge');
   if (badge) {
     badge.textContent = platform === 'meta' ? 'Meta Ads' : 'Google Ads';
@@ -6376,7 +6576,7 @@ async function confirmApplyBudget() {
 
     const data = r ? await r.json() : null;
     if (r && r.ok && data?.any_success) {
-      showToast(`Budget €${Math.round(budgetUsd)}/day applied to ${opt.dataset.name || campaignId}`, 'success');
+      showToast(`Budget ${curFmt(budgetUsd)}/day applied to ${opt.dataset.name || campaignId}`, 'success');
       closeApplyBudgetModal();
     } else {
       const errs = (data?.applied || []).filter(a => !a.success).map(a => a.error).join('; ');
@@ -6403,8 +6603,8 @@ async function loadBudgetHistory() {
     const rec = r.recommendation || {};
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px">
       <div>
-        <span style="font-weight:600">€${Math.round(rec.daily_budget_total || 0)}/day</span>
-        <span style="color:var(--muted);margin-left:8px">Goal: €${(rec.revenue_goal || 0).toLocaleString()}</span>
+        <span style="font-weight:600">${curFmt(rec.daily_budget_total || 0)}/day</span>
+        <span style="color:var(--muted);margin-left:8px">Goal: ${curFmt(rec.revenue_goal || 0)}</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px">
         <span class="status-pill ${r.applied ? 'live' : 'draft'}">${r.applied ? 'Applied' : 'Draft'}</span>
@@ -6496,7 +6696,7 @@ function renderLaunchAdsList() {
       </div>
       <div class="launch-card-meta">
         ${badges}
-        <span>€${fmt(c.budget_daily || 0)}/day</span>
+        <span>${curFmt(c.budget_daily || 0)}/day</span>
         <span>${adCount} ad${adCount === 1 ? '' : 's'}</span>
         <span>${escHtml(c.objective || '')}</span>
       </div>
@@ -6520,7 +6720,9 @@ function openCampaignBuilder(platform = 'meta') {
   document.getElementById('cb-objective').value = 'OUTCOME_SALES';
   document.getElementById('cb-budget').value = '20';
   document.getElementById('cb-budget').style.setProperty('--fill', '3.03%');
-  document.getElementById('cb-budget-display').textContent = '20';
+  document.getElementById('cb-budget-display').textContent = budgetSliderDisplay('20');
+  document.getElementById('cb-budget-cur').textContent = curSym();
+  document.getElementById('cb-budget-range').textContent = `${curFmt(5)} – ${curFmt(500)}/day`;
   document.getElementById('cb-platform-meta').checked = platform !== 'google';
   document.getElementById('cb-platform-google').checked = platform === 'google';
   document.getElementById('cb-ads-list').innerHTML = '';
@@ -6760,7 +6962,7 @@ async function openCampaignReview(campaignId) {
   document.getElementById('cr-name').textContent = c.name;
   document.getElementById('cr-status').textContent = c.status;
   document.getElementById('cr-status').className = 'status-pill ' + (c.status === 'active' ? 'live' : c.status);
-  document.getElementById('cr-meta').textContent = `${c.objective || ''} · €${fmt(c.budget_daily || 0)}/day · ${c.platform}`;
+  document.getElementById('cr-meta').textContent = `${c.objective || ''} · ${curFmt(c.budget_daily || 0)}/day · ${c.platform}`;
 
   const ads = c.copy?.meta?.ads || [];
   const adsList = document.getElementById('cr-ads-list');
@@ -7350,6 +7552,7 @@ async function loadProfitReport() {
   _profitProducts = d.products || [];
   renderProfitTable();
   if (d.summary) renderProfitSummary(d.summary);
+  if (d.summary) updateCogsBanner(d.summary.total_products_with_cogs);
   loadProfitAISummary(d.summary, _profitProducts);
 }
 
@@ -7389,16 +7592,18 @@ function renderProfitTable() {
   }
   el.innerHTML =
     '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:0 0 10px;border-bottom:1px solid var(--border);margin-bottom:4px">' +
-      '<span>Product</span><span style="text-align:right;padding-right:24px">Price</span><span style="text-align:right;padding-right:24px">COGS (€)</span><span style="text-align:right">Margin</span>' +
+      '<span>Product</span><span style="text-align:right;padding-right:24px">Price</span><span style="text-align:right;padding-right:24px">COGS (' + curSym() + ')</span><span style="text-align:right">Margin</span>' +
     '</div>' +
     _profitProducts.map((p, i) => {
-      const price = ((p.price_cents || 0) / 100).toFixed(2);
+      const priceEur = (p.price_cents || 0) / 100;
+      const cogsEur = p.cogs_cents !== null ? p.cogs_cents / 100 : null;
+      const cogsDisplay = cogsEur !== null ? curToDisplay(cogsEur).toFixed(2) : '';
       const margin = p.margin_percent !== null ? p.margin_percent.toFixed(1) + '%' : '-';
       const marginColor = p.margin_percent === null ? 'var(--muted)' : p.margin_percent >= 50 ? 'var(--success)' : p.margin_percent >= 25 ? 'var(--warning)' : 'var(--danger)';
       return '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">' +
         '<span style="font-size:13px;color:var(--text);padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(p.title || '') + '</span>' +
-        '<span style="font-size:13px;color:var(--muted);text-align:right;padding-right:24px">€' + price + '</span>' +
-        '<span style="text-align:right;padding-right:24px"><input type="number" min="0" step="0.01" data-idx="' + i + '" value="' + (p.cogs_cents !== null ? (p.cogs_cents / 100).toFixed(2) : '') + '" placeholder="0.00" style="width:80px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;text-align:right"></span>' +
+        '<span style="font-size:13px;color:var(--muted);text-align:right;padding-right:24px">' + curFmt(priceEur, 2) + '</span>' +
+        '<span style="text-align:right;padding-right:24px"><input type="number" min="0" step="0.01" data-idx="' + i + '" value="' + cogsDisplay + '" placeholder="0.00" style="width:80px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;text-align:right"></span>' +
         '<span style="font-size:13px;font-weight:700;color:' + marginColor + ';text-align:right">' + margin + '</span>' +
       '</div>';
     }).join('');
@@ -7435,7 +7640,7 @@ async function saveProfitCogs() {
     const idx = parseInt(inp.getAttribute('data-idx'));
     const p = _profitProducts[idx];
     if (!p) return;
-    const val = parseFloat(raw);
+    const val = curToEur(parseFloat(raw));
     if (isNaN(val) || val < 0) return;
     items.push({ product_id: p.product_id, cogs_cents: Math.round(val * 100) });
   });

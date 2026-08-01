@@ -18,6 +18,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { metaGet, parseConversions } from '../_shared/meta.ts';
 import { requirePlan } from '../_shared/plan.ts';
+import { computeCatalogMargin } from '../_shared/margin.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 const SYNC_DAYS = 90;
@@ -268,20 +269,36 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
     .gte('snapshot_date', since)
     .order('snapshot_date', { ascending: true });
 
+  // Catalog-level margin (same source Profit Tracker uses) - there's no per-order/per-SKU
+  // revenue breakdown anywhere in the schema, so margin here is a blended estimate:
+  // revenue × catalog-average-margin%, not true per-order accounting. Always label it
+  // "Estimated" wherever it's shown.
+  const { data: products } = await supabase
+    .from('shopify_products')
+    .select('price_cents, cogs_cents')
+    .eq('user_id', userId);
+  const { avgMarginPercent, productsWithCogs, totalProducts } = computeCatalogMargin(products ?? []);
+
   const snapshots = rows ?? [];
   if (snapshots.length === 0) {
-    return { has_data: false, series: [], mrr_cents: 0, prev_mrr_cents: 0, mrr_growth_pct: null, total_spend_cents: 0, blended_roas: null };
+    return {
+      has_data: false, series: [], mrr_cents: 0, prev_mrr_cents: 0, mrr_growth_pct: null,
+      total_spend_cents: 0, blended_roas: null, margin_pct: avgMarginPercent, margin_cents: null,
+      products_with_cogs: productsWithCogs, total_products: totalProducts,
+    };
   }
 
   const series = snapshots.map(r => {
     const spend = (r.meta_spend_cents ?? 0) + (r.google_spend_cents ?? 0);
+    const revenueCents = r.shopify_revenue_cents ?? 0;
     return {
       date:           r.snapshot_date,
-      revenue_cents:  r.shopify_revenue_cents ?? 0,
+      revenue_cents:  revenueCents,
       spend_cents:    spend,
       orders:         r.shopify_orders_count ?? 0,
       conversions:    r.conversions ?? 0,
-      roas:           spend > 0 ? Math.round(((r.shopify_revenue_cents ?? 0) / spend) * 100) / 100 : null,
+      roas:           spend > 0 ? Math.round((revenueCents / spend) * 100) / 100 : null,
+      margin_cents:   avgMarginPercent !== null ? Math.round(revenueCents * avgMarginPercent / 100) : null,
     };
   });
 
@@ -295,6 +312,7 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
   const totalSpendCents = sum(last30, 'spend_cents');
   const mrrGrowthPct  = prevMrrCents > 0 ? Math.round(((mrrCents - prevMrrCents) / prevMrrCents) * 10000) / 100 : null;
   const blendedRoas   = totalSpendCents > 0 ? Math.round((mrrCents / totalSpendCents) * 100) / 100 : null;
+  const marginCents   = avgMarginPercent !== null ? Math.round(mrrCents * avgMarginPercent / 100) : null;
 
   return {
     has_data:          true,
@@ -304,6 +322,10 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
     mrr_growth_pct:    mrrGrowthPct,
     total_spend_cents: totalSpendCents,
     blended_roas:      blendedRoas,
+    margin_pct:         avgMarginPercent,
+    margin_cents:       marginCents,
+    products_with_cogs: productsWithCogs,
+    total_products:     totalProducts,
   };
 }
 
