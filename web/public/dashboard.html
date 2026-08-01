@@ -2456,10 +2456,27 @@ function getSupabase() {
   if (!url || url.includes('YOUR_PROJECT') || !key || key.includes('YOUR_')) return null;
   // Use Supabase Third-Party Auth (native Clerk support, no JWT template needed).
   // The accessToken function is called automatically on every Supabase request.
+  //
+  // If this resolves to null, the Supabase client sends the request with no Authorization
+  // header at all, which PostgREST treats as the `anon` role - and anon has no grants on
+  // almost every table in this app, so the query fails with "permission denied" instead of
+  // succeeding as the real user. This genuinely happened in production: __clerk.session isn't
+  // always populated the instant __clerk.user is (or getToken() can transiently fail on a
+  // fresh page load / token-refresh boundary), and the direct-client calls that use this
+  // client (credits, video credits, integrations, plan) fire early in the bootstrap sequence,
+  // right when that race is most likely. A few short retries closes it without meaningfully
+  // slowing down the normal case, where the first attempt just succeeds.
   _sb = window.supabase?.createClient(url, key, {
     accessToken: async () => {
-      try { return await window.__clerk?.session?.getToken() ?? null; }
-      catch { return null; }
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const token = await window.__clerk?.session?.getToken();
+          if (token) return token;
+        } catch {}
+        if (attempt < 2) await new Promise(r => setTimeout(r, 150 * (attempt + 1)));
+      }
+      console.warn('[getSupabase] Clerk session token unavailable after retries - request will run as anon');
+      return null;
     }
   });
   return _sb;
