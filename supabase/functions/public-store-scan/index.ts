@@ -19,7 +19,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { rateLimitIp, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { rateLimitIp, rateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_URL   = 'https://api.anthropic.com/v1/messages';
@@ -270,8 +270,14 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders(origin) });
   if (req.method !== 'POST') return errResponse('Method not allowed', 405, origin);
 
-  const rl = await rateLimitIp(req, 'public-store-scan', 5, 3600);
-  if (!rl.allowed) return rateLimitResponse(origin, rl.resetIn);
+  // This is the only Anthropic-calling endpoint in the whole platform that doesn't require
+  // login (it's the public "Analyse Your Store" marketing tool) - every real Claude call here
+  // is unauthenticated spend. Two independent layers: a tighter per-IP cap, plus a global daily
+  // cap so a distributed/many-IP abuse pattern (IP rotation defeats a per-IP-only limit) still
+  // can't run away the Anthropic bill. The per-domain 24h cache above the Claude call already
+  // means a legitimate repeat visitor never re-burns tokens for the same store.
+  const ipLimit = await rateLimitIp(req, 'public-store-scan', 3, 3600);
+  if (!ipLimit.allowed) return rateLimitResponse(origin, ipLimit.resetIn);
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
@@ -293,6 +299,11 @@ Deno.serve(async (req) => {
     }
 
     if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
+
+    // Only counts real, uncached Claude calls - a cache hit above never reaches here, so a
+    // legitimate burst of repeat/cached traffic can't trip this even near the daily ceiling.
+    const globalLimit = await rateLimit('global', 'public-store-scan-daily', 150, 86400);
+    if (!globalLimit.allowed) return rateLimitResponse(origin, globalLimit.resetIn);
 
     const result = await analyzeDomain(domain);
     await supabase.from('public_store_scans').upsert({
