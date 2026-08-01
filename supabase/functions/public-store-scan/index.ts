@@ -117,17 +117,43 @@ async function isSafeDomain(domain: string): Promise<boolean> {
 
 const BROWSER_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 
+/**
+ * fetch() with manual, re-validated redirects — closes an SSRF gap where isSafeDomain() only
+ * ever checked the ORIGINAL hostname's DNS once. Plain fetch() follows redirects transparently
+ * with no re-check, so an attacker-controlled domain that passes isSafeDomain() (resolves to a
+ * public IP) could respond with `302 Location: http://169.254.169.254/...` (or any other
+ * internal target) and the response would be fetched anyway. Every hop's target domain is now
+ * re-validated the same way the original was, and the chain is capped to stop a redirect loop.
+ */
+async function safeFetch(url: string, opts: RequestInit, maxHops = 3): Promise<Response> {
+  let current = url;
+  for (let hop = 0; hop <= maxHops; hop++) {
+    const res = await fetch(current, { ...opts, redirect: 'manual' });
+    if (res.status < 300 || res.status >= 400 || !res.headers.get('location')) return res;
+    const next = new URL(res.headers.get('location')!, current);
+    if (next.protocol !== 'https:' && next.protocol !== 'http:') throw new Error('Redirect to unsupported protocol');
+    if (!(await isSafeDomain(next.hostname))) throw new Error('Redirect target failed safety check');
+    current = next.toString();
+  }
+  throw new Error('Too many redirects');
+}
+
 async function fetchStorefrontSignals(domain: string): Promise<{ logo_url: string | null; theme_color: string | null; title: string | null; description: string | null }> {
   try {
-    const res = await fetch(`https://${domain}/`, {
+    const res = await safeFetch(`https://${domain}/`, {
       signal: AbortSignal.timeout(8000),
       headers: { 'User-Agent': BROWSER_UA, 'Accept': 'text/html,*/*' },
     });
     if (!res.ok) return { logo_url: null, theme_color: null, title: null, description: null };
     const html = await res.text();
     const pick = (re: RegExp) => html.match(re)?.[1] ?? null;
-    const ogImage    = pick(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+    // Scraped from the target's own HTML - never trust the scheme. Without this check, a
+    // page whose og:image meta content is javascript:/data:/etc would be returned unmodified
+    // as logo_url and, wherever a frontend renders it as an href/src, execute or embed
+    // attacker-controlled content.
+    const rawOgImage = pick(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
                      ?? pick(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+    const ogImage = rawOgImage && /^https?:\/\//i.test(rawOgImage) ? rawOgImage : null;
     const themeColor = pick(/<meta[^>]+name=["']theme-color["'][^>]+content=["']([^"']+)["']/i)
                      ?? pick(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']theme-color["']/i);
     // [^>]* (not +) tolerates a bare <title> tag as well as one with attributes,
@@ -146,7 +172,7 @@ interface PublicProduct { title: string; vendor?: string; product_type?: string;
 /** Shopify's default storefront exposes /products.json publicly — no OAuth needed. */
 async function fetchPublicProducts(domain: string): Promise<PublicProduct[]> {
   try {
-    const res = await fetch(`https://${domain}/products.json?limit=20`, {
+    const res = await safeFetch(`https://${domain}/products.json?limit=20`, {
       signal: AbortSignal.timeout(8000),
       headers: { 'User-Agent': BROWSER_UA, 'Accept': 'application/json,*/*' },
     });

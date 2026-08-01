@@ -698,6 +698,11 @@ Deno.serve(async (req) => {
           if (bulkGate) return bulkGate;
           const ids = Array.isArray(body.campaign_ids) ? body.campaign_ids.map(String) : [];
           if (!ids.length) return errResponse('campaign_ids required', 400, origin);
+          // Unbounded previously - a single request could fan out thousands of concurrent
+          // Meta Graph API calls (bulkAction below runs one Promise.allSettled per id, two for
+          // scale_budget) and inflate the ownership check into an unbounded Postgrest IN-list.
+          // No merchant manages anywhere near this many campaigns at once in the real UI.
+          if (ids.length > 100) return errResponse('Too many campaigns in one request (max 100)', 400, origin);
           // BOLA guard: verify ALL campaign IDs belong to this user
           const { data: owned } = await supabase.from('campaigns')
             .select('id').in('id', ids).eq('user_id', userId);

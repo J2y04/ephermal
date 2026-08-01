@@ -415,7 +415,15 @@ Deno.serve(async (req) => {
         status:    'pending_review',
         meta_data: { video_url: videoUrl, higgsfield_request_id: requestId, product_title: productTitle, product_image: productImage },
       }).select('id').single();
-      if (creativeErr) console.error('ugc-generate generate_video creatives insert error:', creativeErr.message);
+      // Previously this only logged and kept going, returning "success" with the video URL but
+      // no saved creative row - the user was told "check Creatives" and found nothing there,
+      // with a video credit already spent for a result they can never see again (no video_url
+      // was returned to persist client-side either). A generation that can't be saved is not a
+      // successful generation.
+      if (creativeErr) {
+        console.error('ugc-generate generate_video creatives insert error:', creativeErr.message);
+        throw new Error('Video generated but failed to save - please try again');
+      }
 
       return okResponse({
         creative_id: creative?.id, video_url: videoUrl, status: 'pending_review',
@@ -698,7 +706,12 @@ Write launch-ready ad copy.`;
           status:    'pending_review',
           meta_data: { script, copy, audiences, preset, aspect_ratio: aspectRatio, product_description: desc },
         }).select('id').single();
-        if (creativeErr) console.error('ugc-generate creatives insert error:', creativeErr.message);
+        // Same "silent save failure charged a credit for nothing" bug fixed for generate_video
+        // above - the frontend told the user "check Creatives" while nothing was actually there.
+        if (creativeErr) {
+          console.error('ugc-generate creatives insert error:', creativeErr.message);
+          throw new Error('Generated but failed to save - please try again');
+        }
 
         result = { creative_id: creative?.id, script, copy, audiences, status: 'pending_review' };
         break;
@@ -747,7 +760,10 @@ Write launch-ready ad copy.`;
           status:    'pending_review',
           meta_data: { script, copy, audiences, product_id: productId, product_title: productTitle, product_image: productImage },
         }).select('id').single();
-        if (creativeErr) console.error('ugc-generate creatives insert error:', creativeErr.message);
+        if (creativeErr) {
+          console.error('ugc-generate creatives insert error:', creativeErr.message);
+          throw new Error('Generated but failed to save - please try again');
+        }
 
         result = { creative_id: creative?.id, script, copy, audiences, status: 'pending_review' };
         break;

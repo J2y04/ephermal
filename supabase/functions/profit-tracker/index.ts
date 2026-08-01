@@ -40,7 +40,13 @@ async function handleSetCogs(
     .eq('user_id', userId);
 
   if (error) {
-    if (error.message.includes('column') || error.message.includes('cogs_cents')) {
+    // Postgres error code 42703 = undefined_column, the actual "migration hasn't run yet"
+    // signature. Substring-matching error.message for 'column' or 'cogs_cents' was broad enough
+    // to also catch an RLS violation or a check-constraint/type-mismatch error on this same
+    // column (both plausibly mention 'cogs_cents' or the word 'column' in their real message),
+    // misclassifying a genuine error as "run the migration" and sending the user down the
+    // wrong troubleshooting path.
+    if (error.code === '42703') {
       return { error: 'Run DB migration first', migration_needed: true };
     }
     throw new Error(error.message);

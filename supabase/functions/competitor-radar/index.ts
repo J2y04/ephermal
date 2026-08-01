@@ -21,6 +21,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
+import { parseClaudeJson } from '../_shared/ai-json.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -188,7 +189,7 @@ Return ONLY valid JSON.`;
 
   let analysis: Record<string, unknown>;
   try {
-    analysis = JSON.parse(raw);
+    analysis = parseClaudeJson(raw);
   } catch {
     throw new Error('Failed to parse ad analysis from AI');
   }

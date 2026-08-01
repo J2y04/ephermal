@@ -19,6 +19,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { signOAuthState, timingSafeEqualHex } from '../_shared/auth.ts'
+import { rateLimitIp } from '../_shared/rate-limit.ts'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,9 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'GET') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  const rl = await rateLimitIp(req, 'shopify-oauth-callback', 20, 60)
+  if (!rl.allowed) return new Response('Too many requests', { status: 429 })
 
   const url     = new URL(req.url)
   const APP_URL = Deno.env.get('APP_URL') ?? 'https://ephermal.app'

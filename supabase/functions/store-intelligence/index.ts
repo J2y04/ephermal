@@ -227,7 +227,17 @@ ${JSON.stringify(products, null, 2)}`;
     updated_at:       new Date().toISOString(),
   };
 
-  await supabase.from('store_intelligence').upsert(row, { onConflict: 'user_id' });
+  // Previously this upsert's error was never checked, so every call silently failed - the table
+  // had no unique constraint on user_id at all, meaning onConflict:'user_id' referenced a
+  // constraint that didn't exist and Postgres rejected every upsert. The function still returned
+  // the freshly-built `row` regardless, so the UI looked successful while nothing was ever
+  // persisted - the exact "analyzed several times, nothing saved" bug. Constraint added via
+  // migration; now also fail loudly instead of pretending to succeed.
+  const { error: upsertErr } = await supabase.from('store_intelligence').upsert(row, { onConflict: 'user_id' });
+  if (upsertErr) {
+    console.error('store-intelligence: upsert failed:', upsertErr.message);
+    throw new Error('Failed to save store intelligence brief');
+  }
 
   return row;
 }

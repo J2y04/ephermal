@@ -9,7 +9,6 @@
  *
  * Required env vars:
  *   ANTHROPIC_API_KEY    — claude-haiku-4-5 (brief generation)
- *   HIGGSFIELD_API_KEY   — Higgsfield Marketing Studio (image/video prompts)
  *   SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY (auto-injected)
  *   APP_URL
  */
@@ -19,6 +18,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
+import { parseClaudeJson } from '../_shared/ai-json.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -28,7 +28,6 @@ const supabase = createClient(
 const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_URL   = 'https://api.anthropic.com/v1/messages';
 const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
-const HIGGSFIELD_KEY  = Deno.env.get('HIGGSFIELD_API_KEY') ?? ''; // used for image/video generation prompts
 
 const STYLE_GUARD = '\n\nWriting style: write like a real creative director, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
@@ -113,7 +112,7 @@ Return ONLY valid JSON.`;
 
   let brief: Record<string, unknown>;
   try {
-    brief = JSON.parse(raw);
+    brief = parseClaudeJson(raw);
   } catch {
     throw new Error('Failed to parse creative brief from AI');
   }

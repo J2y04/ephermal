@@ -21,6 +21,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { signOAuthState, timingSafeEqualHex } from '../_shared/auth.ts'
+import { rateLimitIp } from '../_shared/rate-limit.ts'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -41,6 +42,12 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'GET') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  // Unauthenticated endpoint - every request still does state parsing, an HMAC computation,
+  // and (past that) a DB round-trip and a real token-exchange call to Meta for near-miss
+  // values. IP-scoped, not user-scoped, since there's no authenticated identity yet.
+  const rl = await rateLimitIp(req, 'meta-oauth-callback', 20, 60)
+  if (!rl.allowed) return new Response('Too many requests', { status: 429 })
 
   const url     = new URL(req.url)
   const APP_URL = Deno.env.get('APP_URL') ?? 'https://ephermal.app'
@@ -132,6 +139,33 @@ Deno.serve(async (req: Request) => {
   } catch (e) {
     console.error('[meta-oauth] Token exchange fetch threw:', e)
     return redirectTo(APP_URL, returnPage, { meta_error: 'network_error' })
+  }
+
+  // ── Exchange for a long-lived token (~60 days) ───────────────────────────
+  // The code exchange above returns a SHORT-lived user token (1-2 hours). Without this second
+  // exchange, every connected account would silently expire within hours and repeatedly prompt
+  // "reconnect Meta" - exactly what non-technical Shopify store owners hit, when the whole point
+  // of connecting once is that it stays connected. Per Meta's own docs
+  // (https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived),
+  // this is a GET with grant_type=fb_exchange_token using the same app credentials. Best-effort:
+  // if it fails for any reason, fall back to the short-lived token rather than blocking the
+  // connection entirely - the user will just need to reconnect sooner.
+  try {
+    const longLivedRes = await fetch(
+      'https://graph.facebook.com/v19.0/oauth/access_token' +
+        `?grant_type=fb_exchange_token` +
+        `&client_id=${encodeURIComponent(META_APP_ID)}` +
+        `&client_secret=${encodeURIComponent(META_APP_SECRET)}` +
+        `&fb_exchange_token=${encodeURIComponent(accessToken)}`,
+    )
+    const longLivedData = await longLivedRes.json()
+    if (longLivedRes.ok && longLivedData.access_token) {
+      accessToken = longLivedData.access_token as string
+    } else {
+      console.error('[meta-oauth] Long-lived token exchange failed, using short-lived token:', JSON.stringify(longLivedData.error ?? longLivedData))
+    }
+  } catch (e) {
+    console.error('[meta-oauth] Long-lived token exchange threw, using short-lived token:', e)
   }
 
   // ── Connection checker: prove the fresh token can actually reach the Meta ──

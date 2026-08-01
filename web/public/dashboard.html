@@ -590,11 +590,15 @@ select.form-input{cursor:pointer}
 .nav-item.locked{opacity:.5;cursor:default}
 .nav-item.locked .lock-icon{width:13px;height:13px;stroke:var(--muted);fill:none;stroke-width:2;margin-left:auto;flex-shrink:0}
 /* ── Credits bar ── */
-.credits-bar-wrap{margin:8px 16px 0;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
-.credits-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:6px}
-.credits-bar-label strong{color:var(--text)}
-.credits-bar-track{height:5px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden}
-.credits-bar-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.22,1,.36,1)}
+/* Previously two separate blocky 10px-radius cards stacked in the sidebar footer, heavy enough
+ * to crowd the user-pill below them. Now one compact, fully-rounded card with two slim pill
+ * tracks inside - same information, a fraction of the visual weight. */
+.credits-card{margin:8px 16px 0;padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:16px;display:flex;flex-direction:column;gap:9px}
+.credits-bar-wrap{padding:0}
+.credits-bar-label{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted);margin-bottom:5px;letter-spacing:.2px}
+.credits-bar-label strong{color:var(--text);font-weight:700}
+.credits-bar-track{height:4px;background:rgba(255,255,255,0.06);border-radius:99px;overflow:hidden}
+.credits-bar-fill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.22,1,.36,1)}
 /* ── AI generate button (inside form fields) ── */
 .ai-gen-btn { display:inline-flex; align-items:center; gap:5px; padding:5px 11px; background:rgba(6,214,199,0.1); border:1px solid rgba(6,214,199,0.25); border-radius:7px; font-size:11px; font-weight:600; color:var(--primary); cursor:pointer; font-family:'Inter',sans-serif; transition:all .2s; white-space:nowrap; }
 .ai-gen-btn:hover { background:rgba(6,214,199,0.2); border-color:rgba(6,214,199,0.45); }
@@ -772,13 +776,15 @@ select.form-input{cursor:pointer}
     </a>
   </div>
   <div class="sidebar-footer">
-    <div class="credits-bar-wrap" id="credits-bar-wrap">
-      <div class="credits-bar-label"><span>UGC Credits</span><strong id="credits-label">- / -</strong></div>
-      <div class="credits-bar-track"><div class="credits-bar-fill" id="credits-bar-fill" style="width:0%;background:var(--primary)"></div></div>
-    </div>
-    <div class="credits-bar-wrap" id="ai-credits-bar-wrap" style="margin-top:6px">
-      <div class="credits-bar-label"><span>AI Usage</span><strong id="ai-credits-label">-%</strong></div>
-      <div class="credits-bar-track"><div class="credits-bar-fill" id="ai-credits-bar-fill" style="width:0%;background:var(--accent)"></div></div>
+    <div class="credits-card">
+      <div class="credits-bar-wrap" id="credits-bar-wrap">
+        <div class="credits-bar-label"><span>UGC Credits</span><strong id="credits-label">- / -</strong></div>
+        <div class="credits-bar-track"><div class="credits-bar-fill" id="credits-bar-fill" style="width:0%;background:var(--primary)"></div></div>
+      </div>
+      <div class="credits-bar-wrap" id="ai-credits-bar-wrap">
+        <div class="credits-bar-label"><span>AI Usage</span><strong id="ai-credits-label">-%</strong></div>
+        <div class="credits-bar-track"><div class="credits-bar-fill" id="ai-credits-bar-fill" style="width:0%;background:var(--accent)"></div></div>
+      </div>
     </div>
     <div class="user-pill" style="margin-top:8px">
       <div class="user-avatar" id="avatar-btn">?</div>
@@ -925,7 +931,7 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
       </div>
       <div class="grid-2">
         <div class="panel">
-          <div class="panel-head"><div class="panel-title">Campaigns</div><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div>
+          <div class="panel-head"><div class="panel-title">Campaigns</div><div style="display:flex;gap:8px;align-items:center"><button class="panel-action" onclick="navigate('campaigns')">Manage in Launch Ads →</button><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div></div>
           <div class="campaign-table">
             <div class="campaign-row header"><span>Campaign</span><span>ROAS</span><span>Spend</span><span>CTR</span><span>Status</span><span>On/Off</span></div>
             <div id="campaigns-body"><div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div></div>
@@ -1002,7 +1008,10 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
           <div class="page-title">Launch Ads</div>
           <div class="page-subtitle">Build campaigns and ads in Ephermal, review them, then launch to Meta and Google.</div>
         </div>
-        <button class="btn btn-primary" onclick="openCampaignBuilder()">+ New Campaign</button>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="openCampaignBuilder('meta')" style="display:inline-flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#1877F2;flex-shrink:0"></span>+ New Meta Campaign</button>
+          <button class="btn btn-primary" onclick="openCampaignBuilder('google')" style="display:inline-flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:#4285F4;flex-shrink:0"></span>+ New Google Campaign</button>
+        </div>
       </div>
 
       <!-- Platform toggles -->
@@ -3499,6 +3508,20 @@ function renderCampaignRow(c, _idx, readOnly) {
   return `<div class="campaign-row"${rowStyle} ${clickHandler}><div class="campaign-name"><div class="platform-dot" style="background:${color}"></div><div><div class="camp-title">${escHtml(c.name)}</div><div class="camp-sub">${safePlatform}</div></div></div>${roas}${spend}${ctr}<div><span class="status-pill ${sc}">${safeStatus}</span></div><div>${toggle}</div></div>`;
 }
 
+/** Renders an Ephermal-only campaign record (draft or failed launch) in the same row shape as
+ *  renderCampaignRow, but with dashes for ad-platform metrics that don't exist yet and a click
+ *  target that opens the real campaign review modal (openCampaignReview, from campaign-launcher's
+ *  launched_campaigns) instead of the live-ad-data detail modal. */
+function renderDraftCampaignRow(c) {
+  const colors = {meta:'#1877F2', google:'#4285F4', both:'#06d6c7'};
+  const color = colors[c.platform] || 'var(--muted)';
+  const sc = c.status === 'failed' ? 'failed' : 'draft';
+  const label = c.status === 'failed' ? 'Failed - needs fix' : 'Draft';
+  const safePlatform = escHtml((c.platform||'meta').charAt(0).toUpperCase()+(c.platform||'meta').slice(1));
+  const dim = '<span class="camp-metric dim">-</span>';
+  return `<div class="campaign-row" style="cursor:pointer" onclick="openCampaignReview('${escHtml(String(c.id))}')"><div class="campaign-name"><div class="platform-dot" style="background:${color}"></div><div><div class="camp-title">${escHtml(c.name)}</div><div class="camp-sub">${safePlatform}</div></div></div>${dim}${dim}${dim}<div><span class="status-pill ${sc}">${escHtml(label)}</span></div><div style="font-size:12px;color:var(--muted);text-align:right;padding-right:4px">View →</div></div>`;
+}
+
 function openCampaignDetail(id) {
   const c = campaignMap[id];
   if (!c) return;
@@ -3596,13 +3619,32 @@ async function loadCampaigns() {
     }
 
     allCampaigns = [...metaCampaigns, ...googleCampaigns];
+
+    // Ephermal's own campaign records (drafts still being built, and failed launch attempts
+    // that need a retry) never appear in the live Meta/Google sync above - they don't exist on
+    // the ad platform yet. The home dashboard's "Campaigns" widget only ever showed the live
+    // sync, so a user who'd built 17 drafts/failed campaigns via the builder saw an empty
+    // "No campaigns yet" panel with nothing to act on. Surface them here, distinctly, alongside
+    // whatever's actually live.
+    let draftCampaigns = [];
+    try {
+      const rDrafts = await authFetch('/launch', { method: 'POST', body: JSON.stringify({ action: 'list' }) });
+      if (rDrafts && rDrafts.ok) {
+        const d = await rDrafts.json();
+        draftCampaigns = (d.campaigns || []).filter(c => c.status === 'draft' || c.status === 'failed');
+      }
+    } catch (e) { /* non-fatal - live campaigns still render */ }
+
     const isStarter = getUserPlan() === 'starter';
     const visible = isStarter ? allCampaigns.slice(0, 3) : allCampaigns;
     const badge = document.getElementById('nav-campaign-count');
-    if (badge) { if (allCampaigns.length) { badge.textContent = allCampaigns.length; badge.style.display=''; } else badge.style.display='none'; }
+    const totalCount = allCampaigns.length + draftCampaigns.length;
+    if (badge) { if (totalCount) { badge.textContent = totalCount; badge.style.display=''; } else badge.style.display='none'; }
     const upgradeBanner = isStarter && allCampaigns.length > 3
       ? `<div style="text-align:center;padding:14px;background:rgba(6,214,199,.08);border:1px solid rgba(6,214,199,.2);border-radius:10px;margin-top:8px;font-size:12px;color:var(--muted)">Showing 3 of ${allCampaigns.length} campaigns - <a href="#" onclick="showUpgradeModal('campaigns');return false" style="color:var(--primary);font-weight:600">Upgrade to Growth</a> for full access</div>` : '';
-    const rowHtml = visible.length ? visible.map((c, i) => renderCampaignRow(c, i, isStarter)).join('') : '<div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div>';
+    const liveRowHtml = visible.map((c, i) => renderCampaignRow(c, i, isStarter)).join('');
+    const draftRowHtml = draftCampaigns.map(renderDraftCampaignRow).join('');
+    const rowHtml = (liveRowHtml + draftRowHtml) || '<div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p><button class="btn-secondary" style="margin-top:10px" onclick="navigate(\'campaigns\')">Create your first campaign</button></div>';
     const html = rowHtml + upgradeBanner;
     const b1 = document.getElementById('campaigns-body'); if (b1) { b1.innerHTML = html; setTimeout(() => { b1.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); }
     renderLaunchLiveTable();
@@ -6446,17 +6488,24 @@ function renderLaunchAdsList() {
 }
 
 // ── Campaign Builder (create) ────────────────────────────────────────────────
-function openCampaignBuilder() {
+/** platform: 'meta' (default) or 'google' - which platform this campaign starts targeting.
+ *  Previously a single "+ New Campaign" button always opened Meta-checked/Google-unchecked,
+ *  making Google campaign creation a two-step "open builder, then remember to check Google"
+ *  flow. The Launch Ads bar now has two distinct entry points that call this with the right
+ *  platform pre-selected - the user can still check the other platform's box to launch both,
+ *  this only changes what's selected on open. */
+function openCampaignBuilder(platform = 'meta') {
   if (!canAccess('campaigns')) { showUpgradeModal('launch'); return; }
+  if (platform === 'google' && !canAccess('googleads')) { showUpgradeModal('googleads'); return; }
   _cbEditingId = null;
-  document.getElementById('cb-title').textContent = 'New Campaign';
+  document.getElementById('cb-title').textContent = platform === 'google' ? 'New Google Campaign' : 'New Meta Campaign';
   document.getElementById('cb-name').value = '';
   document.getElementById('cb-objective').value = 'OUTCOME_SALES';
   document.getElementById('cb-budget').value = '20';
   document.getElementById('cb-budget').style.setProperty('--fill', '3.03%');
   document.getElementById('cb-budget-display').textContent = '20';
-  document.getElementById('cb-platform-meta').checked = true;
-  document.getElementById('cb-platform-google').checked = false;
+  document.getElementById('cb-platform-meta').checked = platform !== 'google';
+  document.getElementById('cb-platform-google').checked = platform === 'google';
   document.getElementById('cb-ads-list').innerHTML = '';
   _cbAddAd();
   _cbPopulateProductSelect();

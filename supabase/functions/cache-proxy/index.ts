@@ -46,16 +46,17 @@
 
 import { redis, cacheKey, redisAvailable } from '../_shared/redis.ts';
 import { extractUserId } from '../_shared/auth.ts';
+import { rateLimit } from '../_shared/rate-limit.ts';
 
-// Per-user rate limit: 60 requests/minute
-const RATE_LIMIT = 60;
-const RATE_WINDOW = 60; // seconds
-
+// Per-user rate limit: 60 requests/minute. cache-proxy is the shared entrypoint every other
+// function routes through, so its own limiter previously failing OPEN when Redis was down
+// (`if (!redisAvailable()) return false` - i.e. "not rate limited") meant any Upstash outage
+// silently removed this throttle for the whole platform. _shared/rate-limit.ts's rateLimit()
+// already has a fail-closed in-process fallback used by every other endpoint - reuse it here
+// instead of a bespoke, weaker check.
 async function isRateLimited(userId: string): Promise<boolean> {
-  if (!redisAvailable()) return false; // degrade gracefully if Redis is down
-  const key = `rl:proxy:${userId}`;
-  const count = await redis.incr(key, RATE_WINDOW);
-  return count > RATE_LIMIT;
+  const result = await rateLimit(userId, 'cache-proxy', 60, 60);
+  return !result.allowed;
 }
 
 // TTL map — keyed as "fnName:action" (function-scoped to prevent collisions).
@@ -329,11 +330,22 @@ Deno.serve(async (req) => {
 
   const targetUrl = buildFunctionUrl(fnName, path);
 
+  // extraHeaders is client-supplied (the request body's `headers` field, meant only for
+  // platform tokens like x-meta-token/x-shopify-store). Spreading it last let a caller include
+  // Authorization/apikey keys that silently overrode the proxy's own server-verified bearer
+  // token before forwarding downstream - the identity cache-proxy authenticated (and scoped its
+  // rate limit / cache key to) could differ from the identity actually presented to the
+  // downstream function. Strip any reserved key (case-insensitive) before merging so client
+  // input can never clobber the trust boundary this proxy is supposed to enforce.
+  const RESERVED_HEADER_KEYS = new Set(['authorization', 'apikey', 'content-type']);
+  const safeExtraHeaders = Object.fromEntries(
+    Object.entries(extraHeaders).filter(([k]) => !RESERVED_HEADER_KEYS.has(k.toLowerCase()))
+  );
   const forwardHeaders: Record<string, string> = {
+    ...safeExtraHeaders,
     'Authorization':  `Bearer ${rawToken}`,
     'Content-Type':   'application/json',
     'apikey':         SUPABASE_ANON,
-    ...extraHeaders,
   };
 
   let upstreamRes: Response;

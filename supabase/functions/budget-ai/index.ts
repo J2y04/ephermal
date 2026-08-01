@@ -25,6 +25,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { metaPost } from '../_shared/meta.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
+import { parseClaudeJson } from '../_shared/ai-json.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -103,8 +104,7 @@ Use industry benchmarks. Account for learning phase (first 7 days). Include Meta
   const raw  = await callClaude(userId, system, userMsg);
   let result: Record<string, unknown>;
   try {
-    const json = raw.trim();
-    result = JSON.parse(json);
+    result = parseClaudeJson(raw);
   } catch {
     throw new Error('Failed to parse budget calculation from AI');
   }
@@ -351,6 +351,16 @@ Deno.serve(async (req) => {
                 const err = await mutateRes.json().catch(() => ({})) as { error?: { message?: string } };
                 throw new Error(err.error?.message ?? `Google API ${mutateRes.status}`);
               }
+              // The Meta branch above keeps the local `campaigns` row in sync after a
+              // successful mutate; this branch didn't, so the DB kept showing the stale budget
+              // even though the real Google Ads mutate had genuinely succeeded - anything
+              // reading budget from the DB instead of live data (e.g. roas-optimizer's
+              // currentBudget = c.daily_budget) would act on the wrong number. Stored in cents
+              // to match the unit convention the Meta branch and every DB reader already use.
+              await supabase.from('campaigns')
+                .update({ daily_budget: Math.round(budgetUsd * 100) })
+                .eq('id', campaignId)
+                .eq('user_id', userId);
               applied.push({ platform: 'google', success: true });
             } catch (e) {
               applied.push({ platform: 'google', success: false, error: e instanceof Error ? e.message : 'Google Ads error' });

@@ -26,6 +26,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { signOAuthState, timingSafeEqualHex } from '../_shared/auth.ts'
+import { rateLimitIp } from '../_shared/rate-limit.ts'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -46,6 +47,9 @@ Deno.serve(async (req: Request) => {
   if (req.method !== 'GET') {
     return new Response('Method not allowed', { status: 405 })
   }
+
+  const rl = await rateLimitIp(req, 'google-oauth-callback', 20, 60)
+  if (!rl.allowed) return new Response('Too many requests', { status: 429 })
 
   const url     = new URL(req.url)
   const APP_URL = Deno.env.get('APP_URL') ?? 'https://ephermal.app'
@@ -249,14 +253,15 @@ Deno.serve(async (req: Request) => {
     console.error('[google-oauth] user_integrations upsert failed:', upsertErr.message)
   }
 
-  // The refresh_token (if we got one) is now saved regardless of the outcome
-  // below - only the "you're fully connected" signal is gated on the Ads API
-  // actually working. Real detail goes in the redirect so it isn't silently
-  // lost to a log line the user can never see.
+  // The refresh_token (if we got one) is now saved regardless of the outcome below - only the
+  // "you're fully connected" signal is gated on the Ads API actually working. Detail is logged
+  // server-side above (console.error) only - it previously also rode along in the redirect URL
+  // as error_detail, which meant raw Google Ads API error payloads (and internal exception
+  // messages) ended up in browser history, Referer headers, and any request-level logging.
+  // Meta/Shopify's callbacks never did this; Google's shouldn't either.
   if (connectionCheckError) {
     return redirectTo(APP_URL, returnPage, {
-      google_error:  'connection_test_failed',
-      error_detail:  connectionCheckError,
+      google_error: 'connection_test_failed',
     })
   }
 

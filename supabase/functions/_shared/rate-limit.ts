@@ -2,8 +2,12 @@
  * Ephermal — Rate Limiting (shared)
  *
  * Sliding-window rate limiter backed by Upstash Redis (INCR + EXPIRE).
- * When Redis is unavailable, falls back to an in-process Map so limits
- * are still enforced (fail-closed, not fail-open).
+ * When Redis is unavailable, falls back to an in-process Map so limits are still enforced on
+ * THIS isolate rather than not at all (fail-closed per-isolate, not fail-open). This is not a
+ * global guarantee: Supabase Edge Functions can run many concurrent isolates, each keeping its
+ * own independent in-process counter, so during a Redis outage the effective limit across the
+ * whole fleet can be higher than maxRequests (bounded by isolate count, not unbounded) until
+ * Redis recovers. Still meaningfully better than no limit at all.
  *
  * Usage:
  *   const result = await rateLimit(userId, 'ai', 10, 60);   // 10 req/60s
