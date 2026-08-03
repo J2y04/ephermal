@@ -288,7 +288,7 @@ Deno.serve(async (req: Request) => {
             campaign_budget.amount_micros,
             metrics.cost_micros,
             metrics.conversions,
-            metrics.conversion_value,
+            metrics.conversions_value,
             metrics.impressions,
             metrics.clicks,
             metrics.ctr
@@ -304,7 +304,7 @@ Deno.serve(async (req: Request) => {
           const b = r.campaign_budget as Record<string, unknown>
           const m = r.metrics as Record<string, unknown>
           const spend       = Number(m?.cost_micros ?? 0) / 1_000_000
-          const convValue   = Number(m?.conversion_value ?? 0)
+          const convValue   = Number(m?.conversions_value ?? 0)
           const conversions = Number(m?.conversions ?? 0)
           return {
             id:           String(c?.id ?? ''),
@@ -331,7 +331,7 @@ Deno.serve(async (req: Request) => {
           SELECT
             metrics.cost_micros,
             metrics.conversions,
-            metrics.conversion_value,
+            metrics.conversions_value,
             metrics.impressions,
             metrics.clicks,
             metrics.ctr
@@ -343,7 +343,7 @@ Deno.serve(async (req: Request) => {
           (acc, r) => {
             const m = r.metrics as Record<string, unknown>
             acc.spend       += Number(m?.cost_micros ?? 0) / 1_000_000
-            acc.convValue   += Number(m?.conversion_value ?? 0)
+            acc.convValue   += Number(m?.conversions_value ?? 0)
             acc.conversions += Number(m?.conversions ?? 0)
             acc.impressions += Number(m?.impressions ?? 0)
             acc.clicks      += Number(m?.clicks ?? 0)
@@ -541,6 +541,18 @@ Deno.serve(async (req: Request) => {
     // discarding it here for a generic string, unlike meta-api/shopify-api's equivalent catches,
     // made every failure (permission denied, invalid argument, auth) look identical to the caller.
     const msg = err instanceof Error ? err.message : 'Google Ads API error'
+    // A manager (MCC) account has no campaigns/metrics of its own - Google rejects every
+    // campaigns/insights read with this exact query error. campaign-launcher already detects
+    // this before campaign creation and shows a clear message; campaigns/insights (read paths,
+    // called on every dashboard load) had no equivalent, so this surfaced as an opaque 500 on
+    // every page load instead of telling the user what to actually do about it.
+    if (msg.includes('REQUESTED_METRICS_FOR_MANAGER')) {
+      return errResponse(
+        'Your connected Google Ads customer ID is a manager (MCC) account, which has no campaigns or metrics of its own. Reconnect in Settings using the specific client account ID you actually advertise from, not the manager account.',
+        403,
+        origin,
+      )
+    }
     return errResponse(msg, 500, origin)
   }
 })

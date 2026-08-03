@@ -245,6 +245,25 @@ Deno.serve(async (req) => {
     return new Response('Method not allowed', { status: 405, headers: CORS_HEADERS });
   }
 
+  try {
+    return await handleRequest(req, CORS_HEADERS);
+  } catch (e) {
+    // Every other edge function in this codebase wraps its handler body - cache-proxy was the
+    // one exception, so an uncaught throw anywhere in the routing/forwarding logic below produced
+    // Deno's bare default error page: no CORS headers (the browser can't even read the status,
+    // just reports a network failure) and no detail logged server-side beyond Deno's own opaque
+    // stack dump. Wrapping it: (a) turns a hard crash into a normal, catchable JSON 500 the
+    // frontend's existing `!r.ok` handling already deals with everywhere else, and (b) logs the
+    // real error/stack so a future occurrence is diagnosable instead of just "cache-proxy 500".
+    console.error('[cache-proxy] uncaught exception:', e instanceof Error ? (e.stack ?? e.message) : String(e));
+    return new Response(JSON.stringify({ error: 'Internal error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+    });
+  }
+});
+
+async function handleRequest(req: Request, CORS_HEADERS: Record<string, string>): Promise<Response> {
   // ── Auth: require Clerk JWT ───────────────────────────────────────────────
   // Supabase Edge Runtime rejects RS256 (Clerk) JWTs with UNAUTHORIZED_ASYMMETRIC_JWT
   // even when verify_jwt=false. Client sends anon key in Authorization (accepted by
@@ -411,4 +430,4 @@ Deno.serve(async (req) => {
     status: 200,
     headers: { 'Content-Type': 'application/json', 'X-Cache': 'MISS', ...CORS_HEADERS },
   });
-});
+}
