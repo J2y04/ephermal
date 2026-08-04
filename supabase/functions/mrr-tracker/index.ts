@@ -196,6 +196,19 @@ async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conv
       }),
     });
     if (!res.ok) {
+      // A manager (MCC) account has no metrics/campaigns of its own - Google rejects this
+      // exact query with a 400 INVALID_ARGUMENT/REQUESTED_METRICS_FOR_MANAGER, which the
+      // status-code-only check below used to lump into a generic "Google Ads API error (400)".
+      // google-api's campaigns/insights actions already give a clear, actionable message for
+      // this identical root cause - match it here instead of leaving MRR Tracker's sync
+      // silently unhelpful for the same account.
+      const errText = await res.text().catch(() => '');
+      if (errText.includes('REQUESTED_METRICS_FOR_MANAGER')) {
+        return {
+          spend, conversions, connected: true,
+          error: 'Your connected Google Ads customer ID is a manager (MCC) account, which has no revenue/spend data of its own — reconnect in Settings using the specific client account ID you advertise from.',
+        };
+      }
       return {
         spend, conversions, connected: true,
         error: res.status === 401 || res.status === 403
@@ -363,6 +376,9 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('mrr-tracker error:', err);
-    return errResponse('MRR tracker error', 500, origin);
+    // Same fix already applied to google-api/budget-ai's equivalent catches - a generic
+    // string made every failure indistinguishable to the caller.
+    const msg = err instanceof Error ? err.message : 'MRR tracker error';
+    return errResponse(msg, 500, origin);
   }
 });

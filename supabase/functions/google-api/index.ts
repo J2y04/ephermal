@@ -300,19 +300,26 @@ Deno.serve(async (req: Request) => {
         `)
 
         const campaigns = results.map((r: Record<string, unknown>) => {
+          // Google's REST search response serializes fields as lowerCamelCase, not the
+          // snake_case used in the GAQL query text itself (confirmed against Google's own
+          // JSON-mapping docs) - reading r.campaign_budget/m.cost_micros etc. here silently
+          // read undefined for every field with an underscore, so budget/spend/roas always
+          // came back as 0 while id/name/status/conversions (no underscore in their real key)
+          // happened to work by coincidence. mrr-tracker's own Google fetch already uses the
+          // correct camelCase convention for the same API.
           const c = r.campaign as Record<string, unknown>
-          const b = r.campaign_budget as Record<string, unknown>
+          const b = r.campaignBudget as Record<string, unknown>
           const m = r.metrics as Record<string, unknown>
-          const spend       = Number(m?.cost_micros ?? 0) / 1_000_000
-          const convValue   = Number(m?.conversions_value ?? 0)
+          const spend       = Number(m?.costMicros ?? 0) / 1_000_000
+          const convValue   = Number(m?.conversionsValue ?? 0)
           const conversions = Number(m?.conversions ?? 0)
           return {
             id:           String(c?.id ?? ''),
             name:         String(c?.name ?? ''),
             status:       String(c?.status ?? 'UNKNOWN').toLowerCase(),
             platform:     'google',
-            channel:      String(c?.advertising_channel_type ?? 'SEARCH'),
-            daily_budget: Number(b?.amount_micros ?? 0) / 1_000_000,
+            channel:      String(c?.advertisingChannelType ?? 'SEARCH'),
+            daily_budget: Number(b?.amountMicros ?? 0) / 1_000_000,
             total_spend:  spend,
             roas:         spend > 0 ? parseFloat((convValue / spend).toFixed(2)) : 0,
             conversions,
@@ -342,8 +349,8 @@ Deno.serve(async (req: Request) => {
         const totals = results.reduce(
           (acc, r) => {
             const m = r.metrics as Record<string, unknown>
-            acc.spend       += Number(m?.cost_micros ?? 0) / 1_000_000
-            acc.convValue   += Number(m?.conversions_value ?? 0)
+            acc.spend       += Number(m?.costMicros ?? 0) / 1_000_000
+            acc.convValue   += Number(m?.conversionsValue ?? 0)
             acc.conversions += Number(m?.conversions ?? 0)
             acc.impressions += Number(m?.impressions ?? 0)
             acc.clicks      += Number(m?.clicks ?? 0)
@@ -415,7 +422,9 @@ Deno.serve(async (req: Request) => {
           return errResponse('Campaign not found', 404, origin)
         }
 
-        const budgetResource = (budgetResults[0].campaign_budget as Record<string, unknown>)?.resource_name as string
+        // Same camelCase-vs-snake_case mismatch as the campaigns/insights actions above -
+        // this always evaluated to undefined and the action always 500'd, on every call.
+        const budgetResource = (budgetResults[0].campaignBudget as Record<string, unknown>)?.resourceName as string
         if (!budgetResource) return errResponse('Could not resolve campaign budget', 500, origin)
 
         await gadsPost(customerId, accessToken, devToken, 'campaignBudgets:mutate', {

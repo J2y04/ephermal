@@ -336,8 +336,13 @@ Deno.serve(async (req) => {
                 method: 'POST', headers,
                 body: JSON.stringify({ query: `SELECT campaign_budget.resource_name FROM campaign WHERE campaign.id = ${campaignId} LIMIT 1` }),
               });
-              const searchData = await searchRes.json() as { results?: { campaign_budget?: { resource_name?: string } }[] };
-              const budgetResource = searchData.results?.[0]?.campaign_budget?.resource_name;
+              // Google's REST search response serializes fields as lowerCamelCase, not the
+              // snake_case used in the GAQL query text - reading campaign_budget/resource_name
+              // here always read undefined, so this action always threw "Campaign not found"
+              // even for a real, existing campaign. Same root cause already fixed tonight in
+              // google-api's 'budget'/'campaigns'/'insights' actions.
+              const searchData = await searchRes.json() as { results?: { campaignBudget?: { resourceName?: string } }[] };
+              const budgetResource = searchData.results?.[0]?.campaignBudget?.resourceName;
               if (!budgetResource) throw new Error('Campaign not found in Google Ads');
 
               // Update budget
@@ -396,6 +401,10 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     console.error('budget-ai error:', err);
-    return errResponse('Budget AI error', 500, origin);
+    // Discarding the real error into a generic string made every failure (a bad Google Ads
+    // response, an AI JSON-parse error, a Supabase error) look identical to the caller -
+    // same fix already applied to google-api/campaign-launcher's equivalent catches.
+    const msg = err instanceof Error ? err.message : 'Budget AI error';
+    return errResponse(msg, 500, origin);
   }
 });
