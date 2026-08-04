@@ -21,6 +21,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
+import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 import { parseClaudeJson } from '../_shared/ai-json.ts';
 
 const supabase = createClient(
@@ -38,7 +39,7 @@ const META_AD_FIELDS = 'id,ad_creation_time,ad_delivery_start_time,ad_delivery_s
 
 const STYLE_GUARD = '\n\nWriting style: write like a real strategist, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
-async function callClaude(system: string, user: string, maxTokens = 1500): Promise<string> {
+async function callClaude(userId: string, system: string, user: string, maxTokens = 1500): Promise<string> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -58,7 +59,11 @@ async function callClaude(system: string, user: string, maxTokens = 1500): Promi
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { content: { type: string; text?: string }[] };
+  const data = await res.json() as { content: { type: string; text?: string }[]; usage?: { input_tokens: number; output_tokens: number } };
+  // Real Anthropic spend was never checked against the caller's weekly budget nor recorded
+  // into ai_usage - this endpoint's real dollar cost was invisible to Ephermal's own cost
+  // accounting and the user could never be blocked by the budget gate on this action.
+  if (data.usage) await recordAIUsage(userId, ANTHROPIC_MODEL, data.usage.input_tokens, data.usage.output_tokens);
   return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
@@ -162,7 +167,7 @@ async function handleSearch(
   };
 }
 
-async function handleAnalyze(adText: string): Promise<Record<string, unknown>> {
+async function handleAnalyze(userId: string, adText: string): Promise<Record<string, unknown>> {
   const system = `You are an expert ad copywriter and marketing strategist. Analyze competitor ad copy and generate a winning counter-ad. Return JSON only — no markdown, no explanation outside JSON.`;
 
   const userMsg = `Analyze this competitor ad copy and create a counter-ad:
@@ -185,7 +190,7 @@ Return a JSON object with this exact structure:
 
 Return ONLY valid JSON.`;
 
-  const raw = await callClaude(system, userMsg, 1400);
+  const raw = await callClaude(userId, system, userMsg, 1400);
 
   let analysis: Record<string, unknown>;
   try {
@@ -248,9 +253,11 @@ Deno.serve(async (req) => {
 
       case 'analyze': {
         if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
+        const budgetCheck = await checkAIBudget(userId);
+        if (!budgetCheck.ok) return errResponse(budgetCheck.message, 429, origin, { usage: budgetCheck.status });
         const adText = String(body.ad_text ?? '').trim().slice(0, 4000);
         if (!adText) return errResponse('ad_text is required', 400, origin);
-        return okResponse(await handleAnalyze(adText), origin);
+        return okResponse(await handleAnalyze(userId, adText), origin);
       }
 
       default:

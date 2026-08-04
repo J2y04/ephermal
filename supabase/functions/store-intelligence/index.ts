@@ -19,6 +19,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
@@ -124,7 +125,7 @@ async function fetchThemeSignals(shop: string, token: string): Promise<{ colors:
   }
 }
 
-async function callClaude(system: string, user: string): Promise<string> {
+async function callClaude(userId: string, system: string, user: string): Promise<string> {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_API_KEY not configured');
   const res = await fetch(ANTHROPIC_URL, {
     method: 'POST',
@@ -144,7 +145,11 @@ async function callClaude(system: string, user: string): Promise<string> {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as { error?: { message: string } }).error?.message ?? `Anthropic error ${res.status}`);
   }
-  const data = await res.json() as { content: { type: string; text?: string }[] };
+  const data = await res.json() as { content: { type: string; text?: string }[]; usage?: { input_tokens: number; output_tokens: number } };
+  // This is likely the single most expensive AI call in the codebase (a full product-catalog
+  // dump per request) yet its real spend was never checked against the weekly budget nor
+  // recorded into ai_usage - completely invisible to Ephermal's own cost accounting.
+  if (data.usage) await recordAIUsage(userId, ANTHROPIC_MODEL, data.usage.input_tokens, data.usage.output_tokens);
   return data.content?.find(c => c.type === 'text')?.text ?? '';
 }
 
@@ -198,7 +203,7 @@ Homepage theme-color meta tag (fallback signal): ${storefront.theme_color ?? 'no
 Top products (by price):
 ${JSON.stringify(products, null, 2)}`;
 
-  const raw = await callClaude(system, userMsg);
+  const raw = await callClaude(userId, system, userMsg);
   let brief: Record<string, unknown>;
   try {
     const json = raw.replace(/```json\s*|```/g, '').trim();
@@ -275,6 +280,8 @@ Deno.serve(async (req) => {
     switch (action) {
       case 'analyze': {
         if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
+        const budgetCheck = await checkAIBudget(userId);
+        if (!budgetCheck.ok) return errResponse(budgetCheck.message, 429, origin, { usage: budgetCheck.status });
         return okResponse(await handleAnalyze(userId), origin);
       }
       case 'get':
