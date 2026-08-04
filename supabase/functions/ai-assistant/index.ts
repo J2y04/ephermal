@@ -28,6 +28,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rate-limit.ts';
 import { checkAIBudget, recordAIUsage, getAIUsageStatus } from '../_shared/ai-usage.ts';
+import { requirePlan } from '../_shared/plan.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -510,6 +511,14 @@ Deno.serve(async (req) => {
 
     switch (action) {
       case 'chat': {
+        // Auren (the conversational chat loop) is a Growth+ feature - the only gate that
+        // existed was client-side (dashboard.html's canAccess('ai'), GATED.ai = 'growth'),
+        // trivially bypassed by calling this endpoint directly with a valid Clerk token.
+        // 'analyze'/'generate_description' (Store Analysis) are intentionally left ungated
+        // below - only the chat loop itself is a paid-tier feature.
+        const gate = await requirePlan(userId, 'growth', origin, 'Auren AI chat');
+        if (gate) return gate;
+
         const message = String(body.message ?? '').trim();
         if (!message) return errResponse('message is required', 400, origin);
 
