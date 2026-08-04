@@ -1496,12 +1496,6 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
           </div>
           <div id="multistore-stores-list"><div class="empty-state"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><p>Connect stores in Settings to see them here</p></div></div>
         </div>
-        <div class="paywall-lock" id="multistore-paywall" style="display:none">
-          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-          <strong>Multi-Store View - Scale Plan</strong>
-          <span>See consolidated metrics across all your Shopify stores in one dashboard. Available on the Scale plan.</span>
-          <button class="btn-upgrade" onclick="showUpgradeModal('multistore')">Upgrade to Scale</button>
-        </div>
       </div>
     </div>
 
@@ -2698,7 +2692,7 @@ function renderPlanUI() {
     if (lockEl) lockEl.style.display = locked ? 'block' : 'none';
   });
   // Show/hide page paywall overlays
-  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', multistore: 'multistore-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall', analysis: 'analysis-paywall', mrrtracker: 'mrrtracker-paywall', ai: 'ai-paywall' };
+  const pagePaywalls = { audience: 'audience-paywall', bulk: 'bulk-paywall', whitelabel: 'whitelabel-paywall', analytics: 'analytics-paywall', budget: 'budget-paywall', campaigns: 'launch-paywall', competitorradar: 'competitorradar-paywall', creativebrief: 'creativebrief-paywall', profittracker: 'profittracker-paywall', analysis: 'analysis-paywall', mrrtracker: 'mrrtracker-paywall', ai: 'ai-paywall' };
   Object.entries(pagePaywalls).forEach(([feature, id]) => {
     const pw = document.getElementById(id);
     if (pw) pw.style.display = !canAccess(feature) ? 'flex' : 'none';
@@ -2913,9 +2907,9 @@ function renderBillingPage() {
   const grid = document.getElementById('billing-plans-grid');
   if (!grid) return;
   const planCards = [
-    { id:'starter', name:'Starter', price:curFmtBilling(89), ugc:15, stores:'1', features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'}] },
-    { id:'growth',  name:'Growth',  price:curFmtBilling(199), ugc:75,  stores:'3', features:['3 Shopify stores','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents',{f:'Bulk campaign management',locked:true,badge:'Scale'},{f:'Multi-store consolidated view',locked:true,badge:'Scale'},{f:'Dedicated AI instance',locked:true,badge:'Scale'}], highlight: true },
-    { id:'scale',   name:'Scale',   price:curFmtBilling(349), ugc:350, stores:'∞', features:['Unlimited stores','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Priority AI agents','Bulk campaign management','Multi-store consolidated view','Dedicated AI instance','Custom integrations','Slack support'] },
+    { id:'starter', name:'Starter', price:curFmtBilling(89), features:['1 Shopify store','15 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Basic analytics',{f:'Google Ads automation',locked:true,badge:'Growth+'},{f:'AI ad strategist chat',locked:true,badge:'Growth+'},{f:'AI UGC script writer',locked:true,badge:'Growth+'},{f:'Store intelligence & audiences',locked:true,badge:'Growth+'},{f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},{f:'Bulk campaign management',locked:true,badge:'Scale'}] },
+    { id:'growth',  name:'Growth',  price:curFmtBilling(199), features:['1 Shopify store','75 UGC creatives/mo','Meta Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','Google Ads automation','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization',{f:'Bulk campaign management',locked:true,badge:'Scale'}], highlight: true },
+    { id:'scale',   name:'Scale',   price:curFmtBilling(349), features:['1 Shopify store','350 UGC creatives/mo','Meta + Google Ads automation','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','AI UGC script writer','Store intelligence & audiences','Full campaign analytics','Closed-loop ROAS optimization','Bulk campaign management'] },
   ];
   grid.innerHTML = planCards.map(p => {
     const isCurrent = plan === p.id;
@@ -3650,7 +3644,8 @@ function renderDraftCampaignRow(c) {
   const label = c.status === 'failed' ? 'Failed - needs fix' : 'Draft';
   const safePlatform = escHtml((c.platform||'meta').charAt(0).toUpperCase()+(c.platform||'meta').slice(1));
   const dim = '<span class="camp-metric dim">-</span>';
-  return `<div class="campaign-row" style="cursor:pointer" onclick="openCampaignReview('${escHtml(String(c.id))}')"><div class="campaign-name"><div class="platform-dot" style="background:${color}"></div><div><div class="camp-title">${escHtml(c.name)}</div><div class="camp-sub">${safePlatform}</div></div></div>${dim}${dim}${dim}<div><span class="status-pill ${sc}">${escHtml(label)}</span></div><div style="font-size:12px;color:var(--muted);text-align:right;padding-right:4px">View →</div></div>`;
+  const openId = escHtml(String(c.id));
+  return `<div class="campaign-row" style="cursor:pointer" role="button" tabindex="0" onclick="openCampaignReview('${openId}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCampaignReview('${openId}')}"><div class="campaign-name"><div class="platform-dot" style="background:${color}"></div><div><div class="camp-title">${escHtml(c.name)}</div><div class="camp-sub">${safePlatform}</div></div></div>${dim}${dim}${dim}<div><span class="status-pill ${sc}">${escHtml(label)}</span></div><div style="font-size:12px;color:var(--muted);text-align:right;padding-right:4px">View →</div></div>`;
 }
 
 function openCampaignDetail(id) {
@@ -5869,6 +5864,7 @@ async function syncProducts() {
     const products = Array.isArray(data) ? data : (data.products || []);
     localStorage.setItem('products_cache', JSON.stringify(products));
     localStorage.setItem('products_cache_at', String(Date.now()));
+    if (data.shop_currency) localStorage.setItem('shop_currency', data.shop_currency);
     window._cachedProducts = products;
     const isFirstSync = !localStorage.getItem('known_product_ids');
     _pendingNewProducts = [];
@@ -5894,6 +5890,14 @@ async function syncProducts() {
   }
 }
 
+// Shop's own Shopify currency — distinct from curFmt()'s Ephermal display-currency
+// preference, which only applies to Ephermal's internal EUR ad-spend numbers.
+const SHOP_CUR_SYMBOLS = { USD:'$', EUR:'€', GBP:'£', CAD:'CA$', AUD:'A$', CHF:'CHF ', JPY:'¥' };
+function shopCurSymbol() {
+  const code = localStorage.getItem('shop_currency') || 'USD';
+  return SHOP_CUR_SYMBOLS[code] || (code + ' ');
+}
+
 function renderProducts(products) {
   const grid = document.getElementById('products-grid');
   if (!grid) return;
@@ -5904,7 +5908,7 @@ function renderProducts(products) {
   grid.innerHTML = products.map(p => {
     const img = p.image?.src || p.images?.[0]?.src || '';
     const rawTitle = p.title || p.name || 'Product';
-    const rawPrice = p.variants?.[0]?.price ? `$${p.variants[0].price}` : (p.price ? `$${p.price}` : '');
+    const rawPrice = p.variants?.[0]?.price ? `${shopCurSymbol()}${p.variants[0].price}` : (p.price ? `${shopCurSymbol()}${p.price}` : '');
     const rawId = String(p.id || p.title || '');
     const title  = escHtml(rawTitle);
     const price  = escHtml(rawPrice);
@@ -5930,7 +5934,7 @@ function showNextNewProduct() {
   const modal = document.getElementById('new-product-modal');
   if (!modal) return;
   document.getElementById('new-product-title').textContent = p.title || p.name || 'New Product';
-  document.getElementById('new-product-price').textContent = p.variants?.[0]?.price ? `$${p.variants[0].price}` : (p.price ? `$${p.price}` : '');
+  document.getElementById('new-product-price').textContent = p.variants?.[0]?.price ? `${shopCurSymbol()}${p.variants[0].price}` : (p.price ? `${shopCurSymbol()}${p.price}` : '');
   const imgEl = document.getElementById('new-product-img');
   const imgSrc = p.image?.src || p.images?.[0]?.src || '';
   imgEl.src = imgSrc; imgEl.style.display = imgSrc ? 'block' : 'none';
@@ -5942,7 +5946,7 @@ function promptUGCForProduct(id, title, img, price) {
   if (!requireSubscription()) return;
   // Pre-fill the full UGC config modal with product details
   const descEl = document.getElementById('ugc-description');
-  if (descEl) descEl.value = title + (price ? ` - $${price}` : '');
+  if (descEl) descEl.value = title + (price ? ` - ${shopCurSymbol()}${price}` : '');
   const ugcModal = document.getElementById('ugc-modal');
   if (ugcModal) { renderPlanUI(); ugcModal.classList.add('open'); }
 }
@@ -6689,7 +6693,7 @@ function renderLaunchAdsList() {
     const platforms = c.platform === 'both' ? ['meta','google'] : [c.platform];
     const badges = platforms.map(p => `<span class="platform-badge ${p}">${p === 'meta' ? 'Meta' : 'Google'}</span>`).join('');
     const statusClass = c.status === 'active' ? 'live' : c.status;
-    return `<div class="launch-card" onclick="openCampaignReview('${c.id}')">
+    return `<div class="launch-card" role="button" tabindex="0" onclick="openCampaignReview('${c.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCampaignReview('${c.id}')}">
       <div class="launch-card-top">
         <div class="launch-card-name">${escHtml(c.name)}</div>
         <span class="status-pill ${statusClass}">${escHtml(c.status)}</span>

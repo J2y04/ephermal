@@ -207,6 +207,15 @@ Deno.serve(async (req) => {
       case 'sync_products': {
         // Fetch all products and upsert to shopify_products table
         const products = await fetchAllProducts(shop, token);
+
+        // Shop's own currency — product prices are always in this currency, never
+        // Ephermal's internal EUR ad-spend currency. Non-fatal: falls back to USD
+        // symbol on the frontend if this call fails.
+        let shopCurrency = 'USD';
+        try {
+          const shopData = await shopifyGet<{ shop?: { currency?: string } }>(shop, token, 'shop.json');
+          shopCurrency = shopData.shop?.currency || 'USD';
+        } catch { /* non-fatal */ }
         let cogsAutoFilled = 0;
         let cogsScopeDenied = false;
         let cogsAvailableInShopify = 0;
@@ -282,6 +291,7 @@ Deno.serve(async (req) => {
         return okResponse({
           synced: products.length,
           shop,
+          shop_currency: shopCurrency,
           message: `Synced ${products.length} products from ${shop}`,
           products,
           cogs_auto_filled: cogsAutoFilled,

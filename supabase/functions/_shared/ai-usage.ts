@@ -19,6 +19,10 @@ const supabase = createClient(
 // Update these if Anthropic changes pricing; everything downstream (budgets,
 // percentages, top-up prices) derives from these two numbers, not from a
 // hardcoded "message" concept.
+//
+// claude-sonnet-5's $2/$10 rate is Anthropic's introductory price, valid through
+// 2026-08-31 — the standard rate after that is $3/$15. Update the sonnet-5 row
+// above that date or every call after it will undercount real cost by ~33%.
 const MODEL_RATES_PER_MILLION: Record<string, { input: number; output: number }> = {
   'claude-haiku-4-5-20251001': { input: 1, output: 5 },
   'claude-sonnet-5':           { input: 2, output: 10 },

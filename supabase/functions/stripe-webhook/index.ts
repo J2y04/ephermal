@@ -88,7 +88,9 @@ async function updateClerkMetadata(clerkUserId: string, plan: string): Promise<v
   if (!res.ok) {
     // Log detail server-side only — never expose to response body
     console.error('Clerk metadata update failed:', res.status, await res.text());
-    throw new Error('Clerk metadata update failed');
+    const err = new Error('Clerk metadata update failed') as Error & { status?: number };
+    err.status = res.status;
+    throw err;
   }
 }
 
@@ -348,7 +350,23 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
     ...(cancellingAt !== null ? { cancelling_at: cancellingAt } : { cancelling_at: null }),
   }, { onConflict: 'user_id' });
 
-  await updateClerkMetadata(clerkUserId, effectivePlan);
+  try {
+    await updateClerkMetadata(clerkUserId, effectivePlan);
+  } catch (e) {
+    // A 404 here means the Clerk identity is already gone — most likely an out-of-band
+    // deletion (see clerk-webhook's cleanupDeletedUser) that failed to cancel this
+    // subscription in Stripe first, so Stripe keeps sending renewal/update events for a
+    // user who no longer exists. The user_plans upsert above already ran and recorded the
+    // real subscription state, so there's nothing left to reconcile — swallow this specific
+    // case so the event is marked processed instead of retrying forever against a Clerk user
+    // that will never come back. Any other failure (network, auth, Clerk outage) still throws
+    // so Stripe's normal retry behavior applies.
+    if ((e as { status?: number })?.status === 404) {
+      console.warn(`Clerk user ${clerkUserId} not found (already deleted) — skipping metadata update, subscription state still recorded in user_plans`);
+    } else {
+      throw e;
+    }
+  }
   // Log the actual effective plan (not the raw price lookup)
   console.log(`✓ Plan set to ${effectivePlan} (sub status: ${status}) for ${clerkUserId}`);
 }

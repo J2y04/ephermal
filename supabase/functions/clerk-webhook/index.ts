@@ -124,18 +124,38 @@ type ClerkEvent = ClerkUserCreatedEvent | ClerkUserDeletedEvent | { type: string
 async function cleanupDeletedUser(userId: string): Promise<void> {
   const { data: plan } = await supabase.from('user_plans').select('stripe_sub_id').eq('user_id', userId).single();
   const subId = plan?.stripe_sub_id as string | undefined;
+
+  // Unlike delete-account, the Clerk identity is already gone by the time this runs — there
+  // is no "block deletion" option. If the Stripe cancel genuinely fails (not just an
+  // already-cancelled subscription), the safest move is to keep the user_plans row instead
+  // of wiping it: it's the only remaining trace of a subscription that may still be live and
+  // billing an account nobody can log into or cancel from anymore.
+  let stripeCancelFailed = false;
   if (subId) {
     try {
       await getStripe().subscriptions.cancel(subId);
       console.log(`✓ Stripe subscription ${subId} cancelled for out-of-band Clerk deletion (${userId})`);
     } catch (e) {
-      console.error(`Stripe cancel failed for out-of-band Clerk deletion of ${userId}:`, e);
+      if ((e as { code?: string })?.code === 'resource_missing') {
+        console.log(`Stripe subscription ${subId} already gone for ${userId}, proceeding with cleanup`);
+      } else {
+        stripeCancelFailed = true;
+        console.error(`⚠ Stripe cancel FAILED for out-of-band Clerk deletion of ${userId} — subscription ${subId} may still be live and billing. Preserving user_plans row for manual follow-up:`, e);
+      }
     }
   }
 
+  const failures: string[] = [];
   for (const table of USER_OWNED_TABLES) {
+    if (table === 'user_plans' && stripeCancelFailed) continue;
     const { error } = await supabase.from(table).delete().eq('user_id', userId);
-    if (error) console.error(`clerk-webhook user.deleted: failed to clear ${table} for ${userId}:`, error.message);
+    if (error) {
+      console.error(`clerk-webhook user.deleted: failed to clear ${table} for ${userId}:`, error.message);
+      failures.push(table);
+    }
+  }
+  if (failures.length > 0) {
+    console.error(`clerk-webhook user.deleted: cleanup incomplete for ${userId} — failed tables: ${failures.join(', ')}`);
   }
 }
 

@@ -37,7 +37,7 @@ const supabase = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
-async function cancelStripeSubscription(userId: string): Promise<void> {
+async function cancelStripeSubscription(userId: string): Promise<{ ok: true } | { ok: false; error: string }> {
   const { data: plan } = await supabase
     .from('user_plans')
     .select('stripe_sub_id')
@@ -45,15 +45,23 @@ async function cancelStripeSubscription(userId: string): Promise<void> {
     .single();
 
   const subId = plan?.stripe_sub_id as string | undefined;
-  if (!subId) return;
+  if (!subId) return { ok: true };
 
   try {
     await getStripe().subscriptions.cancel(subId);
     console.log(`✓ Stripe subscription ${subId} cancelled for account deletion (${userId})`);
+    return { ok: true };
   } catch (e) {
-    // Log but don't block deletion — an already-cancelled or missing subscription
-    // shouldn't stop the user from deleting their account.
+    // "resource_missing" means the subscription is already cancelled/gone — safe to
+    // proceed. Any other error (network, auth, rate limit, Stripe outage) must block
+    // deletion: proceeding anyway would wipe the account and delete the Clerk identity
+    // while a real, still-live subscription keeps billing a now-unreachable account.
+    if ((e as { code?: string })?.code === 'resource_missing') {
+      console.log(`Stripe subscription ${subId} already gone for ${userId}, proceeding with deletion`);
+      return { ok: true };
+    }
     console.error(`Stripe cancel failed during account deletion for ${userId}:`, e);
+    return { ok: false, error: e instanceof Error ? e.message : 'Stripe cancellation failed' };
   }
 }
 
@@ -98,7 +106,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    await cancelStripeSubscription(userId);
+    const stripeResult = await cancelStripeSubscription(userId);
+    if (!stripeResult.ok) {
+      return errResponse(
+        `Could not cancel your active subscription (${stripeResult.error}). Please try again or contact support before your account can be deleted.`,
+        500,
+        origin,
+      );
+    }
 
     const failures: string[] = [];
     for (const table of USER_OWNED_TABLES) {
