@@ -316,12 +316,21 @@ async function handleUgcVideoTopup(paymentIntent: Stripe.PaymentIntent): Promise
 }
 
 async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
-  const clerkUserId = subscription.metadata?.clerk_user_id;
+  // The embedded event payload is a snapshot from when Stripe generated the event. Stripe does
+  // not guarantee webhook delivery order (retries, network delays), so a stale event delivered
+  // after a newer one can silently revert plan/cancellation state if trusted directly — e.g. a
+  // rapid cancel-then-reactivate where the 'cancelled' event's delivery lands after the
+  // 'reactivated' one. Re-fetching the subscription's CURRENT state from Stripe means any two
+  // events for the same subscription converge on the same live truth regardless of delivery
+  // order, closing that race.
+  const current = await getStripe().subscriptions.retrieve(subscription.id);
+
+  const clerkUserId = current.metadata?.clerk_user_id;
   if (!clerkUserId) return;
 
-  const priceId = subscription.items.data[0]?.price.id;
-  const status = subscription.status;
-  const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+  const priceId = current.items.data[0]?.price.id;
+  const status = current.status;
+  const periodEnd = new Date(current.current_period_end * 1000).toISOString();
 
   let effectivePlan: string;
 
@@ -338,14 +347,14 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Pro
   if (!VALID_PLANS.has(effectivePlan)) effectivePlan = 'starter';
 
   // If active but cancel_at_period_end is set, record the pending cancellation date
-  const cancellingAt = (status === 'active' || status === 'trialing') && subscription.cancel_at_period_end
+  const cancellingAt = (status === 'active' || status === 'trialing') && current.cancel_at_period_end
     ? periodEnd
     : null;
 
   await supabase.from('user_plans').upsert({
     user_id: clerkUserId,
     plan: effectivePlan,
-    stripe_sub_id: subscription.id,
+    stripe_sub_id: current.id,
     period_end: periodEnd,
     ...(cancellingAt !== null ? { cancelling_at: cancellingAt } : { cancelling_at: null }),
   }, { onConflict: 'user_id' });
@@ -434,14 +443,23 @@ Deno.serve(async (req) => {
     return new Response('Invalid webhook signature', { status: 400 });
   }
 
-  // Idempotency guard: skip if already processed (Stripe may replay events)
-  const { data: alreadyProcessed } = await supabase.from('stripe_processed_events')
-    .select('event_id').eq('event_id', event.id).maybeSingle();
-  if (alreadyProcessed) {
-    console.log(`Duplicate Stripe event ignored: ${event.id}`);
-    return new Response(JSON.stringify({ received: true }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+  // Idempotency guard: claim the event FIRST (insert before processing) rather than
+  // check-then-act (SELECT, then INSERT only after the handler finishes) — the old order left
+  // a window where two near-simultaneous deliveries of the same event.id (which Stripe
+  // documents as possible) could both pass the "not yet processed" check and both run the
+  // handler concurrently, double-sending the best-effort transactional emails inside it. The
+  // unique constraint on event_id makes this insert an atomic claim.
+  const { error: claimErr } = await supabase.from('stripe_processed_events')
+    .insert({ event_id: event.id });
+  if (claimErr) {
+    if (claimErr.code === '23505') {
+      console.log(`Duplicate Stripe event ignored: ${event.id}`);
+      return new Response(JSON.stringify({ received: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+    console.error('stripe_processed_events claim insert error:', claimErr);
+    return new Response('Internal error', { status: 500 });
   }
 
   try {
@@ -465,14 +483,10 @@ Deno.serve(async (req) => {
   } catch (err) {
     // Log detail server-side only
     console.error('Handler error for', event.type, ':', err);
+    // Release the claim so a genuine Stripe retry can re-attempt the handler instead of being
+    // silently swallowed as "already processed" by the claim row inserted above.
+    await supabase.from('stripe_processed_events').delete().eq('event_id', event.id);
     return new Response('Internal error', { status: 500 });
-  }
-
-  // Mark as processed only after the handler succeeds
-  const { error: dupErr } = await supabase.from('stripe_processed_events')
-    .insert({ event_id: event.id });
-  if (dupErr && dupErr.code !== '23505') {
-    console.error('stripe_processed_events insert error:', dupErr);
   }
 
   return new Response(JSON.stringify({ received: true }), {

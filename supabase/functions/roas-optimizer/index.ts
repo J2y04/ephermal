@@ -105,6 +105,14 @@ async function getMetaToken(userId: string): Promise<string> {
   return data?.meta_token ?? '';
 }
 
+/** Scaled daily budget for a campaign under the current rules, clamped to max_daily_budget. */
+function computeScaledBudget(currentBudget: number, rules: OptimizerRules): number {
+  return Math.min(
+    Math.round(currentBudget * rules.scale_multiplier * 100) / 100,
+    rules.max_daily_budget * 100, // Meta stores budgets in cents
+  );
+}
+
 /** Analyze campaigns and compute recommended actions */
 async function analyzeCampaigns(
   userId: string,
@@ -173,10 +181,7 @@ async function analyzeCampaigns(
             reason:         `ROAS ${roas.toFixed(2)}× is below pause threshold (${rules.pause_below_roas}×)`,
           });
         } else if (roas >= rules.scale_above_roas) {
-          const newBudget = Math.min(
-            Math.round(currentBudget * rules.scale_multiplier * 100) / 100,
-            rules.max_daily_budget * 100, // Meta stores budgets in cents
-          );
+          const newBudget = computeScaledBudget(currentBudget, rules);
           actions.push({
             campaign_id:    c.id,
             campaign_name:  c.name,
@@ -429,7 +434,42 @@ Deno.serve(async (req) => {
         const token   = await getMetaToken(userId);
         if (!token)   return errResponse('Meta not connected', 403, origin);
         const rules   = applyOverrides(await loadRules(userId), body);
-        const planned = await analyzeCampaigns(userId, token, rules);
+        const ruleActions = await analyzeCampaigns(userId, token, rules);
+
+        // Honor the AI recommendation the user actually reviewed in the 'analyze' modal —
+        // previously this independently recomputed a fresh, pure rule-based action here and
+        // applied THAT, which could silently diverge from what was shown and approved (the AI
+        // reasons about whole-account profitability, not just per-campaign ROAS, so it can
+        // legitimately disagree with the rule engine for the same campaign). The AI's action
+        // choice is trusted; the actual budget dollar amount for a "scale" is always computed
+        // by the vetted formula below, never taken directly from the AI's own new_budget number.
+        const aiActionsById = new Map<string, string>();
+        if (ANTHROPIC_KEY && ruleActions.length > 0) {
+          try {
+            const ai = await generateAIRecommendations(userId, ruleActions, rules);
+            for (const c of ai.campaigns) {
+              const rec = c as { campaign_id?: string; action?: string };
+              if (rec.campaign_id && rec.action) aiActionsById.set(rec.campaign_id, rec.action);
+            }
+          } catch (e) {
+            console.error('roas-optimizer apply: AI recommendation failed, falling back to rule-based actions:', e);
+          }
+        }
+
+        const planned: CampaignAction[] = ruleActions.map(ruleAction => {
+          const aiAction = aiActionsById.get(ruleAction.campaign_id);
+          if (!aiAction) return ruleAction; // no AI opinion for this campaign — use the vetted rule-based action
+          if (aiAction === 'pause') {
+            return { ...ruleAction, action: 'pause', reason: 'AI recommendation: pause' };
+          }
+          if (aiAction === 'scale') {
+            return { ...ruleAction, action: 'scale', reason: 'AI recommendation: scale up', new_budget: computeScaledBudget(ruleAction.current_budget, rules) };
+          }
+          // 'hold', 'adjust-audience', 'refresh-creative' (or anything else) are not real Meta
+          // mutations this endpoint can execute — treat as hold (no-op) rather than falling
+          // through to whatever the rule engine independently decided.
+          return { ...ruleAction, action: 'hold' };
+        });
 
         const results: { id: string; action: string; success: boolean; error?: string }[] = [];
 

@@ -945,7 +945,7 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
               <div class="conn-info"><div class="conn-name">Meta Ads</div><div class="conn-status" id="conn-meta">Checking…</div></div>
               <button class="conn-badge" onclick="navigate('settings')">Configure</button>
             </div>
-            <div class="conn-item" id="conn-google-row" onclick="handleGoogleAdsConnect()" style="cursor:pointer">
+            <div class="conn-item" id="conn-google-row" role="button" tabindex="0" onclick="handleGoogleAdsConnect()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();handleGoogleAdsConnect()}" style="cursor:pointer">
               <div class="conn-icon" style="background:rgba(66,133,244,0.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div>
               <div class="conn-info"><div class="conn-name">Google Ads <span id="google-plan-tag" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(6,214,199,0.15);color:var(--primary);margin-left:6px;display:none">Growth+</span></div><div class="conn-status" id="conn-google">Checking…</div></div>
               <button class="conn-badge" id="conn-google-btn">Configure</button>
@@ -2783,8 +2783,9 @@ async function startCheckout(priceId) {
       body: JSON.stringify({ price_id: priceId, clerk_user_id: userId, email }),
     });
     if (!res.ok) { const t = await res.text().catch(()=>''); showToast(t || 'Checkout failed - try again', 'error'); return; }
-    const { url } = await res.json();
-    if (url) window.location.href = url;
+    const data = await res.json();
+    if (data.switched) { showToast(data.message || 'Plan updated!', 'success'); setTimeout(() => window.location.reload(), 1500); return; }
+    if (data.url) window.location.href = data.url;
     else showToast('No checkout URL returned', 'error');
   } catch(e) { showToast('Checkout error - try again', 'error'); console.error(e); }
   finally { if (btn) { btn.disabled = false; btn.textContent = 'Upgrade'; } }
@@ -3883,7 +3884,7 @@ function renderCreativeCard(c, i) {
   const thumb = c.thumbnail_url
     ? `<img src="${escHtml(c.thumbnail_url)}" alt="">`
     : (isVideo && videoUrl
-      ? `<video src="${escHtml(videoUrl)}" muted preload="metadata" style="width:100%;height:100%;object-fit:cover" onclick="event.stopPropagation();window.open('${escHtml(videoUrl)}','_blank')"></video>`
+      ? `<video src="${escHtml(videoUrl)}" data-video-url="${escHtml(videoUrl)}" muted preload="metadata" style="width:100%;height:100%;object-fit:cover" onclick="event.stopPropagation();window.open(this.dataset.videoUrl,'_blank')"></video>`
       : `<div class="thumb-icon">${icon}</div>`);
   const title = c.headline || (c.type === 'ugc_video' ? 'UGC Video Ad' : isVideo ? 'Video Creative' : 'Image Creative');
   const safeCardId = escHtml(String(c.id));
@@ -5838,25 +5839,28 @@ function loadProducts() {
     // for 10 minutes, then silently refresh in the background instead of showing a
     // possibly days-stale product list forever.
     const cachedAt = Number(localStorage.getItem('products_cache_at') || 0);
-    if (Date.now() - cachedAt > 10 * 60 * 1000) syncProducts();
+    if (Date.now() - cachedAt > 10 * 60 * 1000) syncProducts(true);
   } else {
     // No cache yet - auto-sync on first visit to products tab
     syncProducts();
   }
 }
 
-async function syncProducts() {
+async function syncProducts(silent = false) {
   if (!requireSubscription()) return;
   const token = localStorage.getItem('shopify_token');
-  if (!token) { showToast('Connect Shopify in Settings first', 'warn'); navigate('settings'); return; }
+  if (!token) { if (!silent) { showToast('Connect Shopify in Settings first', 'warn'); navigate('settings'); } return; }
   const btn = document.getElementById('btn-sync-products');
   const status = document.getElementById('products-sync-status');
   const syncSVG = '<svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
-  // Show phantom product cards during sync
+  // Show phantom product cards during sync — but a "silent" background refresh (stale-cache
+  // path in loadProducts()) already has real cards showing; wiping them with skeletons for the
+  // duration of the sync isn't silent at all, it's a visible flicker, and leaves the user
+  // staring at empty skeletons instead of perfectly good cached data if the sync fails.
   const grid = document.getElementById('products-grid');
-  if (grid) grid.innerHTML = `<div style="display:contents">${SKELETONS.products(6)}</div>`;
-  if (btn) { btn.disabled=true; btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0;animation:none"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Syncing…'; }
-  if (status) status.textContent = 'Syncing…';
+  if (!silent && grid) grid.innerHTML = `<div style="display:contents">${SKELETONS.products(6)}</div>`;
+  if (!silent && btn) { btn.disabled=true; btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" style="width:15px;height:15px;stroke:white;stroke-width:2.5;flex-shrink:0;animation:none"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Syncing…'; }
+  if (!silent && status) status.textContent = 'Syncing…';
   try {
     const r = await authFetch('/shopify', { method: 'POST', body: JSON.stringify({ action: 'sync_products' }) });
     if (!r || !r.ok) throw new Error('No response');
@@ -5874,19 +5878,20 @@ async function syncProducts() {
     });
     localStorage.setItem('known_product_ids', JSON.stringify([..._knownProductIds]));
     renderProducts(products);
-    if (status) status.textContent = `${products.length} products · synced just now`;
+    if (!silent && status) status.textContent = `${products.length} products · synced just now`;
     const cogsFilled = data.cogs_auto_filled || 0;
     let cogsMsg = '';
     if (cogsFilled) cogsMsg = ` · COGS auto-filled for ${cogsFilled} from Shopify`;
     else if (data.cogs_scope_denied) cogsMsg = ` · Reconnect Shopify to enable COGS auto-fill (needs inventory access)`;
     else if (data.cogs_available_in_shopify === 0) cogsMsg = ` · No "Cost per item" set in Shopify yet — add it there or set COGS manually in Profit Tracker`;
-    showToast(`Synced ${products.length} products${(!isFirstSync && _pendingNewProducts.length) ? ` · ${_pendingNewProducts.length} new!` : ''}${cogsMsg}`, (cogsFilled || !cogsMsg) ? 'success' : 'warn');
+    if (!silent) showToast(`Synced ${products.length} products${(!isFirstSync && _pendingNewProducts.length) ? ` · ${_pendingNewProducts.length} new!` : ''}${cogsMsg}`, (cogsFilled || !cogsMsg) ? 'success' : 'warn');
     if (!isFirstSync && _pendingNewProducts.length > 0) { _currentNewProductIdx = 0; setTimeout(showNextNewProduct, 600); }
   } catch(e) {
-    showToast('Sync failed - check Shopify connection in Settings', 'error');
-    if (status) status.textContent = 'Sync failed';
+    // A silent background refresh failing leaves the still-valid cached cards on screen —
+    // no need to alarm the user over something they didn't initiate.
+    if (!silent) { showToast('Sync failed - check Shopify connection in Settings', 'error'); if (status) status.textContent = 'Sync failed'; }
   } finally {
-    if (btn) { btn.disabled=false; btn.innerHTML = syncSVG + ' Sync Products'; }
+    if (!silent && btn) { btn.disabled=false; btn.innerHTML = syncSVG + ' Sync Products'; }
   }
 }
 
@@ -6767,7 +6772,7 @@ function _cbRenderKeywords() {
   list.innerHTML = _cbKeywords.map((k, i) => `
     <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px">
       ${escHtml(k.text)}${k.match_type ? `<span style="color:var(--muted);font-size:10px;text-transform:uppercase">${escHtml(k.match_type)}</span>` : ''}
-      <span onclick="_cbRemoveKeyword(${i})" style="cursor:pointer;color:var(--muted);font-weight:700">×</span>
+      <span role="button" tabindex="0" aria-label="Remove keyword" onclick="_cbRemoveKeyword(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_cbRemoveKeyword(${i})}" style="cursor:pointer;color:var(--muted);font-weight:700">×</span>
     </span>`).join('');
 }
 
@@ -7044,7 +7049,7 @@ function _crRenderKeywords() {
   list.innerHTML = _crKeywords.map((k, i) => `
     <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;font-size:12px">
       ${escHtml(k.text)}${k.match_type ? `<span style="color:var(--muted);font-size:10px;text-transform:uppercase">${escHtml(k.match_type)}</span>` : ''}
-      <span onclick="_crRemoveKeyword(${i})" style="cursor:pointer;color:var(--muted);font-weight:700">×</span>
+      <span role="button" tabindex="0" aria-label="Remove keyword" onclick="_crRemoveKeyword(${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();_crRemoveKeyword(${i})}" style="cursor:pointer;color:var(--muted);font-weight:700">×</span>
     </span>`).join('');
 }
 
@@ -7501,14 +7506,14 @@ async function generateCreativeBrief() {
 function renderBrief(brief) {
   const el = document.getElementById('brief-output-body');
   if (!el) return;
-  const hooks = (brief.hooks || []).map(h => '<li style="margin-bottom:6px;font-size:13px;color:var(--text)">' + h + '</li>').join('');
-  const angles = (brief.angles || []).map(a => '<li style="margin-bottom:6px;font-size:13px;color:var(--text)">' + a + '</li>').join('');
-  const copies = (brief.copy_variations || []).map(c => '<div style="padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">' + c + '</div>').join('');
+  const hooks = (brief.hooks || []).map(h => '<li style="margin-bottom:6px;font-size:13px;color:var(--text)">' + escHtml(h) + '</li>').join('');
+  const angles = (brief.angles || []).map(a => '<li style="margin-bottom:6px;font-size:13px;color:var(--text)">' + escHtml(a) + '</li>').join('');
+  const copies = (brief.copy_variations || []).map(c => '<div style="padding:10px 12px;background:var(--surface2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px">' + escHtml(c) + '</div>').join('');
   el.innerHTML =
     '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Summary</div>' +
-    '<p style="font-size:13px;color:var(--text);line-height:1.65;margin:0">' + (brief.summary || '') + '</p></div>' +
+    '<p style="font-size:13px;color:var(--text);line-height:1.65;margin:0">' + escHtml(brief.summary || '') + '</p></div>' +
     '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Target audience</div>' +
-    '<p style="font-size:13px;color:var(--text);line-height:1.65;margin:0">' + (brief.target_audience || '') + '</p></div>' +
+    '<p style="font-size:13px;color:var(--text);line-height:1.65;margin:0">' + escHtml(brief.target_audience || '') + '</p></div>' +
     (hooks ? '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Hook angles</div><ul style="margin:0;padding-left:18px">' + hooks + '</ul></div>' : '') +
     (angles ? '<div style="margin-bottom:14px"><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Creative angles</div><ul style="margin:0;padding-left:18px">' + angles + '</ul></div>' : '') +
     (copies ? '<div><div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Copy variations</div>' + copies + '</div>' : '');

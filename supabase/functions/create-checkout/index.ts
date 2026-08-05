@@ -175,6 +175,49 @@ Deno.serve(async (req) => {
       customerId = customer.id;
     }
 
+    // Plan switch (upgrade/downgrade) for an existing subscriber must never go through
+    // Checkout again — Checkout Sessions in mode:'subscription' always create a BRAND NEW
+    // Stripe Subscription object, and user_plans.stripe_sub_id (the table's only pointer to
+    // "the" subscription) would silently be overwritten with the new one, permanently
+    // orphaning the old subscription — still live, still billing, unreachable by
+    // cancel-subscription or admin-api (both only ever read the single stored stripe_sub_id)
+    // since there's no Stripe Customer Portal integration either. Instead, swap the price on
+    // the existing subscription directly.
+    if (!isTopup) {
+      const { data: planRow } = await supabase.from('user_plans').select('stripe_sub_id').eq('user_id', clerk_user_id).maybeSingle();
+      const existingSubId = planRow?.stripe_sub_id as string | undefined;
+      if (existingSubId) {
+        try {
+          const existingSub = await getStripe().subscriptions.retrieve(existingSubId);
+          const liveStatuses = new Set(['active', 'trialing', 'past_due', 'unpaid']);
+          if (liveStatuses.has(existingSub.status)) {
+            const currentItem = existingSub.items.data[0];
+            if (currentItem?.price.id === price_id) {
+              return new Response(JSON.stringify({ switched: true, message: "You're already on this plan" }), {
+                status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+              });
+            }
+            const idempotencyBucket = Math.floor(Date.now() / 300_000);
+            await getStripe().subscriptions.update(existingSubId, {
+              items: [{ id: currentItem.id, price: price_id }],
+              proration_behavior: 'create_prorations',
+              metadata: { clerk_user_id },
+            }, { idempotencyKey: `plan-switch-${clerk_user_id}-${price_id}-${idempotencyBucket}` });
+            console.log(`✓ Plan switched in place for ${clerk_user_id} — subscription ${existingSubId} now on ${price_id}`);
+            return new Response(JSON.stringify({ switched: true, message: 'Plan updated' }), {
+              status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+            });
+          }
+          // Existing subscription is canceled/incomplete_expired/etc — not actually live in
+          // Stripe, safe to fall through and start a fresh Checkout Session below.
+        } catch (e) {
+          // Stripe couldn't find/retrieve the stored ID (deleted, bad data) — same as above,
+          // nothing live to conflict with, fall through to a normal new Checkout Session.
+          console.warn(`Stored stripe_sub_id ${existingSubId} for ${clerk_user_id} is stale/invalid, starting fresh checkout:`, e);
+        }
+      }
+    }
+
     let lineItems: Stripe.Checkout.SessionCreateParams.LineItem[];
     let topupType = '';
     if (isAIUsageTopup) {
