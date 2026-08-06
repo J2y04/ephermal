@@ -23,6 +23,8 @@
  * Call from other Edge Functions or n8n using the service role key.
  */
 
+import { TEMPLATE_HTML } from './templates.ts';
+
 const RESEND_API = 'https://api.resend.com/emails';
 
 function timingSafeEqual(a: string, b: string): boolean {
@@ -106,14 +108,11 @@ Deno.serve(async (req) => {
     return new Response('Unknown template', { status: 400 });
   }
 
-  // Load template HTML from filesystem
-  let templateHtml: string;
-  try {
-    templateHtml = await Deno.readTextFile(
-      new URL(`./templates/${template}.html`, import.meta.url)
-    );
-  } catch (e) {
-    console.error(`Template file not found: ${template}.html`, e);
+  // Template HTML is inlined in templates.ts (see that file's docblock for why) — not read
+  // from the filesystem, so this can never fail due to a bundling/deploy quirk.
+  const templateHtml = TEMPLATE_HTML[template];
+  if (!templateHtml) {
+    console.error(`Template not found in TEMPLATE_HTML: ${template}`);
     return new Response('Template not found', { status: 500 });
   }
 

@@ -3064,6 +3064,31 @@ async function _getClerkToken(forceRefresh) {
   return localStorage.getItem('access_token');
 }
 
+// Mirrors cache-proxy's resolveFunctionName() (supabase/functions/cache-proxy/index.ts).
+// authFetch's paths are cache-proxy's shorthand aliases ('/meta', '/launch', '/budget', ...),
+// not real Supabase function names — cache-proxy translates them server-side. directFallback
+// bypasses cache-proxy entirely (used when it's unreachable), so it has to do that same
+// translation itself, or the request 404s against a function that doesn't exist (e.g.
+// '/meta/read' has no deployed 'meta' function — the real one is 'meta-api').
+function _resolveDirectFnName(path) {
+  if (/^\/(meta|campaigns|creatives|audiences|pixel)/.test(path)) return 'meta-api';
+  if (/^\/(shopify)/.test(path))                   return 'shopify-api';
+  if (/^\/(ugc)/.test(path))                       return 'ugc-generate';
+  if (/^\/(google)/.test(path))                    return 'google-api';
+  if (path.startsWith('/ai'))                      return 'ai-assistant';
+  if (/^\/(fatigue|creative-fatigue)/.test(path))  return 'creative-fatigue';
+  if (/^\/(optimize|roas)/.test(path))             return 'roas-optimizer';
+  if (/^\/(budget)/.test(path))                    return 'budget-ai';
+  if (/^\/(launch)/.test(path))                    return 'campaign-launcher';
+  if (/^\/(creative-brief)/.test(path))            return 'creative-brief';
+  if (/^\/(competitor-radar)/.test(path))          return 'competitor-radar';
+  if (/^\/(profit-tracker)/.test(path))            return 'profit-tracker';
+  if (/^\/(store-intelligence)/.test(path))        return 'store-intelligence';
+  if (/^\/(mrr-tracker)/.test(path))               return 'mrr-tracker';
+  if (/^\/(disconnect)/.test(path))                return 'disconnect-integration';
+  return null;
+}
+
 async function authFetch(path, opts = {}) {
   // Client-side rate limit - real enforcement is at the backend
   try { window.RateLimit?.check(path, 20); } catch(e) { showToast(e.message, 'error'); return null; }
@@ -3137,7 +3162,11 @@ async function authFetch(path, opts = {}) {
       ...extraHeaders,
       ...(opts.headers || {}),
     };
-    const r = await fetch((window.SUPABASE_FN || window.API_BASE || '') + path, { ...opts, headers: directHeaders });
+    const base = window.SUPABASE_FN || window.API_BASE || '';
+    const fnName = _resolveDirectFnName(path);
+    const qIdx = path.indexOf('?');
+    const targetUrl = fnName ? base + '/' + fnName + (qIdx >= 0 ? path.slice(qIdx) : '') : base + path;
+    const r = await fetch(targetUrl, { ...opts, headers: directHeaders });
     if (r.status === 401) { let b={}; try{b=await r.clone().json();}catch{} return { retry401: true, body: b }; }
     if (r.status === 429) { showToast('Too many requests - slow down', 'error'); return { done: null }; }
     return { done: r };

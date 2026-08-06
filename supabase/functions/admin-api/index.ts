@@ -20,6 +20,7 @@
  * POST { action: 'disconnect_integration', target_user_id, platform: 'meta'|'shopify'|'google' }
  * POST { action: 'grant_ugc_video_credits', target_user_id, credits }
  * POST { action: 'cancel_subscription', target_user_id }
+ * POST { action: 'send_test_email', to, template? }   — verifies the Resend pipeline end to end
  *
  * Required env vars:
  *   CLERK_SECRET_KEY, STRIPE_SECRET_KEY
@@ -652,6 +653,43 @@ async function handleCancelSubscription(body: Record<string, unknown>): Promise<
   return { ok: true, user_id: targetUserId, cancelled_subscription: subId };
 }
 
+// ── send_test_email (verify the Resend pipeline end to end) ─────────────────
+// admin-only self-service check for "is a real email actually going out right now" —
+// no other action in this codebase exercises send-email directly, and Resend's own
+// logs can't tell you whether OUR call ever reached them at all vs. never fired.
+const TEST_EMAIL_TEMPLATES = new Set([
+  'welcome', 'plan_activated_starter', 'plan_activated_growth', 'plan_activated_scale',
+  'fatigue_alert', 'ai_limit_80', 'ai_limit_hit', 'ai_topup_receipt',
+  'ugc_video_topup_receipt', 'payment_failed',
+]);
+const EMAIL_RE_ADMIN = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+async function handleSendTestEmail(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const to = String(body.to ?? '').trim();
+  const template = String(body.template ?? 'welcome');
+  if (!EMAIL_RE_ADMIN.test(to)) throw new Error('Invalid "to" email address');
+  if (!TEST_EMAIL_TEMPLATES.has(template)) throw new Error(`Unknown template: ${template}`);
+
+  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${serviceRoleKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      template, to,
+      subject: `[TEST] Ephermal admin verification — ${template}`,
+      vars: {
+        name: 'Jamal (admin test)', attempt: '1', credits: '25',
+        unsubscribe_url: 'https://ephermal.app/unsubscribe',
+      },
+    }),
+  });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`send-email returned ${res.status}: ${text.slice(0, 300)}`);
+  let data: Record<string, unknown> = {};
+  try { data = JSON.parse(text); } catch { /* non-JSON body, keep raw text below */ }
+  return { ok: true, to, template, resend_id: data.id ?? null, raw: data.id ? undefined : text.slice(0, 300) };
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
 
@@ -703,6 +741,8 @@ Deno.serve(async (req) => {
         return okResponse(await handleGrantUgcVideoCredits(body), origin);
       case 'cancel_subscription':
         return okResponse(await handleCancelSubscription(body), origin);
+      case 'send_test_email':
+        return okResponse(await handleSendTestEmail(body), origin);
       default:
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
