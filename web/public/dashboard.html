@@ -3072,9 +3072,9 @@ async function _getClerkToken(forceRefresh) {
 // '/meta/read' has no deployed 'meta' function — the real one is 'meta-api').
 function _resolveDirectFnName(path) {
   if (/^\/(meta|campaigns|creatives|audiences|pixel)/.test(path)) return 'meta-api';
-  if (/^\/(shopify)/.test(path))                   return 'shopify-api';
-  if (/^\/(ugc)/.test(path))                       return 'ugc-generate';
-  if (/^\/(google)/.test(path))                    return 'google-api';
+  if (/^\/(ephermal\/shopify|shopify)/.test(path)) return 'shopify-api';
+  if (/^\/(ephermal\/ugc|ugc)/.test(path))         return 'ugc-generate';
+  if (/^\/(ephermal\/google|google)/.test(path))   return 'google-api';
   if (path.startsWith('/ai'))                      return 'ai-assistant';
   if (/^\/(fatigue|creative-fatigue)/.test(path))  return 'creative-fatigue';
   if (/^\/(optimize|roas)/.test(path))             return 'roas-optimizer';

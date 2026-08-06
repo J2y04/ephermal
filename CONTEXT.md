@@ -273,7 +273,10 @@ clear it. Sole-proprietor registration (Einzelunternehmen) is sufficient; no Gmb
 ### Task 12 — Meta App Review (REQUIRED for real users to connect Meta Ads — blocked on Task 13)
 Without this, only manually-added test accounts can connect. Takes 1–4 weeks.
 Meta Developer Dashboard → App Review → Request advanced access: `ads_management`, `ads_read`,
-`business_management`. Business Verification (Task 13's Gewerbeschein) must clear first —
+`pages_show_list` (the exact three scopes the app actually requests — `business_management` was
+requested but never used by any code path, and was dropped 2026-08-06 to avoid a reviewer
+rejecting the app for requesting a scope it doesn't need). Business Verification (Task 13's
+Gewerbeschein) must clear first —
 submit that before starting App Review, not in parallel.
 
 ### Task 14 — Google Ads developer token (independent of Task 12/13 — no business-ID docs needed)
