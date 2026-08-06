@@ -5528,7 +5528,10 @@ async function loadAudiences() {
     if (!audiences.length) { el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg><p>No custom audiences yet - create one below</p></div>'; return; }
     el.innerHTML = `<div style="display:flex;flex-direction:column;gap:4px;padding:8px 12px 12px">${audiences.map(a => {
       const count = a.approximate_count > 0 ? fmt(a.approximate_count) + ' people' : 'Calculating…';
-      const ok = a.delivery_status?.code === 200;
+      // delivery_status arrives as a plain string ("200"), not {code:200} - meta-api's
+      // getAudiences() already reduces Meta's {code,description} object down to just the code,
+      // stringified, before this ever reaches the client (supabase/functions/meta-api/index.ts).
+      const ok = a.delivery_status === '200';
       const isLookalike = a.subtype === 'LOOKALIKE';
       return `<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:11px">
         <div style="display:flex;align-items:center;gap:11px">
