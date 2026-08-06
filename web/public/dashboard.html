@@ -2345,7 +2345,7 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
 
     <div style="display:flex;gap:6px;padding:4px;background:var(--surface2);border-radius:10px;margin-bottom:18px" id="ugc-mode-toggle">
       <button type="button" class="ugc-mode-btn active" id="ugc-mode-script" onclick="setUGCMode('script')" style="flex:1;padding:9px;border:none;border-radius:8px;background:var(--primary);color:#08080c;font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer">Script</button>
-      <button type="button" class="ugc-mode-btn" id="ugc-mode-video" onclick="setUGCMode('video')" style="flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;position:relative">Real Video <span id="ugc-video-lock" style="display:none;font-size:9px;background:rgba(6,214,199,0.15);color:var(--primary);padding:2px 6px;border-radius:6px;margin-left:5px;vertical-align:1px">Growth+</span></button>
+      <button type="button" class="ugc-mode-btn" id="ugc-mode-video" onclick="setUGCMode('video')" style="flex:1;padding:9px;border:none;border-radius:8px;background:transparent;color:var(--muted);font-family:'Inter',sans-serif;font-size:12.5px;font-weight:700;cursor:pointer;position:relative">Real Video <span id="ugc-video-lock" style="display:none;font-size:9px;background:rgba(6,214,199,0.15);color:var(--primary);padding:2px 6px;border-radius:6px;margin-left:5px;vertical-align:1px">Growth+</span><span id="ugc-video-soon" style="display:none;font-size:9px;background:rgba(148,163,184,0.15);color:var(--muted);padding:2px 6px;border-radius:6px;margin-left:5px;vertical-align:1px">Soon</span></button>
     </div>
 
     <div class="form-group" style="margin-bottom:16px">
@@ -2436,6 +2436,12 @@ const TITLES = {dashboard:'Dashboard',ai:'Auren',analytics:'Analytics',campaigns
 function API() { return (typeof window.API_BASE !== 'undefined' ? window.API_BASE : '') || ''; }
 
 // ── SUBSCRIPTION ──────────────────────────────────────────────────────────────
+// HONESTY NOTE: real Higgsfield video generation is built server-side (ugc-generate/index.ts)
+// but HIGGSFIELD_API_KEY has never been provisioned, so every call to it would 503. Until that
+// key exists, UGC video is not a real, working feature for anyone (test users or otherwise) —
+// flip this to true once it's actually configured, which turns the "Coming soon" treatment
+// below back into the normal Growth+/Scale-gated feature it's designed to be.
+const UGC_VIDEO_LIVE = false;
 const PLANS = {
   starter: { name: 'Starter', color: '#8892b0', ugc: 15,  ugcVideo: 0,  badge: 'STARTER' },
   growth:  { name: 'Growth',  color: '#06d6c7', ugc: 75,  ugcVideo: 18, badge: 'GROWTH'  },
@@ -2862,10 +2868,12 @@ async function reactivateSubscription() {
 function renderBillingPage() {
   const plan = getUserPlan();
   const info = planInfo();
+  // "+ N UGC video ads/month" dropped from growth/scale — real Higgsfield video generation
+  // isn't live yet (see UGC_VIDEO_LIVE), so it's not an honest thing to advertise as included.
   const descs = {
     starter: `${curFmtBilling(89)}/month · 15 AI script credits/month`,
-    growth:  `${curFmtBilling(199)}/month · 75 AI script credits + 18 UGC video ads/month`,
-    scale:   `${curFmtBilling(349)}/month · 350 AI script credits + 32 UGC video ads/month`,
+    growth:  `${curFmtBilling(199)}/month · 75 AI script credits/month`,
+    scale:   `${curFmtBilling(349)}/month · 350 AI script credits/month`,
   };
   const el = (id, txt) => { const e = document.getElementById(id); if(e) e.textContent = txt; };
   el('billing-plan-name', info.name);
@@ -2877,10 +2885,11 @@ function renderBillingPage() {
   if (bb) { bb.textContent = info.badge; bb.style.background = info.color + '22'; bb.style.color = info.color; }
   const used = ugcCreditsUsed(), left = ugcCreditsLeft();
   el('b-credits-used', used); el('b-credits-left', left);
-  // UGC video credits panel — Growth/Scale only, Starter doesn't include video credits
+  // UGC video credits panel — hidden entirely until Higgsfield is actually configured
+  // (UGC_VIDEO_LIVE); Growth/Scale-gating only matters once the feature is real.
   const videoPanel = document.getElementById('billing-ugc-video-panel');
   if (videoPanel) {
-    videoPanel.style.display = canAccess('ugcvideo') ? 'block' : 'none';
+    videoPanel.style.display = (UGC_VIDEO_LIVE && canAccess('ugcvideo')) ? 'block' : 'none';
     el('bv-credits-used', ugcVideoCreditsUsed());
     el('bv-credits-left', ugcVideoCreditsLeft());
     el('bv-credits-topup', ugcVideoTopupRemaining());
@@ -4046,6 +4055,7 @@ function closeUGCModal() { document.getElementById('ugc-modal').classList.remove
 /** Toggles the modal between text-script generation (ugc_credits pool, all plans) and real
  *  Higgsfield video generation (ugc_video_credits pool, Growth+/Scale only, 0 on Starter). */
 function setUGCMode(mode) {
+  if (mode === 'video' && !UGC_VIDEO_LIVE) { showToast('Real UGC video generation is coming soon - not available yet', 'info'); return; }
   const videoAllowed = canAccess('ugcvideo');
   if (mode === 'video' && !videoAllowed) { showUpgradeModal('ugcvideo'); return; }
   _ugcMode = mode;
@@ -4055,7 +4065,8 @@ function setUGCMode(mode) {
   const active = mode === 'video' ? videoBtn : scriptBtn;
   active.style.background = 'var(--primary)'; active.style.color = '#08080c'; active.classList.add('active');
 
-  document.getElementById('ugc-video-lock').style.display = videoAllowed ? 'none' : 'inline-block';
+  document.getElementById('ugc-video-lock').style.display = (!UGC_VIDEO_LIVE || videoAllowed) ? 'none' : 'inline-block';
+  document.getElementById('ugc-video-soon').style.display = UGC_VIDEO_LIVE ? 'none' : 'inline-block';
   document.getElementById('ugc-preset-group').style.display = mode === 'video' ? 'none' : '';
   document.getElementById('ugc-ratio-group').style.display  = mode === 'video' ? 'none' : '';
   document.getElementById('ugc-desc-label').textContent = mode === 'video' ? 'Product Title & Description' : 'Product Description';
@@ -5808,8 +5819,8 @@ function showSubModal() {
   if (grid && grid.children.length === 0) {
     const plans = [
       { id:'starter', name:'Starter', price:curFmtBilling(89),  ugc:'15',  desc:'15 AI script credits/month',       highlight: false },
-      { id:'growth',  name:'Growth',  price:curFmtBilling(199), ugc:'75',  desc:'75 AI script credits + 18 UGC videos',       highlight: true  },
-      { id:'scale',   name:'Scale',   price:curFmtBilling(349), ugc:'350', desc:'350 AI script credits + 32 UGC videos',      highlight: false },
+      { id:'growth',  name:'Growth',  price:curFmtBilling(199), ugc:'75',  desc:'75 AI script credits/month',       highlight: true  },
+      { id:'scale',   name:'Scale',   price:curFmtBilling(349), ugc:'350', desc:'350 AI script credits/month',      highlight: false },
     ];
     grid.innerHTML = plans.map(p => `
       <div style="border:1px solid ${p.highlight?'#06d6c7':'var(--border)'};border-radius:14px;padding:18px;text-align:center;${p.highlight?'background:rgba(6,214,199,0.08);':''}transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">

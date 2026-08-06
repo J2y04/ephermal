@@ -91,3 +91,13 @@ export function IconTerminal({ className }: IconProps) {
     </svg>
   );
 }
+
+export function IconFlask({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <path d="M9 2v6L4 18a2 2 0 0 0 2 3h12a2 2 0 0 0 2-3l-5-10V2" />
+      <path d="M8.5 2h7" />
+      <path d="M6.5 14h11" />
+    </svg>
+  );
+}

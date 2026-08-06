@@ -13,6 +13,7 @@
  * POST { action: 'get_revenue', days? }
  * POST { action: 'get_platform_stats' }
  * POST { action: 'set_plan', target_user_id, plan, expires_in_days? }
+ * POST { action: 'set_role', target_user_id, role }   — role:'testuser' auto-grants Growth
  * POST { action: 'ban_user',   target_user_id }
  * POST { action: 'unban_user', target_user_id }
  * POST { action: 'get_user_detail', target_user_id }
@@ -76,6 +77,24 @@ async function updateClerkMetadata(clerkUserId: string, plan: string): Promise<v
   if (!res.ok) {
     console.error('Clerk metadata update failed:', res.status, await res.text());
     throw new Error('Clerk metadata update failed');
+  }
+}
+
+/** Clerk's metadata PATCH is a deep merge, not a replace (confirmed against Clerk's own docs) —
+ *  sending only `{role}` here never touches `plan` (written separately by updateClerkMetadata
+ *  above), and vice versa. */
+async function updateClerkRole(clerkUserId: string, role: string | null): Promise<void> {
+  const res = await fetch(`${CLERK_API}/users/${clerkUserId}/metadata`, {
+    method: 'PATCH',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('CLERK_SECRET_KEY')}`,
+      'Content-Type':  'application/json',
+    },
+    body: JSON.stringify({ public_metadata: { role } }),
+  });
+  if (!res.ok) {
+    console.error('Clerk role update failed:', res.status, await res.text());
+    throw new Error('Clerk role update failed');
   }
 }
 
@@ -446,6 +465,46 @@ async function handleSetPlan(body: Record<string, unknown>): Promise<Record<stri
   return { ok: true, user_id: targetUserId, plan, period_end: periodEnd };
 }
 
+// ── set_role ──────────────────────────────────────────────────────────────────
+const VALID_ROLE_RE = /^[a-z][a-z0-9_]{1,31}$/;
+
+/**
+ * Sets a Clerk user's public_metadata.role. role:'testuser' auto-grants the Growth plan (same
+ * write path as handleSetPlan, Supabase written before Clerk) so a tester can immediately use
+ * every Growth-gated feature without a separate manual plan grant — but only when the target
+ * doesn't already have a live Stripe subscription, so this can never silently downgrade or
+ * reprice a real paying customer. Pass role: null (or '') to clear a role without touching plan.
+ */
+async function handleSetRole(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const targetUserId = String(body.target_user_id ?? '').trim();
+  if (!targetUserId) throw new Error('target_user_id is required');
+
+  const roleRaw = body.role;
+  const role = (roleRaw === null || roleRaw === undefined || roleRaw === '') ? null : String(roleRaw).trim().toLowerCase();
+  if (role !== null && !VALID_ROLE_RE.test(role)) {
+    throw new Error('role must be lowercase letters/numbers/underscores, starting with a letter, 2-32 chars (or empty to clear)');
+  }
+
+  await updateClerkRole(targetUserId, role);
+
+  let grantedPlan: string | null = null;
+  if (role === 'testuser') {
+    const { data: existingPlan } = await supabase
+      .from('user_plans').select('stripe_sub_id').eq('user_id', targetUserId).maybeSingle();
+    if (!existingPlan?.stripe_sub_id) {
+      const { error } = await supabase.from('user_plans').upsert(
+        { user_id: targetUserId, plan: 'growth', period_end: null },
+        { onConflict: 'user_id' },
+      );
+      if (error) throw new Error(`Role set, but failed to grant Growth plan: ${error.message}`);
+      await updateClerkMetadata(targetUserId, 'growth');
+      grantedPlan = 'growth';
+    }
+  }
+
+  return { ok: true, user_id: targetUserId, role, granted_plan: grantedPlan };
+}
+
 // ── ban_user / unban_user ─────────────────────────────────────────────────────
 async function handleBanToggle(callerId: string, targetUserId: string, ban: boolean): Promise<Record<string, unknown>> {
   if (!targetUserId) throw new Error('target_user_id is required');
@@ -630,6 +689,8 @@ Deno.serve(async (req) => {
         return okResponse(await handleGetPlatformStats(), origin);
       case 'set_plan':
         return okResponse(await handleSetPlan(body), origin);
+      case 'set_role':
+        return okResponse(await handleSetRole(body), origin);
       case 'ban_user':
         return okResponse(await handleBanToggle(userId, String(body.target_user_id ?? ''), true), origin);
       case 'unban_user':
