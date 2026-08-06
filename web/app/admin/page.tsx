@@ -77,12 +77,19 @@ export default function AdminOverviewPage() {
       if (cancelled) return;
 
       // Total Users and Signups both come from Clerk — show them regardless
-      // of whether the Stripe-derived part of get_revenue succeeded.
-      if (users.ok && users.data) setUserTotal(users.data.total);
+      // of whether the Stripe-derived part of get_revenue succeeded. Each can
+      // fail independently, so each gets its own error path — previously a
+      // list_users failure was silently swallowed and the Total Users KPI
+      // just sat on '-' forever, indistinguishable from still loading.
+      if (users.ok && users.data) {
+        setUserTotal(users.data.total);
+      } else {
+        setError(prev => prev ?? (users.error ?? 'Failed to load users'));
+      }
       if (rev.ok && rev.data) {
         setRevenue(rev.data);
       } else {
-        setError(rev.error ?? 'Failed to load signups');
+        setError(prev => prev ?? (rev.error ?? 'Failed to load signups'));
       }
       setLoading(false);
     })();

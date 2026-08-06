@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { useSession } from '@clerk/clerk-react';
 import { TextInput, Badge } from '@tremor/react';
 import { adminFetch, isLocalDev } from '../lib/adminFetch';
@@ -87,6 +87,11 @@ export default function AdminUsersPage() {
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [grantAmount, setGrantAmount] = useState('5');
+  // Mirrors expandedId but readable synchronously inside async callbacks (state read via
+  // closure would be stale) — lets toggleExpand/refreshDetail detect and drop a response
+  // that resolves after the admin has already expanded a different row, instead of
+  // clobbering the now-visible row's detail panel with the previous row's data.
+  const expandedIdRef = useRef<string | null>(null);
 
   async function load() {
     if (!session) {
@@ -143,11 +148,15 @@ export default function AdminUsersPage() {
   }
 
   async function toggleExpand(user: AdminUser) {
-    if (expandedId === user.id) { setExpandedId(null); setDetail(null); return; }
+    if (expandedId === user.id) { setExpandedId(null); setDetail(null); expandedIdRef.current = null; return; }
     setExpandedId(user.id);
+    expandedIdRef.current = user.id;
     setDetail(null);
     setDetailLoading(true);
     const res = await adminFetch<UserDetail>(session, 'get_user_detail', { target_user_id: user.id });
+    // A different row may have been expanded while this was in flight — drop the stale
+    // response instead of showing user.id's data under whatever row is now expanded.
+    if (expandedIdRef.current !== user.id) return;
     setDetailLoading(false);
     if (res.ok && res.data) setDetail(res.data);
     else alert(res.error ?? 'Failed to load user detail');
@@ -155,7 +164,16 @@ export default function AdminUsersPage() {
 
   async function refreshDetail(userId: string) {
     const res = await adminFetch<UserDetail>(session, 'get_user_detail', { target_user_id: userId });
-    if (res.ok && res.data) setDetail(res.data);
+    if (expandedIdRef.current !== userId) return;
+    if (res.ok && res.data) {
+      setDetail(res.data);
+    } else {
+      // The mutation that triggered this refresh already succeeded (its own error path
+      // would have returned before calling this) - only the refetch failed, so say that
+      // specifically rather than leaving stale pre-mutation numbers with no indication
+      // anything's out of date.
+      alert('That worked, but refreshing the details failed — reopen this row to see the latest.');
+    }
   }
 
   async function handleDisconnect(user: AdminUser, platform: 'meta' | 'shopify' | 'google') {
@@ -278,7 +296,12 @@ export default function AdminUsersPage() {
                         </button>
                       </td>
                       <td className="px-7 py-4 text-eph-muted">
-                        {u.period_end ? (
+                        {!u.period_end ? '-' : u.is_paying ? (
+                          // A real Stripe subscriber's period_end is just their next renewal
+                          // date (written on every subscription create/update, per
+                          // stripe-webhook) - not an expiration, so no "Xd left" countdown.
+                          <div>{fmtDate(u.period_end)}</div>
+                        ) : (
                           <div>
                             <div>{fmtDate(u.period_end)}</div>
                             {remaining !== null && (
@@ -287,7 +310,7 @@ export default function AdminUsersPage() {
                               </div>
                             )}
                           </div>
-                        ) : '-'}
+                        )}
                       </td>
                       <td className="px-7 py-4">
                         {u.banned

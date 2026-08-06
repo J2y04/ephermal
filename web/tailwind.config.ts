@@ -17,11 +17,15 @@ const config: Config = {
   // static content scanner can't see as a literal class string — without this
   // safelist, classes like `fill-cyan-500` never get generated and charts
   // render with the browser's default black fill. Scoped to just the colors
-  // this admin panel actually uses (see the `color`/`colors` props in
-  // app/admin/page.tsx and users/page.tsx) rather than Tremor's full palette.
+  // this admin panel actually uses across every page (color/colors props in
+  // page.tsx, users/, platform/, and finance/) rather than Tremor's full
+  // palette. slate/blue/fuchsia/gray were missing (found by audit 2026-08-06)
+  // — the Starter plan-mix donut slice, the Meta campaigns-by-platform donut
+  // slice, the entire funnel BarList, and the "not connected" integration
+  // badge were all rendering with no color at all as a result.
   safelist: [
     {
-      pattern: /^(bg|text|border|ring|stroke|fill)-(cyan|violet|amber|emerald|rose)-(50|100|200|300|400|500|600|700|800|900|950)$/,
+      pattern: /^(bg|text|border|ring|stroke|fill)-(cyan|violet|amber|emerald|rose|slate|blue|fuchsia|gray)-(50|100|200|300|400|500|600|700|800|900|950)$/,
       variants: ['hover', 'dark', 'dark:hover'],
     },
   ],

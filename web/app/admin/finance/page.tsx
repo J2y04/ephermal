@@ -18,8 +18,10 @@ interface RevenueData {
   stripe_error: string | null;
 }
 
-function centsToUsd(cents: number): string {
-  return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+// All money in this app is stored and billed in EUR (see supabase/functions/fx-rate/index.ts
+// and create-checkout's currency: 'eur') — this used to say $, mislabeling real EUR revenue as USD.
+function centsToEur(cents: number): string {
+  return `€${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -144,7 +146,7 @@ export default function AdminFinancePage() {
           <div className="flex flex-wrap divide-x divide-eph-border">
             <KpiCell
               label="Gross MRR"
-              value={loading || !revenue ? '-' : centsToUsd(revenue.mrr_cents)}
+              value={loading || !revenue ? '-' : centsToEur(revenue.mrr_cents)}
               sub={
                 !loading && revenue && revenue.stripe_available ? (
                   <span className="rounded-full bg-eph-success/10 px-2 py-0.5 text-[11px] font-semibold text-eph-success">
@@ -176,7 +178,7 @@ export default function AdminFinancePage() {
                   category="value"
                   index="name"
                   colors={['cyan', 'violet', 'amber']}
-                  valueFormatter={(v) => `$${v.toLocaleString()}`}
+                  valueFormatter={(v) => `€${v.toLocaleString()}`}
                 />
                 <div className="flex-1">
                   <BarList data={tierBars} color="cyan" />

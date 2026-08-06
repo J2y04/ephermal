@@ -93,8 +93,10 @@ function SectionCard({
   );
 }
 
+// All money in this app is stored in EUR (see supabase/functions/fx-rate/index.ts) — this used
+// to say $, mislabeling real EUR product prices/ad spend as USD.
 function fmtCents(cents: number): string {
-  return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  return `€${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
 function fmtDate(iso: string): string {
@@ -252,7 +254,7 @@ export default function AdminPlatformPage() {
 
         {/* Campaign status */}
         <Reveal delay={0.08} className="col-span-12 lg:col-span-5">
-          <SectionCard title="Campaigns by status" subtitle={loading || !s ? undefined : `${s.campaigns.total} total · $${s.campaigns.total_daily_budget.toLocaleString()} combined daily budget`}>
+          <SectionCard title="Campaigns by status" subtitle={loading || !s ? undefined : `${s.campaigns.total} total · €${s.campaigns.total_daily_budget.toLocaleString()} combined daily budget`}>
             {loading || !s ? (
               <div className="h-44 animate-pulse rounded-2xl bg-eph-surface2" />
             ) : s.campaigns.total === 0 ? (
