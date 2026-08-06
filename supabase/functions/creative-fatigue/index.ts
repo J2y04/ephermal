@@ -18,7 +18,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
-import { metaGet, CAMPAIGN_INSIGHT_FIELDS } from '../_shared/meta.ts';
+import { metaGet, CAMPAIGN_INSIGHT_FIELDS, parseROAS } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 const supabase = createClient(
@@ -40,6 +40,7 @@ interface Creative {
   created_at: string;
   campaign_id: string | null;
   meta_data: Record<string, unknown> | null;
+  stale?: boolean;
 }
 
 interface FatigueResult {
@@ -49,6 +50,7 @@ interface FatigueResult {
   level: 'ok' | 'warn' | 'critical';
   signals: string[];
   recommendation: string;
+  stale?: boolean;
 }
 
 function computeScore(c: Creative): { score: number; signals: string[] } {
@@ -120,18 +122,20 @@ async function enrichFromMeta(
         const ins = res.data?.[0];
         if (!ins) return c;
         const spend = parseFloat(ins.spend ?? '0');
-        const purchaseVal = (ins.action_values ?? [])
-          .filter(a => a.action_type === 'offsite_conversion.fb_pixel_purchase')
-          .reduce((s, a) => s + parseFloat(a.value), 0);
         return {
           ...c,
           frequency:   parseFloat(ins.frequency ?? String(c.frequency)),
           ctr:         parseFloat(ins.ctr ?? String(c.ctr)),
-          roas:        spend > 0 ? Math.round((purchaseVal / spend) * 100) / 100 : c.roas,
+          roas:        spend > 0 ? parseROAS(ins.actions ?? [], ins.action_values ?? [], ins.spend) : c.roas,
           impressions: parseInt(ins.impressions ?? String(c.impressions), 10),
         };
-      } catch {
-        return c;
+      } catch (e) {
+        // Silently returning the stale, previously-stored metrics with no trace makes a fatigue
+        // score for this creative indistinguishable from a fully-live computation, even though
+        // it may be based on data that's days or weeks old (rate limit, invalid/archived
+        // campaign_id, or a transient Meta API/network error).
+        console.warn(`[creative-fatigue] Meta insights fetch failed for creative ${c.id} (campaign ${c.campaign_id}), using stale cached metrics:`, e);
+        return { ...c, stale: true };
       }
     }),
   );
@@ -221,6 +225,7 @@ Deno.serve(async (req) => {
       level:          level(score),
       signals,
       recommendation: recommendation(score),
+      ...(c.stale ? { stale: true } : {}),
     };
   });
 
@@ -234,9 +239,10 @@ Deno.serve(async (req) => {
   const previousCriticalIds = new Set((previousRows ?? []).filter(r => r.level === 'critical').map(r => r.creative_id));
   const newlyCritical = results.filter(r => r.level === 'critical' && !previousCriticalIds.has(r.creative_id));
 
-  // Persist to creative_fatigue table
+  // Persist to creative_fatigue table — the table has no `stale` column, so strip it before
+  // upserting; it's a response-only marker for the caller, not something we persist.
   await supabase.from('creative_fatigue').upsert(
-    results.map(r => ({ ...r, computed_at: new Date().toISOString() })),
+    results.map(({ stale: _stale, ...r }) => ({ ...r, computed_at: new Date().toISOString() })),
     { onConflict: 'creative_id,user_id' },
   );
 

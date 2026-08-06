@@ -36,6 +36,22 @@ const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const BUDGET_MODEL  = 'claude-haiku-4-5-20251001';
 
+// Same absolute daily-budget ceiling roas-optimizer clamps scaled budgets to
+// (DEFAULT_RULES.max_daily_budget, hard-capped at 10000) — this endpoint had no equivalent
+// ceiling anywhere: not on the AI's calculate-time output, and not on the apply-time value
+// pushed live to Meta/Google (only a $1 floor).
+const MAX_DAILY_BUDGET_USD = 10000;
+
+/** Clamp any AI-returned daily-budget field into a sane range before persisting/returning it. */
+function clampBudgetFields(result: Record<string, unknown>): Record<string, unknown> {
+  const clamped = { ...result };
+  for (const key of ['daily_budget_total', 'daily_budget_meta', 'daily_budget_google']) {
+    const val = Number(clamped[key]);
+    if (Number.isFinite(val)) clamped[key] = Math.max(0, Math.min(val, MAX_DAILY_BUDGET_USD));
+  }
+  return clamped;
+}
+
 const STYLE_GUARD = '\n\nWriting style: write like a real CFO, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
 async function callClaude(userId: string, system: string, user: string): Promise<string> {
@@ -108,6 +124,7 @@ Use industry benchmarks. Account for learning phase (first 7 days). Include Meta
   } catch {
     throw new Error('Failed to parse budget calculation from AI');
   }
+  result = clampBudgetFields(result);
 
   // Persist recommendation
   const { data: saved } = await supabase
@@ -255,7 +272,12 @@ Deno.serve(async (req) => {
 
         if (!recId)      return errResponse('recommendation_id required', 400, origin);
         if (!campaignId) return errResponse('campaign_id required', 400, origin);
+        // Both Meta and Google campaign IDs are always numeric strings — this also closes off
+        // campaignId being spliced unvalidated into the raw GAQL query below (google-api.ts's
+        // 'budget' action already guards the identical query shape the same way).
+        if (!/^\d+$/.test(campaignId)) return errResponse('campaign_id must be numeric', 400, origin);
         if (budgetUsd < 1) return errResponse('budget_usd must be at least 1', 400, origin);
+        if (budgetUsd > MAX_DAILY_BUDGET_USD) return errResponse(`budget_usd must be at most $${MAX_DAILY_BUDGET_USD}/day`, 400, origin);
 
         // Load recommendation (ownership check)
         const { data: rec, error: recErr } = await supabase
@@ -265,6 +287,18 @@ Deno.serve(async (req) => {
           .eq('user_id', userId)
           .single();
         if (recErr || !rec) return errResponse('Recommendation not found', 404, origin);
+
+        // BOLA guard: verify campaign belongs to this user before touching Meta/Google API —
+        // same pattern meta-api.ts already established for its own mutation endpoints. Without
+        // this, a client-supplied campaign_id was pushed straight to the live ad account with
+        // only the caller's own valid token as the (unintended) authorization boundary.
+        const { data: ownedCampaign } = await supabase
+          .from('campaigns')
+          .select('id')
+          .eq('id', campaignId)
+          .eq('user_id', userId)
+          .single();
+        if (!ownedCampaign) return errResponse('Campaign not found', 404, origin);
 
         const applied: { platform: string; success: boolean; error?: string }[] = [];
 

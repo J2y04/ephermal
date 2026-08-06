@@ -268,6 +268,7 @@ async function handleGetPlatformStats(): Promise<Record<string, unknown>> {
   const thisMonth = nowIso.slice(0, 7);
 
   const [
+    clerkUsers,
     plansRes,
     expiringRes,
     integrationsRes,
@@ -282,7 +283,8 @@ async function handleGetPlatformStats(): Promise<Record<string, unknown>> {
     ugcRes,
     optimizerRunsRes,
   ] = await Promise.all([
-    supabase.from('user_plans').select('plan, stripe_sub_id'),
+    fetchAllClerkUsers(),
+    supabase.from('user_plans').select('user_id, plan, stripe_sub_id'),
     supabase.from('user_plans')
       .select('user_id, plan, period_end')
       .is('stripe_sub_id', null)
@@ -303,7 +305,15 @@ async function handleGetPlatformStats(): Promise<Record<string, unknown>> {
     supabase.from('optimizer_runs').select('user_id'),
   ]);
 
-  const plans = plansRes.data ?? [];
+  // user_plans rows are Ephermal's own source of truth, but a row can outlive its Clerk
+  // identity: clerk-webhook's cleanupDeletedUser() deliberately PRESERVES this row (rather than
+  // deleting it) when it can't confirm the Stripe subscription was actually cancelled, so there
+  // is no automatic path that ever removes it afterward. Unlike handleListUsers() (which is
+  // keyed off Clerk's live user list and so naturally excludes these), this plan-mix count
+  // previously read every raw row with no such check, permanently inflating growth/scale counts
+  // for accounts that no longer exist.
+  const clerkUserIds = new Set(clerkUsers.map(u => u.id));
+  const plans = (plansRes.data ?? []).filter(p => clerkUserIds.has(p.user_id as string));
   const planCounts: Record<string, number> = { starter: 0, growth: 0, scale: 0 };
   let manualGrants = 0;
   for (const p of plans) {

@@ -5656,7 +5656,7 @@ async function bulkAction(action, evt) {
     if (c?.platform === 'google') googleCampaigns.push(c); else metaIds.push(id);
   }
 
-  let metaMsg = null, metaFailed = false;
+  let metaMsg = null, metaFailed = false, metaOk = false;
   let googleOk = 0, googleFailed = 0;
 
   try {
@@ -5666,8 +5666,17 @@ async function bulkAction(action, evt) {
       // reusing "action" here for the sub-operation would silently hijack routing away from the
       // bulk_action case entirely.
       const r = await authFetch('/meta-api?action=bulk_action', {method:'POST', body:JSON.stringify({campaign_ids:metaIds, action_type: action, budget_multiplier:1.15})});
-      if (r && r.ok) { const d = await r.json(); metaMsg = d.message || `${metaIds.length} Meta campaign${metaIds.length>1?'s':''} updated`; }
-      else metaFailed = true;
+      if (r && r.ok) {
+        const d = await r.json();
+        // meta-api always responds HTTP 200 here (Promise.allSettled swallows individual
+        // failures) — d.success reflects whether every mutation actually succeeded, r.ok alone
+        // does not.
+        metaMsg = d.message || `${metaIds.length} Meta campaign${metaIds.length>1?'s':''} updated`;
+        metaOk = d.success !== false;
+        metaFailed = !metaOk;
+      } else {
+        metaFailed = true;
+      }
     }
 
     if (googleCampaigns.length) {
@@ -5690,7 +5699,7 @@ async function bulkAction(action, evt) {
     else if (metaFailed) parts.push(`${metaIds.length} Meta campaign${metaIds.length>1?'s':''} failed`);
     if (googleOk) parts.push(`${googleOk} Google campaign${googleOk>1?'s':''} updated`);
     if (googleFailed) parts.push(`${googleFailed} Google campaign${googleFailed>1?'s':''} failed`);
-    const anyOk = !!metaMsg || googleOk > 0;
+    const anyOk = metaOk || googleOk > 0;
     showToast(parts.join(', ') || 'Bulk action failed - check credentials', anyOk ? 'success' : 'error');
 
     invalidateCache('campaigns');
@@ -5951,7 +5960,9 @@ function promptUGCForProduct(id, title, img, price) {
   if (!requireSubscription()) return;
   // Pre-fill the full UGC config modal with product details
   const descEl = document.getElementById('ugc-description');
-  if (descEl) descEl.value = title + (price ? ` - ${shopCurSymbol()}${price}` : '');
+  // price arrives already prefixed with the shop's currency symbol (built in renderProducts()) —
+  // do not prepend shopCurSymbol() again here, that doubles it (e.g. "€€49.00").
+  if (descEl) descEl.value = title + (price ? ` - ${price}` : '');
   const ugcModal = document.getElementById('ugc-modal');
   if (ugcModal) { renderPlanUI(); ugcModal.classList.add('open'); }
 }

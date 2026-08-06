@@ -84,8 +84,14 @@ export async function metaDelete<T = unknown>(
 
 // ── Insight field sets ──────────────────────────────────────────────────────
 
+// 'roas' is NOT a valid Meta Ads Insights field — confirmed against Meta's official AdsInsights
+// field schema, there is no scalar "roas"; ROAS only exists as list<AdsActionStats> fields like
+// purchase_roas/website_purchase_roas. Requesting an unknown field fails the ENTIRE Graph API
+// call (not just that field), so every campaigns/overview/analytics fetch that used this
+// constant has been 400ing. ROAS is (correctly) computed ourselves from actions/action_values
+// via parseROAS() below, which is why the raw field was never actually read anywhere.
 export const CAMPAIGN_INSIGHT_FIELDS =
-  'spend,impressions,clicks,actions,action_values,ctr,frequency,reach,roas';
+  'spend,impressions,clicks,actions,action_values,ctr,frequency,reach';
 
 export const CAMPAIGN_FIELDS =
   'id,name,status,objective,daily_budget,budget_remaining,created_time,updated_time';
@@ -96,15 +102,33 @@ export const CREATIVE_FIELDS =
 export const AUDIENCE_FIELDS =
   'id,name,subtype,approximate_count,delivery_status,created_time,description';
 
+// 'offsite_conversion.fb_pixel_purchase' is Meta's legacy pixel-only purchase action type.
+// 'omni_purchase' is Meta's modern, deduplicated omnichannel purchase rollup (pixel + Conversions
+// API + onsite Shop + app combined) — the default for Shopify's native Meta Facebook & Instagram
+// channel, which pairs pixel with CAPI. Pixel and CAPI events for the same purchase are
+// deduplicated by Meta via a shared event_id, so omni_purchase and the legacy pixel-only type
+// must never both be summed (that would double-count the same purchase) — prefer omni_purchase
+// when present, and only fall back to the legacy type for older/non-CAPI setups that don't
+// report it at all.
+const PURCHASE_ACTION_TYPES = ['omni_purchase', 'offsite_conversion.fb_pixel_purchase'];
+
+function pickPurchaseActionType<T extends { action_type: string }>(items: T[]): string | null {
+  for (const type of PURCHASE_ACTION_TYPES) {
+    if (items.some(a => a.action_type === type)) return type;
+  }
+  return null;
+}
+
 /** Parse ROAS from actions/action_values arrays returned by Meta insights */
 export function parseROAS(
   actions: { action_type: string; value: string }[] = [],
   actionValues: { action_type: string; value: string }[] = [],
   spend: string = '0',
 ): number {
-  const purchaseValue = actionValues
-    .filter(a => a.action_type === 'offsite_conversion.fb_pixel_purchase')
-    .reduce((sum, a) => sum + parseFloat(a.value || '0'), 0);
+  const purchaseType = pickPurchaseActionType(actionValues);
+  const purchaseValue = purchaseType
+    ? actionValues.filter(a => a.action_type === purchaseType).reduce((sum, a) => sum + parseFloat(a.value || '0'), 0)
+    : 0;
   const spendNum = parseFloat(spend || '0');
   return spendNum > 0 ? Math.round((purchaseValue / spendNum) * 100) / 100 : 0;
 }
@@ -113,7 +137,9 @@ export function parseROAS(
 export function parseConversions(
   actions: { action_type: string; value: string }[] = [],
 ): number {
+  const purchaseType = pickPurchaseActionType(actions);
+  if (!purchaseType) return 0;
   return actions
-    .filter(a => a.action_type === 'offsite_conversion.fb_pixel_purchase')
+    .filter(a => a.action_type === purchaseType)
     .reduce((sum, a) => sum + parseInt(a.value || '0', 10), 0);
 }

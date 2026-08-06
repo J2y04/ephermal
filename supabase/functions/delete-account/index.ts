@@ -50,7 +50,6 @@ async function cancelStripeSubscription(userId: string): Promise<{ ok: true } | 
   try {
     await getStripe().subscriptions.cancel(subId);
     console.log(`✓ Stripe subscription ${subId} cancelled for account deletion (${userId})`);
-    return { ok: true };
   } catch (e) {
     // "resource_missing" means the subscription is already cancelled/gone — safe to
     // proceed. Any other error (network, auth, rate limit, Stripe outage) must block
@@ -58,11 +57,22 @@ async function cancelStripeSubscription(userId: string): Promise<{ ok: true } | 
     // while a real, still-live subscription keeps billing a now-unreachable account.
     if ((e as { code?: string })?.code === 'resource_missing') {
       console.log(`Stripe subscription ${subId} already gone for ${userId}, proceeding with deletion`);
-      return { ok: true };
+    } else {
+      console.error(`Stripe cancel failed during account deletion for ${userId}:`, e);
+      return { ok: false, error: e instanceof Error ? e.message : 'Stripe cancellation failed' };
     }
-    console.error(`Stripe cancel failed during account deletion for ${userId}:`, e);
-    return { ok: false, error: e instanceof Error ? e.message : 'Stripe cancellation failed' };
   }
+
+  // Clear stripe_sub_id now, before the row-delete loop below runs. That loop deletes
+  // user_plans too, but if a transient failure elsewhere in it leaves this row stranded, a
+  // retry's cancelStripeSubscription() call must never re-attempt cancelling a subscription
+  // that's already gone — Stripe rejects that with a non-resource_missing error ("already
+  // canceled"), which would otherwise hard-block deletion permanently on every future retry.
+  // Nulling it here means a retry sees no subId at all and correctly treats it as nothing left
+  // to cancel, regardless of what happens to the rest of this request.
+  await supabase.from('user_plans').update({ stripe_sub_id: null }).eq('user_id', userId);
+
+  return { ok: true };
 }
 
 async function deleteClerkUser(userId: string): Promise<void> {

@@ -375,23 +375,52 @@ async function scaleBudget(
 ) {
   if (multiplier < 0.1 || multiplier > 10) throw new Error('multiplier must be 0.1–10');
 
-  // Get current budget from Meta
-  const camp = await metaGet<{ daily_budget: string }>(
+  // Real campaigns created via campaign-launcher.ts set is_adset_budget_sharing_enabled:false
+  // and put daily_budget on the AD SET, not the Campaign — the Campaign node has no
+  // daily_budget field at all in that case (Meta simply omits it). Check the campaign itself
+  // first (covers CBO campaigns, which do carry a real campaign-level budget), and fall back
+  // to scaling every ad set under the campaign when the campaign itself has none.
+  const camp = await metaGet<{ daily_budget?: string }>(
     `/${campaignId}`,
     { fields: 'daily_budget' },
     token,
   );
-  const current = parseInt(camp.daily_budget || '0', 10);
-  const newBudget = Math.round(current * multiplier);
 
-  await metaPost(`/${campaignId}`, { daily_budget: String(newBudget) }, token);
+  if (camp.daily_budget) {
+    const current = parseInt(camp.daily_budget, 10);
+    const newBudget = Math.round(current * multiplier);
+    await metaPost(`/${campaignId}`, { daily_budget: String(newBudget) }, token);
+    await supabase.from('campaigns')
+      .update({ daily_budget: newBudget, synced_at: new Date().toISOString() })
+      .eq('id', campaignId).eq('user_id', userId);
+    return { success: true, old_budget: current, new_budget: newBudget };
+  }
 
-  // Update DB
+  const adSets = await metaGet<{ data: { id: string; daily_budget?: string }[] }>(
+    `/${campaignId}/adsets`,
+    { fields: 'id,daily_budget', effective_status: JSON.stringify(['ACTIVE', 'PAUSED']) },
+    token,
+  );
+  const budgeted = (adSets.data ?? []).filter(a => a.daily_budget);
+  if (!budgeted.length) throw new Error('This campaign has no budget set at the campaign or ad set level to scale');
+
+  let oldTotal = 0;
+  let newTotal = 0;
+  await Promise.all(budgeted.map(async (a) => {
+    const current = parseInt(a.daily_budget!, 10);
+    const newBudget = Math.round(current * multiplier);
+    oldTotal += current;
+    newTotal += newBudget;
+    await metaPost(`/${a.id}`, { daily_budget: String(newBudget) }, token);
+  }));
+
+  // Campaign row's daily_budget is a rollup of its ad set(s) for display purposes only — the
+  // real per-ad-set values live on Meta.
   await supabase.from('campaigns')
-    .update({ daily_budget: newBudget, synced_at: new Date().toISOString() })
+    .update({ daily_budget: newTotal, synced_at: new Date().toISOString() })
     .eq('id', campaignId).eq('user_id', userId);
 
-  return { success: true, old_budget: current, new_budget: newBudget };
+  return { success: true, old_budget: oldTotal, new_budget: newTotal };
 }
 
 async function bulkAction(
@@ -408,7 +437,12 @@ async function bulkAction(
   );
   const succeeded = results.filter(r => r.status === 'fulfilled').length;
   const failed    = results.filter(r => r.status === 'rejected').length;
-  return { success: true, summary: { succeeded, failed } };
+  const message = failed === 0
+    ? `${succeeded} Meta campaign${succeeded === 1 ? '' : 's'} updated`
+    : succeeded === 0
+      ? `Failed to update ${failed} Meta campaign${failed === 1 ? '' : 's'}`
+      : `${succeeded} updated, ${failed} failed`;
+  return { success: failed === 0, message, summary: { succeeded, failed } };
 }
 
 async function createAudience(
