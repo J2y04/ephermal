@@ -2488,16 +2488,25 @@ function showUpgradeModal(feature) {
   const plan = PLANS[req];
   document.getElementById('upgrade-modal-plan').textContent = plan.name;
   document.getElementById('upgrade-modal-price').textContent = curFmtBilling(req === 'growth' ? 199 : 349);
-  // Use checkout Edge Function if price IDs are configured, otherwise fall back to static link
+  // Use checkout Edge Function if price IDs are configured, otherwise fall back to static link.
+  // A '/test_' link is Stripe TEST mode (buy.stripe.com/test_xxx vs. live buy.stripe.com/xxx) -
+  // same reasoning as startCheckout()'s guard: it can't take a real card and the live-mode
+  // backend can't see anything it produces, so treat it the same as an unconfigured link
+  // rather than silently sending someone to a checkout page that can't actually charge them.
   const upgradeLink = document.getElementById('upgrade-modal-link');
   const priceId = window.STRIPE_PRICES?.[req];
+  const staticLink = window.STRIPE_LINKS?.[req];
   if (priceId && !priceId.includes('REPLACE')) {
     upgradeLink.href = '#';
     upgradeLink.onclick = (e) => { e.preventDefault(); document.getElementById('upgrade-modal').classList.remove('open'); startCheckout(priceId); };
-  } else {
-    upgradeLink.href = window.STRIPE_LINKS?.[req] || '#';
+  } else if (staticLink && !staticLink.includes('REPLACE') && !staticLink.includes('/test_')) {
+    upgradeLink.href = staticLink;
     upgradeLink.onclick = null;
     upgradeLink.target = '_blank';
+  } else {
+    upgradeLink.href = '#';
+    upgradeLink.target = '';
+    upgradeLink.onclick = (e) => { e.preventDefault(); showToast('Payment not configured yet - contact support', 'error'); };
   }
   document.getElementById('upgrade-modal').classList.add('open');
 }
@@ -2764,11 +2773,17 @@ async function refreshAIUsageBar() {
 // ── STRIPE CHECKOUT ──────────────────────────────────────────────────────────
 async function startCheckout(priceId) {
   if (!priceId || priceId.startsWith('price_REPLACE')) {
-    // Fallback to static payment link if price IDs aren't configured yet
+    // Fallback to static payment link if price IDs aren't configured yet. A link
+    // containing '/test_' is a Stripe TEST-mode payment link (buy.stripe.com/test_xxx,
+    // vs. the live buy.stripe.com/xxx) - it cannot take a real card, and even a test-card
+    // payment through it produces Stripe objects the live-mode backend can't see. Redirecting
+    // there would look like a working checkout right up until the card is declined for no
+    // visible reason - worse than an honest "not configured" message.
     const linkMap = { 'price_REPLACE_STARTER':'starter','price_REPLACE_GROWTH':'growth','price_REPLACE_SCALE':'scale' };
     const linkKey = linkMap[priceId];
-    if (linkKey && window.STRIPE_LINKS?.[linkKey] && !window.STRIPE_LINKS[linkKey].includes('REPLACE')) {
-      window.open(window.STRIPE_LINKS[linkKey], '_blank');
+    const link = linkKey && window.STRIPE_LINKS?.[linkKey];
+    if (link && !link.includes('REPLACE') && !link.includes('/test_')) {
+      window.open(link, '_blank');
     } else {
       showToast('Payment not configured yet - contact support', 'error');
     }
