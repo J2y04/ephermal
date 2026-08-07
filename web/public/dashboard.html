@@ -2560,7 +2560,7 @@ async function loadPlanFromSupabase() {
   try {
     const { data, error } = await sb
       .from('user_plans')
-      .select('period_end, cancelling_at')
+      .select('period_end, cancelling_at, stripe_sub_id')
       .eq('user_id', clerkUserId)
       .single();
     if (error || !data) return;
@@ -2569,6 +2569,12 @@ async function loadPlanFromSupabase() {
     else localStorage.removeItem('ephermal_period_end');
     if (data.cancelling_at) localStorage.setItem('ephermal_cancelling_at', data.cancelling_at);
     else localStorage.removeItem('ephermal_cancelling_at');
+    // Display-only signal for whether there's a real Stripe subscription behind the current
+    // plan (a manually-granted plan, e.g. role:testuser, has plan!=='starter' but no
+    // stripe_sub_id) — used only to decide whether to show the Cancel subscription button,
+    // never for access control (that's Clerk publicMetadata via getUserPlan(), same as always).
+    if (data.stripe_sub_id) localStorage.setItem('ephermal_has_stripe_sub', '1');
+    else localStorage.removeItem('ephermal_has_stripe_sub');
   } catch(e) {}
 }
 
@@ -2917,7 +2923,13 @@ function renderBillingPage() {
   const btnReactivate = document.getElementById('btn-reactivate-sub');
   const cancelBadge = document.getElementById('billing-cancelling-badge');
   const isStarterPlan = plan === 'starter';
-  if (btnCancel) btnCancel.style.display = (isStarterPlan || cancellingAt) ? 'none' : 'inline-flex';
+  // A manually-granted plan (e.g. role:testuser, or an admin comp) has plan !== 'starter' but
+  // no real Stripe subscription behind it — showing "Cancel subscription" there led to a
+  // confusing "No active subscription found" error on click. hasStripeSub is written by
+  // loadPlanFromSupabase() from user_plans.stripe_sub_id; default to hiding (safer/quieter)
+  // until that fetch has actually run at least once this session.
+  const hasStripeSub = localStorage.getItem('ephermal_has_stripe_sub') === '1';
+  if (btnCancel) btnCancel.style.display = (isStarterPlan || cancellingAt || !hasStripeSub) ? 'none' : 'inline-flex';
   if (btnReactivate) btnReactivate.style.display = cancellingAt ? 'inline-flex' : 'none';
   if (cancelBadge) {
     if (cancellingAt) {
