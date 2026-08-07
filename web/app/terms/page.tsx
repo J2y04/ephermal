@@ -141,7 +141,7 @@ export default function TermsPage() {
           <ul>
             <li>You may initiate data porting or switching at any time by contacting <a href="mailto:hello@ephermal.app">hello@ephermal.app</a>. We will complete the transition within 30 days of the end of any applicable notice period.</li>
             <li>Upon request, we will provide your data (account information, campaign history, creative assets) in a machine-readable format.</li>
-            <li>We will not impose obstacles or excessive fees that would prevent or deter switching. Any switching fees will be disclosed in advance and will phase to zero by September 2027 in accordance with EU Data Act transition rules.</li>
+            <li>We will not impose obstacles or excessive fees that would prevent or deter switching. Any switching fees will be disclosed in advance and will phase to zero by 12 January 2027 in accordance with EU Data Act transition rules.</li>
           </ul>
         </div>
 
