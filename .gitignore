@@ -28,3 +28,10 @@ web/node_modules
 web/out
 web/.next
 web/tsconfig.tsbuildinfo
+
+# Playwright MCP session captures (superseded by the Claude_Browser tool)
+.playwright-mcp/
+
+# Python bytecode cache
+__pycache__/
+*.pyc
