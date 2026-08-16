@@ -14,3 +14,15 @@ export const USER_OWNED_TABLES = [
   'shopify_products', 'store_intelligence', 'ugc_credits', 'ugc_video_credits',
   'ugc_video_topups', 'user_integrations', 'user_plans',
 ];
+
+/**
+ * Financial/cost-history tables that get a 30-day soft-delete window (set
+ * `deleted_at`, purged by the `purge-expired-soft-deletes` pg_cron job) instead of
+ * an immediate hard delete like the rest of USER_OWNED_TABLES — gives room for a
+ * billing dispute or compliance review before the data is actually gone. Every
+ * table here must have a nullable `deleted_at timestamptz` column (see migration
+ * add_soft_delete_retention_for_financial_tables).
+ */
+export const RETENTION_TABLES = new Set([
+  'generation_cost_log', 'ai_usage', 'ai_usage_topups', 'ugc_video_credits', 'ugc_video_topups',
+]);

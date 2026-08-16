@@ -20,7 +20,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
-import { USER_OWNED_TABLES } from '../_shared/user-owned-tables.ts';
+import { USER_OWNED_TABLES, RETENTION_TABLES } from '../_shared/user-owned-tables.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -127,7 +127,12 @@ Deno.serve(async (req) => {
 
     const failures: string[] = [];
     for (const table of USER_OWNED_TABLES) {
-      const { error } = await supabase.from(table).delete().eq('user_id', userId);
+      // Financial/cost-history tables get a 30-day soft-delete window (retention
+      // policy, task #94) instead of an immediate hard delete — the
+      // purge-expired-soft-deletes cron job hard-deletes them after 30 days.
+      const { error } = RETENTION_TABLES.has(table)
+        ? await supabase.from(table).update({ deleted_at: new Date().toISOString() }).eq('user_id', userId)
+        : await supabase.from(table).delete().eq('user_id', userId);
       if (error) {
         console.error(`delete-account: failed to clear ${table} for ${userId}:`, error.message);
         failures.push(table);

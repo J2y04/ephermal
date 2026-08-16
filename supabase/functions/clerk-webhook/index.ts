@@ -30,7 +30,7 @@
 
 import Stripe from 'https://esm.sh/stripe@14';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { USER_OWNED_TABLES } from '../_shared/user-owned-tables.ts';
+import { USER_OWNED_TABLES, RETENTION_TABLES } from '../_shared/user-owned-tables.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -148,7 +148,11 @@ async function cleanupDeletedUser(userId: string): Promise<void> {
   const failures: string[] = [];
   for (const table of USER_OWNED_TABLES) {
     if (table === 'user_plans' && stripeCancelFailed) continue;
-    const { error } = await supabase.from(table).delete().eq('user_id', userId);
+    // Same 30-day soft-delete retention window as delete-account (task #94) for
+    // financial/cost-history tables — kept in sync via the shared RETENTION_TABLES set.
+    const { error } = RETENTION_TABLES.has(table)
+      ? await supabase.from(table).update({ deleted_at: new Date().toISOString() }).eq('user_id', userId)
+      : await supabase.from(table).delete().eq('user_id', userId);
     if (error) {
       console.error(`clerk-webhook user.deleted: failed to clear ${table} for ${userId}:`, error.message);
       failures.push(table);
