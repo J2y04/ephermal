@@ -13,7 +13,7 @@
   --accent: #06d6c7;
   --on-primary: #08080c;
   --text: #eef0f7;
-  --muted: #6b7280;
+  --muted: #7b8794; /* WCAG AA fix: was #6b7280 (4.14:1 on --bg, fails 4.5:1 for normal text); now 5.46:1 on --bg, 4.73:1+ on --surface/--surface2 */
   --glow: rgba(var(--primary-rgb),0.15);
   --success: #34d399;
   --warning: #fbbf24;
@@ -878,3 +878,21 @@ footer {
 .store-scan-cta { text-align: center; padding-top: 20px; border-top: 1px solid var(--border); }
 .store-scan-cta p { font-size: 14px; color: var(--muted); line-height: 1.6; margin-bottom: 18px; max-width: 520px; margin-left: auto; margin-right: auto; }
 @media (max-width: 640px) { .store-scan-grid { grid-template-columns: 1fr; } .store-scan-card { padding: 22px; } .store-scan-form { flex-direction: column; } .store-scan-btn { width: 100%; } }
+
+/* ── Accessibility: keyboard focus visibility ──
+   :focus-visible only (not :focus) so the ring shows for keyboard/switch
+   navigation but stays silent on mouse clicks. Teal on-brand outline with
+   an offset gap for clear contrast against the near-black background
+   (var(--primary) on var(--bg) measures ~10.9:1, well past the 3:1 UI-
+   component minimum). */
+a:focus-visible,
+button:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-nav-cta:focus-visible,
+.price-btn:focus-visible,
+.nav-links a:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}

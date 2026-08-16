@@ -287,7 +287,7 @@ export default function Home() {
           <div className="meta-inner">
             <div className="meta-logo-block" data-reveal="left">
               <h2>Powered by</h2>
-              <img src="https://static.xx.fbcdn.net/rsrc.php/y3/r/y6QsbGgc866.svg" alt="Meta" width={300} height={200} />
+              <img src="https://static.xx.fbcdn.net/rsrc.php/y3/r/y6QsbGgc866.svg" alt="Meta logo" width={300} height={200} />
             </div>
             <div className="meta-content" data-reveal="right" data-delay="1">
               <h2 className="section-title">Facebook &amp; Instagram,<br />natively integrated.</h2>
@@ -388,7 +388,7 @@ export default function Home() {
             </div>
             <div className="meta-logo-block" data-reveal="right">
               <h2>Also powered by</h2>
-              <svg viewBox="0 0 272 92" width="240" height="80" xmlns="http://www.w3.org/2000/svg">
+              <svg viewBox="0 0 272 92" width="240" height="80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Google logo">
                 <path d="M115.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18C71.25 34.32 81.24 25 93.5 25s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44S80.99 39.2 80.99 47.18c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z" fill="#EA4335"/>
                 <path d="M163.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18c0-12.85 9.99-22.18 22.25-22.18s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44s-12.51 5.46-12.51 13.44c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z" fill="#FBBC05"/>
                 <path d="M209.75 26.34v39.82c0 16.38-9.66 23.07-21.08 23.07-10.75 0-17.22-7.19-19.66-13.07l8.48-3.53c1.51 3.61 5.21 7.87 11.17 7.87 7.31 0 11.84-4.51 11.84-13v-3.19h-.34c-2.18 2.69-6.38 5.04-11.68 5.04-11.09 0-21.25-9.66-21.25-22.09 0-12.52 10.16-22.26 21.25-22.26 5.29 0 9.49 2.35 11.68 4.96h.34v-3.61h9.25zm-8.56 20.92c0-7.81-5.21-13.52-11.84-13.52-6.72 0-12.35 5.71-12.35 13.52 0 7.73 5.63 13.36 12.35 13.36 6.63 0 11.84-5.63 11.84-13.36z" fill="#4285F4"/>
@@ -860,13 +860,14 @@ export default function Home() {
       {/* ── Footer ── */}
       <footer>
         <div className="footer-logo">
-          <img src="/ephermal.jpg" alt="Ephermal" />
+          <img src="/ephermal.jpg" alt="Ephermal logo" />
           Ephermal
         </div>
         <div className="footer-links">
           <a href="/docs">Docs</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
+          <a href="/accessibility">Accessibility</a>
           <a href="/data-deletion">Data Deletion</a>
           <a href="mailto:hello@ephermal.app">Contact</a>
         </div>

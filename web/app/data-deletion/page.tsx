@@ -13,7 +13,7 @@ export default function DataDeletionPage() {
     <>
       <nav className="legal-nav">
         <a href="/" className="legal-nav-logo">
-          <img src="/ephermal.jpg" alt="Ephermal" />
+          <img src="/ephermal.jpg" alt="Ephermal logo" />
           Ephermal
         </a>
         <a href="/" className="legal-back">← Back to site</a>

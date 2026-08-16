@@ -13,7 +13,7 @@ export default function TermsPage() {
     <>
       <nav className="legal-nav">
         <a href="/" className="legal-nav-logo">
-          <img src="/ephermal.jpg" alt="Ephermal" />
+          <img src="/ephermal.jpg" alt="Ephermal logo" />
           Ephermal
         </a>
         <a href="/" className="legal-back">← Back to site</a>
@@ -168,13 +168,14 @@ export default function TermsPage() {
 
       <footer className="legal-footer">
         <div className="legal-footer-logo">
-          <img src="/ephermal.jpg" alt="Ephermal" />
+          <img src="/ephermal.jpg" alt="Ephermal logo" />
           Ephermal
         </div>
         <div className="legal-footer-links">
           <a href="../docs">Documentation</a>
           <a href="../privacy">Privacy Policy</a>
           <a href="../terms">Terms of Service</a>
+          <a href="../accessibility">Accessibility Statement</a>
           <a href="mailto:hello@ephermal.app">Contact</a>
         </div>
         <div className="legal-footer-copy">© 2026 Interlink Platforms. All rights reserved.</div>
