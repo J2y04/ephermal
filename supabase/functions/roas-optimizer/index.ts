@@ -519,14 +519,18 @@ Deno.serve(async (req) => {
         // Update or create optimizer rules for this user
         const rawMultiplier   = Number(body.scale_multiplier  ?? DEFAULT_RULES.scale_multiplier);
         const rawMaxBudget    = Number(body.max_daily_budget  ?? DEFAULT_RULES.max_daily_budget);
+        const rawPauseBelow   = Number(body.pause_below_roas  ?? DEFAULT_RULES.pause_below_roas);
+        const rawScaleAbove   = Number(body.scale_above_roas  ?? DEFAULT_RULES.scale_above_roas);
+        const rawMinSpend     = Number(body.min_spend         ?? DEFAULT_RULES.min_spend);
+        const rawLookback     = Number(body.lookback_days     ?? DEFAULT_RULES.lookback_days);
         const newRules = {
           user_id:           userId,
-          pause_below_roas:  body.pause_below_roas  ?? DEFAULT_RULES.pause_below_roas,
-          scale_above_roas:  body.scale_above_roas  ?? DEFAULT_RULES.scale_above_roas,
+          pause_below_roas:  Number.isFinite(rawPauseBelow) ? Math.max(rawPauseBelow, 0) : DEFAULT_RULES.pause_below_roas,
+          scale_above_roas:  Number.isFinite(rawScaleAbove) ? Math.max(rawScaleAbove, 0) : DEFAULT_RULES.scale_above_roas,
           scale_multiplier:  Math.min(Math.max(rawMultiplier, 1.0), 2.0),
           max_daily_budget:  Math.min(Math.max(rawMaxBudget, 1), 10000),
-          min_spend:         body.min_spend          ?? DEFAULT_RULES.min_spend,
-          lookback_days:     body.lookback_days      ?? DEFAULT_RULES.lookback_days,
+          min_spend:         Number.isFinite(rawMinSpend) ? Math.max(rawMinSpend, 0) : DEFAULT_RULES.min_spend,
+          lookback_days:     Number.isFinite(rawLookback) ? Math.min(Math.max(Math.round(rawLookback), 1), 90) : DEFAULT_RULES.lookback_days,
           updated_at:        new Date().toISOString(),
         };
 

@@ -342,6 +342,17 @@ Deno.serve(async (req) => {
     const creativeId = String(body.creative_id ?? '').trim();
     const campaignId = String(body.campaign_id ?? '').trim() || null;
     if (!creativeId) return errResponse('creative_id is required', 400, origin);
+    if (campaignId) {
+      // Verify the target campaign is one this user actually owns before linking a
+      // creative to it — same ownership scoping already used for creativeId below.
+      const { data: ownedCampaign } = await supabase
+        .from('launched_campaigns')
+        .select('id')
+        .eq('id', campaignId)
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (!ownedCampaign) return errResponse('campaign_id not found', 404, origin);
+    }
     const { error } = await supabase
       .from('creatives')
       .update({ campaign_id: campaignId })
@@ -475,7 +486,8 @@ Return ONLY valid JSON.`;
 
       case 'hooks': {
         const product = body.product as Record<string, unknown> ?? {};
-        const count   = Math.min(Number(body.count ?? 5), 10);
+        const rawCount = Number(body.count);
+        const count   = Math.max(1, Math.min(Number.isFinite(rawCount) ? rawCount : 5, 10));
         const system = `You are a viral hook writer for UGC ads.
 Write ${count} hook variations. Each 1-2 sentences, under 10 seconds when spoken.
 Use diverse angles: problem-first, curiosity, controversy, social proof, transformation.
@@ -503,7 +515,8 @@ Return ONLY valid JSON.`;
       case 'variations': {
         const script = String(body.script ?? '').trim();
         if (!script) return errResponse('script is required', 400, origin);
-        const count = Math.min(Number(body.count ?? 3), 5);
+        const rawCount = Number(body.count);
+        const count = Math.max(1, Math.min(Number.isFinite(rawCount) ? rawCount : 3, 5));
         const system = `You are a UGC ad scriptwriter creating A/B test variations.
 Rewrite the given script ${count} times with different angle or tone.
 Keep the core message and CTA. Return a JSON array: [{ "variation": 1, "label": "...", "script": "..." }]

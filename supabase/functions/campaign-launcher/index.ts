@@ -40,6 +40,7 @@ const supabase = createClient(
 const ANTHROPIC_KEY = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const MAIN_MODEL    = 'claude-haiku-4-5-20251001';
+const MAX_CAMPAIGN_NAME_LENGTH = 200;
 
 const STYLE_GUARD = '\n\nWriting style: write like a real media buyer, not an AI. Never use em dashes (—) or arrow characters (→). Use periods, commas, or "and" to join clauses instead.';
 
@@ -735,6 +736,7 @@ async function saveDraft(userId: string, body: Record<string, unknown>): Promise
   const name        = String(body.name ?? '').trim();
   const platform     = String(body.platform ?? 'meta');
   if (!name) throw new Error('Campaign name is required');
+  if (name.length > MAX_CAMPAIGN_NAME_LENGTH) throw new Error(`Campaign name must be at most ${MAX_CAMPAIGN_NAME_LENGTH} characters`);
   if (!['meta', 'google', 'both'].includes(platform)) throw new Error('platform must be meta, google, or both');
 
   const { data: saved, error } = await supabase
@@ -772,7 +774,11 @@ async function updateDraft(userId: string, campaignId: string, body: Record<stri
   if (existing.status !== 'draft' && existing.status !== 'failed') throw new Error('Only draft or failed campaigns can be edited. This campaign has already been launched');
 
   const updates: Record<string, unknown> = {};
-  if (body.name !== undefined)         updates.name = String(body.name).trim();
+  if (body.name !== undefined) {
+    const trimmedName = String(body.name).trim();
+    if (trimmedName.length > MAX_CAMPAIGN_NAME_LENGTH) throw new Error(`Campaign name must be at most ${MAX_CAMPAIGN_NAME_LENGTH} characters`);
+    updates.name = trimmedName;
+  }
   if (body.objective !== undefined)    updates.objective = String(body.objective);
   if (body.budget_daily !== undefined) updates.budget_daily = Number(body.budget_daily);
   if (body.platform !== undefined)     updates.platform = String(body.platform);

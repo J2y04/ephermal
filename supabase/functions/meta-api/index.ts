@@ -318,13 +318,21 @@ async function getPixel(accountId: string, token: string) {
 
 // ── WRITE handlers ───────────────────────────────────────────────────────────
 
+// Mirrors budget-ai's MAX_DAILY_BUDGET_USD apply-time ceiling ($10,000/day, $1/day floor) —
+// daily_budget here is Meta's native cents unit, so the same bounds are expressed in cents.
+const MAX_DAILY_BUDGET_CENTS = 1_000_000;
+const MIN_DAILY_BUDGET_CENTS = 100;
+
 async function createCampaign(
   accountId: string, token: string, userId: string,
   body: Record<string, unknown>,
 ) {
   const { name, objective = 'OUTCOME_TRAFFIC', daily_budget, countries = ['US'] } = body;
   if (!name) throw new Error('name is required');
-  const budget = parseInt(String(daily_budget ?? '5000'), 10); // cents
+  const rawBudget = Number(daily_budget ?? 5000);
+  const budget = Number.isFinite(rawBudget)
+    ? Math.round(Math.max(MIN_DAILY_BUDGET_CENTS, Math.min(rawBudget, MAX_DAILY_BUDGET_CENTS)))
+    : 5000; // cents; NaN/invalid input falls back to the previous default
 
   // 1. Create campaign
   const camp = await metaPost<{ id: string }>(`/${accountId}/campaigns`, {
@@ -758,6 +766,16 @@ Deno.serve(async (req) => {
         case 'create_lookalike': {
           const lookalikeGate = await requirePlan(userId, 'growth', origin, 'lookalike audiences');
           if (lookalikeGate) return lookalikeGate;
+          const sourceAudienceId = String(body.source_audience_id ?? '');
+          if (!sourceAudienceId) return errResponse('source_audience_id required', 400, origin);
+          const ratio = Number(body.ratio ?? 0.02);
+          if (!Number.isFinite(ratio) || ratio < 0.01 || ratio > 0.20) {
+            return errResponse('ratio must be a number between 0.01 and 0.20', 400, origin);
+          }
+          // BOLA guard: verify source audience belongs to this user before touching Meta API
+          const { data: owned } = await supabase.from('audiences')
+            .select('id').eq('id', sourceAudienceId).eq('user_id', userId).single();
+          if (!owned) return errResponse('Audience not found', 403, origin);
           return okResponse(await createLookalike(accountId, token, userId, body), origin);
         }
 

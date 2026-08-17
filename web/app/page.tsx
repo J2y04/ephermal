@@ -2,6 +2,7 @@ import FAQ from '../components/FAQ';
 import ScrollReveal from '../components/ScrollReveal';
 import NavScrolled from '../components/NavScrolled';
 import NavAuth from '../components/NavAuth';
+import MobileNav from '../components/MobileNav';
 import AgentNetwork from '../components/AgentNetwork';
 import HeroMotion from '../components/HeroMotion';
 import StatsMotion from '../components/StatsMotion';
@@ -32,6 +33,7 @@ export default function Home() {
         <div className="nav-actions">
           <NavAuth />
         </div>
+        <MobileNav />
       </nav>
 
       {/* ── Hero ── */}

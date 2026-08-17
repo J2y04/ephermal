@@ -4819,7 +4819,7 @@ function buildDonut(segments, total) {
     const arc=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${seg.color}" stroke-width="${stroke}" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${-offset}" stroke-linecap="round" transform="rotate(-90 ${CX} ${CY})" style="cursor:pointer;transition:stroke-width .2s" onmouseenter="this.style.strokeWidth='${stroke+4}';showTip(window['${tipKey}'],event)" onmousemove="moveTip(event)" onmouseleave="this.style.strokeWidth='${stroke}';hideTip()"/>`;
     offset+=dash; return arc;
   });
-  const legend=segments.map(s=>`<div class="donut-leg-row"><div class="donut-leg-left"><div class="donut-leg-dot" style="background:${s.color}"></div><span>${s.label}</span></div><span class="donut-leg-val">${fmt(s.value)}</span></div>`).join('');
+  const legend=segments.map(s=>`<div class="donut-leg-row"><div class="donut-leg-left"><div class="donut-leg-dot" style="background:${s.color}"></div><span>${escHtml(String(s.label))}</span></div><span class="donut-leg-val">${fmt(s.value)}</span></div>`).join('');
   return `<div class="donut-wrap"><svg width="140" height="140" viewBox="0 0 140 140"><circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="var(--surface2)" stroke-width="${stroke}"/>${arcs.join('')}<text x="${CX}" y="${CY}" text-anchor="middle" dy="-4" fill="var(--text)" font-size="18" font-weight="800" font-family="Inter">${fmt(total)}</text><text x="${CX}" y="${CY}" text-anchor="middle" dy="14" fill="var(--muted)" font-size="10" font-family="Inter">total</text></svg><div class="donut-legend">${legend}</div></div>`;
 }
 
@@ -6610,7 +6610,7 @@ async function openApplyBudgetModal() {
     sel.innerHTML = '<option value="">Select a campaign…</option>' +
       campaigns.map(c => {
         const badge = c.platform === 'meta' ? '🔵 Meta' : '🟢 Google';
-        const status = c.status ? ` [${c.status}]` : '';
+        const status = c.status ? ` [${escHtml(c.status)}]` : '';
         return `<option value="${escHtml(String(c.id))}" data-platform="${c.platform}" data-name="${escHtml(c.name||'')}">
           ${badge} ${escHtml(c.name || c.id)}${status}
         </option>`;
@@ -6788,7 +6788,8 @@ function renderLaunchAdsList() {
     const platforms = c.platform === 'both' ? ['meta','google'] : [c.platform];
     const badges = platforms.map(p => `<span class="platform-badge ${p}">${p === 'meta' ? 'Meta' : 'Google'}</span>`).join('');
     const statusClass = c.status === 'active' ? 'live' : c.status;
-    return `<div class="launch-card" role="button" tabindex="0" onclick="openCampaignReview('${c.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCampaignReview('${c.id}')}">
+    const safeId = escHtml(String(c.id));
+    return `<div class="launch-card" role="button" tabindex="0" onclick="openCampaignReview('${safeId}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCampaignReview('${safeId}')}">
       <div class="launch-card-top">
         <div class="launch-card-name">${escHtml(c.name)}</div>
         <span class="status-pill ${statusClass}">${escHtml(c.status)}</span>
@@ -7626,8 +7627,8 @@ async function loadBriefHistory() {
   el.innerHTML = _briefHistory.map((b, i) =>
     '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)">' +
       '<div>' +
-        '<div style="font-size:13px;font-weight:600;color:var(--text)">' + (b.product_title || 'All products') + '</div>' +
-        '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + new Date(b.created_at).toLocaleDateString() + ' · ' + (b.goal || 'conversions') + '</div>' +
+        '<div style="font-size:13px;font-weight:600;color:var(--text)">' + escHtml(b.product_title || 'All products') + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-top:2px">' + new Date(b.created_at).toLocaleDateString() + ' · ' + escHtml(b.goal || 'conversions') + '</div>' +
       '</div>' +
       '<button onclick="renderBrief(_briefHistory[' + i + '].brief)" style="font-size:11px;padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;color:var(--text);cursor:pointer;font-family:inherit">View</button>' +
     '</div>'

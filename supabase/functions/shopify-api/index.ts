@@ -21,6 +21,14 @@ import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 
+/** Shopify's documented max page size is 250 — parse and clamp locally instead of
+ *  letting an invalid/oversized value round-trip to a failed upstream call. */
+function clampLimit(raw: string | null, fallback = 50): string {
+  const n = parseInt(raw ?? '', 10);
+  if (!Number.isFinite(n) || n < 1) return String(fallback);
+  return String(Math.min(n, 250));
+}
+
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -179,7 +187,7 @@ Deno.serve(async (req) => {
   try {
     switch (action) {
       case 'products': {
-        const limit    = url.searchParams.get('limit') ?? '50';
+        const limit    = clampLimit(url.searchParams.get('limit'));
         const pageInfo = url.searchParams.get('page_info') ?? '';
         const params: Record<string, string> = {
           limit,
@@ -196,7 +204,7 @@ Deno.serve(async (req) => {
       }
 
       case 'orders': {
-        const limit  = url.searchParams.get('limit') ?? '50';
+        const limit  = clampLimit(url.searchParams.get('limit'));
         const status = url.searchParams.get('status') ?? 'any';
         const data   = await shopifyGet<{ orders: unknown[] }>(
           shop, token, 'orders.json', { limit, status, fields: 'id,name,email,total_price,financial_status,created_at,line_items' },

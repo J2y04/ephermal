@@ -27,6 +27,10 @@ import { requirePlan } from '../_shared/plan.ts'
 
 const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v24'
 
+// Same absolute daily-budget ceiling budget-ai.ts applies before pushing a budget live
+// (MAX_DAILY_BUDGET_USD = 10000) — this endpoint had only a $1 floor, no ceiling.
+const MAX_DAILY_BUDGET_USD = 10000
+
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -401,8 +405,12 @@ Deno.serve(async (req: Request) => {
         const campaignId = String(postBody.campaign_id ?? '')
         const budgetUsd  = Number(postBody.budget_usd ?? 0)
 
-        if (!campaignId || budgetUsd < 1) {
+        if (!campaignId || !Number.isFinite(budgetUsd) || budgetUsd < 1) {
           return errResponse('campaign_id and budget_usd (minimum 1) are required', 400, origin)
+        }
+
+        if (budgetUsd > MAX_DAILY_BUDGET_USD) {
+          return errResponse(`budget_usd must be at most $${MAX_DAILY_BUDGET_USD}/day`, 400, origin)
         }
 
         // Validate campaignId is numeric before interpolating into GAQL

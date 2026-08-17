@@ -75,6 +75,10 @@ async function handleBulkSet(
         results.push({ product_id: productId, success: false, error: 'missing product_id' });
         return;
       }
+      if (isNaN(cogsCents) || cogsCents < 0) {
+        results.push({ product_id: productId, success: false, error: 'cogs_cents must be a non-negative number' });
+        return;
+      }
       const { error } = await supabase
         .from('shopify_products')
         .update({ cogs_cents: cogsCents })
