@@ -896,3 +896,29 @@ button:focus-visible,
   outline: 2px solid var(--primary);
   outline-offset: 3px;
 }
+
+/* ── Accessibility: skip to content link ──
+   Hidden off-screen by default; the very first focusable element on
+   every page, so keyboard and screen-reader users can jump straight
+   past the fixed nav. Snaps into view on keyboard focus only (regular
+   :focus, since it must appear for Tab as well as any assistive-tech
+   focus, not just focus-visible). Same on-brand teal-on-near-black
+   pairing as the primary nav CTA button (var(--on-primary) on
+   var(--primary)). */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 16px;
+  z-index: 1000;
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 12px 22px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-link:focus {
+  top: 16px;
+}

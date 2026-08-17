@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 export default function DocsPage() {
   return (
     <>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <nav className="legal-nav">
         <a href="/" className="legal-nav-logo">
           <img src="/ephermal.jpg" alt="Ephermal logo" />
@@ -19,7 +20,7 @@ export default function DocsPage() {
         <a href="/" className="legal-back">← Back to site</a>
       </nav>
 
-      <div className="docs-shell">
+      <div className="docs-shell" id="main-content">
         <aside className="docs-sidebar">
           <div className="docs-nav-group">
             <div className="docs-nav-label">Getting Started</div>

@@ -984,7 +984,7 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
       <div class="charts-grid">
         <div class="panel">
           <div class="panel-head"><div class="panel-title">Campaign ROAS Performance <a href="/docs#roas" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><button class="panel-action" onclick="renderCharts()">Refresh ↺</button></div>
-          <div class="chart-inner" id="roas-chart"><div class="empty-state"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><p>No campaign data</p></div></div>
+          <div class="chart-inner" id="roas-chart"><div class="empty-state"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><p>No campaign data yet - launch a campaign to see ROAS performance here</p><button class="btn-secondary" style="margin-top:10px" onclick="navigate('campaigns')">Go to Launch Ads</button></div></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:20px">
           <div class="panel"><div class="panel-head"><div class="panel-title">Spend by Platform</div></div><div id="spend-donut"><div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data</p></div></div></div></div>
@@ -1104,7 +1104,7 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
             <button class="panel-action" onclick="loadAllCreatives()">Refresh ↺</button>
           </div>
         </div>
-        <div style="padding:20px 22px"><div id="creatives-body-full"><div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No creatives yet</p></div></div></div>
+        <div style="padding:20px 22px"><div id="creatives-body-full"><div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No creatives yet - generate UGC scripts, hooks and ad copy for your products</p><button class="btn-secondary" style="margin-top:10px" onclick="openUGCModal()">Generate your first creative</button></div></div></div>
       </div>
     </div>
 
@@ -3976,9 +3976,18 @@ async function loadCreatives(status = 'pending_review', containerId = 'creatives
       if (creatives.length > 0) { if(badge){badge.textContent=`${creatives.length} new`;badge.style.display='';} if(navBadge){navBadge.textContent=creatives.length;navBadge.style.display='';} }
       else { if(badge)badge.style.display='none'; if(navBadge)navBadge.style.display='none'; }
     }
-    const container = document.getElementById(containerId);
+    // container is already declared above (top of function) - redeclaring it here with `const`
+    // shadowed it for this whole try block, putting every earlier reference (the `!r.ok` branch)
+    // in the temporal dead zone and throwing "Cannot access 'container' before initialization"
+    // instead of ever showing that branch's intended message.
     if (!container) return;
-    container.innerHTML = creatives.length ? `<div class="creatives-grid">${creatives.map(renderCreativeCard).join('')}</div>` : '<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No creatives found</p></div>';
+    // The "All Creatives" list (no status filter) is the real getting-started moment for
+    // a brand-new user with zero creatives ever generated - give it a real CTA into the UGC
+    // generator. A filtered view (e.g. "Rejected") just means nothing matches that filter,
+    // not "you have nothing", so it keeps the plain message.
+    const richEmpty = '<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No creatives yet - generate UGC scripts, hooks and ad copy for your products</p><button class="btn-secondary" style="margin-top:10px" onclick="openUGCModal()">Generate your first creative</button></div>';
+    const plainEmpty = '<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>No creatives found</p></div>';
+    container.innerHTML = creatives.length ? `<div class="creatives-grid">${creatives.map(renderCreativeCard).join('')}</div>` : ((containerId === 'creatives-body-full' && !status) ? richEmpty : plainEmpty);
   } catch(e) {
     console.error('loadCreatives failed:', e);
     if (container) container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg><p>Failed to load creatives. Try again.</p></div>';
@@ -4784,7 +4793,7 @@ function lcCrosshairHide(gradId) {
 function renderROASChart(campaigns) {
   const el = document.getElementById('roas-chart');
   if (!el) return;
-  if (!campaigns.length) { el.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><p>No campaign data yet</p></div>'; return; }
+  if (!campaigns.length) { el.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><p>No campaign data yet - launch a campaign to see ROAS performance here</p><button class="btn-secondary" style="margin-top:10px" onclick="navigate(\'campaigns\')">Go to Launch Ads</button></div>'; return; }
   const maxRoas = Math.max(...campaigns.map(c => c.roas||0), 1);
   const rows = campaigns.map((c,i) => {
     const col = !c.roas ? '#3f4263' : c.roas>=4 ? '#34d399' : c.roas>=2 ? '#fbbf24' : '#f87171';
@@ -7677,7 +7686,7 @@ function renderProfitTable() {
   const el = document.getElementById('profit-table-body');
   if (!el) return;
   if (!_profitProducts.length) {
-    el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg><p>No products found. Sync your store first.</p></div>';
+    el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg><p>No products found - sync your Shopify catalog to start tracking margin</p><button class="btn-secondary" style="margin-top:10px" onclick="navigate(\'products\')">Go to Store Products</button></div>';
     return;
   }
   el.innerHTML =

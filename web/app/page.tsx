@@ -11,6 +11,7 @@ import StoreAnalysisTool from '../components/StoreAnalysisTool';
 export default function Home() {
   return (
     <>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <ScrollReveal />
       <NavScrolled />
 
@@ -34,7 +35,7 @@ export default function Home() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="hero">
+      <section className="hero" id="main-content">
         <HeroMotion
           line1={['Your', 'First']}
           line2={['€10K', 'Starts', 'Here.']}

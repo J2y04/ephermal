@@ -30,14 +30,34 @@ or before onboarding a meaningful batch of paying users.
   project starting soon much more than Ephermal's actual GTM (Shopify App Store +
   direct outreach). Keep in mind for that project, not this one.
 - Video 11 (shadcn blocks + limora.ai custom banner images + the transitions.dev
-  skill for premium dashboards): a real, doable technique, explicitly flagged by
-  Jamal as "remind me of it so we implement it into ephermal.app." Targets
-  *dashboards* specifically — likely the admin panel or the main app dashboard, not
-  the marketing site (already redesigned separately). Needs a decision on which
-  surface and when before it's actionable.
+  skill for premium dashboards): explicitly flagged by Jamal as "remind me of it so
+  we implement it into ephermal.app." Researched all three pieces (2026-08-17):
+  shadcn blocks are free/open, `transitions.dev` is a real, legitimate, low-risk
+  Claude Code skill (27+ CSS transition patterns, ships with `prefers-reduced-motion`
+  guards, no network/data-egress concern), but Limora is a separate paid/freemium
+  web app — Jamal would need his own account there to set up brand assets and
+  generate an image, it's not something installable or automatable from this side.
+  Also still needs a decision on which surface (admin panel vs. main app dashboard)
+  and timing before any of it is actionable.
 
-## Confirmed not applicable (checked, not skipped)
+## Working-style note (Video 18, German — "vibe coding is a trap")
+
+Argues the fix for AI-agent code quality isn't a better model, it's a different
+workflow: written requirements with testable acceptance criteria before code,
+structured context management, and automated tests on every change. Worth keeping
+in mind as a standing bar for how we work, not a one-time patch — this session has
+leaned on adversarial verification and live testing rather than a formal
+requirements-doc-first process, which has caught real bugs, but a written spec step
+before larger new features (not bug fixes) is the piece closest to what this video
+is actually pushing for.
+
+## Confirmed not applicable / already covered (checked, not skipped)
 
 - **DMCA policy (Video 1):** Ephermal doesn't host user-uploaded copyrighted content —
   it reads a merchant's own Shopify catalog, it's not a UGC platform. No DMCA
   exposure in the way the video describes.
+- **Exposed-API-key anecdote (Video 16):** a cautionary story about finding someone
+  else's live OpenAI keys through URL manipulation on an insecure site, not a
+  specific instruction. The underlying concern (secrets never client-exposed, every
+  endpoint auth-checked) is already covered by this session's RLS/rate-limiting/
+  self-pentest work.

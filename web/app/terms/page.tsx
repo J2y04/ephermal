@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <>
+      <a href="#main-content" className="skip-link">Skip to content</a>
       <nav className="legal-nav">
         <a href="/" className="legal-nav-logo">
           <img src="/ephermal.jpg" alt="Ephermal logo" />
@@ -19,7 +20,7 @@ export default function TermsPage() {
         <a href="/" className="legal-back">← Back to site</a>
       </nav>
 
-      <div className="legal-page">
+      <div className="legal-page" id="main-content">
         <div className="legal-label">Legal</div>
         <h1 className="legal-title">Terms of Service</h1>
         <div className="legal-date">Last updated: 25 May 2026 &nbsp;·&nbsp; Effective: 25 May 2026</div>
