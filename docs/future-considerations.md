@@ -13,9 +13,11 @@ or before onboarding a meaningful batch of paying users.
   Creative Brief, Budget AI, Store Intelligence) goes down with it. Worth a fallback
   chain (e.g. a second provider or a cached/degraded response) once AI features are
   load-bearing for paying customers, not urgent at current scale.
-- **No active alerting/paging.** Errors land in Supabase/Vercel logs but nothing pages
-  anyone. Needs a tool decision (Sentry, Better Stack, etc.) before it's worth
-  building — not a quick patch.
+- ~~**No active alerting/paging.**~~ Outdated as of 2026-08-18: Sentry is live
+  (`interlink-platforms.sentry.io`, loaded in `web/public/dashboard.html`, tagged
+  production vs. preview by hostname) and actually fired a real alert overnight
+  (JAVASCRIPT-7 — a `data:`-URL storage-access SecurityError from a preview/tooling
+  context, not a real user; `Sentry.init()` hardened with try/catch in response).
 - **No load testing.** Never run k6/Artillery against the live app. Reasonable to skip
   until there's real signup volume to justify it — testing for a cliff nobody's
   near yet is effort better spent elsewhere right now.

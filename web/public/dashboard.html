@@ -13,14 +13,22 @@
 ></script>
 <script>
   window.sentryOnLoad = function () {
-    Sentry.init({
-      environment: location.hostname === 'dashboard.ephermal.app' ? 'production' : 'preview',
-      beforeSend(event) {
-        // Never forward Clerk tokens or integration tokens accidentally captured in breadcrumbs
-        if (event.request?.headers?.Authorization) delete event.request.headers.Authorization;
-        return event;
-      },
-    });
+    // Sentry's SDK touches localStorage/sessionStorage internally during init. That throws
+    // a SecurityError in any storage-restricted context (data: URLs, some sandboxed iframes,
+    // certain privacy modes) — none of which is the real dashboard.ephermal.app origin, but
+    // init should never itself become the uncaught error it exists to catch.
+    try {
+      Sentry.init({
+        environment: location.hostname === 'dashboard.ephermal.app' ? 'production' : 'preview',
+        beforeSend(event) {
+          // Never forward Clerk tokens or integration tokens accidentally captured in breadcrumbs
+          if (event.request?.headers?.Authorization) delete event.request.headers.Authorization;
+          return event;
+        },
+      });
+    } catch (e) {
+      console.warn('Sentry.init failed (storage-restricted context):', e);
+    }
   };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
