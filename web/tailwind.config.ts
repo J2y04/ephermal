@@ -82,6 +82,57 @@ const config: Config = {
             subtle: '#6b7280', DEFAULT: '#9ca3af', emphasis: '#eef0f7', strong: '#f7f8fa', inverted: '#08080c',
           },
         },
+        // shadcn/ui components (Card, Badge, Sidebar, Chart, Table, etc. from the
+        // dashboard-01 block) reference these exact token names as Tailwind utility
+        // classes (bg-background, border-border, text-muted-foreground, etc.). The
+        // shadcn CLI's default init assumes Tailwind v4's CSS-first @theme system,
+        // which auto-generates these; this project is Tailwind v3 (config-based),
+        // so they need an explicit mapping here to the CSS variables the CLI wrote
+        // into admin.css's :root/.dark blocks (already restyled to Ephermal's
+        // palette) — otherwise `border-border`/`bg-background` etc. don't exist and
+        // the build fails outright. Merged into this SAME colors object (not a
+        // second `colors:` key) since a duplicate key would silently delete the
+        // eph-*/tremor-* definitions above (last key wins in a JS object literal).
+        // NOTE: admin.css's :root/.dark blocks store these as raw "R G B" space-
+        // separated triplets (not hex), specifically so `rgb(var(--x) / <alpha-value>)`
+        // here lets Tailwind resolve opacity-modifier classes at build time
+        // (bg-primary/10, ring-foreground/10, etc — used throughout the shadcn
+        // dashboard-01 block). A hex/oklch value behind var() can't be alpha-mixed
+        // at build time, which is what silently produced Tailwind's fallback
+        // blue-500 ring on every Card until this was traced down. border/input/
+        // sidebar.border are the deliberate exception: they're semi-transparent
+        // rgba() by default (a hairline on a dark surface) and are never used
+        // with a further opacity modifier, so they reference the CSS variable
+        // directly instead.
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'rgb(var(--ring) / <alpha-value>)',
+        background: 'rgb(var(--background) / <alpha-value>)',
+        foreground: 'rgb(var(--foreground) / <alpha-value>)',
+        primary: { DEFAULT: 'rgb(var(--primary) / <alpha-value>)', foreground: 'rgb(var(--primary-foreground) / <alpha-value>)' },
+        secondary: { DEFAULT: 'rgb(var(--secondary) / <alpha-value>)', foreground: 'rgb(var(--secondary-foreground) / <alpha-value>)' },
+        destructive: { DEFAULT: 'rgb(var(--destructive) / <alpha-value>)', foreground: 'rgb(var(--foreground) / <alpha-value>)' },
+        muted: { DEFAULT: 'rgb(var(--muted) / <alpha-value>)', foreground: 'rgb(var(--muted-foreground) / <alpha-value>)' },
+        accent: { DEFAULT: 'rgb(var(--accent) / <alpha-value>)', foreground: 'rgb(var(--accent-foreground) / <alpha-value>)' },
+        popover: { DEFAULT: 'rgb(var(--popover) / <alpha-value>)', foreground: 'rgb(var(--popover-foreground) / <alpha-value>)' },
+        card: { DEFAULT: 'rgb(var(--card) / <alpha-value>)', foreground: 'rgb(var(--card-foreground) / <alpha-value>)' },
+        sidebar: {
+          DEFAULT: 'rgb(var(--sidebar) / <alpha-value>)',
+          foreground: 'rgb(var(--sidebar-foreground) / <alpha-value>)',
+          primary: 'rgb(var(--sidebar-primary) / <alpha-value>)',
+          'primary-foreground': 'rgb(var(--sidebar-primary-foreground) / <alpha-value>)',
+          accent: 'rgb(var(--sidebar-accent) / <alpha-value>)',
+          'accent-foreground': 'rgb(var(--sidebar-accent-foreground) / <alpha-value>)',
+          border: 'var(--sidebar-border)',
+          ring: 'rgb(var(--sidebar-ring) / <alpha-value>)',
+        },
+        chart: {
+          1: 'rgb(var(--chart-1) / <alpha-value>)',
+          2: 'rgb(var(--chart-2) / <alpha-value>)',
+          3: 'rgb(var(--chart-3) / <alpha-value>)',
+          4: 'rgb(var(--chart-4) / <alpha-value>)',
+          5: 'rgb(var(--chart-5) / <alpha-value>)',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

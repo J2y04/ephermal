@@ -952,9 +952,27 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
           <div class="stat-chart-mini" id="stat-conversions-chart"></div>
         </div>
       </div>
+      <div class="paywall-wrap" id="dash-analytics-paywall-wrap">
+        <div class="charts-grid" id="dash-charts-grid">
+          <div class="panel">
+            <div class="panel-head"><div class="panel-title">Campaign ROAS Performance <a href="/docs#roas" target="_blank" rel="noopener" class="jargon-help" title="What's this?">?</a></div><button class="panel-action" onclick="renderCharts()">Refresh ↺</button></div>
+            <div class="chart-inner" id="dash-roas-chart"><div class="empty-state"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><p>No campaign data yet - launch a campaign to see ROAS performance here</p><button class="btn-secondary" style="margin-top:10px" onclick="navigate('campaigns')">Go to Launch Ads</button></div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:20px">
+            <div class="panel"><div class="panel-head"><div class="panel-title">Spend by Platform</div></div><div id="dash-spend-donut"><div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data</p></div></div></div></div>
+            <div class="panel"><div class="panel-head"><div class="panel-title">Campaign Status</div></div><div id="dash-status-donut"><div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No data</p></div></div></div></div>
+          </div>
+        </div>
+        <div class="paywall-lock" id="dash-analytics-paywall" style="display:none">
+          <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <strong>Performance Charts - Growth Plan</strong>
+          <span>ROAS trends, spend breakdown and campaign-status charts, right on your Dashboard. Available on Growth and Scale plans.</span>
+          <button class="btn-upgrade" onclick="showUpgradeModal('analytics')">Upgrade to Growth</button>
+        </div>
+      </div>
       <div class="grid-2">
         <div class="panel">
-          <div class="panel-head"><div class="panel-title">Campaigns</div><div style="display:flex;gap:8px;align-items:center"><button class="panel-action" onclick="navigate('campaigns')">Manage in Launch Ads →</button><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div></div>
+          <div class="panel-head"><div class="panel-title">Campaigns<span id="dash-top-badge" style="display:none;align-items:center;border-radius:100px;padding:3px 10px;background:rgba(251,191,36,0.15);color:var(--warning);font-size:11px;font-weight:700;margin-left:8px;vertical-align:middle;cursor:pointer" onclick="event.stopPropagation();if(window.__topPerformerId)openCampaignDetail(window.__topPerformerId)"></span></div><div style="display:flex;gap:8px;align-items:center"><button class="panel-action" onclick="navigate('campaigns')">Manage in Launch Ads →</button><button class="panel-action" onclick="loadCampaigns()">Refresh ↺</button></div></div>
           <div class="campaign-table">
             <div class="campaign-row header"><span>Campaign</span><span>ROAS</span><span>Spend</span><span>CTR</span><span>Status</span><span>On/Off</span></div>
             <div id="campaigns-body"><div class="empty-state"><svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg><p>No campaigns yet</p></div></div>
@@ -2741,6 +2759,11 @@ function renderPlanUI() {
     const pw = document.getElementById(id);
     if (pw) pw.style.display = !canAccess(feature) ? 'flex' : 'none';
   });
+  // Dashboard home tab's restyled copy of the Analytics performance charts shares the same
+  // 'analytics' plan gate - pagePaywalls above only maps one DOM id per feature key, so this
+  // second lock element is toggled separately here rather than reshaping that map.
+  const dashAnalyticsPw = document.getElementById('dash-analytics-paywall');
+  if (dashAnalyticsPw) dashAnalyticsPw.style.display = !canAccess('analytics') ? 'flex' : 'none';
   // UGC credits in modal
   const ugcRem = document.getElementById('ugc-credits-remaining');
   if (ugcRem) ugcRem.textContent = `${left} credit${left !== 1 ? 's' : ''}`;
@@ -3059,6 +3082,16 @@ function navigate(page) {
         roasEl.innerHTML = `<div class="chart-bar-wrap">${SKELETONS.analytics(6)}</div>`;
       }
       renderCharts();
+    }
+    if (page === 'dashboard') {
+      // Show phantom chart bars on the Dashboard's own ROAS panel while campaigns load,
+      // mirroring the Analytics tab's skeleton treatment above.
+      const dashRoasEl = document.getElementById('dash-roas-chart');
+      if (dashRoasEl && !allCampaigns.length) {
+        dashRoasEl.innerHTML = `<div class="chart-bar-wrap">${SKELETONS.analytics(6)}</div>`;
+      }
+      renderCharts();
+      renderTopPerformerBadge();
     }
     if (page === 'billing') renderBillingPage();
     if (page === 'creatives') { loadAllCreatives(); runFatigueAnalysis(); }
@@ -3814,7 +3847,7 @@ async function loadCampaigns() {
   };
   try {
     const rMeta = await authFetch('/meta/read?action=campaigns');
-    if (!rMeta || !rMeta.ok) { _campaignsLoaded = true; showLoadError(); if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts(); return; }
+    if (!rMeta || !rMeta.ok) { _campaignsLoaded = true; showLoadError(); if (document.getElementById('page-analytics')?.classList.contains('active') || document.getElementById('page-dashboard')?.classList.contains('active')) renderCharts(); return; }
     const metaResult = await rMeta.json();
     // getCampaigns now returns {data, stale, auth_error, error} instead of a bare array, so a
     // dead/expired Meta token can be told apart from a genuinely empty account instead of both
@@ -3864,9 +3897,29 @@ async function loadCampaigns() {
     const b1 = document.getElementById('campaigns-body'); if (b1) { b1.innerHTML = html; setTimeout(() => { b1.querySelectorAll('.campaign-row:not(.header)').forEach((row, i) => { row.style.animationDelay = `${i * 0.05}s`; }); }, 0); }
     renderLaunchLiveTable();
     _campaignsLoaded = true;
-    // Refresh analytics charts if analytics page is currently visible
-    if (document.getElementById('page-analytics')?.classList.contains('active')) renderCharts();
+    renderTopPerformerBadge();
+    // Refresh analytics charts if the Analytics tab OR the Dashboard home tab (which now
+    // shows its own restyled copy of the same charts, Growth+ only) is currently visible.
+    if (document.getElementById('page-analytics')?.classList.contains('active') || document.getElementById('page-dashboard')?.classList.contains('active')) renderCharts();
   } catch(e){ _campaignsLoaded = true; showLoadError(); }
+}
+
+/** Highlights the best-ROAS live campaign as a small badge in the Dashboard home tab's
+ *  Campaigns panel header. Reuses allCampaigns (already fetched by loadCampaigns() above -
+ *  no extra network call) and is intentionally NOT gated to a plan: it's just a nicer
+ *  presentation of a single row that's already visible in the (ungated) campaigns table
+ *  below, unlike the aggregate ROAS/spend/status charts which mirror the paywalled
+ *  Analytics tab. */
+function renderTopPerformerBadge() {
+  const badge = document.getElementById('dash-top-badge');
+  if (!badge) return;
+  const best = allCampaigns.filter(c => c.roas > 0).sort((a, b) => b.roas - a.roas)[0];
+  if (!best) { badge.style.display = 'none'; window.__topPerformerId = null; return; }
+  window.__topPerformerId = best.id;
+  const shortName = best.name.length > 22 ? best.name.slice(0, 21) + '…' : best.name;
+  badge.textContent = `🏆 Top: ${shortName} · ${best.roas.toFixed(1)}×`;
+  badge.title = `${best.name} — ${best.roas.toFixed(1)}× ROAS. Click for details.`;
+  badge.style.display = 'inline-flex';
 }
 
 // Renders the Launch Ads page's "Live Performance" table (#campaigns-body-full) from allCampaigns,
@@ -4813,8 +4866,14 @@ function lcCrosshairHide(gradId) {
   hideTip();
 }
 
-function renderROASChart(campaigns) {
-  const el = document.getElementById('roas-chart');
+function renderROASChart(campaigns, elId) {
+  // elId lets a second, restyled copy of this chart render on the Dashboard home tab
+  // (id="dash-roas-chart") without touching the Analytics tab's original (id="roas-chart",
+  // the default). Bar/tooltip ids below are namespaced per-target so both copies can be
+  // live in the DOM at once (the .page container is hidden via display:none, not removed)
+  // without their ids or hover-tooltip globals colliding.
+  const target = elId || 'roas-chart';
+  const el = document.getElementById(target);
   if (!el) return;
   if (!campaigns.length) { el.innerHTML='<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg><p>No campaign data yet - launch a campaign to see ROAS performance here</p><button class="btn-secondary" style="margin-top:10px" onclick="navigate(\'campaigns\')">Go to Launch Ads</button></div>'; return; }
   const maxRoas = Math.max(...campaigns.map(c => c.roas||0), 1);
@@ -4822,22 +4881,28 @@ function renderROASChart(campaigns) {
     const col = !c.roas ? '#3f4263' : c.roas>=4 ? '#34d399' : c.roas>=2 ? '#fbbf24' : '#f87171';
     const roasLabel = c.roas ? `${c.roas.toFixed(1)}×` : '-';
     const pct = c.roas ? Math.round((c.roas/maxRoas)*100) : 0;
-    const tipId = `tip-${i}`;
-    window['_tip_'+i] = `<strong>${escHtml(c.name)}</strong><br>ROAS: ${roasLabel}<br>Spend: ${c.total_spend?fmt(c.total_spend):'-'}<br>Status: ${escHtml(c.status||'-')}`;
-    return `<div class="chart-bar-row"><div class="chart-bar-label" title="${escHtml(c.name)}">${escHtml(c.name.length>16?c.name.slice(0,15)+'…':c.name)}</div><div class="chart-bar-track" onmouseenter="showTip(window['_tip_${i}'],event)" onmousemove="moveTip(event)" onmouseleave="hideTip()"><div class="chart-bar-fill" id="bar-${i}" style="background:${col};width:0%"></div></div><div class="chart-bar-val" style="color:${col}">${roasLabel}</div></div>`;
+    const tipKey = `_tip_${target}_${i}`;
+    window[tipKey] = `<strong>${escHtml(c.name)}</strong><br>ROAS: ${roasLabel}<br>Spend: ${c.total_spend?fmt(c.total_spend):'-'}<br>Status: ${escHtml(c.status||'-')}`;
+    return `<div class="chart-bar-row"><div class="chart-bar-label" title="${escHtml(c.name)}">${escHtml(c.name.length>16?c.name.slice(0,15)+'…':c.name)}</div><div class="chart-bar-track" onmouseenter="showTip(window['${tipKey}'],event)" onmousemove="moveTip(event)" onmouseleave="hideTip()"><div class="chart-bar-fill" id="bar-${target}-${i}" style="background:${col};width:0%"></div></div><div class="chart-bar-val" style="color:${col}">${roasLabel}</div></div>`;
   }).join('');
   el.innerHTML = `<div class="chart-bar-wrap">${rows}</div>`;
   requestAnimationFrame(() => requestAnimationFrame(() => {
-    campaigns.forEach((c,i) => { const bar=document.getElementById('bar-'+i); if(bar){const p=c.roas?(c.roas/maxRoas)*100:0; setTimeout(()=>bar.style.width=p+'%',i*80);} });
+    campaigns.forEach((c,i) => { const bar=document.getElementById('bar-'+target+'-'+i); if(bar){const p=c.roas?(c.roas/maxRoas)*100:0; setTimeout(()=>bar.style.width=p+'%',i*80);} });
   }));
 }
 
 function buildDonut(segments, total) {
   const R=54, CX=70, CY=70, stroke=14, circ=2*Math.PI*R;
+  // Unique per-call id so this donut's tooltip keys never collide with another donut's
+  // (previously keyed only by the running dash offset, which starts at 0 for every
+  // donut's first segment - two donuts open in the DOM at once, e.g. the Dashboard's
+  // and Analytics' Spend-by-Platform donuts, would silently overwrite each other's
+  // window['_donut_0'] and show the wrong tooltip on hover).
+  const uid = Math.random().toString(36).slice(2,8);
   let offset=0;
-  const arcs = segments.map(seg => {
+  const arcs = segments.map((seg,i) => {
     const dash=(seg.value/total)*circ;
-    const tipKey = '_donut_'+offset.toFixed(0);
+    const tipKey = '_donut_'+uid+'_'+i;
     window[tipKey] = `<strong>${escHtml(String(seg.label))}</strong><br>${fmt(seg.value)} of ${fmt(total)} (${Math.round(seg.value/total*100)}%)`;
     const arc=`<circle cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${seg.color}" stroke-width="${stroke}" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${-offset}" stroke-linecap="round" transform="rotate(-90 ${CX} ${CY})" style="cursor:pointer;transition:stroke-width .2s" onmouseenter="this.style.strokeWidth='${stroke+4}';showTip(window['${tipKey}'],event)" onmousemove="moveTip(event)" onmouseleave="this.style.strokeWidth='${stroke}';hideTip()"/>`;
     offset+=dash; return arc;
@@ -4848,7 +4913,11 @@ function buildDonut(segments, total) {
 
 function renderCharts() {
   // If campaigns still loading, show phantom donuts (roas-chart already handled in navigate)
+  // dash-spend-donut/dash-status-donut are the Dashboard home tab's restyled copies of the
+  // same widgets (see renderROASChart's elId param) - kept in lockstep with the Analytics
+  // originals here so both tabs always show identical, real data with zero extra fetches.
   const sdEl=document.getElementById('spend-donut'), stEl=document.getElementById('status-donut');
+  const sdElDash=document.getElementById('dash-spend-donut'), stElDash=document.getElementById('dash-status-donut');
   if (!allCampaigns.length) {
     if (!_campaignsLoaded) {
       const donutSkel = `<div class="donut-wrap" style="display:flex;align-items:center;gap:20px;padding:20px">
@@ -4859,25 +4928,35 @@ function renderCharts() {
       </div>`;
       if(sdEl) sdEl.innerHTML=donutSkel;
       if(stEl) stEl.innerHTML=donutSkel;
+      if(sdElDash) sdElDash.innerHTML=donutSkel;
+      if(stElDash) stElDash.innerHTML=donutSkel;
       // Leave roas-chart showing its skeleton (set in navigate) - don't overwrite with empty state
       return;
     }
     // Fetch confirmed complete with zero campaigns — show the real empty state, not a stuck skeleton
     renderROASChart([]);
+    renderROASChart([], 'dash-roas-chart');
     if(sdEl) sdEl.innerHTML='<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data yet</p></div></div>';
     if(stEl) stEl.innerHTML='<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No campaigns yet</p></div></div>';
+    if(sdElDash) sdElDash.innerHTML='<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data yet</p></div></div>';
+    if(stElDash) stElDash.innerHTML='<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No campaigns yet</p></div></div>';
     return;
   }
   renderROASChart(allCampaigns);
+  renderROASChart(allCampaigns, 'dash-roas-chart');
   const metaSpend=allCampaigns.reduce((a,c)=>a+(c.total_spend||0),0);
   const fbSpend=allCampaigns.filter(c=>c.placement==='facebook').reduce((a,c)=>a+(c.total_spend||0),0);
   const igSpend=allCampaigns.filter(c=>c.placement==='instagram').reduce((a,c)=>a+(c.total_spend||0),0);
   const splitSpend=fbSpend+igSpend>0;
-  if(sdEl) sdEl.innerHTML=metaSpend>0?(splitSpend?buildDonut([{label:'Facebook',value:fbSpend,color:'#1877F2'},{label:'Instagram',value:igSpend,color:'#C13584'}],fbSpend+igSpend):buildDonut([{label:'Meta Ads',value:metaSpend,color:'#1877F2'}],metaSpend)):'<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data</p></div></div>';
+  const spendDonutHtml = metaSpend>0?(splitSpend?buildDonut([{label:'Facebook',value:fbSpend,color:'#1877F2'},{label:'Instagram',value:igSpend,color:'#C13584'}],fbSpend+igSpend):buildDonut([{label:'Meta Ads',value:metaSpend,color:'#1877F2'}],metaSpend)):'<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No spend data</p></div></div>';
+  if(sdEl) sdEl.innerHTML=spendDonutHtml;
+  if(sdElDash) sdElDash.innerHTML=spendDonutHtml;
   const counts={live:0,paused:0,draft:0,failed:0};
   allCampaigns.forEach(c=>{const k=counts[c.status]!==undefined?c.status:'draft';counts[k]++;});
   const statusData=[{label:'Live',value:counts.live,color:'#34d399'},{label:'Paused',value:counts.paused,color:'#fbbf24'},{label:'Draft',value:counts.draft,color:'#8892b0'},{label:'Failed',value:counts.failed,color:'#f87171'}].filter(d=>d.value>0);
-  if(stEl) stEl.innerHTML=statusData.length?buildDonut(statusData,allCampaigns.length):'<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No data</p></div></div>';
+  const statusDonutHtml = statusData.length?buildDonut(statusData,allCampaigns.length):'<div class="donut-wrap"><div class="empty-state" style="padding:20px"><p>No data</p></div></div>';
+  if(stEl) stEl.innerHTML=statusDonutHtml;
+  if(stElDash) stElDash.innerHTML=statusDonutHtml;
 }
 
 /** Lightweight SVG line/area chart — no dependency. points: [{date, <valueKey>}]
@@ -6225,7 +6304,11 @@ async function createUGCForNewProduct() {
   // Only redirect if this is a brand-new user with nothing set up AND we haven't
   // been to setup before (sessionStorage prevents setup↔dashboard loops).
   const _setupSeen = sessionStorage.getItem('_setup_seen');
-  if (!_oauthReturn && !_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle && !_setupSeen) {
+  // isLocalDev also skips this redirect — a local preview session has no real
+  // localStorage integration flags to trip the "brand-new user" check, so without
+  // this it would bounce to setup.html on every load and the actual Dashboard tab
+  // (charts, empty states, etc.) could never be previewed at all.
+  if (!isLocalDev && !_oauthReturn && !_setupDone && !_hasShopify && !_hasMeta && !_hasGoogle && !_setupSeen) {
     sessionStorage.setItem('_setup_seen', '1');
     window.location.href = '/setup.html'; return;
   }

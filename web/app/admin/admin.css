@@ -1,3 +1,5 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 /* Tailwind directives — imported ONLY by web/app/admin/layout.tsx, so the
    `@tailwind base` Preflight reset (and all generated utility classes) can
    only ever apply to pages under /admin. See tailwind.config.ts for the
@@ -61,4 +63,137 @@
    columns instead of jittering width as values change (Stripe/Geist convention). */
 .tabular-nums {
   font-variant-numeric: tabular-nums;
+}
+
+@layer base {
+  .theme {
+    --font-heading:
+    var(--font-sans);
+    --font-sans:
+    var(--font-sans);
+  }
+  :root {
+    --background:
+    oklch(1 0 0);
+    --foreground:
+    oklch(0.145 0 0);
+    --card:
+    oklch(1 0 0);
+    --card-foreground:
+    oklch(0.145 0 0);
+    --popover:
+    oklch(1 0 0);
+    --popover-foreground:
+    oklch(0.145 0 0);
+    --primary:
+    oklch(0.205 0 0);
+    --primary-foreground:
+    oklch(0.985 0 0);
+    --secondary:
+    oklch(0.97 0 0);
+    --secondary-foreground:
+    oklch(0.205 0 0);
+    --muted:
+    oklch(0.97 0 0);
+    --muted-foreground:
+    oklch(0.556 0 0);
+    --accent:
+    oklch(0.97 0 0);
+    --accent-foreground:
+    oklch(0.205 0 0);
+    --destructive:
+    oklch(0.577 0.245 27.325);
+    --border:
+    oklch(0.922 0 0);
+    --input:
+    oklch(0.922 0 0);
+    --ring:
+    oklch(0.708 0 0);
+    --chart-1:
+    oklch(0.87 0 0);
+    --chart-2:
+    oklch(0.556 0 0);
+    --chart-3:
+    oklch(0.439 0 0);
+    --chart-4:
+    oklch(0.371 0 0);
+    --chart-5:
+    oklch(0.269 0 0);
+    --radius:
+    0.625rem;
+    --sidebar:
+    oklch(0.985 0 0);
+    --sidebar-foreground:
+    oklch(0.145 0 0);
+    --sidebar-primary:
+    oklch(0.205 0 0);
+    --sidebar-primary-foreground:
+    oklch(0.985 0 0);
+    --sidebar-accent:
+    oklch(0.97 0 0);
+    --sidebar-accent-foreground:
+    oklch(0.205 0 0);
+    --sidebar-border:
+    oklch(0.922 0 0);
+    --sidebar-ring:
+    oklch(0.708 0 0);
+  }
+  /* Color values below are raw "R G B" triplets, not hex/oklch — Tailwind's
+     documented pattern for CSS-variable theme colors (tailwindcss.com/docs/
+     customizing-colors#using-css-variables). It lets tailwind.config.ts wire
+     each token as `rgb(var(--x) / <alpha-value>)`, so shadcn's opacity-modifier
+     classes (bg-primary/10, ring-foreground/10, etc — used throughout the
+     dashboard-01 block) actually resolve instead of silently falling back to
+     Tailwind's stock blue-500 ring. --border/--input/--sidebar-border are the
+     one exception: they're deliberately semi-transparent by default (a hairline
+     on a dark surface) and are never used with a further opacity modifier, so
+     they stay as plain rgba() referenced directly via var(), unmodified. */
+  .dark {
+    --background: 8 8 12;
+    --foreground: 238 240 247;
+    --card: 15 15 19;
+    --card-foreground: 238 240 247;
+    --popover: 15 15 19;
+    --popover-foreground: 238 240 247;
+    --primary: 6 214 199;
+    --primary-foreground: 8 8 12;
+    --secondary: 26 26 31;
+    --secondary-foreground: 238 240 247;
+    --muted: 26 26 31;
+    --muted-foreground: 123 135 148;
+    --accent: 26 26 31;
+    --accent-foreground: 238 240 247;
+    --destructive: 248 113 113;
+    --border: rgba(255,255,255,0.07);
+    --input: rgba(255,255,255,0.09);
+    --ring: 6 214 199;
+    --chart-1: 6 214 199;
+    --chart-2: 52 211 153;
+    --chart-3: 251 191 36;
+    --chart-4: 96 165 250;
+    --chart-5: 248 113 113;
+    --sidebar: 15 15 19;
+    --sidebar-foreground: 238 240 247;
+    --sidebar-primary: 6 214 199;
+    --sidebar-primary-foreground: 8 8 12;
+    --sidebar-accent: 26 26 31;
+    --sidebar-accent-foreground: 238 240 247;
+    --sidebar-border: rgba(255,255,255,0.07);
+    --sidebar-ring: 6 214 199;
+  }
+  /* Plain CSS instead of `@apply border-border outline-ring/50` — Tailwind v3's
+     slash-opacity modifier on a var()-based color token doesn't resolve to a
+     generatable utility class the way it does under v4's @theme system (the
+     CLI output assumes v4). Same end result: default border color everywhere,
+     a translucent focus outline. */
+  * {
+    border-color: var(--border);
+    outline-color: rgb(var(--ring) / 0.5);
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
 }

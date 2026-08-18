@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { isLocalDev } from './lib/adminFetch';
 import { IconGrid, IconUsers, IconDatabase, IconCreditCard, IconShield, IconTriangle, IconArrowLeft, IconFlask } from './lib/icons';
 import Squircle from './lib/Squircle';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import './admin.css';
 
 /**
@@ -103,6 +104,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   return (
+    <TooltipProvider>
     <div className="dark flex min-h-screen bg-eph-bg font-sans text-eph-text">
       <aside className="flex w-64 flex-shrink-0 flex-col border-r border-eph-border bg-eph-surface px-4 py-6">
         <div className="mb-8 flex items-center gap-2.5 px-2">
@@ -165,5 +167,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
       <main className="flex-1 overflow-y-auto">{children}</main>
     </div>
+    </TooltipProvider>
   );
 }
