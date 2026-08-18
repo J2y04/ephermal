@@ -1,14 +1,25 @@
 import type { Config } from 'tailwindcss';
 
-// Scoped ONLY to the admin panel — Tailwind's utility-class generation and its
-// `@tailwind base` Preflight reset must never reach the marketing site
-// (web/app/page.tsx etc., hand-written CSS in globals.css) or the static
-// dashboard.html, which is served as-is and never compiled by Next.js anyway.
-// If a future section of the app wants Tailwind too, broaden `content` then —
-// don't do it preemptively.
+// Scoped to the admin panel plus the shared component tree it actually
+// renders — Tailwind's utility-class generation and its `@tailwind base`
+// Preflight reset must still never reach the marketing site (web/app/page.tsx
+// etc., hand-written CSS in globals.css) or the static dashboard.html, which
+// stays true here: this only widens what gets SCANNED for class names when
+// building admin.css, and admin.css is only ever imported by
+// web/app/admin/layout.tsx — it does not change where the generated CSS loads.
+//
+// './components/**' had to be added after './app/admin/**' alone silently
+// dropped classes used ONLY inside web/components/ (section-cards.tsx,
+// chart-area-interactive.tsx, ui/*.tsx) and nowhere else in app/admin/** —
+// e.g. h-11/w-11 on the Overview stat-card icon chips never generated at all
+// (no build error, just a missing rule), stretching the icon box to the
+// card's full width. Utility classes that happened to ALSO appear verbatim
+// in an app/admin/** file (like the earlier h-9/w-9) worked by coincidence;
+// anything that didn't, silently didn't.
 const config: Config = {
   content: [
     './app/admin/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
     './node_modules/@tremor/**/*.{js,ts,jsx,tsx}',
   ],
   darkMode: 'class',

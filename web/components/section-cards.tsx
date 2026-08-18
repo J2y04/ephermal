@@ -30,20 +30,19 @@ function StatWidget({
 }) {
   return (
     <Squircle
-      cornerRadius={20}
-      className="widget-shadow bg-eph-surface p-6 transition-all duration-300 ease-out hover:-translate-y-1"
-      style={{ border: "1px solid rgba(6,214,199,0.16)" }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(6,214,199,0.4)"; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(6,214,199,0.16)"; }}
+      cornerRadius={24}
+      className="widget-shadow flex min-h-[176px] flex-col justify-between border border-eph-border bg-eph-surface p-7 transition-transform duration-300 ease-out hover:-translate-y-0.5"
     >
-      <div className="flex h-9 w-9 items-center justify-center rounded-[10px]" style={{ background: iconBg }}>
+      <div className="flex h-11 w-11 items-center justify-center rounded-[12px]" style={{ background: iconBg }}>
         <span className="[&>svg]:h-[17px] [&>svg]:w-[17px]" style={{ color: iconColor }}>{icon}</span>
       </div>
-      <div className={`mt-3 flex items-baseline gap-2 text-[28px] font-extrabold leading-none tracking-tight tabular-nums ${danger ? "text-destructive" : "text-eph-text"}`}>
-        {value}
-        {action}
+      <div className="mt-6">
+        <div className={`flex items-baseline gap-2 text-[30px] font-semibold leading-none tracking-tight tabular-nums ${danger ? "text-destructive" : "text-eph-text"}`}>
+          {value}
+          {action}
+        </div>
+        <div className="mt-3 max-w-[19ch] text-[15px] leading-6 text-eph-muted text-pretty">{label}</div>
       </div>
-      <div className="mt-1.5 text-sm text-eph-muted">{label}</div>
     </Squircle>
   )
 }
@@ -54,7 +53,7 @@ function StatWidget({
 export function SectionCards({ data }: { data: SectionCardsData }) {
   const trendUp = (data.wowDeltaPct ?? 0) >= 0
   return (
-    <div className="grid grid-cols-1 gap-4 px-4 sm:grid-cols-2 lg:grid-cols-4 lg:px-6">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <StatWidget
         icon={<IconUsers />}
         iconBg="rgba(6,214,199,0.12)"

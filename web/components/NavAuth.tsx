@@ -1,5 +1,5 @@
 'use client';
-import { SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import { SignedIn, SignedOut, UserButton } from './clerk-react';
 
 export default function NavAuth() {
   return (

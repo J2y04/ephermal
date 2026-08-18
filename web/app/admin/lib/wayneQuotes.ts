@@ -38,10 +38,19 @@ const TIME_GREETINGS: { maxHour: number; text: string }[] = [
   { maxHour: 24, text: 'Good evening' },
 ];
 
+function hashString(value: string): number {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
 export function getWayneGreeting(firstName?: string | null): { greeting: string; quote: string } {
   const hour = new Date().getHours();
   const bucket = TIME_GREETINGS.find(t => hour < t.maxHour) ?? TIME_GREETINGS[TIME_GREETINGS.length - 1];
   const greeting = firstName ? `${bucket.text}, ${firstName}.` : `${bucket.text}.`;
-  const quote = WAYNE_QUOTES[Math.floor(Math.random() * WAYNE_QUOTES.length)];
+  const seed = (firstName ?? 'admin').trim().toLowerCase();
+  const quote = WAYNE_QUOTES[hashString(seed) % WAYNE_QUOTES.length];
   return { greeting, quote };
 }

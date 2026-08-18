@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/clerk-react';
+import { useUser } from '@/components/clerk-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { isLocalDev } from './lib/adminFetch';
@@ -108,10 +108,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="dark flex min-h-screen bg-eph-bg font-sans text-eph-text">
       <aside className="flex w-64 flex-shrink-0 flex-col border-r border-eph-border bg-eph-surface px-4 py-6">
         <div className="mb-8 flex items-center gap-2.5 px-2">
-          <Squircle cornerRadius={10} className="h-8 w-8 flex-shrink-0 overflow-hidden">
+          <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-full bg-eph-surface2 ring-1 ring-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ephermal.jpg" alt="" className="h-8 w-8 object-cover" />
-          </Squircle>
+            <img src="/ephermal.jpg" alt="" className="h-9 w-9 object-cover" />
+          </div>
           <span className="text-sm font-semibold tracking-tight">Ephermal Admin</span>
         </div>
 

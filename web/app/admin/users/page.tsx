@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { useSession } from '@clerk/clerk-react';
+import { useSession } from '@/components/clerk-react';
 import { TextInput, Badge } from '@tremor/react';
 import { adminFetch, isLocalDev } from '../lib/adminFetch';
 import Reveal from '../lib/Reveal';
