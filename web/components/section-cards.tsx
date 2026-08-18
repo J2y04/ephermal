@@ -26,7 +26,12 @@ function StatWidget({
   action?: React.ReactNode
 }) {
   return (
-    <div className="widget-shadow rounded-[22px] border border-eph-border bg-eph-surface p-5">
+    <div
+      className="widget-shadow group rounded-[22px] bg-eph-surface p-5 transition-all duration-300 ease-out hover:-translate-y-1"
+      style={{ border: "1px solid rgba(6,214,199,0.16)" }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(6,214,199,0.4)"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(6,214,199,0.16)"; }}
+    >
       <div className="flex h-9 w-9 items-center justify-center rounded-[10px]" style={{ background: iconBg }}>
         <span className="[&>svg]:h-[17px] [&>svg]:w-[17px]" style={{ color: iconColor }}>{icon}</span>
       </div>
