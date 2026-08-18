@@ -207,13 +207,17 @@ const TOOL_DISPATCH: Record<string, ToolDef> = {
   toggle_google_campaign: {
     fn: 'google-api',
     buildBody: (i) => ({ action: 'toggle', campaign_id: i.campaign_id, status: i.status }),
-    label: (i) => `${i.status === 'ENABLED' ? 'Enabling' : 'Pausing'} Google campaign ${i.campaign_id}`,
+    // Show the literal requested status rather than assuming "not ENABLED means Pausing" —
+    // google-api's own handler independently rejects anything outside PAUSED/ENABLED, but
+    // the card the human reads should never imply a friendlier action than what was actually
+    // requested, even for the brief window before that rejection would happen.
+    label: (i) => `Setting Google campaign ${i.campaign_id} to ${i.status === 'ENABLED' ? 'Enabled' : i.status === 'PAUSED' ? 'Paused' : String(i.status)}`,
     platform: 'google',
   },
   update_google_budget: {
     fn: 'google-api',
     buildBody: (i) => ({ action: 'budget', campaign_id: i.campaign_id, budget_usd: i.budget_usd }),
-    label: (i) => `Updating Google budget for campaign ${i.campaign_id}`,
+    label: (i) => `Setting Google budget for campaign ${i.campaign_id} to $${i.budget_usd}/day`,
     platform: 'google',
   },
   calculate_budget_recommendation: {
@@ -254,6 +258,23 @@ const TOOL_DISPATCH: Record<string, ToolDef> = {
   },
 };
 
+// ── Authorization gate: tools that create or change anything on a 3rd-party
+// platform (Meta, Google) must never execute directly off the model's own
+// tool_use output. They get staged as a pending action and require a genuine,
+// separately-authenticated approve_action call before callInternal ever runs.
+// This set is the single source of truth for what's gated — read-only tools
+// and prepare_campaign (saves a local draft only, never touches a 3rd party)
+// are deliberately absent and execute immediately, same as before.
+const WRITE_TOOLS = new Set<string>([
+  'launch_campaign_to_meta',
+  'launch_campaign_to_google',
+  'pause_meta_campaign',
+  'enable_meta_campaign',
+  'scale_meta_budget',
+  'toggle_google_campaign',
+  'update_google_budget',
+]);
+
 const TOOLS = [
   { name: 'list_campaigns', description: 'List all campaigns (drafts and launched) created in Ephermal for this user. Returns Ephermal-internal campaign_id values (UUIDs) — use these with get_campaign_status/launch_campaign_to_meta/launch_campaign_to_google, not with the Meta/Google tools below.', input_schema: { type: 'object', properties: {}, required: [] } },
   { name: 'get_campaign_status', description: 'Get full details/status of one Ephermal campaign by its internal campaign_id (UUID).', input_schema: { type: 'object', properties: { campaign_id: { type: 'string' } }, required: ['campaign_id'] } },
@@ -275,7 +296,38 @@ const TOOLS = [
   { name: 'search_competitor_ads', description: "Search Meta's public Ad Library for ads matching a search term (brand name, niche, or keyword).", input_schema: { type: 'object', properties: { search_terms: { type: 'string' } }, required: ['search_terms'] } },
 ];
 
-interface ToolCallTrail { label: string; status: 'done' | 'error' }
+interface ToolCallTrail { label: string; status: 'done' | 'error' | 'pending' }
+
+/** Every WRITE_TOOLS entry operates on a specific campaign_id — this is the resource a
+ *  standing grant should actually be scoped to. Without it, "allow for this chat" on one
+ *  campaign's pause would silently also authorize pausing every OTHER campaign the model
+ *  might later be steered toward (e.g. by adversarial text read via search_competitor_ads)
+ *  for the rest of the conversation, which is broader than what the user actually saw and
+ *  clicked "Allow" on. Falls back to the empty string for the (currently nonexistent) case
+ *  of a WRITE_TOOLS entry with no campaign_id, which just means it never matches anything
+ *  narrower than "no target" — never silently widens to "any target".
+ */
+function targetKeyFor(input: Record<string, unknown>): string {
+  return String(input.campaign_id ?? '');
+}
+
+/** Does the caller already hold a live "allow for this chat" grant for this exact
+ *  (user, conversation, tool, target) combination? Checked against the DB row itself,
+ *  never against anything the client claims in the request — a grant only exists if a
+ *  prior approve_action call with remember:true created it, scoped to the campaign that
+ *  action was actually staged against. */
+async function hasStandingApproval(userId: string, conversationId: string, toolName: string, targetKey: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('ai_chat_tool_approvals')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('conversation_id', conversationId)
+    .eq('tool_name', toolName)
+    .eq('target_key', targetKey)
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle();
+  return !!data;
+}
 
 /** Call another Ephermal edge function on the user's behalf, forwarding their own Clerk JWT. */
 async function callInternal(fn: string, body: Record<string, unknown>, rawToken: string): Promise<unknown> {
@@ -366,6 +418,7 @@ type ChatEmit = (event: string, data: Record<string, unknown>) => void;
 async function runChatWithTools(
   rawToken: string,
   userId: string,
+  conversationId: string,
   message: string,
   context: unknown,
   emit?: ChatEmit,
@@ -482,12 +535,67 @@ GOOGLE SEARCH ADS — diagnosis and recommendations should reference:
         } else {
           const input = use.input ?? {};
           const label = def.label(input);
+          const toolName = use.name!;
+
+          // ── Authorization gate ────────────────────────────────────────────
+          // WRITE_TOOLS never call callInternal directly off the model's own
+          // tool_use output. Either a standing "allow for this chat" grant
+          // already exists (a real DB row, only ever created by a prior
+          // approve_action call with remember:true — never by anything the
+          // model says or the client merely claims), or the action gets staged
+          // as pending and a real human click is required before anything
+          // reaches Meta/Google. There is no third path.
+          if (WRITE_TOOLS.has(toolName) && !(await hasStandingApproval(userId, conversationId, toolName, targetKeyFor(input)))) {
+            const { data: staged, error: stageErr } = await supabase
+              .from('ai_pending_actions')
+              .insert({
+                user_id: userId,
+                conversation_id: conversationId,
+                tool_name: toolName,
+                tool_input: input,
+                label,
+                platform: def.platform ?? null,
+              })
+              .select('id, expires_at')
+              .single();
+
+            if (stageErr || !staged) {
+              content = JSON.stringify({ error: 'Could not stage this action for approval — please try again.' });
+              trail.push({ label, status: 'error' });
+              emit?.('tool_done', { label, status: 'error', platform: def.platform });
+            } else {
+              content = JSON.stringify({
+                status: 'awaiting_user_approval',
+                message: 'This action changes something on a live Meta/Google ad account. It has been shown to the user as a card requiring their explicit approval and has NOT happened yet. Do not tell the user this is done — tell them you are waiting on their approval, and do not repeat this same tool call again in this turn.',
+              });
+              trail.push({ label, status: 'pending' });
+              emit?.('action_pending', {
+                action_id: staged.id,
+                tool_name: toolName,
+                label,
+                platform: def.platform,
+                expires_at: staged.expires_at,
+              });
+            }
+            resultBlocks.push({ type: 'tool_result', tool_use_id: use.id!, content });
+            continue;
+          }
+
           emit?.('tool_start', { label, platform: def.platform });
           try {
             const result = await callInternal(def.fn, def.buildBody(input), rawToken);
             content = capToolResult(result); // cap payload back to the model, preserving stale/auth_error/error flags
             trail.push({ label, status: 'done' });
             emit?.('tool_done', { label, status: 'done', platform: def.platform });
+            // Standing-approval executions still get an audit row, logged as already-executed
+            // rather than pending, so the approval history stays complete either way.
+            if (WRITE_TOOLS.has(toolName)) {
+              await supabase.from('ai_pending_actions').insert({
+                user_id: userId, conversation_id: conversationId, tool_name: toolName,
+                tool_input: input, label, platform: def.platform ?? null,
+                status: 'executed', result: JSON.parse(content), resolved_at: new Date().toISOString(),
+              });
+            }
           } catch (e) {
             content = JSON.stringify({ error: e instanceof Error ? e.message : 'Tool call failed' });
             trail.push({ label, status: 'error' });
@@ -504,6 +612,111 @@ GOOGLE SEARCH ADS — diagnosis and recommendations should reference:
     if (totalInputTokens > 0 || totalOutputTokens > 0) {
       await recordAIUsage(userId, CHAT_MODEL, totalInputTokens, totalOutputTokens);
     }
+  }
+}
+
+/** Resolves a previously-staged pending action — either executes it for real (approve)
+ *  or marks it declined (deny). This is the ONLY code path in the whole function that
+ *  can turn a staged WRITE_TOOLS proposal into an actual 3rd-party API call. It
+ *  re-validates everything itself: the tool_name and tool_input it executes are always
+ *  exactly what was staged when the model first proposed it, never anything supplied
+ *  fresh in this approval request, so a caller cannot approve one (safe-looking) action
+ *  and have a different, more dangerous one execute in its place. Ownership (eq user_id)
+ *  is re-checked here too, independent of anything upstream. */
+async function handleActionResolution(
+  action: 'approve_action' | 'deny_action',
+  userId: string,
+  rawToken: string,
+  body: Record<string, unknown>,
+  origin: string | null,
+): Promise<Response> {
+  const actionId = String(body.action_id ?? '').trim();
+  if (!actionId) return errResponse('action_id is required', 400, origin);
+
+  // Atomic claim: transition pending -> 'denied' (deny) or 'processing' (approve) in ONE
+  // UPDATE ... WHERE status='pending' ... RETURNING. Only one of two concurrent requests
+  // for the same action_id can ever match that WHERE clause and get a row back — the
+  // loser gets null and a clean "already resolved" error. This is the same
+  // claim-before-you-act pattern campaign-launcher.ts already uses for its own
+  // read-then-write races (see its meta_status compare-and-swap), applied here to close
+  // the equivalent gap: without it, two near-simultaneous approve_action calls could both
+  // pass a plain SELECT check and both execute a non-idempotent write (e.g. scale_budget
+  // applied twice), or an approve/deny race could execute the live call while the UI shows
+  // "denied".
+  const claimStatus = action === 'deny_action' ? 'denied' : 'processing';
+  const { data: pending, error: claimErr } = await supabase
+    .from('ai_pending_actions')
+    .update({
+      status: claimStatus,
+      resolved_at: action === 'deny_action' ? new Date().toISOString() : null,
+    })
+    .eq('id', actionId)
+    .eq('user_id', userId)
+    .eq('status', 'pending')
+    .select('*')
+    .maybeSingle();
+
+  if (claimErr || !pending) {
+    return errResponse('This action was not found, already resolved, or does not belong to you.', 404, origin);
+  }
+
+  if (new Date(pending.expires_at as string) < new Date()) {
+    await supabase.from('ai_pending_actions')
+      .update({ status: 'expired', resolved_at: new Date().toISOString() })
+      .eq('id', actionId);
+    return errResponse('This request has expired — ask Auren to do it again.', 410, origin);
+  }
+
+  if (action === 'deny_action') {
+    return okResponse({ status: 'denied', label: pending.label }, origin);
+  }
+
+  // Defense-in-depth: campaign-launcher's launch_meta/launch_google actions have no plan
+  // gate of their own (they rely entirely on requirePlan inside ai-assistant's 'chat' case,
+  // which only runs at staging time). Re-checking here means a user who was Growth+ when
+  // Claude staged the action but has since downgraded can't still get it executed just by
+  // clicking approve within the pending window — every write goes through the same gate an
+  // approval would need regardless of which tool it is.
+  const planGate = await requirePlan(userId, 'growth', origin, 'Auren AI action approval');
+  if (planGate) {
+    await supabase.from('ai_pending_actions')
+      .update({ status: 'failed', error: 'Plan no longer permits this action', resolved_at: new Date().toISOString() })
+      .eq('id', actionId);
+    return planGate;
+  }
+
+  const def = TOOL_DISPATCH[pending.tool_name as string];
+  if (!def) {
+    await supabase.from('ai_pending_actions')
+      .update({ status: 'failed', error: 'Unknown tool', resolved_at: new Date().toISOString() })
+      .eq('id', actionId);
+    return errResponse('This action references a tool that no longer exists.', 500, origin);
+  }
+
+  try {
+    const result = await callInternal(def.fn, def.buildBody(pending.tool_input as Record<string, unknown>), rawToken);
+    await supabase.from('ai_pending_actions')
+      .update({ status: 'executed', result, resolved_at: new Date().toISOString() })
+      .eq('id', actionId);
+
+    if (body.remember === true) {
+      await supabase.from('ai_chat_tool_approvals').upsert({
+        user_id: userId,
+        conversation_id: pending.conversation_id,
+        tool_name: pending.tool_name,
+        target_key: targetKeyFor(pending.tool_input as Record<string, unknown>),
+        granted_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      }, { onConflict: 'user_id,conversation_id,tool_name,target_key' });
+    }
+
+    return okResponse({ status: 'executed', label: pending.label, result }, origin);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Execution failed';
+    await supabase.from('ai_pending_actions')
+      .update({ status: 'failed', error: msg, resolved_at: new Date().toISOString() })
+      .eq('id', actionId);
+    return errResponse(msg, 500, origin);
   }
 }
 
@@ -531,8 +744,6 @@ Deno.serve(async (req) => {
   // ── Body size guard (64 KB max) ──────────────────────────────────────────
   if (bodyTooLarge(req, 65_536)) return errResponse('Request body too large', 413, origin);
 
-  if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
-
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { return errResponse('Invalid JSON', 400, origin); }
 
@@ -543,6 +754,17 @@ Deno.serve(async (req) => {
   if (action === 'usage_status') {
     return okResponse(await getAIUsageStatus(userId), origin);
   }
+
+  // approve_action/deny_action resolve a previously-staged pending action. They never
+  // call Claude — no tokens spent, no ANTHROPIC_KEY needed — and must stay reachable
+  // even if the caller is over their AI budget or the key is unset, otherwise a user
+  // could get stuck unable to approve or dismiss a real pending 3rd-party change.
+  if (action === 'approve_action' || action === 'deny_action') {
+    return await handleActionResolution(action, userId, rawToken, body, origin);
+  }
+
+  if (!ANTHROPIC_KEY) return errResponse('AI not configured. Set ANTHROPIC_API_KEY', 503, origin);
+
   const budgetCheck = await checkAIBudget(userId);
   if (!budgetCheck.ok) {
     await sendUsageEmail('ai_limit_hit', userId);
@@ -568,6 +790,15 @@ Deno.serve(async (req) => {
 
         const message = String(body.message ?? '').trim();
         if (!message) return errResponse('message is required', 400, origin);
+        // Client-generated per-panel-open id (crypto.randomUUID(), lives only in JS memory
+        // for that page load) — scopes "allow for this chat" grants to one real chat session.
+        // Never independently verified as "belonging" to this user beyond the userId itself
+        // already coming from the JWT, since it doesn't need to be: a caller can only ever
+        // create or use grants under their own verified user_id, on their own campaigns,
+        // through the same ownership-checked edge functions every other write path already
+        // goes through. Falls back to a fresh-looking-but-unguessable value if omitted so an
+        // old client without this field degrades to "always ask", never to "never ask".
+        const conversationId = String(body.conversation_id ?? `no-cid-${userId}-${Date.now()}`).slice(0, 128);
 
         // Streamed as SSE so the dashboard can show each tool call's checklist step live
         // (spinner while running, checkmark once it resolves) instead of only learning
@@ -579,10 +810,21 @@ Deno.serve(async (req) => {
               controller.enqueue(encoder.encode(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`));
             };
             try {
-              const { reply, tool_calls } = await runChatWithTools(rawToken, userId, message, body.context, emit);
+              const { reply, tool_calls } = await runChatWithTools(rawToken, userId, conversationId, message, body.context, emit);
               const usageAfter = await getAIUsageStatus(userId);
               if (percentBefore < 80 && usageAfter.percentUsed >= 80) await sendUsageEmail('ai_limit_80', userId);
-              emit('final', { reply, tool_calls, usage: usageAfter });
+              // Code-enforced backstop against a false-completion claim, not a prompt-only
+              // one: the model's own reply text is never trusted to correctly disclose that
+              // something is still awaiting approval (it could theoretically be steered by
+              // injected content read from Meta Ad Library results or synced product data
+              // into implying an action already happened). If ANY tool call this turn is
+              // still 'pending', this exact sentence is appended by the server regardless of
+              // what the model wrote, so the user always sees it.
+              const hasPending = tool_calls.some(t => t.status === 'pending');
+              const finalReply = hasPending
+                ? `${reply}\n\n_Note: one or more actions above are still waiting on your approval in the card(s) shown — nothing has changed on your ad accounts yet._`
+                : reply;
+              emit('final', { reply: finalReply, tool_calls, usage: usageAfter });
             } catch (e) {
               emit('error', { error: e instanceof Error ? e.message : 'AI error' });
             } finally {

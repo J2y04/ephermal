@@ -569,6 +569,21 @@ select.form-input{cursor:pointer}
 .ai-tool-step-platform { width:14px; height:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; }
 .ai-tool-step.done { color:var(--text); }
 .ai-tool-step.error { color:var(--danger); }
+.ai-action-card { margin:10px 0; padding:14px 16px; background:var(--surface2); border:1px solid rgba(251,191,36,0.3); border-radius:14px; animation:fadeUp .3s ease both; }
+.ai-action-card-head { display:flex; align-items:center; gap:8px; }
+.ai-action-card-head svg { width:14px; height:14px; flex-shrink:0; color:var(--warning); }
+.ai-action-card-label { font-size:13.5px; font-weight:600; color:var(--text); }
+.ai-action-card-sub { margin:4px 0 12px; font-size:12px; color:var(--muted); line-height:1.5; }
+.ai-action-card-buttons { display:flex; flex-wrap:wrap; gap:8px; }
+.ai-action-btn { padding:7px 14px; border-radius:100px; font-size:12px; font-weight:600; cursor:pointer; font-family:'Inter',sans-serif; transition:all .2s; border:1px solid var(--border); background:var(--surface); color:var(--text); }
+.ai-action-btn:disabled { opacity:.5; cursor:default; }
+.ai-action-btn.ai-action-allow:hover:not(:disabled) { border-color:rgba(6,214,199,0.5); color:var(--primary); }
+.ai-action-btn.ai-action-deny { background:none; color:var(--muted); }
+.ai-action-btn.ai-action-deny:hover:not(:disabled) { border-color:rgba(248,113,113,0.4); color:var(--danger); }
+.ai-action-outcome { font-size:12.5px; font-weight:600; }
+.ai-action-outcome.approved { color:var(--primary); }
+.ai-action-outcome.denied { color:var(--muted); }
+.ai-action-outcome.error { color:var(--danger); }
 .ai-chips { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; padding:6px 4px 14px; flex-shrink:0; }
 .ai-page.ai-active .ai-chips { justify-content:flex-start; padding:14px 4px; }
 .ai-chip { padding:7px 13px; background:var(--surface2); border:1px solid var(--border); border-radius:20px; font-size:12.5px; color:var(--text); cursor:pointer; transition:all .2s; white-space:nowrap; font-family:'Inter',sans-serif; }
@@ -5323,6 +5338,73 @@ const AI_TOOL_STEP_PLATFORM_ICONS = {
   shopify: '<svg viewBox="0 0 24 24" width="12" height="12"><use href="#icon-platform-shopify"/></svg>',
 };
 
+// One id per page load, kept only in JS memory — a reload or closing the tab starts a
+// fresh conversation, which is exactly when "allow for this chat" grants should expire
+// too (the backend scopes those grants to this exact id). Never sent as anything other
+// than a hint to the backend for which grants apply; it carries no authority on its own.
+const AUREN_CONVERSATION_ID = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : `cid-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+/**
+ * Renders a pending-action approval card in the Auren chat — the human-in-the-loop gate
+ * for anything that would change something on a live Meta/Google account. Mirrors Claude
+ * Code's own permission-prompt pattern: Allow once / Allow for this chat / Deny. No button
+ * here does anything to Meta/Google directly — every click just calls approve_action or
+ * deny_action on the backend, which is the only place a real API call can happen.
+ */
+function aiRenderApprovalCard(action) {
+  const box = document.getElementById('ai-messages');
+  const div = document.createElement('div');
+  div.className = 'ai-action-card';
+  div.dataset.actionId = action.action_id;
+  const platformIcon = action.platform && AI_TOOL_STEP_PLATFORM_ICONS[action.platform] ? AI_TOOL_STEP_PLATFORM_ICONS[action.platform] : '';
+  div.innerHTML = `
+    <div class="ai-action-card-head">
+      ${platformIcon}
+      <span class="ai-action-card-label">${escHtml(action.label)}</span>
+    </div>
+    <div class="ai-action-card-sub">Auren wants to make this change on your connected account. Nothing happens until you choose.</div>
+    <div class="ai-action-card-buttons">
+      <button class="ai-action-btn ai-action-allow" data-remember="false">Allow once</button>
+      <button class="ai-action-btn ai-action-allow" data-remember="true">Allow for this chat</button>
+      <button class="ai-action-btn ai-action-deny">Deny</button>
+    </div>`;
+  div.querySelectorAll('.ai-action-allow').forEach(btn => {
+    btn.onclick = () => aiResolveAction(action.action_id, 'approve', btn.dataset.remember === 'true', div);
+  });
+  div.querySelector('.ai-action-deny').onclick = () => aiResolveAction(action.action_id, 'deny', false, div);
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+/** Handles an Allow/Deny click — calls the backend, then replaces the card's buttons with
+ *  a plain outcome line. Every branch disables the buttons immediately so a double-click
+ *  can't fire the same approval twice while the first request is still in flight. */
+async function aiResolveAction(actionId, decision, remember, cardEl) {
+  const buttons = cardEl.querySelectorAll('.ai-action-btn');
+  buttons.forEach(b => b.disabled = true);
+  try {
+    const r = await aiChatFetch({
+      action: decision === 'approve' ? 'approve_action' : 'deny_action',
+      action_id: actionId,
+      remember,
+    });
+    const d = r ? await r.json().catch(() => ({})) : {};
+    const buttonsWrap = cardEl.querySelector('.ai-action-card-buttons');
+    if (!r || !r.ok) {
+      buttonsWrap.innerHTML = `<div class="ai-action-outcome error">${escHtml(d.error || 'Something went wrong — please try again.')}</div>`;
+      return;
+    }
+    if (decision === 'deny') {
+      buttonsWrap.innerHTML = `<div class="ai-action-outcome denied">Denied — Auren will not make this change.</div>`;
+    } else {
+      buttonsWrap.innerHTML = `<div class="ai-action-outcome approved">Done${remember ? ' — Auren won’t ask again for this in this chat.' : ''}</div>`;
+    }
+  } catch (e) {
+    const buttonsWrap = cardEl.querySelector('.ai-action-card-buttons');
+    if (buttonsWrap) buttonsWrap.innerHTML = `<div class="ai-action-outcome error">Request failed — please try again.</div>`;
+  }
+}
+
 /**
  * Renders the tool-call trail under a bot message (e.g. "Pulled campaign performance",
  * "Analysed CTR trend"). Each step shows a spinning circle while running, then a checkmark
@@ -5400,7 +5482,7 @@ async function sendAIMessage() {
   const plan = getUserPlan();
   try {
     const userId = window.Clerk?.user?.id || '';
-    const r = await aiChatFetch({ action: 'chat', message: msg, context: aiGetContext(), user_id: userId, plan });
+    const r = await aiChatFetch({ action: 'chat', message: msg, context: aiGetContext(), user_id: userId, plan, conversation_id: AUREN_CONVERSATION_ID });
     thinkingEl.remove();
 
     if (!r) { aurenSetActive(false); aiAppendMsg("I'm having trouble connecting right now. Try again shortly.", 'bot'); return; }
@@ -5453,6 +5535,8 @@ async function sendAIMessage() {
           aiUpsertToolStep(botEl, steps, data.label, 'running', data.platform);
         } else if (event === 'tool_done') {
           aiUpsertToolStep(botEl, steps, data.label, data.status === 'error' ? 'error' : 'done', data.platform);
+        } else if (event === 'action_pending') {
+          aiRenderApprovalCard(data);
         } else if (event === 'final') {
           settled = true;
           aiStreamRevealInto(botEl, data.reply || 'Done!', () => aurenSetActive(false));
