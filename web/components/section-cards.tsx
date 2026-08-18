@@ -59,21 +59,21 @@ export function SectionCards({ data }: { data: SectionCardsData }) {
         iconBg="rgba(6,214,199,0.12)"
         iconColor="#06d6c7"
         value={data.totalUsers.toLocaleString()}
-        label="Total Users — all signed-up accounts, live from Clerk"
+        label="Total Users"
       />
       <StatWidget
         icon={<IconUserPlus />}
         iconBg="rgba(6,214,199,0.12)"
         iconColor="#06d6c7"
         value={data.signups30d.toLocaleString()}
-        label="Signups (30d) — rolling last 30 days"
+        label="Signups (30d)"
       />
       <StatWidget
         icon={<IconTrendingUp />}
         iconBg="rgba(52,211,153,0.12)"
         iconColor="#34d399"
         value={data.signups7d.toLocaleString()}
-        label={data.wowDeltaPct === null ? "Signups (7d) — no prior week to compare yet" : "Signups (7d) — vs. previous 7 days"}
+        label="Signups (7d)"
         action={
           <Badge variant="outline" className="ml-1">
             {trendUp ? <IconTrendingUp /> : <IconTrendingDown />}
@@ -86,7 +86,7 @@ export function SectionCards({ data }: { data: SectionCardsData }) {
         iconBg="rgba(248,113,113,0.12)"
         iconColor="#f87171"
         value={data.bannedCount.toLocaleString()}
-        label="Banned — accounts currently banned"
+        label="Banned"
         danger={data.bannedCount > 0}
       />
     </div>

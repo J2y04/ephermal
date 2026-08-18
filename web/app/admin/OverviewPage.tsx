@@ -160,21 +160,17 @@ export default function AdminOverviewPage() {
 
   return (
     <div className="mx-auto max-w-[1560px] px-8 py-8 lg:px-10 lg:py-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <div className="text-[13px] font-semibold uppercase tracking-[0.22em] text-eph-subtle">Admin overview</div>
-          <h1 className="mt-2 text-[30px] font-semibold tracking-tight text-eph-text">Overview</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-eph-muted">
-            Live from Clerk, no cached values. Revenue lives on the Finance page.
-          </p>
-        </div>
+      <div className="text-[32px] font-semibold tracking-tight text-eph-primary">{wayne.greeting}</div>
+      <div className="mt-1 text-sm italic text-eph-subtle">&ldquo;{wayne.quote}&rdquo;</div>
+
+      <div className="mt-7 flex flex-wrap items-end justify-between gap-4">
+        <h1 className="text-[22px] font-semibold tracking-tight text-eph-text">Overview</h1>
         {!activeLoading && activeRevenue?.generated_at && (
           <div className="rounded-full border border-eph-border bg-eph-surface px-3 py-1.5 text-xs text-eph-subtle">
             Updated {new Date(activeRevenue.generated_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
           </div>
         )}
       </div>
-      <div className="mt-4 text-sm italic text-eph-subtle">&ldquo;{wayne.quote}&rdquo;</div>
 
       {error && (
         <div className="mt-6 rounded-2xl border border-eph-danger/30 bg-eph-danger/10 px-4 py-3 text-sm text-eph-danger">
