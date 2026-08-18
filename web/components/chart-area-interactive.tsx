@@ -31,7 +31,7 @@ const chartConfig = {
  *  block's hardcoded desktop/mobile placeholder series. */
 export function ChartAreaInteractive({ data }: { data: SignupPoint[] }) {
   return (
-    <Card>
+    <Card className="widget-shadow rounded-[22px] border-eph-border bg-eph-surface">
       <CardHeader>
         <CardTitle>Signups</CardTitle>
         <CardDescription>Last 30 days, live from Clerk</CardDescription>
