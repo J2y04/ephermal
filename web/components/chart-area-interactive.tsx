@@ -4,7 +4,6 @@ import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
 import {
-  Card,
   CardContent,
   CardDescription,
   CardHeader,
@@ -16,6 +15,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
+import Squircle from "@/app/admin/lib/Squircle"
 
 export interface SignupPoint { date: string; count: number }
 
@@ -31,7 +31,7 @@ const chartConfig = {
  *  block's hardcoded desktop/mobile placeholder series. */
 export function ChartAreaInteractive({ data }: { data: SignupPoint[] }) {
   return (
-    <Card className="widget-shadow rounded-[22px] bg-eph-surface" style={{ border: "1px solid rgba(6,214,199,0.16)" }}>
+    <Squircle cornerRadius={20} className="widget-shadow bg-eph-surface" style={{ border: "1px solid rgba(6,214,199,0.16)" }}>
       <CardHeader>
         <CardTitle>Signups</CardTitle>
         <CardDescription>Last 30 days, live from Clerk</CardDescription>
@@ -67,6 +67,6 @@ export function ChartAreaInteractive({ data }: { data: SignupPoint[] }) {
           </AreaChart>
         </ChartContainer>
       </CardContent>
-    </Card>
+    </Squircle>
   )
 }

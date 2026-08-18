@@ -1,6 +1,7 @@
 import { IconBan, IconTrendingDown, IconTrendingUp, IconUserPlus, IconUsers } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
+import Squircle from "@/app/admin/lib/Squircle"
 
 export interface SectionCardsData {
   totalUsers: number
@@ -11,9 +12,11 @@ export interface SectionCardsData {
 }
 
 // Icon chip + big value + label, top-to-bottom — the same shell used by the .stat-card
-// widgets on the user dashboard (dashboard.html), so this Overview page reads as one
-// product rather than two different design systems. widget-shadow is admin.css's existing
-// layered Apple/Polaris-style shadow (already used elsewhere in the admin panel).
+// widgets on the user dashboard (dashboard.html). Uses the SAME Squircle component (true
+// superellipse clip-path, not a plain CSS border-radius) as every other "widget" card in
+// this admin panel (e.g. the Recent Signups panel below, admin/page.tsx) — a plain
+// border-radius reads as a harsher, more mechanical corner at this size, which is exactly
+// why this looked "rectangly" next to a real squircle despite using the same radius number.
 function StatWidget({
   icon, iconBg, iconColor, value, label, danger, action,
 }: {
@@ -26,8 +29,9 @@ function StatWidget({
   action?: React.ReactNode
 }) {
   return (
-    <div
-      className="widget-shadow group rounded-[22px] bg-eph-surface p-5 transition-all duration-300 ease-out hover:-translate-y-1"
+    <Squircle
+      cornerRadius={20}
+      className="widget-shadow bg-eph-surface p-6 transition-all duration-300 ease-out hover:-translate-y-1"
       style={{ border: "1px solid rgba(6,214,199,0.16)" }}
       onMouseEnter={(e) => { e.currentTarget.style.borderColor = "rgba(6,214,199,0.4)"; }}
       onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(6,214,199,0.16)"; }}
@@ -40,7 +44,7 @@ function StatWidget({
         {action}
       </div>
       <div className="mt-1.5 text-sm text-eph-muted">{label}</div>
-    </div>
+    </Squircle>
   )
 }
 

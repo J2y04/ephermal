@@ -28,13 +28,14 @@ export default function Squircle({
   className,
   style,
   children,
+  ...rest
 }: {
   cornerRadius?: number;
   cornerSmoothing?: number;
   className?: string;
   style?: React.CSSProperties;
   children: React.ReactNode;
-}) {
+} & React.HTMLAttributes<HTMLDivElement>) {
   const ref = useRef<HTMLDivElement>(null);
   const [clipPath, setClipPath] = useState<string | undefined>(undefined);
 
@@ -65,6 +66,7 @@ export default function Squircle({
       ref={ref}
       className={className}
       style={{ ...style, clipPath, WebkitClipPath: clipPath }}
+      {...rest}
     >
       {children}
     </div>
