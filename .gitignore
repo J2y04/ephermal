@@ -35,3 +35,6 @@ web/tsconfig.tsbuildinfo
 # Python bytecode cache
 __pycache__/
 *.pyc
+
+# Day plans stay local in docs/, never pushed
+docs/day-plan-*.md
