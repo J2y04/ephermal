@@ -8,6 +8,9 @@
 
 const WAYNE_QUOTES: string[] = [
   "The SVJ doesn't finance itself.",
+  "The SF90 will be yours soon.",
+  "Miami Highrise awaits.",
+  "Dear Bruce.",
   "Gotham didn't rebuild itself either — same energy.",
   "Fund the mission by day, run it by night. You're doing both at once.",
   "Alfred isn't making the coffee today. That's on you.",
