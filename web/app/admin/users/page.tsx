@@ -212,7 +212,6 @@ export default function AdminUsersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[22px] font-semibold tracking-tight text-eph-text">Users</h1>
-            <p className="mt-1 text-sm text-eph-muted">{users.length} total, live from Clerk.</p>
           </div>
           <TextInput
             placeholder="Search by email…"

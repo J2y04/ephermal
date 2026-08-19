@@ -163,7 +163,6 @@ export default function AdminPlatformPage() {
     <div className="mx-auto max-w-[1600px] px-10 py-10">
       <Reveal>
         <h1 className="text-[22px] font-semibold tracking-tight text-eph-text">Platform</h1>
-        <p className="mt-1 text-sm text-eph-muted">Every product signal we can read: integrations, Auren usage, Shopify catalog health, campaigns, and top-of-funnel activity. Live, no Stripe dependency.</p>
       </Reveal>
 
       {error && (

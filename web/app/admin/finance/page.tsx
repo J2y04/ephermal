@@ -115,7 +115,6 @@ export default function AdminFinancePage() {
     <div className="mx-auto max-w-[1600px] px-10 py-10">
       <Reveal>
         <h1 className="text-[22px] font-semibold tracking-tight text-eph-text">Finance</h1>
-        <p className="mt-1 text-sm text-eph-muted">Live from Stripe, no cached values.</p>
       </Reveal>
 
       {error && (

@@ -168,9 +168,6 @@ export default function AdminTestersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[22px] font-semibold tracking-tight text-eph-text">Test Users</h1>
-            <p className="mt-1 text-sm text-eph-muted">
-              {testers.length} active — real accounts on the Growth plan for testing, no Stripe charge.
-            </p>
           </div>
         </div>
       </Reveal>

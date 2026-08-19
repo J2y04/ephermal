@@ -1,10 +1,4 @@
 'use client';
-
-// No <html>/<body> here, unlike global-error.tsx — a route-segment error.tsx
-// renders inside the root layout's own <html>/<body>, which already exist.
-// Adding a second pair here would nest <html> inside <html>, invalid HTML
-// that App Router only expects from global-error.tsx (which replaces the
-// whole root layout on a catastrophic failure, not just a page-level one).
 export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#08080c] px-6 text-[#eef0f7]">
