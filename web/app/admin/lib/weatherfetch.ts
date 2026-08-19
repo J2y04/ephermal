@@ -30,7 +30,7 @@ export async function fetchWeather() {
 function getLocation(): Promise<GeolocationPosition> {
     return new Promise((resolve, reject) => {
         if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
+        navigator.geolocation.getCurrentPosition(resolve, reject, {enableHighAccuracy: true, timeout: 10000, maximumAge: 300000});
         }
         else {
             reject(new Error("Geolocation API failed."));
