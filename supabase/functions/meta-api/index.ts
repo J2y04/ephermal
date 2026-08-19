@@ -323,6 +323,17 @@ async function getPixel(accountId: string, token: string) {
 const MAX_DAILY_BUDGET_CENTS = 1_000_000;
 const MIN_DAILY_BUDGET_CENTS = 100;
 
+/** The ceiling has to be enforced on the RESULTING budget, not just on the input that
+ *  produced it. scale_budget only validated its multiplier (0.1 to 10) and wrote
+ *  current * multiplier straight to Meta, so the cap every other budget path enforces
+ *  did not apply to it at all: a campaign already at $2,000/day scaled to $20,000/day,
+ *  and since the call is repeatable, again to $200,000/day. Routing every write through
+ *  one clamp keeps a scaled budget under the same ceiling as a created one. */
+function clampDailyBudgetCents(raw: number): number {
+  if (!Number.isFinite(raw)) return MIN_DAILY_BUDGET_CENTS;
+  return Math.round(Math.max(MIN_DAILY_BUDGET_CENTS, Math.min(raw, MAX_DAILY_BUDGET_CENTS)));
+}
+
 async function createCampaign(
   accountId: string, token: string, userId: string,
   body: Record<string, unknown>,
@@ -330,9 +341,7 @@ async function createCampaign(
   const { name, objective = 'OUTCOME_TRAFFIC', daily_budget, countries = ['US'] } = body;
   if (!name) throw new Error('name is required');
   const rawBudget = Number(daily_budget ?? 5000);
-  const budget = Number.isFinite(rawBudget)
-    ? Math.round(Math.max(MIN_DAILY_BUDGET_CENTS, Math.min(rawBudget, MAX_DAILY_BUDGET_CENTS)))
-    : 5000; // cents; NaN/invalid input falls back to the previous default
+  const budget = Number.isFinite(rawBudget) ? clampDailyBudgetCents(rawBudget) : 5000; // cents; NaN/invalid input falls back to the previous default
 
   // 1. Create campaign
   const camp = await metaPost<{ id: string }>(`/${accountId}/campaigns`, {
@@ -396,7 +405,7 @@ async function scaleBudget(
 
   if (camp.daily_budget) {
     const current = parseInt(camp.daily_budget, 10);
-    const newBudget = Math.round(current * multiplier);
+    const newBudget = clampDailyBudgetCents(current * multiplier);
     await metaPost(`/${campaignId}`, { daily_budget: String(newBudget) }, token);
     await supabase.from('campaigns')
       .update({ daily_budget: newBudget, synced_at: new Date().toISOString() })
@@ -416,7 +425,7 @@ async function scaleBudget(
   let newTotal = 0;
   await Promise.all(budgeted.map(async (a) => {
     const current = parseInt(a.daily_budget!, 10);
-    const newBudget = Math.round(current * multiplier);
+    const newBudget = clampDailyBudgetCents(current * multiplier);
     oldTotal += current;
     newTotal += newBudget;
     await metaPost(`/${a.id}`, { daily_budget: String(newBudget) }, token);
