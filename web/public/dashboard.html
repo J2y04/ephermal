@@ -5479,8 +5479,14 @@ async function aiResolveAction(actionId, decision, remember, cardEl) {
       buttonsWrap.innerHTML = `<div class="ai-action-outcome approved">Done${remember ? ' — Auren won’t ask again for this in this chat.' : ''}</div>`;
     }
   } catch (e) {
+    // The request left this browser but no response came back: a dropped connection, or a
+    // backgrounded tab having its in-flight request killed. That tells us nothing about what
+    // the server did: approve_action calls Meta/Google before it answers, so the change may
+    // well have been applied already. "Failed, please try again" would be a guess, and it
+    // pushes the user into re-running a non-idempotent change (a budget multiplier applied
+    // twice is real money). Report the ambiguity instead of inventing a result.
     const buttonsWrap = cardEl.querySelector('.ai-action-card-buttons');
-    if (buttonsWrap) buttonsWrap.innerHTML = `<div class="ai-action-outcome error">Request failed — please try again.</div>`;
+    if (buttonsWrap) buttonsWrap.innerHTML = `<div class="ai-action-outcome error">Lost connection before this was confirmed. It may or may not have gone through, so check the campaign on Meta/Google before asking Auren to do it again.</div>`;
   }
 }
 

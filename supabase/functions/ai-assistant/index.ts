@@ -298,17 +298,33 @@ const TOOLS = [
 
 interface ToolCallTrail { label: string; status: 'done' | 'error' | 'pending' }
 
-/** Every WRITE_TOOLS entry operates on a specific campaign_id — this is the resource a
- *  standing grant should actually be scoped to. Without it, "allow for this chat" on one
- *  campaign's pause would silently also authorize pausing every OTHER campaign the model
- *  might later be steered toward (e.g. by adversarial text read via search_competitor_ads)
- *  for the rest of the conversation, which is broader than what the user actually saw and
- *  clicked "Allow" on. Falls back to the empty string for the (currently nonexistent) case
- *  of a WRITE_TOOLS entry with no campaign_id, which just means it never matches anything
- *  narrower than "no target" — never silently widens to "any target".
+/** What a standing "allow for this chat" grant is actually scoped to.
+ *
+ *  Every WRITE_TOOLS entry operates on a specific campaign_id, so that's the base. Without
+ *  it, "allow for this chat" on one campaign's pause would silently also authorize pausing
+ *  every OTHER campaign the model might later be steered toward (e.g. by adversarial text
+ *  read via search_competitor_ads) for the rest of the conversation.
+ *
+ *  The campaign alone is NOT enough for the three tools that carry a magnitude or a
+ *  direction. Approving "scale campaign X by 1.15" must not also authorize "scale campaign X
+ *  by 20" an hour later, and approving "pause campaign X" must not authorize "enable campaign
+ *  X", since the human only ever saw and clicked on the first one. So the consequential
+ *  parameter is folded into the key, making a grant mean exactly the change shown on the card.
+ *  Tools with no such parameter (launch/pause/enable) are inherently one-directional and stay
+ *  keyed on the campaign alone, which is what makes "allow for this chat" still useful there.
+ *
+ *  Any mismatch (a different value, a missing field, a number formatted differently) simply
+ *  fails to find a grant and re-prompts the human. The failure direction is always "ask
+ *  again", never "assume allowed".
  */
-function targetKeyFor(input: Record<string, unknown>): string {
-  return String(input.campaign_id ?? '');
+function targetKeyFor(toolName: string, input: Record<string, unknown>): string {
+  const campaign = String(input.campaign_id ?? '');
+  switch (toolName) {
+    case 'scale_meta_budget':      return `${campaign}|multiplier=${String(input.multiplier ?? '')}`;
+    case 'update_google_budget':   return `${campaign}|budget_usd=${String(input.budget_usd ?? '')}`;
+    case 'toggle_google_campaign': return `${campaign}|status=${String(input.status ?? '')}`;
+    default:                       return campaign;
+  }
 }
 
 /** Does the caller already hold a live "allow for this chat" grant for this exact
@@ -329,7 +345,19 @@ async function hasStandingApproval(userId: string, conversationId: string, toolN
   return !!data;
 }
 
-/** Call another Ephermal edge function on the user's behalf, forwarding their own Clerk JWT. */
+/** Call another Ephermal edge function on the user's behalf, forwarding their own Clerk JWT.
+ *
+ *  Bounded by an explicit timeout because handleActionResolution awaits this call while a
+ *  pending action sits claimed at status='processing'. Without a bound, a downstream
+ *  Meta/Google call that never answers holds the isolate open until the platform kills it,
+ *  and the row is stranded in 'processing' with no terminal write ever running. Failing fast
+ *  instead lands in the caller's catch, which marks the row 'failed' and tells the user.
+ *  60s is far longer than any real ad-platform round trip (a full campaign launch makes
+ *  several sequential calls) while still being a hard ceiling. This does not replace the
+ *  reaper, because an isolate kill can still strand a row and no client-side timeout can
+ *  catch that. It just makes stranding much rarer. */
+const INTERNAL_CALL_TIMEOUT_MS = 60_000;
+
 async function callInternal(fn: string, body: Record<string, unknown>, rawToken: string): Promise<unknown> {
   const res = await fetch(`${FN_BASE}/${fn}`, {
     method: 'POST',
@@ -339,6 +367,7 @@ async function callInternal(fn: string, body: Record<string, unknown>, rawToken:
       'apikey':        SUPABASE_ANON,
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(INTERNAL_CALL_TIMEOUT_MS),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error((data as { error?: string }).error ?? `${fn} returned ${res.status}`);
@@ -545,7 +574,7 @@ GOOGLE SEARCH ADS — diagnosis and recommendations should reference:
           // model says or the client merely claims), or the action gets staged
           // as pending and a real human click is required before anything
           // reaches Meta/Google. There is no third path.
-          if (WRITE_TOOLS.has(toolName) && !(await hasStandingApproval(userId, conversationId, toolName, targetKeyFor(input)))) {
+          if (WRITE_TOOLS.has(toolName) && !(await hasStandingApproval(userId, conversationId, toolName, targetKeyFor(toolName, input)))) {
             const { data: staged, error: stageErr } = await supabase
               .from('ai_pending_actions')
               .insert({
@@ -704,7 +733,7 @@ async function handleActionResolution(
         user_id: userId,
         conversation_id: pending.conversation_id,
         tool_name: pending.tool_name,
-        target_key: targetKeyFor(pending.tool_input as Record<string, unknown>),
+        target_key: targetKeyFor(pending.tool_name as string, pending.tool_input as Record<string, unknown>),
         granted_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
       }, { onConflict: 'user_id,conversation_id,tool_name,target_key' });
@@ -712,11 +741,21 @@ async function handleActionResolution(
 
     return okResponse({ status: 'executed', label: pending.label, result }, origin);
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Execution failed';
+    // A timeout is NOT the same as a failure: the request may well have reached Meta/Google
+    // and been applied before we gave up waiting. Saying "this did not happen" would be a
+    // guess, and the expensive kind, because it invites the user to run the same
+    // non-idempotent change a second time. Record and report the ambiguity instead.
+    // Read .name off the value directly rather than gating on `instanceof Error`: an aborted
+    // fetch rejects with a DOMException, and whether that subclasses Error is runtime-specific.
+    const errName = (e as { name?: string } | null)?.name;
+    const timedOut = errName === 'TimeoutError' || errName === 'AbortError';
+    const msg = timedOut
+      ? 'Timed out waiting for the ad platform to answer. This change may or may not have been applied, so check the campaign on Meta/Google before trying again.'
+      : (e instanceof Error ? e.message : 'Execution failed');
     await supabase.from('ai_pending_actions')
-      .update({ status: 'failed', error: msg, resolved_at: new Date().toISOString() })
+      .update({ status: timedOut ? 'unknown' : 'failed', error: msg, resolved_at: new Date().toISOString() })
       .eq('id', actionId);
-    return errResponse(msg, 500, origin);
+    return errResponse(msg, timedOut ? 504 : 500, origin);
   }
 }
 
