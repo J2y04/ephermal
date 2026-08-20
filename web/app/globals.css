@@ -1021,3 +1021,34 @@ button:focus-visible,
   padding-bottom: 12px;
   border-bottom: 1px solid var(--border);
 }
+
+/* ── Footer: socials, bottom right ──
+   Brand marks are drawn in currentColor rather than their own brand colours, so
+   the row reads as part of the footer instead of three logo stickers. They sit
+   under the copyright line, right-aligned, which is the actual bottom-right
+   corner of the footer. */
+/* margin-left:auto matters because the footer wraps: once this block drops to its
+   own row it is the only item there, and space-between would otherwise park it on
+   the left. The auto margin keeps it in the bottom-right corner either way. */
+.footer-right { display: flex; flex-direction: column; align-items: flex-end; gap: 14px; margin-left: auto; }
+.footer-social { display: flex; align-items: center; gap: 10px; }
+.footer-social a {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 9px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  transition: color 0.2s, border-color 0.2s, transform 0.2s;
+}
+.footer-social a:hover { color: var(--text); border-color: var(--muted); transform: translateY(-2px); }
+.footer-social a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.footer-social svg { width: 16px; height: 16px; fill: currentColor; }
+@media (prefers-reduced-motion: reduce) {
+  .footer-social a { transition: color 0.2s, border-color 0.2s; }
+  .footer-social a:hover { transform: none; }
+}
+/* On a narrow screen the footer's three blocks stack, so the socials centre
+   with everything else rather than clinging to an edge that no longer exists. */
+@media (max-width: 720px) {
+  .footer-right { align-items: center; margin: 0 auto; }
+  .footer-copy { text-align: center; }
+}
