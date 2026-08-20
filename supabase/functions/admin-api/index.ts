@@ -418,6 +418,99 @@ async function handleGetPlatformStats(): Promise<Record<string, unknown>> {
   };
 }
 
+// ── get_performance ──────────────────────────────────────────────────────────
+/**
+ * Ad performance from revenue_snapshots, the daily per-user rollup written by
+ * the analytics sync. This table is the only real time series Ephermal keeps
+ * (107 rows and counting) and nothing in the admin panel read it until now.
+ *
+ * Everything here is derived from five stored columns: shopify_revenue_cents,
+ * shopify_orders_count, meta_spend_cents, google_spend_cents and conversions.
+ * Two deliberate omissions, so the numbers stay honest:
+ *   - No conversion RATE. That needs sessions or clicks as a denominator and
+ *     neither is stored, so any figure would be invented.
+ *   - "net" is revenue minus ad spend, NOT profit. Product COGS lives in
+ *     shopify_products and is not attributable per order here, so calling this
+ *     profit would overstate it. The field name says what it is.
+ *
+ * Zero-filled daily so the chart has a continuous axis, matching the discipline
+ * get_revenue already uses for signups. all_zero is returned explicitly so the
+ * UI can say "nothing recorded" rather than draw a flat line that reads as a
+ * measured zero.
+ */
+async function handleGetPerformance(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const days = Math.min(90, Math.max(1, Number(body.days ?? 30) || 30));
+  const since = new Date(Date.now() - (days - 1) * 86_400_000).toISOString().slice(0, 10);
+
+  const { data, error } = await supabase
+    .from('revenue_snapshots')
+    .select('snapshot_date, shopify_revenue_cents, shopify_orders_count, meta_spend_cents, google_spend_cents, conversions')
+    .gte('snapshot_date', since)
+    .order('snapshot_date', { ascending: true });
+
+  if (error) throw new Error(`revenue_snapshots read failed: ${error.message}`);
+
+  type Bucket = { revenue: number; orders: number; meta: number; google: number; conversions: number };
+  const buckets = new Map<string, Bucket>();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(Date.now() - (days - 1 - i) * 86_400_000).toISOString().slice(0, 10);
+    buckets.set(d, { revenue: 0, orders: 0, meta: 0, google: 0, conversions: 0 });
+  }
+
+  // Rows are per user per day, so several rows can share a date once there is
+  // more than one merchant. Sum rather than overwrite.
+  for (const r of data ?? []) {
+    const key = String(r.snapshot_date);
+    const b = buckets.get(key);
+    if (!b) continue;
+    b.revenue += Number(r.shopify_revenue_cents ?? 0);
+    b.orders += Number(r.shopify_orders_count ?? 0);
+    b.meta += Number(r.meta_spend_cents ?? 0);
+    b.google += Number(r.google_spend_cents ?? 0);
+    b.conversions += Number(r.conversions ?? 0);
+  }
+
+  const series = [...buckets.entries()].map(([date, b]) => ({
+    date,
+    revenue_cents: b.revenue,
+    spend_cents: b.meta + b.google,
+    meta_spend_cents: b.meta,
+    google_spend_cents: b.google,
+    orders: b.orders,
+    conversions: b.conversions,
+    roas: b.meta + b.google > 0 ? Math.round((b.revenue / (b.meta + b.google)) * 100) / 100 : null,
+  }));
+
+  const totalRevenue = series.reduce((s, r) => s + r.revenue_cents, 0);
+  const totalMeta = series.reduce((s, r) => s + r.meta_spend_cents, 0);
+  const totalGoogle = series.reduce((s, r) => s + r.google_spend_cents, 0);
+  const totalSpend = totalMeta + totalGoogle;
+  const totalOrders = series.reduce((s, r) => s + r.orders, 0);
+  const totalConversions = series.reduce((s, r) => s + r.conversions, 0);
+
+  return {
+    days,
+    series,
+    totals: {
+      revenue_cents: totalRevenue,
+      spend_cents: totalSpend,
+      meta_spend_cents: totalMeta,
+      google_spend_cents: totalGoogle,
+      orders: totalOrders,
+      conversions: totalConversions,
+      // Null rather than 0 wherever the denominator is missing: 0 would read as
+      // "measured and it is zero", null lets the UI show a dash instead.
+      roas: totalSpend > 0 ? Math.round((totalRevenue / totalSpend) * 100) / 100 : null,
+      aov_cents: totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : null,
+      cpa_cents: totalConversions > 0 ? Math.round(totalSpend / totalConversions) : null,
+      net_cents: totalRevenue - totalSpend,
+    },
+    all_zero: totalRevenue === 0 && totalSpend === 0,
+    rows_found: (data ?? []).length,
+    generated_at: new Date().toISOString(),
+  };
+}
+
 // ── set_plan ──────────────────────────────────────────────────────────────────
 /**
  * expires_in_days: optional. When given, the grant auto-reverts to 'starter' once
@@ -725,6 +818,8 @@ Deno.serve(async (req) => {
         return okResponse(await handleGetRevenue(body), origin);
       case 'get_platform_stats':
         return okResponse(await handleGetPlatformStats(), origin);
+      case 'get_performance':
+        return okResponse(await handleGetPerformance(body), origin);
       case 'set_plan':
         return okResponse(await handleSetPlan(body), origin);
       case 'set_role':
