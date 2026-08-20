@@ -95,6 +95,50 @@ async function prepareCampaign(
   const objective = String(body.objective ?? 'OUTCOME_SALES');
   const tone      = String(body.tone ?? 'authentic and conversational');
 
+  // Real unit economics, looked up server-side rather than trusted from the
+  // client. The strategy library asks the model to justify its choices using
+  // margin (profit-not-revenue-target exists precisely because a 3x ROAS on a
+  // 20% margin loses money), but the dashboard only ever sent name, description
+  // and price. The model was being asked to reason about a number it had never
+  // been given, which is how you get a rationale that sounds specific and is
+  // actually invented.
+  //
+  // Matched on title for this user only. COGS is frequently absent, and that
+  // case is stated explicitly rather than left blank: an unstated gap invites
+  // the model to assume a margin, which is worse than knowing it is unknown.
+  let economics = 'COGS is not recorded for this product, so gross margin is UNKNOWN. Do not assume, estimate or invent a margin figure, and do not claim a break-even ROAS. If margin would have driven the choice, say that it is unavailable.';
+  const title = String(product.name ?? product.title ?? '').trim();
+  if (title) {
+    const { data: match } = await supabase
+      .from('shopify_products')
+      .select('title, product_type, vendor, price_cents, cogs_cents, inventory_count')
+      .eq('user_id', userId)
+      .ilike('title', title)
+      .maybeSingle();
+    if (match) {
+      const priceC = Number(match.price_cents ?? 0);
+      const cogsC = match.cogs_cents == null ? null : Number(match.cogs_cents);
+      const parts = [
+        `Catalogue price: ${(priceC / 100).toFixed(2)}`,
+        match.product_type ? `Category: ${match.product_type}` : null,
+        match.vendor ? `Vendor: ${match.vendor}` : null,
+        match.inventory_count != null ? `Inventory on hand: ${match.inventory_count}` : null,
+      ].filter(Boolean);
+      if (cogsC != null && priceC > 0) {
+        const marginPct = ((priceC - cogsC) / priceC) * 100;
+        // Break-even ROAS is the reciprocal of gross margin: at 54% margin you
+        // need roughly 1.85x revenue per unit of ad spend just to stand still.
+        const breakEvenRoas = marginPct > 0 ? 100 / marginPct : null;
+        parts.push(`Unit COGS: ${(cogsC / 100).toFixed(2)}`);
+        parts.push(`Gross margin: ${marginPct.toFixed(1)}%`);
+        if (breakEvenRoas) parts.push(`Break-even ROAS: ${breakEvenRoas.toFixed(2)}x (a campaign below this loses money even while reporting revenue)`);
+      } else {
+        parts.push('Unit COGS: not recorded, so gross margin and break-even ROAS are UNKNOWN. Do not assume or invent them.');
+      }
+      economics = parts.join('\n');
+    }
+  }
+
   const system = `You are an elite performance marketing specialist writing ad campaigns for small Shopify stores. Meta and Google Search are different products with different mechanics — apply the specific tactics below for each, don't write one generic ad and reuse it.
 
 ${renderStrategies('all')}
@@ -154,6 +198,10 @@ JSON schema:
 
   const userMsg = `Generate a complete ad campaign:
 Product: ${JSON.stringify(product)}
+
+UNIT ECONOMICS FOR THIS PRODUCT (from the merchant's own Shopify catalogue):
+${economics}
+
 Target audience: ${JSON.stringify(audience)}
 Daily budget: $${budget}
 Objective: ${objective}
