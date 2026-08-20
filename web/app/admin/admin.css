@@ -161,6 +161,29 @@
     border-color: var(--border);
     outline-color: rgb(var(--ring) / 0.5);
   }
+  /* The admin panel rendered NO focus indicator on any control, so keyboard
+     users could tab the whole sidebar with no idea where they were (WCAG 2.4.7).
+     Not a missing rule: globals.css already sets a sitewide ring as
+     `outline: 2px solid var(--primary)`. That rule assumes --primary holds a
+     colour, which it does on the marketing site. admin.css redefines --primary
+     as bare RGB channels (6 214 199) for Tailwind's rgb(var(--primary)) pattern,
+     so inside the admin scope the shorthand resolves to
+     `outline: 2px solid 6 214 199`, which is invalid and dropped wholesale.
+     The sitewide ring was silently dead here, and only here.
+
+     Scoped under .dark (carried by the admin root wrapper) so this beats the
+     globals.css selector on specificity, and using the channel form the admin
+     tokens actually hold. Teal on these near-black surfaces measures 10.4:1,
+     far past the 3:1 a UI indicator needs. */
+  .dark a:focus-visible,
+  .dark button:focus-visible,
+  .dark input:focus-visible,
+  .dark select:focus-visible,
+  .dark textarea:focus-visible,
+  .dark [tabindex]:focus-visible {
+    outline: 2px solid rgb(var(--ring));
+    outline-offset: 2px;
+  }
   body {
     @apply bg-background text-foreground;
   }

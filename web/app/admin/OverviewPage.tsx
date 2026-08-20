@@ -156,10 +156,21 @@ export default function AdminOverviewPage() {
 
   const [weather, setWeather] = useState<Weather | null>(null);
 
-  const wayne = useMemo(
-    () => getWayneGreeting(user?.firstName),
-    [user?.firstName]
-  );
+  // getWayneGreeting reads the current hour, so the server (rendering at one
+  // moment, in its own timezone) and the client (rendering later, in the user's)
+  // can disagree: "Good morning, Dev." vs "Good afternoon, Dev.". React treats a
+  // text mismatch as a failed hydration, throws away the server HTML and
+  // re-renders the entire root on the client. Resolve it after mount instead,
+  // the same way localDev is handled in the layout, so the first client paint
+  // matches what the server sent.
+  const [wayne, setWayne] = useState<{ greeting: string; quote: string }>({
+    greeting: '',
+    quote: '',
+  });
+
+  useEffect(() => {
+    setWayne(getWayneGreeting(user?.firstName));
+  }, [user?.firstName]);
 
   const previewRevenue = useMemo(
     () => buildMockRevenue(),
@@ -336,22 +347,27 @@ export default function AdminOverviewPage() {
       <div className="mt-1 flex items-start justify-between gap-6">
 
         <div className="text-sm italic text-eph-subtle">
-          &ldquo;{wayne.quote}&rdquo;
+          {wayne.quote && <>&ldquo;{wayne.quote}&rdquo;</>}
         </div>
 
         {weather && (
           <div className="weather ml-auto flex items-center gap-4 self-start text-[15px] font-medium tracking-tight text-eph-text">
 
             <span>
-              {weather.temperature} {weather.emoji}
+              <span className="sr-only">Temperature </span>
+              {weather.temperature} <span aria-hidden="true">{weather.emoji}</span>
             </span>
 
             <span>
-              💧 {weather.humidity}
+              <span aria-hidden="true">💧</span>
+              <span className="sr-only">Humidity </span>
+              {' '}{weather.humidity}
             </span>
 
             <span>
-              💨 {weather.wind_speed}
+              <span aria-hidden="true">💨</span>
+              <span className="sr-only">Wind speed </span>
+              {' '}{weather.wind_speed}
             </span>
 
           </div>
@@ -451,9 +467,9 @@ export default function AdminOverviewPage() {
 
             <div className="flex items-center justify-between">
 
-              <div className="text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">
                 Recent signups
-              </div>
+              </h2>
 
               {!activeLoading &&
                 activeUsersList.length > 0 && (
@@ -465,7 +481,7 @@ export default function AdminOverviewPage() {
 
             </div>
 
-            <div className="mt-5 flex-1 divide-y divide-eph-border/60">
+            <ul className="mt-5 flex-1 list-none divide-y divide-eph-border/60 p-0">
 
               {activeLoading ? (
 
@@ -488,7 +504,7 @@ export default function AdminOverviewPage() {
 
                 recentSignups.map(u => (
 
-                  <div
+                  <li
                     key={u.id}
                     className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0"
                   >
@@ -528,13 +544,13 @@ export default function AdminOverviewPage() {
 
                     </div>
 
-                  </div>
+                  </li>
 
                 ))
 
               )}
 
-            </div>
+            </ul>
 
             <Link
               href="/admin/users"

@@ -33,7 +33,7 @@ export function ChartAreaInteractive({ data }: { data: SignupPoint[] }) {
   return (
     <Squircle cornerRadius={24} className="widget-shadow border border-eph-border bg-eph-surface">
       <CardHeader className="space-y-1.5 px-7 pt-7">
-        <CardTitle>Signups</CardTitle>
+        <CardTitle role="heading" aria-level={2}>Signups</CardTitle>
         <CardDescription>Last 30 days, live from Clerk</CardDescription>
       </CardHeader>
       <CardContent className="px-5 pb-7 pt-3 sm:px-7">

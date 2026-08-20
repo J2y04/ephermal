@@ -106,6 +106,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <TooltipProvider>
     <div className="dark flex min-h-screen bg-eph-bg font-sans text-eph-text">
+      <a
+        href="#admin-main"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-eph-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-black"
+      >
+        Skip to main content
+      </a>
+
       <aside className="flex w-64 flex-shrink-0 flex-col border-r border-eph-border bg-eph-surface px-4 py-6">
         <div className="mb-8 flex items-center gap-2.5 px-2">
           <div className="h-9 w-9 flex-shrink-0 overflow-hidden rounded-full bg-eph-surface2 ring-1 ring-white/10 shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -165,7 +172,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           Back to dashboard
         </a>
       </aside>
-      <main className="flex-1 overflow-y-auto">{children}</main>
+      <main id="admin-main" className="flex-1 overflow-y-auto">{children}</main>
     </div>
     </TooltipProvider>
   );
