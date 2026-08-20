@@ -83,8 +83,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-
 .stat-card:nth-child(1){animation-delay:.05s}.stat-card:nth-child(2){animation-delay:.1s}.stat-card:nth-child(3){animation-delay:.15s}.stat-card:nth-child(4){animation-delay:.2s}
 .stat-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .stat-chart-mini{margin-top:12px;height:40px;overflow:visible}
-.chart-reveal-group{transform-origin:0 100%;transform:scaleY(0);opacity:0;transition:transform 1.1s cubic-bezier(0.22,1,0.36,1), opacity .6s ease}
-.chart-reveal-group.revealed{transform:scaleY(1);opacity:1}
+/* Draws out of the y-axis left to right, matching the admin panel. Was scaleY
+   from the bottom, which squashed the line rather than drawing it. */
+.chart-reveal-group{transform-origin:0 0;transform:scaleX(0);opacity:0;transition:transform 2.1s cubic-bezier(0.16,1,0.3,1), opacity .5s ease}
+.chart-reveal-group.revealed{transform:scaleX(1);opacity:1}
 .stat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center}
 .stat-icon svg{width:17px;height:17px;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .stat-value{font-size:28px;font-weight:800;letter-spacing:-1px;line-height:1;margin-bottom:4px}
@@ -4962,6 +4964,137 @@ function renderCharts() {
 /** Lightweight SVG line/area chart — no dependency. points: [{date, <valueKey>}]
  *  sparkline:true strips dots/hover for compact stat-card use; both modes grow
  *  from zero on insert via revealCharts() (double-rAF scaleY reveal). */
+/* ── Counting numbers ──────────────────────────────────────────────────────
+ * Every figure in a .stat-value counts up from zero when it is written, rather
+ * than snapping into place. Implemented as one observer over the whole
+ * dashboard instead of 25 edits at 25 call sites: the loaders already set
+ * .textContent whenever data lands, so watching for that covers every tab, and
+ * any stat added later is animated for free without remembering to opt in.
+ *
+ * Every numeric run in the string is interpolated, not just the first, so
+ * "12 / 50" counts both halves and "EUR 1,204.50" keeps its grouping and its
+ * two decimal places the whole way up. Non-numeric text ("-", "Connected")
+ * is left exactly as written.
+ */
+(function () {
+  var COUNT_MS = 1900;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var NUM_RE = /-?\d[\d,]*(?:\.\d+)?/g;
+
+  // easeOutQuint: fast departure, long visible settle. Matches the admin panel
+  // exactly so the two surfaces feel like one product.
+  function ease(t) { return 1 - Math.pow(1 - t, 5); }
+
+  function fmtLike(sample, v) {
+    var dec = (sample.split('.')[1] || '').length;
+    var grouped = sample.indexOf(',') !== -1;
+    var out = Math.abs(v).toFixed(dec);
+    if (grouped) {
+      var parts = out.split('.');
+      parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      out = parts.join('.');
+    }
+    return (v < 0 ? '-' : '') + out;
+  }
+
+  function animate(el, finalText) {
+    var tokens = finalText.match(NUM_RE);
+    if (!tokens || !tokens.length) { return false; }
+
+    var targets = tokens.map(function (t) { return parseFloat(t.replace(/,/g, '')); });
+    if (targets.some(function (n) { return !isFinite(n); })) { return false; }
+
+    var start = performance.now();
+    el.__countRAF && cancelAnimationFrame(el.__countRAF);
+
+    function frame(now) {
+      var t = Math.min(1, (now - start) / COUNT_MS);
+      var e = ease(t);
+      var i = 0;
+      var out = finalText.replace(NUM_RE, function (m) {
+        var v = targets[i] * e;
+        i++;
+        return fmtLike(m, v);
+      });
+      // Record what we wrote BEFORE writing it. MutationObserver callbacks are
+      // asynchronous, so a synchronous "busy" flag is already cleared by the
+      // time the callback runs: the observer then reads our own intermediate
+      // frame, treats it as a fresh target, and the animation chases itself
+      // down to zero. Comparing against the exact string we last wrote is
+      // timing-independent and cannot be fooled that way.
+      el.__countWritten = out;
+      el.textContent = out;
+      if (t < 1) { el.__countRAF = requestAnimationFrame(frame); }
+      else { el.__countRAF = null; el.__countDone = finalText; }
+    }
+    el.__countRAF = requestAnimationFrame(frame);
+    return true;
+  }
+
+  function consider(el) {
+    if (!el) { return; }
+    var text = (el.textContent || '').trim();
+    if (!text) { return; }
+    // Our own animation frame, not a new value from the app.
+    if (text === el.__countWritten) { return; }
+    if (text === el.__countDone) { return; }
+    el.__countDone = text;
+    if (reduced) { return; }
+    animate(el, text);
+  }
+
+  function watch(root) {
+    var obs = new MutationObserver(function (muts) {
+      var seen = [];
+      for (var i = 0; i < muts.length; i++) {
+        var node = muts[i].target;
+        var el = node.nodeType === 3 ? node.parentElement : node;
+        if (!el || !el.closest) { continue; }
+        var stat = el.closest('.stat-value');
+        if (stat && seen.indexOf(stat) === -1) { seen.push(stat); }
+      }
+      for (var j = 0; j < seen.length; j++) { consider(seen[j]); }
+    });
+    obs.observe(root, { childList: true, characterData: true, subtree: true });
+  }
+
+  function boot() {
+    watch(document.body);
+    // Anything already rendered before the observer attached.
+    var initial = document.querySelectorAll('.stat-value');
+    for (var i = 0; i < initial.length; i++) { consider(initial[i]); }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+})();
+
+/** Catmull-Rom to cubic Bezier: the same eased curve the admin charts use, so
+ *  the two surfaces read as one product rather than two different chart engines.
+ *  Straight L segments made every series look like a seismograph. */
+function smoothLinePath(coords) {
+  if (!coords.length) return '';
+  if (coords.length < 3) {
+    return coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' ');
+  }
+  let d = `M${coords[0][0].toFixed(1)},${coords[0][1].toFixed(1)}`;
+  for (let i = 0; i < coords.length - 1; i++) {
+    const p0 = coords[i - 1] || coords[i];
+    const p1 = coords[i];
+    const p2 = coords[i + 1];
+    const p3 = coords[i + 2] || p2;
+    const c1x = p1[0] + (p2[0] - p0[0]) / 6;
+    const c1y = p1[1] + (p2[1] - p0[1]) / 6;
+    const c2x = p2[0] - (p3[0] - p1[0]) / 6;
+    const c2y = p2[1] - (p3[1] - p1[1]) / 6;
+    d += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2[0].toFixed(1)},${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
+
 function buildLineChart(points, {color='#06d6c7', valueKey='value', format=v=>String(v), height=180, sparkline=false} = {}) {
   if (!points || !points.length) return sparkline ? '' : '<div class="empty-state" style="padding:30px 0"><p>No data yet</p></div>';
   const width = 720;
@@ -4972,7 +5105,7 @@ function buildLineChart(points, {color='#06d6c7', valueKey='value', format=v=>St
   const stepX = width / ((points.length - 1) || 1);
   const toY = v => height - ((v - min) / range) * height;
   const coords = points.map((p, i) => [i * stepX, toY(p[valueKey] || 0)]);
-  const linePath = coords.map((c, i) => `${i === 0 ? 'M' : 'L'}${c[0].toFixed(1)},${c[1].toFixed(1)}`).join(' ');
+  const linePath = smoothLinePath(coords);
   const areaPath = `${linePath} L${coords[coords.length - 1][0].toFixed(1)},${height} L0,${height} Z`;
   const gradId = 'lcgrad-' + Math.random().toString(36).slice(2, 9);
   const dots = sparkline ? '' : coords.map((c, i) => {

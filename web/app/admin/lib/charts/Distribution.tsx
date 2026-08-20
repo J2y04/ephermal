@@ -1,7 +1,8 @@
 'use client';
 
 import { INK } from './tokens';
-import { useDrawIn, DRAW_EASE } from './motion';
+import { useDrawIn, DRAW_EASE, DRAW_MS } from './motion';
+import CountUp from './CountUp';
 
 /**
  * The non-coordinate forms.
@@ -72,7 +73,7 @@ export function SegmentedBar({
                 width: drawn ? `${(s.value / total) * 100}%` : '0%',
                 background: s.color,
                 borderRadius: 999,
-                transition: `width 900ms ${DRAW_EASE}, filter 160ms ease`,
+                transition: `width ${DRAW_MS}ms ${DRAW_EASE}, filter 160ms ease`,
               }}
               className="hover:brightness-110"
             />
@@ -92,10 +93,10 @@ export function SegmentedBar({
               className="font-semibold"
               style={{ color: INK.primary, fontVariantNumeric: 'tabular-nums' }}
             >
-              {s.value}
+              <CountUp value={s.value} />
             </span>
             <span style={{ color: INK.muted, fontVariantNumeric: 'tabular-nums' }}>
-              {Math.round((s.value / total) * 100)}%
+              <CountUp value={(s.value / total) * 100} format={(n) => `${Math.round(n)}%`} />
             </span>
           </li>
         ))}
@@ -131,7 +132,7 @@ export function BulletBar({
           className="text-[13px] font-semibold"
           style={{ color: INK.primary, fontVariantNumeric: 'tabular-nums' }}
         >
-          {value}
+          <CountUp value={value} />
           <span style={{ color: INK.muted }} className="font-normal">
             {' '}
             / {total}
@@ -150,7 +151,7 @@ export function BulletBar({
             height: '100%',
             background: color,
             borderRadius: 999,
-            transition: `width 900ms ${DRAW_EASE}`,
+            transition: `width ${DRAW_MS}ms ${DRAW_EASE}`,
           }}
         />
       </div>
@@ -215,7 +216,7 @@ export function RadialArc({
           strokeWidth={stroke}
           strokeDasharray={`${drawn ? filled : 0} ${circ}`}
           strokeLinecap="round"
-          style={{ transition: `stroke-dasharray 1000ms ${DRAW_EASE}` }}
+          style={{ transition: `stroke-dasharray ${DRAW_MS}ms ${DRAW_EASE}` }}
         />
       </svg>
       <div className="-mt-[86px] flex flex-col items-center pb-[54px]">
@@ -223,7 +224,7 @@ export function RadialArc({
           className="text-[26px] font-semibold leading-none tracking-[-0.02em]"
           style={{ color: INK.primary, fontVariantNumeric: 'tabular-nums' }}
         >
-          {pct.toFixed(pct % 1 === 0 ? 0 : 1)}%
+          <CountUp value={pct} format={(n) => `${n.toFixed(pct % 1 === 0 ? 0 : 1)}%`} />
         </div>
         <div className="mt-1.5 text-[11px] uppercase tracking-[0.08em]" style={{ color: INK.muted }}>
           {label}

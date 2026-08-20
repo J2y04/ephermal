@@ -18,12 +18,20 @@ export function usePrefersReducedMotion(): boolean {
   return reduced;
 }
 
-/** easeOutExpo: very fast off the mark, then a long settle into the target.
- *  That shape is the point. A linear count reads like a loading spinner; this
- *  reads like a value arriving and coming to rest. */
-function easeOutExpo(t: number): number {
-  return t === 1 ? 1 : 1 - 2 ** (-10 * t);
+/** easeOutQuint: fast off the mark, then a long, visible settle.
+ *
+ *  Deliberately NOT easeOutExpo, which was the first attempt. Expo reaches ~90%
+ *  of the target in about a third of the duration, so the deceleration the
+ *  animation exists to show is over before the eye registers it and the whole
+ *  thing still reads as a snap. Quint keeps the same character but spreads the
+ *  tail, so the number is visibly slowing as it arrives. */
+function easeOutQuint(t: number): number {
+  return 1 - (1 - t) ** 5;
 }
+
+/** One duration for every counting number in the product, so two widgets on the
+ *  same screen finish together instead of racing. */
+export const COUNT_MS = 1900;
 
 /**
  * Counts from 0 to `target` on mount, and again whenever the target changes.
@@ -32,7 +40,7 @@ function easeOutExpo(t: number): number {
  * per-frame step, so it takes the same wall-clock duration on a 60Hz and a
  * 144Hz display instead of finishing twice as fast on the latter.
  */
-export function useCountUp(target: number | null, duration = 1100): number {
+export function useCountUp(target: number | null, duration = COUNT_MS): number {
   const reduced = usePrefersReducedMotion();
   const [value, setValue] = useState(reduced ? (target ?? 0) : 0);
   const frame = useRef<number | null>(null);
@@ -52,7 +60,7 @@ export function useCountUp(target: number | null, duration = 1100): number {
 
     const tick = (now: number) => {
       const t = Math.min(1, (now - start) / duration);
-      setValue(from + (target - from) * easeOutExpo(t));
+      setValue(from + (target - from) * easeOutQuint(t));
       if (t < 1) frame.current = requestAnimationFrame(tick);
     };
 
@@ -89,5 +97,10 @@ export function useDrawIn(key: unknown = null): boolean {
 }
 
 /** Shared easing for the chart reveals, so a tile and the chart beside it feel
- *  like one motion rather than two unrelated ones. */
-export const DRAW_EASE = 'cubic-bezier(0.22, 1, 0.36, 1)';
+ *  like one motion rather than two unrelated ones. The curve is the CSS
+ *  equivalent of the quint above: quick departure, long settle. */
+export const DRAW_EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
+/** Chart wipes run slightly longer than the counters so the line is still
+ *  drawing as the figures land, rather than everything stopping at once. */
+export const DRAW_MS = 2100;

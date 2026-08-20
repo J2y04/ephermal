@@ -6,6 +6,7 @@ import { adminFetch, isLocalDev } from '../lib/adminFetch';
 import Squircle from '../lib/Squircle';
 
 import StatTile from '../lib/charts/StatTile';
+import CountUp from '../lib/charts/CountUp';
 import MultiTrend from '../lib/charts/MultiTrend';
 import { SegmentedBar, BulletBar, RadialArc } from '../lib/charts/Distribution';
 import {
@@ -238,8 +239,24 @@ function Panel({
 }
 
 /** Compact label/value row. Used where a metric is a fact to be read, not a
- *  shape to be compared, which is most of the operational counters here. */
-function Fact({ label, value, tone }: { label: string; value: string; tone?: string }) {
+ *  shape to be compared, which is most of the operational counters here.
+ *
+ *  Pass `count` (plus an optional `format`) and the figure animates like every
+ *  other number on the page; pass only `value` for text that is not a quantity
+ *  and should not pretend to be one. */
+function Fact({
+  label,
+  value,
+  count,
+  format,
+  tone,
+}: {
+  label: string;
+  value: string;
+  count?: number | null;
+  format?: (n: number) => string;
+  tone?: string;
+}) {
   return (
     <div className="flex items-baseline justify-between gap-3 py-2">
       <span className="text-[13px]" style={{ color: INK.secondary }}>
@@ -249,7 +266,7 @@ function Fact({ label, value, tone }: { label: string; value: string; tone?: str
         className="text-[13px] font-semibold"
         style={{ color: tone ?? INK.primary, fontVariantNumeric: 'tabular-nums' }}
       >
-        {value}
+        {count !== undefined ? <CountUp value={count} format={format} fallback={value} /> : value}
       </span>
     </div>
   );
@@ -491,10 +508,10 @@ export default function PlatformPage() {
             <Panel title="Unit economics" hint="30-day blended">
               <div className="flex flex-1 flex-col">
                 <div className="divide-y divide-eph-border/50">
-                  <Fact label="Average order value" value={t?.aov_cents != null ? money(t.aov_cents) : '—'} />
-                  <Fact label="Cost per conversion" value={t?.cpa_cents != null ? money(t.cpa_cents) : '—'} />
-                  <Fact label="Orders" value={t ? compact(t.orders) : '—'} />
-                  <Fact label="Conversions" value={t ? compact(t.conversions) : '—'} />
+                  <Fact label="Average order value" value="—" count={t?.aov_cents ?? null} format={money} />
+                  <Fact label="Cost per conversion" value="—" count={t?.cpa_cents ?? null} format={money} />
+                  <Fact label="Orders" value="—" count={t?.orders ?? null} format={compact} />
+                  <Fact label="Conversions" value="—" count={t?.conversions ?? null} format={compact} />
                 </div>
 
                 <div className="mt-5">
@@ -522,10 +539,12 @@ export default function PlatformPage() {
           <Panel title="Campaign health" hint={stats ? `${stats.campaigns.total} total` : undefined}>
             <SegmentedBar segments={campaignSegments} emptyLabel="No campaigns launched yet" />
             <div className="mt-auto grid grid-cols-2 gap-x-4 pt-5">
-              <Fact label="Launched" value={stats ? String(stats.campaigns.launched_count) : '—'} />
+              <Fact label="Launched" value="—" count={stats?.campaigns.launched_count ?? null} />
               <Fact
                 label="Daily budget"
-                value={stats ? `€${stats.campaigns.total_daily_budget.toFixed(2)}` : '—'}
+                value="—"
+                count={stats?.campaigns.total_daily_budget ?? null}
+                format={(n) => `€${n.toFixed(2)}`}
               />
             </div>
           </Panel>
@@ -537,7 +556,8 @@ export default function PlatformPage() {
             <div className="mt-auto pt-5">
               <Fact
                 label="Meta page linked"
-                value={stats ? `${stats.integrations.meta_page_linked}` : '—'}
+                value="—"
+                count={stats?.integrations.meta_page_linked ?? null}
               />
             </div>
           </Panel>
@@ -549,7 +569,8 @@ export default function PlatformPage() {
             <div className="mt-auto pt-5">
               <Fact
                 label="Expiring within 7 days"
-                value={stats ? String(stats.plans.expiring_soon.length) : '—'}
+                value="—"
+                count={stats?.plans.expiring_soon.length ?? null}
                 tone={stats && stats.plans.expiring_soon.length > 0 ? STATUS.warning : undefined}
               />
             </div>
@@ -589,14 +610,18 @@ export default function PlatformPage() {
         <div className="col-span-12 lg:col-span-4">
           <Panel title="Auren usage" hint="AI assistant">
             <div className="divide-y divide-eph-border/50">
-              <Fact label="Messages this week" value={stats ? compact(stats.auren.messages_this_week) : '—'} />
-              <Fact label="Active users this week" value={stats ? String(stats.auren.active_users_this_week) : '—'} />
-              <Fact label="Messages all time" value={stats ? compact(stats.auren.messages_all_time) : '—'} />
+              <Fact label="Messages this week" value="—" count={stats?.auren.messages_this_week ?? null} format={compact} />
+              <Fact label="Active users this week" value="—" count={stats?.auren.active_users_this_week ?? null} />
+              <Fact label="Messages all time" value="—" count={stats?.auren.messages_all_time ?? null} format={compact} />
               <Fact
                 label="Top-ups purchased"
-                value={stats ? `${stats.auren.topups_purchased} (${compact(stats.auren.topup_messages_granted)} msgs)` : '—'}
+                value="—"
+                count={stats?.auren.topups_purchased ?? null}
+                format={(n) =>
+                  `${Math.round(n)} (${compact(stats?.auren.topup_messages_granted ?? 0)} msgs)`
+                }
               />
-              <Fact label="UGC credits this month" value={stats ? String(stats.ugc.credits_used_this_month) : '—'} />
+              <Fact label="UGC credits this month" value="—" count={stats?.ugc.credits_used_this_month ?? null} />
             </div>
           </Panel>
         </div>
@@ -652,24 +677,25 @@ export default function PlatformPage() {
         <div className="col-span-12 lg:col-span-5">
           <Panel title="Shopify catalog" hint={stats ? `${stats.shopify.stores_with_products} stores` : undefined}>
             <div className="divide-y divide-eph-border/50">
-              <Fact label="Products synced" value={stats ? compact(stats.shopify.products_synced) : '—'} />
-              <Fact label="Stores with products" value={stats ? String(stats.shopify.stores_with_products) : '—'} />
-              <Fact label="Average price" value={stats ? money(stats.shopify.avg_price_cents) : '—'} />
+              <Fact label="Products synced" value="—" count={stats?.shopify.products_synced ?? null} format={compact} />
+              <Fact label="Stores with products" value="—" count={stats?.shopify.stores_with_products ?? null} />
+              <Fact label="Average price" value="—" count={stats?.shopify.avg_price_cents ?? null} format={money} />
               <Fact
                 label="COGS coverage"
-                value={stats ? `${stats.shopify.cogs_coverage_pct}%` : '—'}
+                value="—"
+                count={stats?.shopify.cogs_coverage_pct ?? null}
+                format={(n) => `${n.toFixed(1)}%`}
                 tone={stats && stats.shopify.cogs_coverage_pct < 80 ? STATUS.warning : undefined}
               />
               <Fact
                 label="Products missing COGS"
-                value={
+                value="—"
+                count={
                   stats
-                    ? String(
-                        Math.round(
-                          stats.shopify.products_synced * (1 - stats.shopify.cogs_coverage_pct / 100),
-                        ),
+                    ? Math.round(
+                        stats.shopify.products_synced * (1 - stats.shopify.cogs_coverage_pct / 100),
                       )
-                    : '—'
+                    : null
                 }
               />
             </div>

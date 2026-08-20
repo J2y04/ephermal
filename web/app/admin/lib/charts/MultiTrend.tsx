@@ -2,7 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { INK, niceMax, smoothPath } from './tokens';
-import { useDrawIn, DRAW_EASE } from './motion';
+import { useDrawIn, DRAW_EASE, DRAW_MS } from './motion';
 
 /**
  * Two or more series on ONE shared axis.
@@ -131,7 +131,7 @@ export default function MultiTrend({
                 style={{
                   transformOrigin: `${PAD.left}px 0px`,
                   transform: drawn ? 'scaleX(1)' : 'scaleX(0)',
-                  transition: `transform 1000ms ${DRAW_EASE}`,
+                  transition: `transform ${DRAW_MS}ms ${DRAW_EASE}`,
                 }}
               />
             </clipPath>
