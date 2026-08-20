@@ -318,11 +318,19 @@ interface ToolCallTrail { label: string; status: 'done' | 'error' | 'pending' }
  *  again", never "assume allowed".
  */
 function targetKeyFor(toolName: string, input: Record<string, unknown>): string {
-  const campaign = String(input.campaign_id ?? '');
+  // Every component is percent-encoded before being joined, so the '|' and '=' that give
+  // the key its structure cannot appear inside a component and forge a different one.
+  // Without this, a campaign_id of "123|multiplier=20" approved at multiplier 1.15 produces
+  // the same key as campaign_id "123" at multiplier "20|multiplier=1.15", which would let a
+  // grant issued for one magnitude match a call carrying another. Not reachable today, since
+  // meta-api re-validates the multiplier range and clamps the result, but the key should not
+  // depend on a check living in another function to be sound.
+  const part = (v: unknown) => encodeURIComponent(String(v ?? ''));
+  const campaign = part(input.campaign_id);
   switch (toolName) {
-    case 'scale_meta_budget':      return `${campaign}|multiplier=${String(input.multiplier ?? '')}`;
-    case 'update_google_budget':   return `${campaign}|budget_usd=${String(input.budget_usd ?? '')}`;
-    case 'toggle_google_campaign': return `${campaign}|status=${String(input.status ?? '')}`;
+    case 'scale_meta_budget':      return `${campaign}|multiplier=${part(input.multiplier)}`;
+    case 'update_google_budget':   return `${campaign}|budget_usd=${part(input.budget_usd)}`;
+    case 'toggle_google_campaign': return `${campaign}|status=${part(input.status)}`;
     default:                       return campaign;
   }
 }
