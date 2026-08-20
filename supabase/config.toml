@@ -1,0 +1,79 @@
+# Pins every edge function's verify_jwt flag.
+#
+# Without this file the Supabase CLI defaults verify_jwt to TRUE on every
+# deploy. That silently flipped admin-api from false to true on 2026-08-20 and
+# would have re-enabled the gateway JWT check, which is the exact cause of the
+# 401 outage fixed back in July: these functions verify the Clerk JWT
+# themselves, with clock-skew leeway the gateway does not apply.
+#
+# 23 functions run with verify_jwt = false and would break the same way. Values
+# below were read from the live project, not assumed. Keep this file in sync
+# when adding a function.
+
+project_id = "twfgnqddoqeqrjhgioxd"
+
+# ── Verify the JWT themselves (gateway check OFF) ────────────────────────────
+[functions.admin-api]
+verify_jwt = false
+[functions.send-email]
+verify_jwt = false
+[functions.clerk-webhook]
+verify_jwt = false
+[functions.stripe-webhook]
+verify_jwt = false
+[functions.create-checkout]
+verify_jwt = false
+[functions.claim-oauth]
+verify_jwt = false
+[functions.meta-oauth-callback]
+verify_jwt = false
+[functions.shopify-oauth-callback]
+verify_jwt = false
+[functions.google-oauth-callback]
+verify_jwt = false
+[functions.creative-fatigue]
+verify_jwt = false
+[functions.cache-proxy]
+verify_jwt = false
+[functions.budget-ai]
+verify_jwt = false
+[functions.oauth-state-init]
+verify_jwt = false
+[functions.creative-brief]
+verify_jwt = false
+[functions.competitor-radar]
+verify_jwt = false
+[functions.cancel-subscription]
+verify_jwt = false
+[functions.store-intelligence]
+verify_jwt = false
+[functions.mrr-tracker]
+verify_jwt = false
+[functions.public-store-scan]
+verify_jwt = false
+[functions.disconnect-integration]
+verify_jwt = false
+[functions.delete-account]
+verify_jwt = false
+[functions.onetime-admin-grant]
+verify_jwt = false
+[functions.fx-rate]
+verify_jwt = false
+
+# ── Gateway JWT check ON ─────────────────────────────────────────────────────
+[functions.meta-api]
+verify_jwt = true
+[functions.ai-assistant]
+verify_jwt = true
+[functions.google-api]
+verify_jwt = true
+[functions.campaign-launcher]
+verify_jwt = true
+[functions.roas-optimizer]
+verify_jwt = true
+[functions.ugc-generate]
+verify_jwt = true
+[functions.shopify-api]
+verify_jwt = true
+[functions.profit-tracker]
+verify_jwt = true

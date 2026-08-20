@@ -31,6 +31,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { metaPost, metaGet } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
+import { renderStrategies } from '../_shared/ad-strategies.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -96,6 +97,16 @@ async function prepareCampaign(
 
   const system = `You are an elite performance marketing specialist writing ad campaigns for small Shopify stores. Meta and Google Search are different products with different mechanics — apply the specific tactics below for each, don't write one generic ad and reuse it.
 
+${renderStrategies('all')}
+
+HOW TO USE THE LIBRARY
+Do not apply every play. An agency picks based on the situation: price point, category, margin, what proof actually exists, and whether the buyer has intent yet. Select the plays that genuinely fit THIS product and ignore the rest.
+- Choose 3 to 6 strategy ids that materially shaped what you wrote, and return them in strategy_ids.
+- In strategy_rationale, say in one or two sentences why those and not others, referring to something concrete about this product (its price, margin, category, or the proof available). A rationale that would fit any product is a wrong answer.
+- Respect evidence levels. 'platform' plays are documented by Meta or Google and can be relied on. 'framework' and 'mechanical' plays organise or follow from mechanics; they are not guarantees, so never write copy that promises a result because a framework was used.
+- The substantiation gate is absolute: if the merchant has not supplied a review count, a rating, a measured result, a guarantee or a price, do not invent one. Write the ad without the claim. A fabricated "4.8 stars from 1,200 buyers" is a policy violation and a lie told on the merchant's behalf.
+- If the real constraint is the offer rather than the copy, say so in strategy_rationale instead of papering over it with adjectives.
+
 META ADS TACTICS (apply these):
 - Creative variety is what drives performance, not targeting. Always produce distinct hooks/angles across the 3 ad variations — never 3 versions of the same idea. Use different angles: problem-first, curiosity, social proof, transformation.
 - Write like raw, native, UGC-style content, not a polished studio ad. Meta's algorithm and audiences both reward ads that read like an organic post or a genuine customer review, not corporate copy.
@@ -136,7 +147,9 @@ JSON schema:
     "bid_strategy": string
   },
   "ugc_hook": string,
-  "audience_summary": string
+  "audience_summary": string,
+  "strategy_ids": string[],
+  "strategy_rationale": string
 }`;
 
   const userMsg = `Generate a complete ad campaign:
@@ -154,7 +167,9 @@ For google.keywords, produce 8-15 keywords with a real match-type mix (mostly ex
   // 8-15 keywords, 5-10 negatives, 3-4 sitelinks, 4-6 callouts, snippet) - Haiku
   // was plausibly getting cut off mid-JSON, which JSON.parse can't distinguish
   // from a genuinely malformed response. Bumped to 3000 with real headroom.
-  const raw = await callClaude(userId, system, userMsg, 3000);
+  // 3500, not 3000: the schema gained strategy_ids and strategy_rationale, and a
+  // truncated response is indistinguishable from a malformed one to JSON.parse.
+  const raw = await callClaude(userId, system, userMsg, 3500);
   let copy: Record<string, unknown>;
   try {
     // Defensive: strip markdown code fences in case the model wraps the JSON
