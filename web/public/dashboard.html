@@ -2761,11 +2761,14 @@ function renderPlanUI() {
     const pw = document.getElementById(id);
     if (pw) pw.style.display = !canAccess(feature) ? 'flex' : 'none';
   });
-  // Dashboard home tab's restyled copy of the Analytics performance charts shares the same
-  // 'analytics' plan gate - pagePaywalls above only maps one DOM id per feature key, so this
-  // second lock element is toggled separately here rather than reshaping that map.
+  // The Dashboard home tab's charts are the "Basic analytics" every plan is sold, including
+  // Starter: ROAS by campaign, spend by platform, campaign status. They are deliberately NOT
+  // behind the 'analytics' gate - that gate covers the full Analytics page (trends over time,
+  // per-creative breakdowns, the ROAS optimizer), which is what Growth is sold as
+  // "Full campaign analytics". Gating this block too was the bug: a Starter user paid for
+  // "Basic analytics" on the pricing card and got a lock screen instead.
   const dashAnalyticsPw = document.getElementById('dash-analytics-paywall');
-  if (dashAnalyticsPw) dashAnalyticsPw.style.display = !canAccess('analytics') ? 'flex' : 'none';
+  if (dashAnalyticsPw) dashAnalyticsPw.style.display = 'none';
   // UGC credits in modal
   const ugcRem = document.getElementById('ugc-credits-remaining');
   if (ugcRem) ugcRem.textContent = `${left} credit${left !== 1 ? 's' : ''}`;

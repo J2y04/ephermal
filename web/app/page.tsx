@@ -735,97 +735,120 @@ export default function Home() {
             <p className="section-sub" style={{ margin: '0 auto' }}>Whether you&apos;re making your first sale or scaling past your tenth thousand. One flat monthly rate, no contracts, cancel any time.</p>
           </div>
           <div className="pricing-grid">
-            <div className="price-card" data-spotlight>
-              <div className="price-badge">Starter</div>
-              <div className="price-amount"><sup>€</sup>89</div>
-              <div className="price-per">/ month, perfect for stores under €5K/month</div>
-              <div className="price-credits">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
-                15 AI script credits / month
+            {([
+              {
+                tier: 'Starter',
+                price: '89',
+                per: '/ month, perfect for stores under €5K/month',
+                credits: '15 AI script credits / month',
+                featured: false,
+                cta: { label: 'Get Started', href: '/auth/register.html', primary: false },
+                /* Sprout. Distinct per tier, no repeated generic glyph. */
+                icon: (<><path d="M12 22V12" /><path d="M12 12c0-3-2-5-5-5 0 3 2 5 5 5z" /><path d="M12 12c0-3 2-5 5-5 0 3-2 5-5 5z" /></>),
+                lead: null,
+                features: [
+                  '15 AI ad scripts / month',
+                  'Meta Ads automation — campaigns, ad sets, creatives',
+                  '21-strategy ad playbook behind every campaign',
+                  'Profit-aware campaign generation from your real COGS',
+                  'AI store analysis & brand brief',
+                  'Live Shopify product sync',
+                  'Campaign dashboard',
+                  'Performance charts — ROAS, spend, campaign status',
+                  'Creative approval workflow',
+                  'Creative fatigue monitor',
+                  'Docs & help centre',
+                ],
+                locked: [
+                  'Google Search Ads automation',
+                  'Auren AI ad strategist',
+                  'AI UGC video ads',
+                  'Profit Tracker',
+                  'Competitor Radar',
+                ],
+                lockedBadge: 'Growth+',
+              },
+              {
+                tier: 'Growth',
+                price: '199',
+                per: '/ month, for stores pushing toward €10K+',
+                credits: '75 AI script credits + 18 UGC video ads / month',
+                featured: true,
+                cta: { label: 'Subscribe now', href: '/auth/register.html', primary: true },
+                /* Trend line. */
+                icon: (<><polyline points="3 17 9 11 13 15 21 7" /><polyline points="15 7 21 7 21 13" /></>),
+                lead: 'Everything in Starter, plus:',
+                features: [
+                  '75 AI ad scripts / month',
+                  '18 real UGC video ads / month',
+                  'Google Search Ads — keywords, match types, negatives',
+                  'Auren AI ad strategist chat',
+                  'Audience Intelligence — custom & lookalike audiences',
+                  'Budget AI — allocation, forecasting, history',
+                  'MRR Tracker',
+                  'Full campaign analytics',
+                  'Closed-loop ROAS optimization',
+                  'Competitor Radar (ad spy)',
+                  'Creative Brief AI',
+                  'Profit Tracker — true margin per product',
+                ],
+                locked: ['Bulk campaign management'],
+                lockedBadge: 'Scale',
+              },
+              {
+                tier: 'Scale',
+                price: '349',
+                per: '/ month, for established stores & agencies',
+                credits: '350 AI script credits + 32 UGC video ads / month',
+                featured: false,
+                cta: { label: 'Contact Sales', href: 'mailto:hello@ephermal.app', primary: false },
+                /* Stacked layers. */
+                icon: (<><path d="m12 2 9 5-9 5-9-5 9-5z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></>),
+                lead: 'Everything in Growth, plus:',
+                features: [
+                  '350 AI ad scripts / month',
+                  '32 real UGC video ads / month',
+                  'Bulk campaign management',
+                  'Priority support',
+                  'Slack support channel',
+                ],
+                locked: [],
+                lockedBadge: '',
+              },
+            ] as {
+              tier: string; price: string; per: string; credits: string; featured: boolean;
+              cta: { label: string; href: string; primary: boolean };
+              icon: React.ReactNode; lead: string | null;
+              features: string[]; locked: string[]; lockedBadge: string;
+            }[]).map((p) => (
+              <div key={p.tier} className={p.featured ? 'price-card featured' : 'price-card'} data-spotlight>
+                <div className="price-tier-mark" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">{p.icon}</svg>
+                </div>
+                <div className="price-badge">{p.tier}</div>
+                <div className="price-amount"><sup>€</sup>{p.price}</div>
+                <div className="price-per">{p.per}</div>
+                <div className="price-credits">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
+                  {p.credits}
+                </div>
+                {p.lead && <div className="price-lead">{p.lead}</div>}
+                <ul className="price-features">
+                  {p.features.map((f) => (
+                    <li key={f}>
+                      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>{f}
+                    </li>
+                  ))}
+                  {p.locked.map((f) => (
+                    <li key={f} style={{ opacity: 0.42 }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{ flexShrink: 0 }}><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                      {f}<span style={{ fontSize: '10px', marginLeft: '5px', color: 'var(--primary)', fontWeight: 700 }}>{p.lockedBadge}</span>
+                    </li>
+                  ))}
+                </ul>
+                <a href={p.cta.href} className={p.cta.primary ? 'price-btn primary' : 'price-btn'}>{p.cta.label}</a>
               </div>
-              <ul className="price-features">
-                {([
-                  {f:'15 AI ad scripts / month'},
-                  {f:'Meta Ads automation'},
-                  {f:'AI store analysis & brand brief'},
-                  {f:'Live store sync'},
-                  {f:'Campaign dashboard'},
-                  {f:'Creative approval workflow'},
-                  {f:'Basic analytics'},
-                  {f:'Google Ads automation',locked:true,badge:'Growth+'},
-                  {f:'AI ad strategist chat',locked:true,badge:'Growth+'},
-                  {f:'AI UGC video ads',locked:true,badge:'Growth+'},
-                  {f:'Audience Intelligence',locked:true,badge:'Growth+'},
-                  {f:'Closed-loop ROAS optimization',locked:true,badge:'Growth+'},
-                  {f:'Competitor Radar (ad spy)',locked:true,badge:'Growth+'},
-                  {f:'Creative Brief AI',locked:true,badge:'Growth+'},
-                  {f:'Profit Tracker',locked:true,badge:'Growth+'},
-                  {f:'Bulk campaign management',locked:true,badge:'Scale'},
-                ] as {f:string,locked?:boolean,badge?:string}[]).map(({f,locked,badge}) => (
-                  <li key={f} style={locked?{opacity:0.42}:undefined}>
-                    {locked
-                      ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{flexShrink:0,marginTop:'1px'}}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                      : <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
-                    }
-                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:'var(--primary)',fontWeight:700}}>{badge}</span>}
-                  </li>
-                ))}
-              </ul>
-              <a href="/auth/register.html" className="price-btn">Get Started</a>
-            </div>
-            <div className="price-card featured" data-spotlight>
-              <div className="price-badge">Growth</div>
-              <div className="price-amount"><sup>€</sup>199</div>
-              <div className="price-per">/ month, for stores pushing toward €10K+</div>
-              <div className="price-credits">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
-                75 AI script credits + 18 UGC video ads / month
-              </div>
-              <ul className="price-features">
-                {([
-                  {f:'75 AI ad scripts / month'},
-                  {f:'18 real UGC video ads / month'},
-                  {f:'Meta Ads automation'},
-                  {f:'AI store analysis & brand brief'},
-                  {f:'Live store sync'},
-                  {f:'Campaign dashboard'},
-                  {f:'Creative approval workflow'},
-                  {f:'Google Ads automation'},
-                  {f:'AI ad strategist chat'},
-                  {f:'Audience Intelligence'},
-                  {f:'Full campaign analytics'},
-                  {f:'Closed-loop ROAS optimization'},
-                  {f:'Competitor Radar (ad spy)'},
-                  {f:'Creative Brief AI'},
-                  {f:'Profit Tracker'},
-                  {f:'Bulk campaign management', locked:true, badge:'Scale'},
-                ] as {f:string,locked?:boolean,badge?:string}[]).map(({f,locked,badge}) => (
-                  <li key={f} style={locked?{opacity:0.42}:undefined}>
-                    {locked
-                      ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16" style={{flexShrink:0,marginTop:'1px'}}><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                      : <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
-                    }
-                    {f}{locked && <span style={{fontSize:'10px',marginLeft:'5px',color:'var(--primary)',fontWeight:700}}>{badge}</span>}
-                  </li>
-                ))}
-              </ul>
-              <a href="/auth/register.html" className="price-btn primary">Subscribe now</a>
-            </div>
-            <div className="price-card" data-spotlight>
-              <div className="price-badge">Scale</div>
-              <div className="price-amount"><sup>€</sup>349</div>
-              <div className="price-per">/ month, for established stores &amp; agencies</div>
-              <div className="price-credits">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M8 12h8M12 8v8" /></svg>
-                350 AI script credits + 32 UGC video ads / month
-              </div>
-              <ul className="price-features">
-                {['350 AI ad scripts / month','32 real UGC video ads / month','Meta + Google Ads automation','AI store analysis & brand brief','Live store sync','Campaign dashboard','Creative approval workflow','AI ad strategist chat','Audience Intelligence','Full campaign analytics','Closed-loop ROAS optimization','Competitor Radar (ad spy)','Creative Brief AI','Profit Tracker','Bulk campaign management','Custom integrations','Slack support'].map(f => (
-                  <li key={f}><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>{f}</li>
-                ))}
-              </ul>
-              <a href="mailto:hello@ephermal.app" className="price-btn">Contact Sales</a>
-            </div>
+            ))}
           </div>
           <div className="risk-row" data-reveal data-delay="1">
             {[
