@@ -407,6 +407,8 @@ export default function PlatformPage() {
             <StatTile
               label="ROAS"
               value={t?.roas != null ? `${t.roas.toFixed(2)}x` : '—'}
+              countTo={t?.roas ?? null}
+              format={(n) => `${n.toFixed(2)}x`}
               icon={<GlyphSpark />}
               caption={t?.roas != null ? 'revenue per €1 spent' : 'no ad spend recorded'}
               dimmed={t?.roas == null}
@@ -414,6 +416,8 @@ export default function PlatformPage() {
             <StatTile
               label="Revenue"
               value={t ? money(t.revenue_cents) : '—'}
+              countTo={t?.revenue_cents ?? null}
+              format={money}
               icon={<GlyphCoin />}
               caption="last 30 days"
               dimmed={!t?.revenue_cents}
@@ -422,6 +426,8 @@ export default function PlatformPage() {
             <StatTile
               label="Ad spend"
               value={t ? money(t.spend_cents) : '—'}
+              countTo={t?.spend_cents ?? null}
+              format={money}
               icon={<GlyphRocket />}
               caption="Meta and Google combined"
               dimmed={!t?.spend_cents}
@@ -430,6 +436,8 @@ export default function PlatformPage() {
             <StatTile
               label="After ad spend"
               value={t ? money(t.net_cents) : '—'}
+              countTo={t?.net_cents ?? null}
+              format={money}
               icon={<GlyphPulse />}
               caption="revenue less ad spend, not profit"
               dimmed={!t || t.net_cents === 0}

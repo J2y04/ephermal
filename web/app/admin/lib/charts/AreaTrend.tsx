@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ACCENT, INK, niceMax, smoothPath } from './tokens';
+import { useDrawIn, DRAW_EASE } from './motion';
 
 /**
  * Time-series area chart, hand-authored SVG.
@@ -50,6 +51,9 @@ export default function AreaTrend({
   const [width, setWidth] = useState(720);
   const [boxH, setBoxH] = useState(height);
   const h = fill ? boxH : height;
+  // Re-runs whenever the series itself changes, so switching date range redraws
+  // rather than snapping to the new shape.
+  const drawn = useDrawIn(points.length ? points.map((p) => p.value).join(',') : 'empty');
 
   const allZero = points.length > 0 && points.every((p) => !p.value);
 
@@ -116,6 +120,23 @@ export default function AreaTrend({
         style={{ display: 'block', touchAction: 'none' }}
       >
         <defs>
+          {/* Wipe from the y-axis outward: the line grows out of the origin
+              rather than appearing whole. Transform on the clip rect rather
+              than an animated width attribute, because only the former is
+              GPU-composited and interpolable in every engine. */}
+          <clipPath id={`wipe-${gid}`}>
+            <rect
+              x={PAD.left}
+              y={0}
+              width={geom.innerW}
+              height={h}
+              style={{
+                transformOrigin: `${PAD.left}px 0px`,
+                transform: drawn ? 'scaleX(1)' : 'scaleX(0)',
+                transition: `transform 1000ms ${DRAW_EASE}`,
+              }}
+            />
+          </clipPath>
           <linearGradient id={`fill-${gid}`} x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor={color} stopOpacity="0.26" />
             <stop offset="60%" stopColor={color} stopOpacity="0.06" />
@@ -148,16 +169,18 @@ export default function AreaTrend({
           </g>
         ))}
 
-        {!allZero && area && <path d={area} fill={`url(#fill-${gid})`} />}
         {!allZero && (
-          <path
-            d={line}
-            fill="none"
-            stroke={color}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <g clipPath={`url(#wipe-${gid})`}>
+            {area && <path d={area} fill={`url(#fill-${gid})`} />}
+            <path
+              d={line}
+              fill="none"
+              stroke={color}
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </g>
         )}
 
         {allZero && (

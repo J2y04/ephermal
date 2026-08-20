@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { INK, niceMax, smoothPath } from './tokens';
+import { useDrawIn, DRAW_EASE } from './motion';
 
 /**
  * Two or more series on ONE shared axis.
@@ -49,6 +50,7 @@ export default function MultiTrend({
   const [width, setWidth] = useState(720);
   const [boxH, setBoxH] = useState(height);
   const h = fill ? boxH : height;
+  const drawn = useDrawIn(series.map((x) => x.values.join(',')).join('|'));
 
   const allZero = series.every((s) => s.values.every((v) => !v));
 
@@ -120,6 +122,19 @@ export default function MultiTrend({
           style={{ display: 'block', touchAction: 'none' }}
         >
           <defs>
+            <clipPath id={`wipe-${gid}`}>
+              <rect
+                x={PAD.left}
+                y={0}
+                width={geom.innerW}
+                height={h}
+                style={{
+                  transformOrigin: `${PAD.left}px 0px`,
+                  transform: drawn ? 'scaleX(1)' : 'scaleX(0)',
+                  transition: `transform 1000ms ${DRAW_EASE}`,
+                }}
+              />
+            </clipPath>
             {series.map((s) => (
               <linearGradient key={s.key} id={`g-${gid}-${s.key}`} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor={s.color} stopOpacity="0.22" />
@@ -151,8 +166,9 @@ export default function MultiTrend({
             </g>
           ))}
 
-          {!allZero &&
-            series.map((s) => {
+          {!allZero && (
+            <g clipPath={`url(#wipe-${gid})`}>
+          {series.map((s) => {
               const pts = s.values.map((v, i) => ({ x: geom.xs(i), y: geom.ys(v) }));
               const line = smoothPath(pts);
               const area =
@@ -175,6 +191,8 @@ export default function MultiTrend({
                 </g>
               );
             })}
+            </g>
+          )}
 
           {allZero && (
             <text

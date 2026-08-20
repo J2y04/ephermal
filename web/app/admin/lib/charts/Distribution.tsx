@@ -1,6 +1,7 @@
 'use client';
 
 import { INK } from './tokens';
+import { useDrawIn, DRAW_EASE } from './motion';
 
 /**
  * The non-coordinate forms.
@@ -35,6 +36,7 @@ export function SegmentedBar({
   emptyLabel?: string;
 }) {
   const total = segments.reduce((s, x) => s + x.value, 0);
+  const drawn = useDrawIn(segments.map((s) => `${s.label}:${s.value}`).join(','));
 
   if (total <= 0) {
     return (
@@ -67,10 +69,10 @@ export function SegmentedBar({
               key={s.label}
               title={`${s.label}: ${s.value}`}
               style={{
-                width: `${(s.value / total) * 100}%`,
+                width: drawn ? `${(s.value / total) * 100}%` : '0%',
                 background: s.color,
                 borderRadius: 999,
-                transition: 'filter 160ms ease',
+                transition: `width 900ms ${DRAW_EASE}, filter 160ms ease`,
               }}
               className="hover:brightness-110"
             />
@@ -118,6 +120,7 @@ export function BulletBar({
   color: string;
 }) {
   const pct = total > 0 ? Math.min(100, (value / total) * 100) : 0;
+  const drawn = useDrawIn(`${label}:${value}/${total}`);
   return (
     <div className="py-2.5">
       <div className="flex items-baseline justify-between gap-3">
@@ -143,11 +146,11 @@ export function BulletBar({
       >
         <div
           style={{
-            width: `${pct}%`,
+            width: drawn ? `${pct}%` : '0%',
             height: '100%',
             background: color,
             borderRadius: 999,
-            transition: 'width 420ms cubic-bezier(0.22,1,0.36,1)',
+            transition: `width 900ms ${DRAW_EASE}`,
           }}
         />
       </div>
@@ -177,6 +180,7 @@ export function RadialArc({
   const cx = size / 2;
   const cy = size / 2;
   const circ = 2 * Math.PI * r;
+  const drawn = useDrawIn(`${label}:${pct}`);
   // Leave a gap at the bottom so the ring reads as a gauge, not a pie.
   const sweep = 0.78;
   const dash = circ * sweep;
@@ -209,9 +213,9 @@ export function RadialArc({
           fill="none"
           stroke={color}
           strokeWidth={stroke}
-          strokeDasharray={`${filled} ${circ}`}
+          strokeDasharray={`${drawn ? filled : 0} ${circ}`}
           strokeLinecap="round"
-          style={{ transition: 'stroke-dasharray 520ms cubic-bezier(0.22,1,0.36,1)' }}
+          style={{ transition: `stroke-dasharray 1000ms ${DRAW_EASE}` }}
         />
       </svg>
       <div className="-mt-[86px] flex flex-col items-center pb-[54px]">

@@ -390,18 +390,24 @@ export default function AdminOverviewPage() {
             <StatTile
               label="Total users"
               value={compact(activeUserTotal)}
+              countTo={activeUserTotal}
+              format={compact}
               icon={<GlyphUsers />}
               caption="all signed-up accounts"
             />
             <StatTile
               label="Signups"
               value={compact(totalSignups30d)}
+              countTo={totalSignups30d}
+              format={compact}
               icon={<GlyphSpark />}
               caption="last 30 days"
             />
             <StatTile
               label="Signups"
               value={compact(signups7d)}
+              countTo={signups7d}
+              format={compact}
               icon={<GlyphPulse />}
               delta={wowDelta}
               caption="last 7 days"
@@ -410,6 +416,8 @@ export default function AdminOverviewPage() {
             <StatTile
               label="Banned"
               value={compact(bannedCount)}
+              countTo={bannedCount}
+              format={compact}
               icon={<GlyphShield />}
               invertDelta
               caption={bannedCount === 0 ? 'none flagged' : 'accounts blocked'}

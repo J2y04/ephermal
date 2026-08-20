@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react';
 import Squircle from '../Squircle';
+import { useCountUp } from './motion';
 import { INK, STATUS, smoothPath } from './tokens';
 
 /**
@@ -17,7 +18,15 @@ import { INK, STATUS, smoothPath } from './tokens';
 
 export interface StatTileProps {
   label: string;
+  /** Pre-formatted fallback, used when there is nothing numeric to count to
+   *  (a dash for a metric with no denominator, for instance). */
   value: string;
+  /** Raw number to count up to. Supply with `format` to animate; omit and the
+   *  tile renders `value` statically. null means "no data", which renders
+   *  `value` rather than counting to zero, since counting to zero would imply a
+   *  real measurement of zero. */
+  countTo?: number | null;
+  format?: (n: number) => string;
   /** Round icon chip, top-right. Pass an inline <svg>, sized 18. */
   icon: ReactNode;
   /** Signed percentage change. Positive is not assumed to be good: pass
@@ -64,6 +73,8 @@ function Spark({ values }: { values: number[] }) {
 export default function StatTile({
   label,
   value,
+  countTo,
+  format,
   icon,
   delta,
   invertDelta = false,
@@ -71,7 +82,12 @@ export default function StatTile({
   spark,
   dimmed = false,
 }: StatTileProps) {
+  const animatable = typeof countTo === 'number' && Number.isFinite(countTo) && !!format;
+  const counted = useCountUp(animatable ? (countTo as number) : null);
+  const shown = animatable ? (format as (n: number) => string)(counted) : value;
+
   const hasDelta = typeof delta === 'number' && Number.isFinite(delta) && delta !== 0;
+  const countedDelta = useCountUp(hasDelta ? (delta as number) : null);
   const rising = hasDelta && (delta as number) > 0;
   const good = invertDelta ? !rising : rising;
   const deltaColor = !hasDelta ? INK.muted : good ? STATUS.good : STATUS.critical;
@@ -113,7 +129,7 @@ export default function StatTile({
               fontVariantNumeric: 'tabular-nums',
             }}
           >
-            {value}
+            {shown}
           </div>
 
           <div className="mt-2 flex items-center gap-2">
@@ -128,7 +144,7 @@ export default function StatTile({
                     fill="currentColor"
                   />
                 </svg>
-                {Math.abs(delta as number).toFixed(1)}%
+                {Math.abs(countedDelta).toFixed(1)}%
               </span>
             )}
             {caption && (
