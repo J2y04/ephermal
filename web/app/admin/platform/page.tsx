@@ -42,11 +42,13 @@ interface PlatformStats {
     google_connected: number;
   };
   auren: {
-    messages_this_week: number;
+    cost_this_week_usd: number;
+    tokens_this_week: number;
     active_users_this_week: number;
-    messages_all_time: number;
+    cost_all_time_usd: number;
+    tokens_all_time: number;
     topups_purchased: number;
-    topup_messages_granted: number;
+    topup_usd_granted: number;
     topup_distinct_users: number;
   };
   shopify: {
@@ -123,11 +125,13 @@ function mockStats(): PlatformStats {
       google_connected: 11,
     },
     auren: {
-      messages_this_week: 96,
+      cost_this_week_usd: 6.42,
+      tokens_this_week: 1_284_000,
       active_users_this_week: 14,
-      messages_all_time: 1284,
+      cost_all_time_usd: 41.87,
+      tokens_all_time: 8_390_000,
       topups_purchased: 3,
-      topup_messages_granted: 900,
+      topup_usd_granted: 7.5,
       topup_distinct_users: 3,
     },
     shopify: {
@@ -608,18 +612,32 @@ export default function PlatformPage() {
         </div>
 
         <div className="col-span-12 lg:col-span-4">
-          <Panel title="Auren usage" hint="AI assistant">
+          <Panel title="Auren usage" hint="real cost, per ISO week">
             <div className="divide-y divide-eph-border/50">
-              <Fact label="Messages this week" value="—" count={stats?.auren.messages_this_week ?? null} format={compact} />
+              <Fact
+                label="AI cost this week"
+                value="—"
+                count={stats?.auren.cost_this_week_usd ?? null}
+                format={(n) => `$${n.toFixed(2)}`}
+              />
               <Fact label="Active users this week" value="—" count={stats?.auren.active_users_this_week ?? null} />
-              <Fact label="Messages all time" value="—" count={stats?.auren.messages_all_time ?? null} format={compact} />
+              <Fact
+                label="Tokens this week"
+                value="—"
+                count={stats?.auren.tokens_this_week ?? null}
+                format={compact}
+              />
+              <Fact
+                label="AI cost all time"
+                value="—"
+                count={stats?.auren.cost_all_time_usd ?? null}
+                format={(n) => `$${n.toFixed(2)}`}
+              />
               <Fact
                 label="Top-ups purchased"
                 value="—"
                 count={stats?.auren.topups_purchased ?? null}
-                format={(n) =>
-                  `${Math.round(n)} (${compact(stats?.auren.topup_messages_granted ?? 0)} msgs)`
-                }
+                format={(n) => `${Math.round(n)} ($${(stats?.auren.topup_usd_granted ?? 0).toFixed(2)})`}
               />
               <Fact label="UGC credits this month" value="—" count={stats?.ugc.credits_used_this_month ?? null} />
             </div>

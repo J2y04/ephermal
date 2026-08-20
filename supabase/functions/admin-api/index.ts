@@ -292,8 +292,8 @@ async function handleGetPlatformStats(): Promise<Record<string, unknown>> {
     plansRes,
     expiringRes,
     integrationsRes,
-    aiCreditsWeekRes,
-    aiCreditsAllRes,
+    aiUsageWeekRes,
+    aiUsageAllRes,
     topupsRes,
     productsRes,
     campaignsRes,
@@ -313,9 +313,16 @@ async function handleGetPlatformStats(): Promise<Record<string, unknown>> {
       .gte('period_end', nowIso)
       .order('period_end', { ascending: true }),
     supabase.from('user_integrations').select('shopify_token, meta_token, meta_page_id, google_refresh_token'),
-    supabase.from('ai_credits').select('user_id, used').eq('month', thisWeek),
-    supabase.from('ai_credits').select('used'),
-    supabase.from('ai_topups').select('user_id, messages'),
+    // ai_usage / ai_usage_topups, NOT the ai_credits + ai_topups pair these
+    // previously read. Those are the abandoned "AI messages" counter that
+    // _shared/ai-usage.ts replaced with real cost tracking, and the migration
+    // was never finished: ai_credits holds a mix of month keys ("2026-07") and
+    // ISO-week keys ("2026-W31") in the same column, so a week-keyed query
+    // silently skipped every legacy row. The panel was reporting a number from
+    // a system nothing writes to any more.
+    supabase.from('ai_usage').select('user_id, tokens_used, cost_used_micros').eq('period', thisWeek),
+    supabase.from('ai_usage').select('tokens_used, cost_used_micros'),
+    supabase.from('ai_usage_topups').select('user_id, extra_cost_micros'),
     supabase.from('shopify_products').select('user_id, cogs_cents, price_cents'),
     supabase.from('launched_campaigns').select('status, platform, budget_daily, launched_at'),
     supabase.from('creative_briefs').select('user_id'),
@@ -351,15 +358,20 @@ async function handleGetPlatformStats(): Promise<Record<string, unknown>> {
     google_connected:  integrations.filter(r => r.google_refresh_token).length,
   };
 
-  const aiWeek = aiCreditsWeekRes.data ?? [];
-  const aiAll = aiCreditsAllRes.data ?? [];
+  const aiWeek = aiUsageWeekRes.data ?? [];
+  const aiAll = aiUsageAllRes.data ?? [];
   const topups = topupsRes.data ?? [];
+  const microsToUsd = (m: number) => Math.round((m / 1_000_000) * 10000) / 10000;
   const auren = {
-    messages_this_week:  aiWeek.reduce((s, r) => s + (r.used ?? 0), 0),
-    active_users_this_week: aiWeek.filter(r => (r.used ?? 0) > 0).length,
-    messages_all_time:   aiAll.reduce((s, r) => s + (r.used ?? 0), 0),
-    topups_purchased:    topups.length,
-    topup_messages_granted: topups.reduce((s, r) => s + (r.messages ?? 0), 0),
+    // Cost, not message count: the product bills against a real USD budget per
+    // ISO week, so that is the number that actually means something here.
+    cost_this_week_usd: microsToUsd(aiWeek.reduce((s, r) => s + (r.cost_used_micros ?? 0), 0)),
+    tokens_this_week: aiWeek.reduce((s, r) => s + (r.tokens_used ?? 0), 0),
+    active_users_this_week: aiWeek.filter(r => (r.cost_used_micros ?? 0) > 0).length,
+    cost_all_time_usd: microsToUsd(aiAll.reduce((s, r) => s + (r.cost_used_micros ?? 0), 0)),
+    tokens_all_time: aiAll.reduce((s, r) => s + (r.tokens_used ?? 0), 0),
+    topups_purchased: topups.length,
+    topup_usd_granted: microsToUsd(topups.reduce((s, r) => s + (r.extra_cost_micros ?? 0), 0)),
     topup_distinct_users: new Set(topups.map(r => r.user_id)).size,
   };
 
