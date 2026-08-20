@@ -31,7 +31,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { metaPost, metaGet } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
-import { renderStrategies } from '../_shared/ad-strategies.ts';
+import { renderStrategies, validateStrategySelection } from '../_shared/ad-strategies.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -182,6 +182,45 @@ For google.keywords, produce 8-15 keywords with a real match-type mix (mostly ex
       'Parse error:', e instanceof Error ? e.message : String(e),
       'Raw response (first 2000 chars):', raw.slice(0, 2000));
     throw new Error('AI returned invalid campaign structure');
+  }
+
+  // Enforce the strategy selection rather than trusting it. The prompt asks for
+  // it; this makes it a requirement. A model under token pressure drops the
+  // least-structured field first, and a free-text rationale is exactly that, so
+  // without this check "always uses the strategies" degrades silently into
+  // "usually does" and looks identical from the outside.
+  let selection = validateStrategySelection(copy.strategy_ids, copy.strategy_rationale);
+  if (!selection.ok) {
+    console.warn(`[campaign-launcher] prepare: strategy selection rejected (${selection.reason}); retrying once.`);
+    const retryMsg = `${userMsg}
+
+Your previous response was rejected: ${selection.reason}.
+Return the same JSON schema, but strategy_ids MUST contain at least 3 ids copied exactly from the STRATEGY LIBRARY above (the values in square brackets, e.g. meta-creative-volume), and strategy_rationale MUST explain in one or two sentences why those plays fit THIS product specifically, referring to its price, margin, category or available proof.`;
+    const retryRaw = await callClaude(userId, system, retryMsg, 3500);
+    try {
+      const retryCleaned = retryRaw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
+      const retryCopy = JSON.parse(retryCleaned) as Record<string, unknown>;
+      const retrySelection = validateStrategySelection(retryCopy.strategy_ids, retryCopy.strategy_rationale);
+      if (retrySelection.ok) {
+        copy = retryCopy;
+        selection = retrySelection;
+      }
+    } catch (e) {
+      console.error('[campaign-launcher] prepare: strategy retry also failed to parse:',
+        e instanceof Error ? e.message : String(e));
+    }
+  }
+
+  // Record the outcome on the draft either way. If both attempts failed the
+  // campaign still ships (a user asking for a campaign should get one), but the
+  // failure is visible in the row rather than hidden, so a systematic prompt
+  // regression shows up in the data instead of quietly degrading ad quality.
+  copy.strategy_validated = selection.ok;
+  if (!selection.ok) {
+    copy.strategy_error = selection.reason;
+    console.error(`[campaign-launcher] prepare: shipping campaign WITHOUT valid strategy selection: ${selection.reason}`);
+  } else {
+    console.log(`[campaign-launcher] prepare: strategies applied: ${selection.ids.join(', ')}`);
   }
 
   // Save to launched_campaigns as draft

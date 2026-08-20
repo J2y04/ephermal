@@ -259,3 +259,41 @@ export function renderStrategies(surface: Surface | 'all' = 'all'): string {
   const fw = COPY_FRAMEWORKS.map((f) => `- [${f.id}] ${f.name} — watch for: ${f.risk}`);
   return `STRATEGY LIBRARY (${picked.length} plays)\n\n${lines.join('\n')}\n\nCOPY FRAMEWORKS\n${fw.join('\n')}`;
 }
+
+/** Every valid strategy id, for server-side validation of a model response. */
+export const STRATEGY_IDS: ReadonlySet<string> = new Set(AD_STRATEGIES.map((s) => s.id));
+
+/**
+ * Validates what the model claimed it used.
+ *
+ * The prompt ASKS for strategy selection; this makes it a requirement. Without
+ * it, "always relies on the strategies" is a hope: a model under token pressure
+ * drops the least-structured field first, and a rationale is exactly that. It
+ * would fail silently and look identical to a good response.
+ *
+ * Returns the accepted ids plus a reason when the response is not usable, so
+ * the caller can retry once with a corrective instruction.
+ */
+export function validateStrategySelection(
+  ids: unknown,
+  rationale: unknown,
+): { ok: true; ids: string[]; rationale: string } | { ok: false; reason: string } {
+  if (!Array.isArray(ids) || ids.length === 0) {
+    return { ok: false, reason: 'strategy_ids was missing or empty' };
+  }
+  const asStrings = ids.map((i) => String(i));
+  const unknownIds = asStrings.filter((i) => !STRATEGY_IDS.has(i));
+  if (unknownIds.length) {
+    // An invented id means the model pattern-matched the shape instead of
+    // reading the library, which is precisely the failure this guards against.
+    return { ok: false, reason: `strategy_ids contained ids that are not in the library: ${unknownIds.join(', ')}` };
+  }
+  if (asStrings.length < 3) {
+    return { ok: false, reason: `only ${asStrings.length} strategy id(s) selected, at least 3 required` };
+  }
+  const text = typeof rationale === 'string' ? rationale.trim() : '';
+  if (text.length < 40) {
+    return { ok: false, reason: 'strategy_rationale was missing or too short to be a real justification' };
+  }
+  return { ok: true, ids: asStrings, rationale: text };
+}
