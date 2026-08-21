@@ -101,3 +101,12 @@ export function IconFlask({ className }: IconProps) {
     </svg>
   );
 }
+
+export function IconMail({ className }: IconProps) {
+  return (
+    <svg {...base} className={className}>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m2 7 8.6 5.7a2.5 2.5 0 0 0 2.8 0L22 7" />
+    </svg>
+  );
+}

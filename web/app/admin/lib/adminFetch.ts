@@ -29,6 +29,11 @@ const SUPABASE_ANON =
 
 const ADMIN_API_URL = `${SUPABASE_URL}/functions/v1/admin-api`;
 
+/** The inbox lives in its own function because it holds an open TLS socket to
+ *  Gmail for the life of a request, which does not belong in the same handler
+ *  as the fast metric queries. */
+const ADMIN_INBOX_URL = `${SUPABASE_URL}/functions/v1/admin-inbox`;
+
 /**
  * True only on localhost — same hostname-gated dev-preview convention already
  * established in web/public/dashboard.html's boot sequence. Clerk's production
@@ -55,7 +60,9 @@ interface AdminFetchResult<T> {
  * action: the admin-api action name (list_users, get_revenue, set_plan, ban_user, unban_user).
  * args: any extra fields the action needs (query, days, target_user_id, plan, ...).
  */
-export async function adminFetch<T = unknown>(
+async function callEdge<T>(
+  url: string,
+  label: string,
   session: { getToken: () => Promise<string | null> } | null | undefined,
   action: string,
   args: Record<string, unknown> = {},
@@ -75,7 +82,7 @@ export async function adminFetch<T = unknown>(
   }
 
   try {
-    const res = await fetch(ADMIN_API_URL, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -96,6 +103,23 @@ export async function adminFetch<T = unknown>(
 
     return { ok: true, status: res.status, data: data as T, error: null };
   } catch {
-    return { ok: false, status: 0, data: null, error: 'Network error: could not reach admin-api' };
+    return { ok: false, status: 0, data: null, error: `Network error: could not reach ${label}` };
   }
+}
+
+export function adminFetch<T = unknown>(
+  session: { getToken: () => Promise<string | null> } | null | undefined,
+  action: string,
+  args: Record<string, unknown> = {},
+): Promise<AdminFetchResult<T>> {
+  return callEdge<T>(ADMIN_API_URL, 'admin-api', session, action, args);
+}
+
+/** Same auth path, different function. See ADMIN_INBOX_URL above. */
+export function inboxFetch<T = unknown>(
+  session: { getToken: () => Promise<string | null> } | null | undefined,
+  action: string,
+  args: Record<string, unknown> = {},
+): Promise<AdminFetchResult<T>> {
+  return callEdge<T>(ADMIN_INBOX_URL, 'admin-inbox', session, action, args);
 }

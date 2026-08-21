@@ -5,7 +5,7 @@ import { useUser } from '@/components/clerk-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { isLocalDev } from './lib/adminFetch';
-import { IconGrid, IconUsers, IconDatabase, IconCreditCard, IconShield, IconTriangle, IconArrowLeft, IconFlask } from './lib/icons';
+import { IconGrid, IconUsers, IconDatabase, IconCreditCard, IconShield, IconTriangle, IconArrowLeft, IconFlask, IconMail } from './lib/icons';
 import Squircle from './lib/Squircle';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import './admin.css';
@@ -88,6 +88,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { href: '/admin', label: 'Overview', Icon: IconGrid },
     { href: '/admin/users', label: 'Users', Icon: IconUsers },
     { href: '/admin/testers', label: 'Test Users', Icon: IconFlask },
+    { href: '/admin/inbox', label: 'Inbox', Icon: IconMail },
     { href: '/admin/platform', label: 'Platform', Icon: IconDatabase },
     { href: '/admin/finance', label: 'Finance', Icon: IconCreditCard },
   ];

@@ -191,3 +191,174 @@
     @apply font-sans;
   }
 }
+
+/* ============================================================================
+   INBOX
+   ----------------------------------------------------------------------------
+   The Ephermal Gmail label, read over IMAP. Two panes: the list stays put, the
+   reader scrolls, which is the layout anyone who has used mail already knows.
+
+   Colours come from the same channel-form tokens the rest of the panel uses, so
+   this inherits the theme rather than restating it.
+
+   Message bodies render as plain text on purpose. Inbound mail is untrusted
+   input in an admin panel, so no HTML and no remote images reach the page.
+   ============================================================================ */
+
+.eph-inbox { display: flex; flex-direction: column; gap: 20px; }
+
+.eph-inbox-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.eph-inbox-head h1 { font-family: var(--font-heading), var(--font-sans); font-size: 26px; font-weight: 700; letter-spacing: -0.5px; color: rgb(var(--foreground)); }
+.eph-inbox-head p { margin-top: 4px; font-size: 13.5px; color: rgb(var(--muted-foreground)); display: flex; align-items: center; gap: 8px; }
+.eph-inbox-head code { font-size: 12.5px; padding: 2px 7px; border-radius: 6px; background: rgb(var(--secondary)); color: rgb(var(--foreground)); }
+.eph-inbox-count { background: rgba(var(--primary), 0.14) !important; color: rgb(var(--primary)) !important; }
+
+.eph-inbox-refresh,
+.eph-inbox-retry {
+  font: inherit; font-size: 13px; font-weight: 500; cursor: pointer;
+  padding: 8px 16px; border-radius: 999px;
+  color: rgb(var(--foreground));
+  background: rgb(var(--secondary));
+  border: 1px solid rgb(var(--border));
+  transition: background 200ms cubic-bezier(0.16,1,0.3,1), border-color 200ms cubic-bezier(0.16,1,0.3,1), transform 120ms cubic-bezier(0.34,1.4,0.64,1);
+}
+.eph-inbox-refresh:hover:not(:disabled),
+.eph-inbox-retry:hover { border-color: rgba(var(--primary), 0.45); transform: translateY(-1px); }
+.eph-inbox-refresh:active:not(:disabled) { transform: translateY(0) scale(0.985); }
+.eph-inbox-refresh:disabled { opacity: 0.55; cursor: default; }
+
+.eph-inbox-note { font-size: 12.5px; color: rgb(var(--muted-foreground)); }
+.eph-inbox-note strong { color: rgb(var(--primary)); font-weight: 600; }
+
+.eph-inbox-split { display: grid; grid-template-columns: minmax(300px, 380px) 1fr; gap: 20px; align-items: start; }
+.eph-inbox-listcol, .eph-inbox-readcol { min-width: 0; }
+
+.eph-inbox-list,
+.eph-inbox-reader {
+  background: rgb(var(--card));
+  border: 1px solid rgb(var(--border));
+  overflow: hidden;
+}
+.eph-inbox-list { display: flex; flex-direction: column; max-height: 74vh; }
+.eph-inbox-reader { min-height: 420px; max-height: 74vh; overflow-y: auto; }
+
+.eph-inbox-search { padding: 12px; border-bottom: 1px solid rgb(var(--border)); }
+.eph-inbox-search input {
+  width: 100%; font: inherit; font-size: 13px;
+  padding: 9px 12px; border-radius: 9px;
+  color: rgb(var(--foreground));
+  background: rgb(var(--background));
+  border: 1px solid rgb(var(--border));
+  transition: border-color 200ms cubic-bezier(0.16,1,0.3,1);
+}
+.eph-inbox-search input::placeholder { color: rgb(var(--muted-foreground)); }
+.eph-inbox-search input:focus { outline: none; border-color: rgba(var(--primary), 0.55); }
+
+.eph-inbox-rows { list-style: none; margin: 0; padding: 6px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+
+.eph-inbox-row {
+  width: 100%; text-align: left; cursor: pointer; font: inherit;
+  display: flex; align-items: flex-start; gap: 11px;
+  padding: 11px 12px; border-radius: 11px;
+  background: transparent; border: 1px solid transparent;
+  transition: background 200ms cubic-bezier(0.16,1,0.3,1), border-color 200ms cubic-bezier(0.16,1,0.3,1);
+}
+.eph-inbox-row:hover { background: rgb(var(--secondary)); }
+.eph-inbox-row.is-active { background: rgba(var(--primary), 0.08); border-color: rgba(var(--primary), 0.3); }
+.eph-inbox-row:focus-visible { outline: 2px solid rgb(var(--primary)); outline-offset: 2px; }
+
+/* Unread is carried by weight and a marker, never by colour alone. */
+.eph-inbox-row.is-unread .eph-inbox-from { font-weight: 700; }
+.eph-inbox-row.is-unread .eph-inbox-subject { color: rgb(var(--foreground)); }
+.eph-inbox-row::before {
+  content: "";
+  width: 5px; flex-shrink: 0;
+}
+.eph-inbox-row.is-unread::before {
+  height: 5px; border-radius: 50%;
+  background: rgb(var(--primary)); margin-top: 15px;
+}
+
+.eph-inbox-avatar {
+  flex-shrink: 0; width: 32px; height: 32px; border-radius: 9px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11.5px; font-weight: 700; letter-spacing: 0.3px;
+  color: rgb(var(--primary));
+  background: rgba(var(--primary), 0.11);
+  border: 1px solid rgba(var(--primary), 0.2);
+}
+.eph-inbox-avatar.lg { width: 40px; height: 40px; font-size: 13px; border-radius: 11px; }
+
+.eph-inbox-rowbody { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.eph-inbox-rowtop { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.eph-inbox-from { font-size: 13px; font-weight: 500; color: rgb(var(--foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.eph-inbox-when { font-size: 11px; color: rgb(var(--muted-foreground)); white-space: nowrap; flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.eph-inbox-subject { font-size: 12.5px; color: rgb(var(--muted-foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Reader */
+.eph-inbox-article { padding: 26px 28px 30px; }
+.eph-inbox-article h2 { font-family: var(--font-heading), var(--font-sans); font-size: 21px; font-weight: 700; letter-spacing: -0.4px; color: rgb(var(--foreground)); line-height: 1.3; text-wrap: balance; }
+.eph-inbox-meta { display: flex; align-items: flex-start; gap: 12px; margin: 18px 0 22px; padding-bottom: 18px; border-bottom: 1px solid rgb(var(--border)); }
+.eph-inbox-metaname { font-size: 13.5px; font-weight: 600; color: rgb(var(--foreground)); display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; }
+.eph-inbox-metaaddr { font-size: 12px; font-weight: 400; color: rgb(var(--muted-foreground)); }
+.eph-inbox-metato { font-size: 12px; color: rgb(var(--muted-foreground)); margin-top: 2px; }
+.eph-inbox-metato span { color: rgb(var(--foreground)); opacity: 0.8; }
+.eph-inbox-metadate { margin-left: auto; font-size: 11.5px; color: rgb(var(--muted-foreground)); white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+.eph-inbox-bodywrap { overflow-x: auto; }
+.eph-inbox-body {
+  font-family: var(--font-sans); font-size: 13.5px; line-height: 1.72;
+  color: rgb(var(--foreground)); opacity: 0.92;
+  white-space: pre-wrap; word-break: break-word; margin: 0; max-width: 68ch;
+}
+.eph-inbox-replyhint { margin-top: 26px; padding-top: 16px; border-top: 1px solid rgb(var(--border)); font-size: 12.5px; color: rgb(var(--muted-foreground)); }
+.eph-inbox-replyhint a { color: rgb(var(--primary)); text-decoration: none; border-bottom: 1px solid rgba(var(--primary), 0.35); }
+.eph-inbox-replyhint a:hover { border-bottom-color: rgb(var(--primary)); }
+
+/* Empty and error states get the same care as the populated ones. */
+.eph-inbox-empty, .eph-inbox-error {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 8px; padding: 56px 28px;
+  background: rgb(var(--card)); border: 1px solid rgb(var(--border));
+}
+.eph-inbox-empty.inline { background: transparent; border: none; }
+.eph-inbox-empty h3, .eph-inbox-error h3 { font-size: 15px; font-weight: 600; color: rgb(var(--foreground)); }
+.eph-inbox-empty p, .eph-inbox-error p { font-size: 13px; color: rgb(var(--muted-foreground)); max-width: 40ch; }
+.eph-inbox-empty-icon { width: 26px; height: 26px; color: rgb(var(--muted-foreground)); opacity: 0.5; margin-bottom: 4px; }
+.eph-inbox-error { border-color: rgba(var(--destructive), 0.35); }
+.eph-inbox-retry { margin-top: 6px; }
+
+/* Skeletons match the shape of what is loading, so nothing jumps on arrival. */
+.eph-inbox-row.is-skeleton { pointer-events: none; }
+.sk-line, .eph-inbox-avatar.sk {
+  display: block; border-radius: 6px;
+  background: linear-gradient(90deg, rgb(var(--secondary)) 25%, rgb(var(--border)) 37%, rgb(var(--secondary)) 63%);
+  background-size: 400% 100%;
+  animation: ephInboxSk 1.4s ease-in-out infinite;
+}
+.eph-inbox-avatar.sk { width: 32px; height: 32px; border-radius: 9px; border: none; }
+.sk-line-a { width: 42%; height: 10px; margin-bottom: 7px; }
+.sk-line-b { width: 76%; height: 9px; }
+.eph-inbox-readskeleton { padding: 26px 28px; display: flex; flex-direction: column; gap: 11px; }
+.sk-line-title { width: 58%; height: 17px; }
+.sk-line-meta { width: 34%; height: 10px; margin-bottom: 14px; }
+.sk-line-body { width: 100%; height: 10px; }
+.sk-line-body:nth-of-type(even) { width: 88%; }
+.sk-line-body:last-of-type { width: 52%; }
+
+@keyframes ephInboxSk {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+@media (max-width: 1000px) {
+  .eph-inbox-split { grid-template-columns: 1fr; }
+  .eph-inbox-list { max-height: 46vh; }
+  .eph-inbox-reader { max-height: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sk-line, .eph-inbox-avatar.sk { animation: none; }
+  .eph-inbox-refresh, .eph-inbox-retry, .eph-inbox-row { transition: background 120ms linear, border-color 120ms linear; }
+  .eph-inbox-refresh:hover:not(:disabled), .eph-inbox-retry:hover { transform: none; }
+}

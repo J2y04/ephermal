@@ -22,6 +22,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
 import { topupCostUsd } from '../_shared/ai-usage.ts';
+import { captureException } from '../_shared/sentry.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -88,6 +89,7 @@ async function updateClerkMetadata(clerkUserId: string, plan: string): Promise<v
   if (!res.ok) {
     // Log detail server-side only — never expose to response body
     console.error('Clerk metadata update failed:', res.status, await res.text());
+    captureException(new Error(`clerk metadata update failed: ${res.status}`), { fn: 'stripe-webhook', at: 'clerk_metadata' });
     const err = new Error('Clerk metadata update failed') as Error & { status?: number };
     err.status = res.status;
     throw err;

@@ -93,3 +93,8 @@ verify_jwt = false
 # extractUserId. The gateway flag would 401 every call before it ran.
 [functions.stores-api]
 verify_jwt = false
+
+# Admin-only, but the Clerk JWT is still verified in-function by extractUserId
+# then requireAdmin. Gateway flag off for the same reason as every other one.
+[functions.admin-inbox]
+verify_jwt = false
