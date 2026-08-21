@@ -22,7 +22,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
-import { computeProductMargin, computeCatalogMargin } from '../_shared/margin.ts';
+import {
+  computeProductMargin,
+  computeCatalogMargin,
+  toVariableCosts,
+  type VariableCosts,
+} from '../_shared/margin.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -96,11 +101,44 @@ async function handleBulkSet(
   return { success: true, updated: successCount, total: items.length, results };
 }
 
-async function handleGetReport(userId: string): Promise<Record<string, unknown>> {
-  const { data: products, error } = await supabase
-    .from('shopify_products')
-    .select('product_id, title, price_cents, cogs_cents, inventory_count')
+/** The merchant's variable-cost settings. A missing row means "not configured",
+ *  which reads as all-zero fees and keeps contribution identical to gross rather
+ *  than inventing a fee load nobody entered. */
+async function loadVariableCosts(userId: string): Promise<VariableCosts> {
+  const { data } = await supabase
+    .from('user_integrations')
+    .select('fee_payment_pct, fee_payment_fixed_cents, fee_shipping_cents, fee_other_pct')
+    .eq('user_id', userId)
+    .maybeSingle();
+  return toVariableCosts(data as Record<string, unknown> | null);
+}
+
+async function handleSetFees(
+  userId: string,
+  fees: VariableCosts,
+): Promise<Record<string, unknown>> {
+  const { error } = await supabase
+    .from('user_integrations')
+    .update({
+      fee_payment_pct:         fees.paymentPct,
+      fee_payment_fixed_cents: fees.paymentFixedCents,
+      fee_shipping_cents:      fees.shippingCents,
+      fee_other_pct:           fees.otherPct,
+    })
     .eq('user_id', userId);
+
+  if (error) throw new Error(error.message);
+  return { success: true, fees };
+}
+
+async function handleGetReport(userId: string): Promise<Record<string, unknown>> {
+  const [{ data: products, error }, fees] = await Promise.all([
+    supabase
+      .from('shopify_products')
+      .select('product_id, title, price_cents, cogs_cents, inventory_count')
+      .eq('user_id', userId),
+    loadVariableCosts(userId),
+  ]);
 
   if (error) throw new Error(error.message);
 
@@ -113,17 +151,24 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
   }[];
 
   const enriched = rows.map(p => {
-    const { hasCogs, profitPerUnitCents, marginPercent } = computeProductMargin(p);
+    const m = computeProductMargin(p, fees);
 
     return {
       product_id:           p.product_id,
       title:                p.title,
       price_cents:          p.price_cents ?? 0,
       cogs_cents:           p.cogs_cents ?? null,
-      profit_per_unit_cents: profitPerUnitCents,
-      margin_percent:       marginPercent,
+      profit_per_unit_cents: m.profitPerUnitCents,
+      margin_percent:       m.marginPercent,
       inventory_count:      p.inventory_count ?? 0,
-      has_cogs:             hasCogs,
+      has_cogs:             m.hasCogs,
+      // Contribution equals gross until the merchant enters fees; has_variable_costs
+      // tells the UI which of the two it is actually looking at, so it can never
+      // label an unadjusted number "contribution".
+      variable_costs_per_unit_cents: m.variableCostsPerUnitCents,
+      contribution_per_unit_cents:   m.contributionPerUnitCents,
+      contribution_margin_percent:   m.contributionMarginPercent,
+      break_even_roas:               m.breakEvenRoas,
     };
   });
 
@@ -135,12 +180,17 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
     return b.margin_percent - a.margin_percent;
   });
 
-  const { avgMarginPercent, productsWithCogs, totalProducts } = computeCatalogMargin(rows);
+  const catalog = computeCatalogMargin(rows, fees);
+  const { avgMarginPercent, productsWithCogs, totalProducts } = catalog;
 
   // estimated_profit_per_roas_point: if you spend $1 and get ROAS of 1,
   // profit earned = avg margin on revenue. So at ROAS=1 per $1 spend → $1 revenue × avg_margin%
-  const estimatedProfitPerRoasPoint = avgMarginPercent !== null
-    ? Math.round(avgMarginPercent * 100) / 10000  // as a decimal (e.g. 0.35 for 35%)
+  // Profit kept per point of ROAS. Uses CONTRIBUTION margin wherever fees are
+  // known, because the gross version overstates what a point of ROAS is worth by
+  // exactly the fee load, which is the error the fee settings exist to remove.
+  const marginForRoas = catalog.avgContributionMarginPercent ?? avgMarginPercent;
+  const estimatedProfitPerRoasPoint = marginForRoas !== null
+    ? Math.round(marginForRoas * 100) / 10000  // as a decimal (e.g. 0.35 for 35%)
     : null;
 
   return {
@@ -149,7 +199,18 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
       total_products:           totalProducts,
       total_products_with_cogs: productsWithCogs,
       avg_margin_percent:       avgMarginPercent,
+      avg_contribution_margin_percent: catalog.avgContributionMarginPercent,
+      products_losing_money:    catalog.productsLosingMoney,
       estimated_profit_per_roas_point: estimatedProfitPerRoasPoint,
+      // Whether the figures above account for payment, shipping and handling, or
+      // are gross because the merchant has not entered fees yet.
+      has_variable_costs:       catalog.hasVariableCosts,
+      fees: {
+        payment_pct:         fees.paymentPct,
+        payment_fixed_cents: fees.paymentFixedCents,
+        shipping_cents:      fees.shippingCents,
+        other_pct:           fees.otherPct,
+      },
     },
   };
 }
@@ -185,6 +246,43 @@ Deno.serve(async (req) => {
         const cogsCents = Number(body.cogs_cents ?? 0);
         if (isNaN(cogsCents) || cogsCents < 0) return errResponse('cogs_cents must be a non-negative number', 400, origin);
         return okResponse(await handleSetCogs(userId, productId, cogsCents), origin);
+      }
+
+      case 'set_fees': {
+        // Validated here as well as in the CHECK constraints, so a bad value
+        // returns a readable 400 instead of a Postgres constraint error string.
+        const pct = (v: unknown, label: string): number => {
+          const n = Number(v ?? 0);
+          if (!Number.isFinite(n) || n < 0 || n > 100) {
+            throw new RangeError(`${label} must be a percentage between 0 and 100`);
+          }
+          return Math.round(n * 1000) / 1000;
+        };
+        const cents = (v: unknown, label: string, max: number): number => {
+          const n = Number(v ?? 0);
+          if (!Number.isFinite(n) || n < 0 || n > max) {
+            throw new RangeError(`${label} must be between 0 and ${max} cents`);
+          }
+          return Math.round(n);
+        };
+
+        let fees;
+        try {
+          fees = {
+            paymentPct:        pct(body.payment_pct, 'payment_pct'),
+            otherPct:          pct(body.other_pct, 'other_pct'),
+            paymentFixedCents: cents(body.payment_fixed_cents, 'payment_fixed_cents', 100000),
+            shippingCents:     cents(body.shipping_cents, 'shipping_cents', 1000000),
+          };
+        } catch (e) {
+          return errResponse((e as Error).message, 400, origin);
+        }
+
+        if (fees.paymentPct + fees.otherPct > 100) {
+          return errResponse('payment_pct and other_pct cannot add up to more than 100', 400, origin);
+        }
+
+        return okResponse(await handleSetFees(userId, fees), origin);
       }
 
       case 'bulk_set': {

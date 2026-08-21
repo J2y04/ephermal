@@ -529,7 +529,7 @@ export default function Home() {
               <div className="section-label" style={{ color: '#96BF48' }}>Profit Tracker</div>
               <h2 className="section-title">You&apos;re probably<br />optimising the campaign<br />that&apos;s losing you money.</h2>
               <p className="section-sub" style={{ textAlign: 'left', margin: '0 0 28px' }}>
-                You spent €800 on ads and made €3,200 in revenue. Great ROAS. But your pre-workout costs €46 to make and land on the door. At €59 retail, every 4× ROAS order was bleeding you €3.20 after platform fees. Enter your real COGS and Ephermal shows you exactly which products are actually profitable, not just which ones look good in the ROAS dashboard.
+                You spent €800 on ads and made €3,200 in revenue. Great ROAS. But your pre-workout costs €46 to make and land on the door. At €59 retail with 1.9% + €0.25 payment processing, every 4× ROAS order was bleeding you €3.12. Enter your real COGS and your variable costs, and Ephermal reports contribution margin rather than gross, so you see which products actually make money instead of which ones look good in the ROAS dashboard.
               </p>
               <div className="meta-features">
                 {[
@@ -551,7 +551,7 @@ export default function Home() {
               <div style={{ background: 'rgba(150,191,72,0.06)', border: '1px solid rgba(150,191,72,0.2)', borderRadius: '20px', padding: '32px' }}>
                 <div style={{ marginBottom: '20px', padding: '11px 14px', background: 'rgba(var(--primary-rgb),0.05)', borderRadius: '10px', border: '1px solid rgba(var(--primary-rgb),0.12)' }}>
                   <div style={{ fontSize: '10px', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '4px' }}>ROAS 4.1× · looks great</div>
-                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>Pre-Workout 300g · €59 retail, €46 landed cost = 22% margin. Losing €3.20/order after fees.</div>
+                  <div style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: 1.5 }}>Pre-Workout 300g · €59 retail, €46 cost = 22% gross, 19.7% contribution. Break-even 5.07×, so a 4× order loses €3.12.</div>
                 </div>
                 <div style={{ fontSize: '11px', fontWeight: 700, color: '#96BF48', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '14px' }}>Real margin by product</div>
                 {[

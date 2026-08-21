@@ -18,7 +18,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { metaGet, parseConversions } from '../_shared/meta.ts';
 import { requirePlan } from '../_shared/plan.ts';
-import { computeCatalogMargin } from '../_shared/margin.ts';
+import { computeCatalogMargin, toVariableCosts } from '../_shared/margin.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 const SYNC_DAYS = 90;
@@ -286,17 +286,30 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
   // revenue breakdown anywhere in the schema, so margin here is a blended estimate:
   // revenue × catalog-average-margin%, not true per-order accounting. Always label it
   // "Estimated" wherever it's shown.
-  const { data: products } = await supabase
-    .from('shopify_products')
-    .select('price_cents, cogs_cents')
-    .eq('user_id', userId);
-  const { avgMarginPercent, productsWithCogs, totalProducts } = computeCatalogMargin(products ?? []);
+  const [{ data: products }, { data: feeRow }] = await Promise.all([
+    supabase
+      .from('shopify_products')
+      .select('price_cents, cogs_cents')
+      .eq('user_id', userId),
+    supabase
+      .from('user_integrations')
+      .select('fee_payment_pct, fee_payment_fixed_cents, fee_shipping_cents, fee_other_pct')
+      .eq('user_id', userId)
+      .maybeSingle(),
+  ]);
+  const fees = toVariableCosts(feeRow as Record<string, unknown> | null);
+  const catalog = computeCatalogMargin(products ?? [], fees);
+  const { productsWithCogs, totalProducts } = catalog;
+  // Prefer contribution once the merchant has entered fees. The revenue chart
+  // multiplies revenue by this number, so using gross here would overstate money
+  // kept by the entire fee load on every point of the series.
+  const avgMarginPercent = catalog.avgContributionMarginPercent ?? catalog.avgMarginPercent;
 
   const snapshots = rows ?? [];
   if (snapshots.length === 0) {
     return {
       has_data: false, series: [], mrr_cents: 0, prev_mrr_cents: 0, mrr_growth_pct: null,
-      total_spend_cents: 0, blended_roas: null, margin_pct: avgMarginPercent, margin_cents: null,
+      total_spend_cents: 0, blended_roas: null, margin_pct: avgMarginPercent, margin_basis: catalog.hasVariableCosts ? 'contribution' : 'gross', margin_cents: null,
       products_with_cogs: productsWithCogs, total_products: totalProducts,
     };
   }
@@ -336,6 +349,7 @@ async function handleGetReport(userId: string): Promise<Record<string, unknown>>
     total_spend_cents: totalSpendCents,
     blended_roas:      blendedRoas,
     margin_pct:         avgMarginPercent,
+    margin_basis:       catalog.hasVariableCosts ? 'contribution' : 'gross',
     margin_cents:       marginCents,
     products_with_cogs: productsWithCogs,
     total_products:     totalProducts,

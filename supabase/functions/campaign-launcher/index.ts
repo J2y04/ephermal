@@ -32,6 +32,7 @@ import { metaPost, metaGet } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 import { renderStrategies, validateStrategySelection } from '../_shared/ad-strategies.ts';
+import { computeProductMargin, toVariableCosts } from '../_shared/margin.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -106,7 +107,7 @@ async function prepareCampaign(
   // Matched on title for this user only. COGS is frequently absent, and that
   // case is stated explicitly rather than left blank: an unstated gap invites
   // the model to assume a margin, which is worse than knowing it is unknown.
-  let economics = 'COGS is not recorded for this product, so gross margin is UNKNOWN. Do not assume, estimate or invent a margin figure, and do not claim a break-even ROAS. If margin would have driven the choice, say that it is unavailable.';
+  let economics = 'COGS is not recorded for this product, so gross margin, contribution margin and break-even ROAS are all UNKNOWN. Do not assume, estimate or invent a margin figure, and do not claim a break-even ROAS. If margin would have driven the choice, say that it is unavailable.';
   const title = String(product.name ?? product.title ?? '').trim();
   if (title) {
     const { data: match } = await supabase
@@ -116,24 +117,49 @@ async function prepareCampaign(
       .ilike('title', title)
       .maybeSingle();
     if (match) {
+      // Uses the same helper as the Profit Tracker rather than a second copy of
+      // the arithmetic. This block previously computed break-even ROAS from
+      // GROSS margin, which is optimistic by the merchant's entire fee load:
+      // payment processing, absorbed shipping and handling all come out before
+      // contribution. Telling the model a product breaks even at 2.5x when it
+      // truly needs 3.3x biases every bid and budget decision toward losing money.
+      const { data: feeRow } = await supabase
+        .from('user_integrations')
+        .select('fee_payment_pct, fee_payment_fixed_cents, fee_shipping_cents, fee_other_pct')
+        .eq('user_id', userId)
+        .maybeSingle();
+      const fees = toVariableCosts(feeRow as Record<string, unknown> | null);
+
       const priceC = Number(match.price_cents ?? 0);
       const cogsC = match.cogs_cents == null ? null : Number(match.cogs_cents);
+      const m = computeProductMargin({ price_cents: priceC, cogs_cents: cogsC }, fees);
       const parts = [
         `Catalogue price: ${(priceC / 100).toFixed(2)}`,
         match.product_type ? `Category: ${match.product_type}` : null,
         match.vendor ? `Vendor: ${match.vendor}` : null,
         match.inventory_count != null ? `Inventory on hand: ${match.inventory_count}` : null,
       ].filter(Boolean);
-      if (cogsC != null && priceC > 0) {
-        const marginPct = ((priceC - cogsC) / priceC) * 100;
-        // Break-even ROAS is the reciprocal of gross margin: at 54% margin you
-        // need roughly 1.85x revenue per unit of ad spend just to stand still.
-        const breakEvenRoas = marginPct > 0 ? 100 / marginPct : null;
-        parts.push(`Unit COGS: ${(cogsC / 100).toFixed(2)}`);
-        parts.push(`Gross margin: ${marginPct.toFixed(1)}%`);
-        if (breakEvenRoas) parts.push(`Break-even ROAS: ${breakEvenRoas.toFixed(2)}x (a campaign below this loses money even while reporting revenue)`);
+      if (m.hasCogs && priceC > 0) {
+        parts.push(`Unit COGS: ${(cogsC! / 100).toFixed(2)}`);
+        parts.push(`Gross margin: ${m.marginPercent!.toFixed(1)}%`);
+
+        if (m.hasVariableCosts) {
+          parts.push(`Variable cost per order: ${(m.variableCostsPerUnitCents! / 100).toFixed(2)} (payment processing, plus any shipping and handling the store absorbs)`);
+          parts.push(`Contribution margin: ${m.contributionMarginPercent!.toFixed(1)}% — this, not gross margin, is what the store keeps before ad spend`);
+        } else {
+          parts.push('Variable costs (payment processing, shipping, handling) are NOT recorded for this store, so the figures above are GROSS. True contribution margin is lower by that unrecorded amount. Do not call gross margin profit.');
+        }
+
+        if (m.breakEvenRoas !== null) {
+          const basis = m.hasVariableCosts
+            ? 'contribution margin'
+            : 'gross margin only, so the real break-even is higher than this';
+          parts.push(`Break-even ROAS: ${m.breakEvenRoas.toFixed(2)}x, derived from ${basis}. A campaign below this loses money even while reporting revenue.`);
+        } else if (m.contributionPerUnitCents !== null && m.contributionPerUnitCents <= 0) {
+          parts.push('This product has zero or negative contribution at its catalogue price: it loses money on every order before a penny of ad spend. No ROAS makes it profitable. Say that plainly instead of proposing a scaling play.');
+        }
       } else {
-        parts.push('Unit COGS: not recorded, so gross margin and break-even ROAS are UNKNOWN. Do not assume or invent them.');
+        parts.push('Unit COGS: not recorded, so gross margin, contribution margin and break-even ROAS are all UNKNOWN. Do not assume or invent them.');
       }
       economics = parts.join('\n');
     }

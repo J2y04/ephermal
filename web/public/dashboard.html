@@ -2023,7 +2023,43 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
         </div>
         <button id="profit-cogs-save-btn" onclick="saveProfitCogs()" class="btn btn-primary" style="padding:10px 20px">Save COGS</button>
       </div>
-      <div id="profit-summary-wrap" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px"></div>
+      <div class="card" id="profit-fees-card" style="margin-bottom:20px">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px">
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Variable costs per order</div>
+          <span id="profit-fees-state" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--warning)">Not set — margins below are gross</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);line-height:1.55;margin-bottom:16px">
+          Payment processing, shipping you absorb and per-order handling come out before you keep anything. Enter them once and every margin, break-even ROAS and profit figure switches from gross to real contribution.
+          <a href="/docs#cogs" target="_blank" rel="noopener" style="color:var(--primary)">What is contribution margin?</a>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px">
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Payment %</span>
+            <input id="fee-payment-pct" type="number" min="0" max="100" step="0.01" placeholder="2.9" style="padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit">
+            <span style="font-size:11px;color:var(--muted)">Shopify Payments is about 1.9% in the EU, 2.9% in the US</span>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Payment fixed (<span class="fee-cur">€</span>)</span>
+            <input id="fee-payment-fixed" type="number" min="0" step="0.01" placeholder="0.25" style="padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit">
+            <span style="font-size:11px;color:var(--muted)">Flat fee per transaction</span>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Shipping (<span class="fee-cur">€</span>)</span>
+            <input id="fee-shipping" type="number" min="0" step="0.01" placeholder="0.00" style="padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit">
+            <span style="font-size:11px;color:var(--muted)">Only what you absorb, not what the customer pays</span>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px">
+            <span style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Other %</span>
+            <input id="fee-other-pct" type="number" min="0" max="100" step="0.01" placeholder="0" style="padding:8px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit">
+            <span style="font-size:11px;color:var(--muted)">Pick and pack, marketplace or transaction levies</span>
+          </label>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:16px;flex-wrap:wrap">
+          <button id="profit-fees-save-btn" onclick="saveProfitFees()" class="btn btn-primary" style="padding:9px 18px">Save costs</button>
+          <span style="font-size:12px;color:var(--muted)">Returns are not modelled yet, so contribution is still slightly optimistic if you take a lot of them.</span>
+        </div>
+      </div>
+      <div id="profit-summary-wrap" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px"></div>
       <div class="card" style="margin-bottom:20px">
         <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:16px">Products &amp; cost of goods</div>
         <div id="profit-table-body">
@@ -7954,6 +7990,9 @@ async function loadBriefHistory() {
 
 // ── PROFIT TRACKER ────────────────────────────────────────────────────────────
 let _profitProducts = [];
+/** Whether the merchant has entered variable costs. Decides whether the table is
+ *  allowed to show a contribution figure at all, rather than restating gross. */
+let _profitHasFees = false;
 
 async function loadProfitReport() {
   const r = await authFetch('/profit-tracker?action=get_report', {
@@ -7967,7 +8006,9 @@ async function loadProfitReport() {
     return;
   }
   _profitProducts = d.products || [];
+  _profitHasFees = !!(d.summary && d.summary.has_variable_costs);
   renderProfitTable();
+  if (d.summary) renderProfitFees(d.summary);
   if (d.summary) renderProfitSummary(d.summary);
   if (d.summary) updateCogsBanner(d.summary.total_products_with_cogs);
   loadProfitAISummary(d.summary, _profitProducts);
@@ -8007,34 +8048,149 @@ function renderProfitTable() {
     el.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/></svg><p>No products found - sync your Shopify catalog to start tracking margin</p><button class="btn-secondary" style="margin-top:10px" onclick="navigate(\'products\')">Go to Store Products</button></div>';
     return;
   }
+  // Six columns once contribution exists. The gross column stays visible on
+  // purpose: seeing 42% next to 28% is what makes the fee load land, and it is
+  // the number every other ads dashboard would have shown on its own.
+  const COLS = 'grid-template-columns:1fr auto auto auto auto auto';
+  const band = v => v === null ? 'var(--muted)' : v >= 50 ? 'var(--success)' : v >= 25 ? 'var(--warning)' : 'var(--danger)';
+
   el.innerHTML =
-    '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:0 0 10px;border-bottom:1px solid var(--border);margin-bottom:4px">' +
-      '<span>Product</span><span style="text-align:right;padding-right:24px">Price</span><span style="text-align:right;padding-right:24px">COGS (' + curSym() + ')</span><span style="text-align:right">Margin</span>' +
+    '<div style="display:grid;' + COLS + ';gap:0;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:0 0 10px;border-bottom:1px solid var(--border);margin-bottom:4px">' +
+      '<span>Product</span>' +
+      '<span style="text-align:right;padding-right:24px">Price</span>' +
+      '<span style="text-align:right;padding-right:24px">COGS (' + curSym() + ')</span>' +
+      '<span style="text-align:right;padding-right:20px">Gross</span>' +
+      '<span style="text-align:right;padding-right:20px">' + (_profitHasFees ? 'Contribution' : 'Contrib.') + '</span>' +
+      '<span style="text-align:right">B/E ROAS</span>' +
     '</div>' +
     _profitProducts.map((p, i) => {
       const priceEur = (p.price_cents || 0) / 100;
       const cogsEur = p.cogs_cents !== null ? p.cogs_cents / 100 : null;
       const cogsDisplay = cogsEur !== null ? curToDisplay(cogsEur).toFixed(2) : '';
       const margin = p.margin_percent !== null ? p.margin_percent.toFixed(1) + '%' : '-';
-      const marginColor = p.margin_percent === null ? 'var(--muted)' : p.margin_percent >= 50 ? 'var(--success)' : p.margin_percent >= 25 ? 'var(--warning)' : 'var(--danger)';
-      return '<div style="display:grid;grid-template-columns:1fr auto auto auto;gap:0;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">' +
+
+      const cm = p.contribution_margin_percent;
+      // Without fees, contribution is arithmetically identical to gross. Showing
+      // the same number twice would imply we accounted for costs nobody entered.
+      const contribCell = !_profitHasFees
+        ? '<span style="font-size:12px;color:var(--muted);text-align:right;padding-right:20px" title="Add your variable costs above to see real contribution margin">—</span>'
+        : '<span style="font-size:13px;font-weight:700;color:' + band(cm) + ';text-align:right;padding-right:20px">' + (cm === null ? '-' : cm.toFixed(1) + '%') + '</span>';
+
+      const be = p.break_even_roas;
+      const beCell = be !== null && be !== undefined
+        ? '<span style="font-size:13px;color:var(--text);text-align:right" title="Revenue per unit of ad spend needed just to break even">' + be.toFixed(2) + 'x</span>'
+        : (p.contribution_per_unit_cents !== null && p.contribution_per_unit_cents <= 0
+            ? '<span style="font-size:12px;font-weight:700;color:var(--danger);text-align:right" title="This product loses money on every order before any ad spend">Loses</span>'
+            : '<span style="font-size:13px;color:var(--muted);text-align:right">-</span>');
+
+      return '<div style="display:grid;' + COLS + ';gap:0;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)">' +
         '<span style="font-size:13px;color:var(--text);padding-right:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + escHtml(p.title || '') + '</span>' +
         '<span style="font-size:13px;color:var(--muted);text-align:right;padding-right:24px">' + curFmt(priceEur, 2) + '</span>' +
         '<span style="text-align:right;padding-right:24px"><input type="number" min="0" step="0.01" data-idx="' + i + '" value="' + cogsDisplay + '" placeholder="0.00" style="width:80px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-family:inherit;text-align:right"></span>' +
-        '<span style="font-size:13px;font-weight:700;color:' + marginColor + ';text-align:right">' + margin + '</span>' +
+        '<span style="font-size:13px;font-weight:700;color:' + band(p.margin_percent) + ';text-align:right;padding-right:20px">' + margin + '</span>' +
+        contribCell +
+        beCell +
       '</div>';
     }).join('');
+}
+
+/** Paints the four fee inputs from whatever the backend reports, and flips the
+ *  header badge so the page always states which of gross/contribution the
+ *  numbers underneath actually are. Values are stored in cents and percent;
+ *  the two cash fields are shown in the user's display currency. */
+function renderProfitFees(summary) {
+  const fees = (summary && summary.fees) || {};
+  const set = (id, v) => { const el = document.getElementById(id); if (el && document.activeElement !== el) el.value = (v === 0 || v === null || v === undefined) ? '' : v; };
+  set('fee-payment-pct', fees.payment_pct || '');
+  set('fee-other-pct',   fees.other_pct || '');
+  set('fee-payment-fixed', fees.payment_fixed_cents ? curToDisplay(fees.payment_fixed_cents / 100).toFixed(2) : '');
+  set('fee-shipping',      fees.shipping_cents ? curToDisplay(fees.shipping_cents / 100).toFixed(2) : '');
+
+  document.querySelectorAll('.fee-cur').forEach(n => { n.textContent = curSym(); });
+
+  const badge = document.getElementById('profit-fees-state');
+  if (badge) {
+    if (summary && summary.has_variable_costs) {
+      badge.textContent = 'Set — margins below are contribution';
+      badge.style.color = 'var(--success)';
+    } else {
+      badge.textContent = 'Not set — margins below are gross';
+      badge.style.color = 'var(--warning)';
+    }
+  }
+}
+
+async function saveProfitFees() {
+  const btn = document.getElementById('profit-fees-save-btn');
+  const num = id => {
+    const raw = (document.getElementById(id) || {}).value;
+    const n = parseFloat(raw);
+    return Number.isFinite(n) && n > 0 ? n : 0;
+  };
+  const paymentPct = num('fee-payment-pct');
+  const otherPct   = num('fee-other-pct');
+
+  // Caught here so the user gets a sentence rather than a Postgres constraint
+  // name, but the same rule is enforced in the edge function and in the DB.
+  if (paymentPct > 100 || otherPct > 100 || paymentPct + otherPct > 100) {
+    showToast('Percentages must be between 0 and 100, and cannot add up to more than 100', 'error');
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+  try {
+    const r = await authFetch('/profit-tracker', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'set_fees',
+        payment_pct: paymentPct,
+        other_pct: otherPct,
+        // Inputs are typed in the display currency; storage is always EUR cents,
+        // the same convention price_cents and cogs_cents already use.
+        payment_fixed_cents: Math.round(curToEur(num('fee-payment-fixed')) * 100),
+        shipping_cents:      Math.round(curToEur(num('fee-shipping')) * 100),
+      }),
+    });
+    if (!r || !r.ok) {
+      const msg = r ? ((await r.json().catch(() => ({}))).error || 'Failed to save costs') : 'Failed to save costs';
+      showToast(msg, 'error');
+      return;
+    }
+    showToast('Variable costs saved — margins recalculated', 'success');
+    await loadProfitReport();
+  } catch (e) {
+    showToast('Failed to save costs', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Save costs'; }
+  }
 }
 
 function renderProfitSummary(summary) {
   const el = document.getElementById('profit-summary-wrap');
   if (!el) return;
-  const avg = summary.avg_margin_percent !== null ? summary.avg_margin_percent.toFixed(1) + '%' : '-';
-  const avgColor = summary.avg_margin_percent === null ? 'var(--text)' : summary.avg_margin_percent >= 50 ? 'var(--success)' : summary.avg_margin_percent >= 25 ? 'var(--warning)' : 'var(--danger)';
+  const hasFees = !!summary.has_variable_costs;
+  const band = v => v === null || v === undefined ? 'var(--text)' : v >= 50 ? 'var(--success)' : v >= 25 ? 'var(--warning)' : 'var(--danger)';
+  const pct = v => (v === null || v === undefined) ? '-' : v.toFixed(1) + '%';
+
+  // Contribution is only a distinct number once fees exist. Until then the tile
+  // says so instead of repeating the gross figure under a second name.
+  const contribution = hasFees ? summary.avg_contribution_margin_percent : null;
+
   el.innerHTML = [
-    { label: 'Avg margin', value: avg, color: avgColor },
+    { label: 'Avg gross margin', value: pct(summary.avg_margin_percent), color: band(summary.avg_margin_percent) },
+    {
+      label: hasFees ? 'Avg contribution' : 'Contribution (add costs)',
+      value: hasFees ? pct(contribution) : '—',
+      color: hasFees ? band(contribution) : 'var(--muted)',
+    },
     { label: 'Products with COGS', value: summary.total_products_with_cogs + ' / ' + summary.total_products, color: 'var(--text)' },
-    { label: 'Profit / ROAS point', value: summary.estimated_profit_per_roas_point !== null ? (summary.estimated_profit_per_roas_point * 100).toFixed(1) + '%' : '-', color: 'var(--primary)' }
+    {
+      label: summary.products_losing_money > 0 ? 'Losing money per order' : 'Profit / ROAS point',
+      value: summary.products_losing_money > 0
+        ? String(summary.products_losing_money)
+        : (summary.estimated_profit_per_roas_point !== null ? (summary.estimated_profit_per_roas_point * 100).toFixed(1) + '%' : '-'),
+      color: summary.products_losing_money > 0 ? 'var(--danger)' : 'var(--primary)',
+    },
   ].map(s =>
     '<div class="card" style="text-align:center">' +
       '<div style="font-size:26px;font-weight:800;color:' + s.color + ';margin-bottom:6px">' + s.value + '</div>' +
