@@ -1821,6 +1821,14 @@ document.querySelectorAll('aside.sidebar .nav-item, aside.sidebar .logout-btn').
             </div>
             <div class="credits-bar-track" style="height:8px"><div class="credits-bar-fill" id="billing-ai-usage-fill" style="width:0%;background:var(--accent);height:100%"></div></div>
           </div>
+          <div id="tester-allowance" style="display:none;padding:16px;background:rgba(6,214,199,0.06);border:1px solid rgba(6,214,199,0.22);border-radius:12px">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--primary);margin-bottom:10px">Tester allowance</div>
+            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;gap:12px;flex-wrap:wrap">
+              <span style="font-size:13px;font-weight:600" id="tester-allowance-pct">-</span>
+            </div>
+            <div class="credits-bar-track" style="height:8px"><div class="credits-bar-fill" id="tester-allowance-fill" style="width:0%;background:var(--primary);height:100%"></div></div>
+            <div style="font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5" id="tester-allowance-detail">-</div>
+          </div>
           <div style="display:flex;gap:12px;flex-wrap:wrap">
             <button onclick="startCheckout('ai_usage_topup_25')" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)">+25% usage</button>
             <button onclick="startCheckout('ai_usage_topup_50')" style="padding:9px 18px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;border:1px solid var(--primary);color:var(--primary);background:rgba(6,214,199,0.08)">+50% usage</button>
@@ -2543,7 +2551,23 @@ function getUserPlan() {
   // Clerk not yet loaded — fail closed (most restrictive). Never fall back to localStorage.
   return 'starter';
 }
-function canAccess(feature) { const req = GATED[feature]; if (!req) return true; return PLAN_RANK[getUserPlan()] >= PLAN_RANK[req]; }
+/** True when the signed-in account carries the tester role. Read from Clerk
+ *  rather than a local flag, same source as the plan, so it cannot be faked by
+ *  editing localStorage. Server-side gates do not trust this either way. */
+function isTestUser() {
+  return String(window.__clerk?.user?.publicMetadata?.role ?? '').toLowerCase() === 'testuser';
+}
+
+function canAccess(feature) {
+  // UGC video renders cost real money per call on a live Higgsfield account,
+  // and testers are on a comped Growth plan that would otherwise hand each of
+  // them 18 of them. ugc-generate rejects testers server-side regardless; this
+  // just means they see it locked instead of hitting an error after clicking.
+  if (feature === 'ugcvideo' && isTestUser()) return false;
+  const req = GATED[feature];
+  if (!req) return true;
+  return PLAN_RANK[getUserPlan()] >= PLAN_RANK[req];
+}
 function isSubscribed() {
   // Only Clerk publicMetadata determines subscription state.
   const clerkPlan = window.__clerk?.user?.publicMetadata?.plan;
@@ -2856,6 +2880,37 @@ function renderAIUsageBar(usage) {
     ? `Resets weekly · includes +${Math.round((usage.topupUsd / usage.baseBudgetUsd) * 100)}% top-up`
     : 'Resets weekly';
   if (bFill) { bFill.style.width = pct + '%'; bFill.style.background = color; }
+
+  renderTesterAllowance(usage);
+}
+
+/** Second meter, testers only.
+ *
+ *  The weekly bar above resets every Monday, so on its own it never tells a
+ *  tester how much of the free run they have actually spent. This one does not
+ *  reset, which is the whole point: three months of comped Growth is a real
+ *  bill, and the person using it should be able to see where they are rather
+ *  than hit a wall with no warning. Hidden entirely for paying users, who have
+ *  no lifetime ceiling. */
+function renderTesterAllowance(usage) {
+  const wrap = document.getElementById('tester-allowance');
+  if (!wrap) return;
+  if (!usage || !usage.isTester || !usage.lifetimeBudgetUsd) { wrap.style.display = 'none'; return; }
+
+  wrap.style.display = 'block';
+  const pct = Math.min(100, usage.lifetimePercentUsed || 0);
+  const color = pct > 85 ? 'var(--danger)' : pct > 65 ? 'var(--warning)' : 'var(--primary)';
+
+  const fill = document.getElementById('tester-allowance-fill');
+  const pctEl = document.getElementById('tester-allowance-pct');
+  const detail = document.getElementById('tester-allowance-detail');
+  if (fill) { fill.style.width = pct + '%'; fill.style.background = color; }
+  if (pctEl) pctEl.textContent = `${Math.round(pct)}% of your tester allowance`;
+  if (detail) {
+    detail.textContent = usage.lifetimeExhausted
+      ? 'Used up. Everything except AI generation still works — message Jamal if you need more to finish testing.'
+      : `$${usage.lifetimeUsedUsd.toFixed(2)} of $${usage.lifetimeBudgetUsd.toFixed(2)} total. This one does not reset weekly.`;
+  }
 }
 
 async function refreshAIUsageBar() {

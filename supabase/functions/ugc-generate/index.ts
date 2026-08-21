@@ -376,8 +376,21 @@ Deno.serve(async (req) => {
     const productDescription = String(body.product_description ?? '');
     if (!productTitle) return errResponse('product_title is required', 400, origin);
 
-    const { data: planRow } = await supabase.from('user_plans').select('plan').eq('user_id', userId).single();
+    const { data: planRow } = await supabase.from('user_plans').select('plan, is_tester').eq('user_id', userId).single();
     const plan = planRow?.plan ?? 'starter';
+
+    // Test users are on a comped Growth plan, which would otherwise hand each of
+    // them 18 real Higgsfield renders. Higgsfield bills per video against a live
+    // account, so that is genuine money spent per tester on the one feature we
+    // already tell them is not switched on yet. Blocked server-side rather than
+    // only hidden in the UI, because the UI is not what Higgsfield charges for.
+    if (planRow?.is_tester === true) {
+      return errResponse(
+        'UGC video generation is switched off for tester accounts. Everything else on Growth is yours to use. This is the one feature the invite mentions as not ready.',
+        403,
+        origin,
+      );
+    }
 
     const { used: vUsed, limit: vLimit, topups, topupRemaining } = await getVideoUsage(userId, plan);
     if (vUsed >= vLimit && topupRemaining <= 0) {

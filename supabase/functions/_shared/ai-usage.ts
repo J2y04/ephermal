@@ -38,6 +38,20 @@ export const PLAN_WEEKLY_BUDGET_USD: Record<string, number> = {
   scale:   5.00,
 };
 
+/** Lifetime ceiling for a test user, in real USD of Anthropic spend.
+ *
+ *  The weekly budget resets every Monday, which is correct for a paying
+ *  customer and wrong for someone on a free comped plan: "Growth free for three
+ *  months" would otherwise mean thirteen consecutive weekly budgets, about $32
+ *  of real spend per tester, times however many testers we onboard.
+ *
+ *  $10 is roughly four full Growth weeks. Nobody evaluating a product burns
+ *  four weeks of heavy AI usage deciding whether they like it, so this should
+ *  never be reached by a genuine tester, while capping worst-case exposure at
+ *  a known number per head instead of an open tab. Raise it here if a tester
+ *  legitimately hits it — it is one constant, deliberately. */
+export const TESTER_LIFETIME_BUDGET_USD = 10.00;
+
 /** ISO 8601 week key, e.g. "2026-W05" — Monday-start week. Same format the
  *  old ai_credits system used, so no user-visible reset-timing change. */
 export function isoWeekKey(d: Date = new Date()): string {
@@ -88,18 +102,36 @@ export interface AIUsageStatus {
   totalBudgetUsd: number;
   percentUsed: number; // 0-100+, can exceed 100 if over budget
   overBudget: boolean;
+  // Test users only. A paying customer has no lifetime ceiling, so these are
+  // false/0/null for everyone else and the UI hides the second meter entirely.
+  isTester: boolean;
+  lifetimeUsedUsd: number;
+  lifetimeBudgetUsd: number | null;
+  lifetimePercentUsed: number;
+  lifetimeExhausted: boolean;
 }
 
 /** Full usage status for the current week — this is what the frontend meter renders. */
 export async function getAIUsageStatus(userId: string): Promise<AIUsageStatus> {
   const period = isoWeekKey();
-  const [planRes, usageRes, topupsRes] = await Promise.all([
-    supabase.from('user_plans').select('plan').eq('user_id', userId).single(),
+  const [planRes, usageRes, topupsRes, allTimeRes] = await Promise.all([
+    supabase.from('user_plans').select('plan, is_tester').eq('user_id', userId).single(),
     supabase.from('ai_usage').select('tokens_used, cost_used_micros').eq('user_id', userId).eq('period', period).maybeSingle(),
     supabase.from('ai_usage_topups').select('extra_cost_micros').eq('user_id', userId).eq('period', period),
+    // One row per ISO week, so this is a handful of rows even for a tester who
+    // stays the full three months. Summed here rather than in an RPC to keep
+    // the lifetime rule in the same file as the weekly one.
+    supabase.from('ai_usage').select('cost_used_micros').eq('user_id', userId),
   ]);
 
   const plan = planRes.data?.plan ?? 'starter';
+  const isTester = planRes.data?.is_tester === true;
+  const lifetimeUsedUsd = (allTimeRes.data ?? [])
+    .reduce((sum, r) => sum + (r.cost_used_micros ?? 0), 0) / 1_000_000;
+  const lifetimeBudgetUsd = isTester ? TESTER_LIFETIME_BUDGET_USD : null;
+  const lifetimePercentUsed = lifetimeBudgetUsd
+    ? Math.round((lifetimeUsedUsd / lifetimeBudgetUsd) * 1000) / 10
+    : 0;
   const baseBudgetUsd = PLAN_WEEKLY_BUDGET_USD[plan] ?? PLAN_WEEKLY_BUDGET_USD.starter;
   const topupUsd = (topupsRes.data ?? []).reduce((sum, t) => sum + t.extra_cost_micros, 0) / 1_000_000;
   const totalBudgetUsd = baseBudgetUsd + topupUsd;
@@ -116,6 +148,11 @@ export async function getAIUsageStatus(userId: string): Promise<AIUsageStatus> {
     totalBudgetUsd,
     percentUsed,
     overBudget: costUsedUsd >= totalBudgetUsd,
+    isTester,
+    lifetimeUsedUsd,
+    lifetimeBudgetUsd,
+    lifetimePercentUsed,
+    lifetimeExhausted: lifetimeBudgetUsd !== null && lifetimeUsedUsd >= lifetimeBudgetUsd,
   };
 }
 
@@ -124,6 +161,18 @@ export async function getAIUsageStatus(userId: string): Promise<AIUsageStatus> {
  *  the user is already over budget. */
 export async function checkAIBudget(userId: string): Promise<{ ok: true; status: AIUsageStatus } | { ok: false; status: AIUsageStatus; message: string }> {
   const status = await getAIUsageStatus(userId);
+
+  // Lifetime ceiling is checked first and deliberately does NOT mention topping
+  // up: a tester cannot buy their way past it, and offering an upsell that does
+  // not apply would be a worse answer than the honest one.
+  if (status.lifetimeExhausted) {
+    return {
+      ok: false,
+      status,
+      message: `Your tester AI allowance is used up (${status.lifetimeUsedUsd.toFixed(2)} of ${status.lifetimeBudgetUsd?.toFixed(2)} USD). Everything else still works. Message Jamal if you need more to finish testing.`,
+    };
+  }
+
   if (status.overBudget) {
     return {
       ok: false,

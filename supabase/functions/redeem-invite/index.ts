@@ -154,12 +154,19 @@ Deno.serve(async (req) => {
     // then follows an invite keeps what they bought.
     if (!existingPlan?.stripe_sub_id) {
       const { error: planErr } = await supabase.from('user_plans').upsert(
-        { user_id: userId, plan: 'growth', period_end: null },
+        // is_tester mirrors the Clerk role into the row the AI budget check and
+        // the UGC gate already read, so neither has to call Clerk on a hot path.
+        // It is what caps lifetime AI spend and blocks paid video renders.
+        { user_id: userId, plan: 'growth', period_end: null, is_tester: true },
         { onConflict: 'user_id' },
       );
       if (planErr) throw new Error(`Tester access applied, but the plan grant failed: ${planErr.message}`);
       await patchClerkMetadata(userId, { plan: 'growth' });
       grantedPlan = 'growth';
+    } else {
+      // Already paying, so the plan is left alone, but they still redeemed a
+      // tester invite and should carry the flag.
+      await supabase.from('user_plans').update({ is_tester: true }).eq('user_id', userId);
     }
 
     return okResponse({ ok: true, role: 'testuser', granted_plan: grantedPlan }, origin);

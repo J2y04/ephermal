@@ -599,13 +599,22 @@ async function handleSetRole(body: Record<string, unknown>): Promise<Record<stri
       .from('user_plans').select('stripe_sub_id').eq('user_id', targetUserId).maybeSingle();
     if (!existingPlan?.stripe_sub_id) {
       const { error } = await supabase.from('user_plans').upsert(
-        { user_id: targetUserId, plan: 'growth', period_end: null },
+        // is_tester mirrors the role into the row the AI budget check and UGC
+        // gate read, so a tester gets the lifetime ceiling and the video block
+        // whether they arrived via an invite link or were added by hand here.
+        { user_id: targetUserId, plan: 'growth', period_end: null, is_tester: true },
         { onConflict: 'user_id' },
       );
       if (error) throw new Error(`Role set, but failed to grant Growth plan: ${error.message}`);
       await updateClerkMetadata(targetUserId, 'growth');
       grantedPlan = 'growth';
+    } else {
+      await supabase.from('user_plans').update({ is_tester: true }).eq('user_id', targetUserId);
     }
+  } else {
+    // Clearing the role clears the flag too, otherwise someone promoted off
+    // testing keeps a lifetime cap and a UGC block nobody can explain.
+    await supabase.from('user_plans').update({ is_tester: false }).eq('user_id', targetUserId);
   }
 
   return { ok: true, user_id: targetUserId, role, granted_plan: grantedPlan };
