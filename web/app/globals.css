@@ -1109,3 +1109,31 @@ button:focus-visible,
 .contact-done svg { width: 42px; height: 42px; color: var(--primary); margin-bottom: 18px; }
 .contact-done h2 { font-size: 30px; font-weight: 800; letter-spacing: -1px; margin: 0 0 12px; }
 .contact-done p { font-size: 16px; line-height: 1.6; color: var(--muted); margin: 0 auto 26px; max-width: 40ch; }
+
+/* ── Pricing: contact-sales fallback ──
+   Sits under the three cards for the people the cards do not describe. Muteeb,
+   an agency that would run this across client stores, is exactly that person,
+   and before this the only route was a mailto that did nothing. */
+.price-sales-cta {
+  display: flex; align-items: center; justify-content: center; gap: 18px; flex-wrap: wrap;
+  max-width: 820px; margin: 30px auto 0; padding: 20px 26px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 18px;
+}
+.price-sales-cta > span { font-size: 14.5px; line-height: 1.55; color: var(--muted); }
+.price-sales-link {
+  display: inline-flex; align-items: center; gap: 7px; flex-shrink: 0;
+  font-size: 14.5px; font-weight: 700; color: var(--primary); text-decoration: none;
+  padding: 9px 18px; border: 1px solid rgba(var(--primary-rgb), 0.35); border-radius: 100px;
+  transition: background .2s, border-color .2s, transform .2s;
+}
+.price-sales-link svg { width: 15px; height: 15px; transition: transform .2s; }
+.price-sales-link:hover {
+  background: rgba(var(--primary-rgb), 0.1); border-color: var(--primary); transform: translateY(-1px);
+}
+.price-sales-link:hover svg { transform: translateX(3px); }
+.price-sales-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) {
+  .price-sales-link, .price-sales-link svg { transition: background .2s, border-color .2s; }
+  .price-sales-link:hover, .price-sales-link:hover svg { transform: none; }
+}
+@media (max-width: 620px) { .price-sales-cta { flex-direction: column; text-align: center; gap: 14px; } }

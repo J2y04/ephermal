@@ -862,6 +862,13 @@ export default function Home() {
               </div>
             ))}
           </div>
+          <div className="price-sales-cta" data-reveal data-delay="2">
+            <span>None of these quite fit? Agencies, multi-store operators and anything unusual, tell us what you need.</span>
+            <a href="/contact" className="price-sales-link">
+              Contact sales
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </a>
+          </div>
           <p className="price-credits-note">
             Each plan includes monthly AI script credits as shown — hooks, headlines and ad copy generated from your product catalog, not finished video or image creative. Additional credit packs are available from inside your dashboard.
           </p>
