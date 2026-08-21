@@ -88,3 +88,8 @@ verify_jwt = false
 # Protected by IP rate limiting, a global daily ceiling and a honeypot instead.
 [functions.contact-sales]
 verify_jwt = false
+
+# Same reason as the rest: the Clerk JWT is verified inside the function by
+# extractUserId. The gateway flag would 401 every call before it ran.
+[functions.stores-api]
+verify_jwt = false
