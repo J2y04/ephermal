@@ -18,6 +18,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, signOAuthState, corsHeaders } from '../_shared/auth.ts';
 import { rateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -47,7 +48,7 @@ Deno.serve(async (req) => {
   const authDiag: { reason?: string } = {};
   const userId = await extractUserId(req.headers.get('Authorization'), authDiag);
   if (!userId) {
-    console.error('[oauth-state-init] auth rejected — reason:', authDiag.reason);
+    captureError('oauth-state-init', '[oauth-state-init] auth rejected — reason:', authDiag.reason);
     return new Response(JSON.stringify({ error: 'Invalid or expired session', reason: authDiag.reason ?? 'unknown' }), {
       status: 401,
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
@@ -60,7 +61,7 @@ Deno.serve(async (req) => {
 
   const stateSecret = Deno.env.get('OAUTH_STATE_SECRET');
   if (!stateSecret) {
-    console.error('[oauth-state-init] OAUTH_STATE_SECRET not set');
+    captureError('oauth-state-init', '[oauth-state-init] OAUTH_STATE_SECRET not set');
     return new Response('Server configuration error', { status: 503, headers: CORS_HEADERS });
   }
 
@@ -86,7 +87,7 @@ Deno.serve(async (req) => {
   // from being replayed against the callback more than once.
   const { error: nonceErr } = await supabase.from('oauth_nonces').insert({ nonce, user_id: userId, platform });
   if (nonceErr) {
-    console.error('[oauth-state-init] Failed to store nonce:', nonceErr.message);
+    captureError('oauth-state-init', '[oauth-state-init] Failed to store nonce:', nonceErr.message);
     return new Response('Server error', { status: 500, headers: CORS_HEADERS });
   }
 

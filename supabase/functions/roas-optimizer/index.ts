@@ -27,6 +27,7 @@ import { metaGet, metaPost, parseROAS } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -423,7 +424,7 @@ Deno.serve(async (req) => {
           try {
             ai = await generateAIRecommendations(userId, actions, rules);
           } catch (e) {
-            console.error('roas-optimizer AI analysis failed:', e);
+            captureError('roas-optimizer', 'roas-optimizer AI analysis failed:', e);
           }
         }
 
@@ -452,7 +453,7 @@ Deno.serve(async (req) => {
               if (rec.campaign_id && rec.action) aiActionsById.set(rec.campaign_id, rec.action);
             }
           } catch (e) {
-            console.error('roas-optimizer apply: AI recommendation failed, falling back to rule-based actions:', e);
+            captureError('roas-optimizer', 'roas-optimizer apply: AI recommendation failed, falling back to rule-based actions:', e);
           }
         }
 
@@ -557,7 +558,7 @@ Deno.serve(async (req) => {
     // throws raw Anthropic error text and metaGet/metaPost throw raw Meta error text, so an
     // Anthropic overload or a Meta API failure surfaced provider-internal wording straight to
     // a Shopify store owner instead of a clean message.
-    console.error('roas-optimizer error:', err);
+    captureError('roas-optimizer', 'roas-optimizer error:', err);
     return errResponse('ROAS optimizer error', 500, origin);
   }
 });

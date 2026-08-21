@@ -29,6 +29,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rate-limit.ts';
 import { checkAIBudget, recordAIUsage, getAIUsageStatus } from '../_shared/ai-usage.ts';
 import { requirePlan } from '../_shared/plan.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -955,7 +956,7 @@ Make it punchy, benefit-focused, and scroll-stopping. Return ONLY valid JSON.`;
     return okResponse({ ...(result as Record<string, unknown>), _usage: usageAfter }, origin);
 
   } catch (err) {
-    console.error('ai-assistant error:', err);
+    captureError('ai-assistant', 'ai-assistant error:', err);
     const msg = err instanceof Error ? err.message : 'AI error';
     return errResponse(msg, 500, origin);
   }

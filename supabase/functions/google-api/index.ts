@@ -24,6 +24,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { redis, redisAvailable } from '../_shared/redis.ts'
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts'
 import { requirePlan } from '../_shared/plan.ts'
+import { captureError } from '../_shared/sentry.ts';
 
 const GOOGLE_ADS_API = 'https://googleads.googleapis.com/v24'
 
@@ -168,7 +169,7 @@ Deno.serve(async (req: Request) => {
   const authDiag: { reason?: string } = {}
   const userId = await extractUserId(req.headers.get('Authorization'), authDiag)
   if (!userId) {
-    console.error('[google-api] auth rejected — reason:', authDiag.reason)
+    captureError('google-api', '[google-api] auth rejected — reason:', authDiag.reason)
     return errResponse('Invalid or expired session', 401, origin, { reason: authDiag.reason ?? 'unknown' })
   }
 
@@ -225,7 +226,7 @@ Deno.serve(async (req: Request) => {
       saveAccessToken = await getAccessToken(refreshToken, userId)
     } catch (e) {
       const detail = e instanceof Error ? e.message : String(e)
-      console.error('[google-api] save_customer_id token refresh failed:', detail)
+      captureError('google-api', '[google-api] save_customer_id token refresh failed:', detail)
       return errResponse(`Google token refresh failed - please reconnect Google Ads (${detail})`, 401, origin, { detail })
     }
     try {
@@ -240,7 +241,7 @@ Deno.serve(async (req: Request) => {
       try { custData = JSON.parse(rawCustBody) } catch { /* fall through with raw text below */ }
       if (!custRes.ok || custData.error) {
         const detail = JSON.stringify(custData.error ?? custData) || rawCustBody.slice(0, 300)
-        console.error('[google-api] save_customer_id accessible-customers check failed:', custRes.status, detail)
+        captureError('google-api', '[google-api] save_customer_id accessible-customers check failed:', custRes.status, detail)
         return errResponse(`Could not verify Google Ads access — please reconnect Google Ads (HTTP ${custRes.status}: ${detail.slice(0, 200)})`, 403, origin)
       }
       const accessibleIds = (Array.isArray(custData.resourceNames) ? custData.resourceNames as string[] : [])
@@ -249,7 +250,7 @@ Deno.serve(async (req: Request) => {
         return errResponse('That Customer ID is not accessible to your connected Google account. Double-check the ID.', 403, origin)
       }
     } catch (e) {
-      console.error('[google-api] save_customer_id verification threw:', e)
+      captureError('google-api', '[google-api] save_customer_id verification threw:', e)
       return errResponse('Could not verify Google Ads access — please try again', 502, origin)
     }
 
@@ -258,7 +259,7 @@ Deno.serve(async (req: Request) => {
       .update({ google_ads_customer_id: rawCid })
       .eq('user_id', userId)
     if (updateErr) {
-      console.error('[google-api] save_customer_id DB update failed:', updateErr.message)
+      captureError('google-api', '[google-api] save_customer_id DB update failed:', updateErr.message)
       return errResponse('Failed to save Customer ID', 500, origin)
     }
     return okResponse({ success: true, customer_id: rawCid }, origin)
@@ -272,7 +273,7 @@ Deno.serve(async (req: Request) => {
     accessToken = await getAccessToken(creds.refreshToken, userId)
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e)
-    console.error('[google-api] Token refresh failed:', detail)
+    captureError('google-api', '[google-api] Token refresh failed:', detail)
     return errResponse(`Google token refresh failed - please reconnect Google Ads (${detail})`, 401, origin, { detail })
   }
 
@@ -553,7 +554,7 @@ Deno.serve(async (req: Request) => {
         return errResponse(`Unknown action: ${action}`, 400, origin)
     }
   } catch (err) {
-    console.error('[google-api] error:', err)
+    captureError('google-api', '[google-api] error:', err)
     // gaqlSearch/gadsPost already embed the real Google Ads error (code, message) in err.message —
     // discarding it here for a generic string, unlike meta-api/shopify-api's equivalent catches,
     // made every failure (permission denied, invalid argument, auth) look identical to the caller.

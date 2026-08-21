@@ -38,6 +38,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -359,7 +360,7 @@ Deno.serve(async (req) => {
       .eq('id', creativeId)
       .eq('user_id', userId);
     if (error) {
-      console.error('ugc-generate assign_campaign error:', error);
+      captureError('ugc-generate', 'ugc-generate assign_campaign error:', error);
       return errResponse('Failed to save creative', 500, origin);
     }
     return okResponse({ success: true }, origin);
@@ -445,7 +446,7 @@ Deno.serve(async (req) => {
       // was returned to persist client-side either). A generation that can't be saved is not a
       // successful generation.
       if (creativeErr) {
-        console.error('ugc-generate generate_video creatives insert error:', creativeErr.message);
+        captureError('ugc-generate', 'ugc-generate generate_video creatives insert error:', creativeErr.message);
         throw new Error('Video generated but failed to save - please try again');
       }
 
@@ -454,7 +455,7 @@ Deno.serve(async (req) => {
         credit_source: claim.source, used: vUsed + 1, limit: vLimit, topup_remaining: topupRemaining - (claim.source === 'topup' ? 1 : 0),
       }, origin);
     } catch (err) {
-      console.error('ugc-generate generate_video error:', err);
+      captureError('ugc-generate', 'ugc-generate generate_video error:', err);
       await refundVideoSlot(userId, claim.source!, claim.topupId);
       return errResponse('Video generation failed', 500, origin);
     }
@@ -735,7 +736,7 @@ Write launch-ready ad copy.`;
         // Same "silent save failure charged a credit for nothing" bug fixed for generate_video
         // above - the frontend told the user "check Creatives" while nothing was actually there.
         if (creativeErr) {
-          console.error('ugc-generate creatives insert error:', creativeErr.message);
+          captureError('ugc-generate', 'ugc-generate creatives insert error:', creativeErr.message);
           throw new Error('Generated but failed to save - please try again');
         }
 
@@ -787,7 +788,7 @@ Write launch-ready ad copy.`;
           meta_data: { script, copy, audiences, product_id: productId, product_title: productTitle, product_image: productImage },
         }).select('id').single();
         if (creativeErr) {
-          console.error('ugc-generate creatives insert error:', creativeErr.message);
+          captureError('ugc-generate', 'ugc-generate creatives insert error:', creativeErr.message);
           throw new Error('Generated but failed to save - please try again');
         }
 
@@ -801,7 +802,7 @@ Write launch-ready ad copy.`;
 
     return okResponse({ result, used: used + 1, limit }, origin);
   } catch (err) {
-    console.error('ugc-generate error:', err);
+    captureError('ugc-generate', 'ugc-generate error:', err);
     // The credit was already claimed before this try block ran — refund it since the
     // generation itself never actually happened.
     await refundUsageSlot(userId);

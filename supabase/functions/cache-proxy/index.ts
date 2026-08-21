@@ -47,6 +47,7 @@
 import { redis, cacheKey, redisAvailable } from '../_shared/redis.ts';
 import { extractUserId } from '../_shared/auth.ts';
 import { rateLimit } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 // Per-user rate limit: 60 requests/minute. cache-proxy is the shared entrypoint every other
 // function routes through, so its own limiter previously failing OPEN when Redis was down
@@ -255,7 +256,7 @@ Deno.serve(async (req) => {
     // stack dump. Wrapping it: (a) turns a hard crash into a normal, catchable JSON 500 the
     // frontend's existing `!r.ok` handling already deals with everywhere else, and (b) logs the
     // real error/stack so a future occurrence is diagnosable instead of just "cache-proxy 500".
-    console.error('[cache-proxy] uncaught exception:', e instanceof Error ? (e.stack ?? e.message) : String(e));
+    captureError('cache-proxy', '[cache-proxy] uncaught exception:', e instanceof Error ? (e.stack ?? e.message) : String(e));
     return new Response(JSON.stringify({ error: 'Internal error' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
@@ -299,7 +300,7 @@ async function handleRequest(req: Request, CORS_HEADERS: Record<string, string>)
   const authDiag: { reason?: string } = {};
   const userId = await extractUserId(`Bearer ${rawToken}`, authDiag);
   if (!userId) {
-    console.error('[cache-proxy] auth rejected — reason:', authDiag.reason, 'path:', path);
+    captureError('cache-proxy', '[cache-proxy] auth rejected — reason:', authDiag.reason, 'path:', path);
     return new Response(JSON.stringify({ error: 'Invalid or expired session', reason: authDiag.reason ?? 'unknown' }), {
       status: 401,
       headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
@@ -375,13 +376,13 @@ async function handleRequest(req: Request, CORS_HEADERS: Record<string, string>)
       ...(effectiveMethod === 'POST' && reqBody ? { body: JSON.stringify(reqBody) } : {}),
     });
   } catch (e) {
-    console.error('upstream fetch error:', e);
+    captureError('cache-proxy', 'upstream fetch error:', e);
     return new Response('Upstream error', { status: 502, headers: CORS_HEADERS });
   }
 
   if (!upstreamRes.ok) {
     const errText = await upstreamRes.text();
-    console.error(`[cache-proxy] upstream ${fnName} ${upstreamRes.status}:`, errText.slice(0, 500));
+    captureError('cache-proxy', `[cache-proxy] upstream ${fnName} ${upstreamRes.status}:`, errText.slice(0, 500));
     if (upstreamRes.status === 429) {
       return new Response(JSON.stringify({ error: 'Too many requests — please slow down.' }), {
         status: 429,

@@ -22,8 +22,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
 import { topupCostUsd } from '../_shared/ai-usage.ts';
-import { captureException } from '../_shared/sentry.ts';
-
+import { captureError } from '../_shared/sentry.ts';
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
   if (!_stripe) {
@@ -88,8 +87,7 @@ async function updateClerkMetadata(clerkUserId: string, plan: string): Promise<v
   });
   if (!res.ok) {
     // Log detail server-side only — never expose to response body
-    console.error('Clerk metadata update failed:', res.status, await res.text());
-    captureException(new Error(`clerk metadata update failed: ${res.status}`), { fn: 'stripe-webhook', at: 'clerk_metadata' });
+    captureError('stripe-webhook', 'Clerk metadata update failed:', res.status, await res.text());
     const err = new Error('Clerk metadata update failed') as Error & { status?: number };
     err.status = res.status;
     throw err;
@@ -107,7 +105,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   const priceId = subscription.items.data[0]?.price.id;
   const plan = PRICE_TO_PLAN[priceId];
   if (!plan) {
-    console.error(`Unknown price ID "${priceId}" — not in PRICE_TO_PLAN. Check STRIPE_PRICE_* env vars.`);
+    captureError('stripe-webhook', `Unknown price ID "${priceId}" — not in PRICE_TO_PLAN. Check STRIPE_PRICE_* env vars.`);
     throw new Error(`Unknown price ID: ${priceId}`);
   }
   const periodEnd = new Date(subscription.current_period_end * 1000).toISOString();
@@ -147,7 +145,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       // fetch() only rejects on a network-level failure, not on an HTTP error status — send-email
       // returns ordinary error responses (missing config, bad template, Resend failure) that would
       // otherwise vanish silently with the webhook still logging success.
-      if (!res.ok) console.error(`plan_activated email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
+      if (!res.ok) captureError('stripe-webhook', `plan_activated email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
     }
   } catch (e) {
     console.warn('Email send failed (non-fatal):', e);
@@ -173,7 +171,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   // Resolve credit amount — fail loudly if price not found (misconfigured env vars)
   const credits = priceId != null ? TOPUP_CREDITS[priceId] : undefined;
   if (credits === undefined) {
-    console.error(`Unknown top-up price ID "${priceId}" — check STRIPE_PRICE_TOPUP_* env vars.`);
+    captureError('stripe-webhook', `Unknown top-up price ID "${priceId}" — check STRIPE_PRICE_TOPUP_* env vars.`);
     throw new Error(`Unknown top-up price ID: ${priceId}`);
   }
 
@@ -194,7 +192,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   }, { onConflict: 'stripe_pi' });
 
   if (insertErr) {
-    console.error('Failed to insert ai_topup:', insertErr);
+    captureError('stripe-webhook', 'Failed to insert ai_topup:', insertErr);
     throw new Error('ai_topup insert failed');
   }
 
@@ -217,7 +215,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
           vars: { name: 'there', credits: String(credits) },
         }),
       });
-      if (!res.ok) console.error(`ai_topup_receipt email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
+      if (!res.ok) captureError('stripe-webhook', `ai_topup_receipt email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
     }
   } catch (e) {
     console.warn('Top-up email failed (non-fatal):', e);
@@ -253,7 +251,7 @@ async function handleAIUsageTopup(paymentIntent: Stripe.PaymentIntent): Promise<
   }, { onConflict: 'stripe_pi' });
 
   if (insertErr) {
-    console.error('Failed to insert ai_usage_topup:', insertErr);
+    captureError('stripe-webhook', 'Failed to insert ai_usage_topup:', insertErr);
     throw new Error('ai_usage_topup insert failed');
   }
 
@@ -273,7 +271,7 @@ async function handleUgcVideoTopup(paymentIntent: Stripe.PaymentIntent): Promise
   const priceId = paymentIntent.metadata?.price_id;
   const credits = priceId != null ? UGC_VIDEO_TOPUP_CREDITS[priceId] : undefined;
   if (credits === undefined) {
-    console.error(`Unknown UGC video top-up price ID "${priceId}" — check STRIPE_PRICE_UGC_TOPUP_* env vars.`);
+    captureError('stripe-webhook', `Unknown UGC video top-up price ID "${priceId}" — check STRIPE_PRICE_UGC_TOPUP_* env vars.`);
     throw new Error(`Unknown UGC video top-up price ID: ${priceId}`);
   }
 
@@ -286,7 +284,7 @@ async function handleUgcVideoTopup(paymentIntent: Stripe.PaymentIntent): Promise
   }, { onConflict: 'stripe_pi' });
 
   if (insertErr) {
-    console.error('Failed to insert ugc_video_topup:', insertErr);
+    captureError('stripe-webhook', 'Failed to insert ugc_video_topup:', insertErr);
     throw new Error('ugc_video_topup insert failed');
   }
 
@@ -308,7 +306,7 @@ async function handleUgcVideoTopup(paymentIntent: Stripe.PaymentIntent): Promise
           vars: { name: 'there', credits: String(credits) },
         }),
       });
-      if (!res.ok) console.error(`ugc_video_topup_receipt email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
+      if (!res.ok) captureError('stripe-webhook', `ugc_video_topup_receipt email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
     }
   } catch (e) {
     console.warn('UGC video top-up email failed (non-fatal):', e);
@@ -391,7 +389,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     const subscription = await getStripe().subscriptions.retrieve(subId);
     clerkUserId = subscription.metadata?.clerk_user_id;
   } catch (e) {
-    console.error('handlePaymentFailed: failed to retrieve subscription', e);
+    captureError('stripe-webhook', 'handlePaymentFailed: failed to retrieve subscription', e);
   }
   if (!clerkUserId) return;
 
@@ -417,7 +415,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
       });
       // Highest-trust email in this file — a user whose card fails deserves to know. Log loudly
       // on failure since this previously vanished with zero trace on any non-2xx from send-email.
-      if (!res.ok) console.error(`payment_failed email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
+      if (!res.ok) captureError('stripe-webhook', `payment_failed email failed for ${clerkUserId}: ${res.status} ${await res.text().catch(() => '')}`);
     }
   } catch (e) {
     console.warn('Payment-failed email send failed (non-fatal):', e);
@@ -441,7 +439,7 @@ Deno.serve(async (req) => {
     event = getStripe().webhooks.constructEvent(body, sig, Deno.env.get('STRIPE_WEBHOOK_SECRET')!);
   } catch (err) {
     // Log detail server-side, return generic message to caller
-    console.error('Signature verification failed:', err);
+    captureError('stripe-webhook', 'Signature verification failed:', err);
     return new Response('Invalid webhook signature', { status: 400 });
   }
 
@@ -460,7 +458,7 @@ Deno.serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
-    console.error('stripe_processed_events claim insert error:', claimErr);
+    captureError('stripe-webhook', 'stripe_processed_events claim insert error:', claimErr);
     return new Response('Internal error', { status: 500 });
   }
 
@@ -484,7 +482,7 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     // Log detail server-side only
-    console.error('Handler error for', event.type, ':', err);
+    captureError('stripe-webhook', 'Handler error for', event.type, ':', err);
     // Release the claim so a genuine Stripe retry can re-attempt the handler instead of being
     // silently swallowed as "already processed" by the claim row inserted above.
     await supabase.from('stripe_processed_events').delete().eq('event_id', event.id);

@@ -19,6 +19,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -86,7 +87,7 @@ Deno.serve(async (req) => {
     const { error: dbErr } = await supabase.from('user_plans')
       .update({ cancelling_at: null })
       .eq('user_id', userId);
-    if (dbErr) console.error('[cancel-subscription] reactivate DB update failed:', dbErr);
+    if (dbErr) captureError('cancel-subscription', '[cancel-subscription] reactivate DB update failed:', dbErr);
     console.log(`✓ Subscription reactivated for ${userId}`);
     return okResponse({ reactivated: true, current_period_end: new Date(updated.current_period_end * 1000).toISOString() }, origin);
   }
@@ -115,7 +116,7 @@ Deno.serve(async (req) => {
     const { error: dbErr } = await supabase.from('user_plans')
       .update({ cancelling_at: cancelAt })
       .eq('user_id', userId);
-    if (dbErr) console.error('[cancel-subscription] cancel DB update failed:', dbErr);
+    if (dbErr) captureError('cancel-subscription', '[cancel-subscription] cancel DB update failed:', dbErr);
 
     console.log(`✓ Subscription cancel scheduled for ${userId} at ${cancelAt}`);
     return okResponse({ cancel_at: cancelAt, period_end: cancelAt }, origin);

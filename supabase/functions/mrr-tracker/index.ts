@@ -19,6 +19,7 @@ import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { metaGet, parseConversions } from '../_shared/meta.ts';
 import { requirePlan } from '../_shared/plan.ts';
 import { computeCatalogMargin, toVariableCosts } from '../_shared/margin.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 const SYNC_DAYS = 90;
@@ -130,7 +131,7 @@ async function fetchMetaDaily(userId: string): Promise<{ spend: DailyMap; conver
       addTo(conversions, row.date_start, parseConversions(row.actions ?? []));
     }
   } catch (e) {
-    console.error('mrr-tracker meta fetch error:', e);
+    captureError('mrr-tracker', 'mrr-tracker meta fetch error:', e);
     // A connected ad account can genuinely have $0 spend (no active campaigns yet) — only
     // flag an error when the Insights call itself failed, so the dashboard can distinguish
     // "no spend yet" from "Meta token expired, reconnect".
@@ -154,7 +155,7 @@ async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conv
   // Not connected is the expected, error-free state for a user who hasn't linked Google Ads yet.
   if (!refreshToken || !customerId) return { spend, conversions, connected: false, error: null };
   if (!devToken) {
-    console.error('mrr-tracker: GOOGLE_ADS_DEVELOPER_TOKEN not configured');
+    captureError('mrr-tracker', 'mrr-tracker: GOOGLE_ADS_DEVELOPER_TOKEN not configured');
     return { spend, conversions, connected: true, error: 'Google Ads sync temporarily unavailable' };
   }
 
@@ -226,7 +227,7 @@ async function fetchGoogleDaily(userId: string): Promise<{ spend: DailyMap; conv
       }
     }
   } catch (e) {
-    console.error('mrr-tracker google fetch error:', e);
+    captureError('mrr-tracker', 'mrr-tracker google fetch error:', e);
     return { spend, conversions, connected: true, error: 'Google Ads sync failed — try again later' };
   }
   return { spend, conversions, connected: true, error: null };
@@ -389,7 +390,7 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
-    console.error('mrr-tracker error:', err);
+    captureError('mrr-tracker', 'mrr-tracker error:', err);
     // Same fix already applied to google-api/budget-ai's equivalent catches - a generic
     // string made every failure indistinguishable to the caller.
     const msg = err instanceof Error ? err.message : 'MRR tracker error';

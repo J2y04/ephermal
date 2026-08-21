@@ -19,6 +19,7 @@ import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { requirePlan } from '../_shared/plan.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 import { parseClaudeJson } from '../_shared/ai-json.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -131,7 +132,7 @@ Return ONLY valid JSON.`;
 
   if (error) {
     // Table may not exist yet — still return the brief without crashing
-    console.error('creative_briefs insert error:', error.message);
+    captureError('creative-brief', 'creative_briefs insert error:', error.message);
   }
 
   return {
@@ -152,7 +153,7 @@ async function handleHistory(userId: string): Promise<Record<string, unknown>> {
     .limit(5);
 
   if (error) {
-    console.error('creative_briefs fetch error:', error.message);
+    captureError('creative-brief', 'creative_briefs fetch error:', error.message);
     return { briefs: [] };
   }
 
@@ -199,7 +200,7 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
-    console.error('creative-brief error:', err);
+    captureError('creative-brief', 'creative-brief error:', err);
     return errResponse('Creative brief error', 500, origin);
   }
 });

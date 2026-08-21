@@ -31,6 +31,7 @@
 import Stripe from 'https://esm.sh/stripe@14';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { USER_OWNED_TABLES, RETENTION_TABLES } from '../_shared/user-owned-tables.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -140,7 +141,7 @@ async function cleanupDeletedUser(userId: string): Promise<void> {
         console.log(`Stripe subscription ${subId} already gone for ${userId}, proceeding with cleanup`);
       } else {
         stripeCancelFailed = true;
-        console.error(`⚠ Stripe cancel FAILED for out-of-band Clerk deletion of ${userId} — subscription ${subId} may still be live and billing. Preserving user_plans row for manual follow-up:`, e);
+        captureError('clerk-webhook', `⚠ Stripe cancel FAILED for out-of-band Clerk deletion of ${userId} — subscription ${subId} may still be live and billing. Preserving user_plans row for manual follow-up:`, e);
       }
     }
   }
@@ -154,12 +155,12 @@ async function cleanupDeletedUser(userId: string): Promise<void> {
       ? await supabase.from(table).update({ deleted_at: new Date().toISOString() }).eq('user_id', userId)
       : await supabase.from(table).delete().eq('user_id', userId);
     if (error) {
-      console.error(`clerk-webhook user.deleted: failed to clear ${table} for ${userId}:`, error.message);
+      captureError('clerk-webhook', `clerk-webhook user.deleted: failed to clear ${table} for ${userId}:`, error.message);
       failures.push(table);
     }
   }
   if (failures.length > 0) {
-    console.error(`clerk-webhook user.deleted: cleanup incomplete for ${userId} — failed tables: ${failures.join(', ')}`);
+    captureError('clerk-webhook', `clerk-webhook user.deleted: cleanup incomplete for ${userId} — failed tables: ${failures.join(', ')}`);
   }
 }
 
@@ -209,7 +210,7 @@ Deno.serve(async (req) => {
 
   const secret = Deno.env.get('CLERK_WEBHOOK_SECRET');
   if (!secret) {
-    console.error('CLERK_WEBHOOK_SECRET not set');
+    captureError('clerk-webhook', 'CLERK_WEBHOOK_SECRET not set');
     return new Response('Webhook not configured', { status: 503 });
   }
 
@@ -232,7 +233,7 @@ Deno.serve(async (req) => {
 
   const valid = await verifyClerkSignature(body, svixId, svixTimestamp, svixSignature, secret);
   if (!valid) {
-    console.error('Clerk webhook signature verification failed');
+    captureError('clerk-webhook', 'Clerk webhook signature verification failed');
     return new Response('Invalid signature', { status: 400 });
   }
 
@@ -275,7 +276,7 @@ Deno.serve(async (req) => {
       ]);
       for (const r of seedResults) {
         if (r.status === 'rejected') {
-          console.error('Default-row seed failed for', userId, ':', r.reason);
+          captureError('clerk-webhook', 'Default-row seed failed for', userId, ':', r.reason);
         }
       }
 
@@ -293,7 +294,7 @@ Deno.serve(async (req) => {
     }
   } catch (err) {
     // Log server-side, return 200 so Clerk doesn't retry indefinitely
-    console.error('Handler error for', event.type, ':', err);
+    captureError('clerk-webhook', 'Handler error for', event.type, ':', err);
   }
 
   return new Response(JSON.stringify({ received: true }), {

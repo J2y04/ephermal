@@ -34,6 +34,7 @@ import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rate-limit.ts';
 import { requireAdmin } from '../_shared/admin.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -76,7 +77,7 @@ async function updateClerkMetadata(clerkUserId: string, plan: string): Promise<v
     body: JSON.stringify({ public_metadata: { plan } }),
   });
   if (!res.ok) {
-    console.error('Clerk metadata update failed:', res.status, await res.text());
+    captureError('admin-api', 'Clerk metadata update failed:', res.status, await res.text());
     throw new Error('Clerk metadata update failed');
   }
 }
@@ -94,7 +95,7 @@ async function updateClerkRole(clerkUserId: string, role: string | null): Promis
     body: JSON.stringify({ public_metadata: { role } }),
   });
   if (!res.ok) {
-    console.error('Clerk role update failed:', res.status, await res.text());
+    captureError('admin-api', 'Clerk role update failed:', res.status, await res.text());
     throw new Error('Clerk role update failed');
   }
 }
@@ -630,7 +631,7 @@ async function handleBanToggle(callerId: string, targetUserId: string, ban: bool
     headers: { 'Authorization': `Bearer ${Deno.env.get('CLERK_SECRET_KEY')}` },
   });
   if (!res.ok) {
-    console.error('Clerk ban/unban failed:', res.status, await res.text());
+    captureError('admin-api', 'Clerk ban/unban failed:', res.status, await res.text());
     throw new Error(`${ban ? 'Ban' : 'Unban'} failed`);
   }
 
@@ -1023,7 +1024,7 @@ Deno.serve(async (req) => {
   } catch (err) {
     // This function is admin-only (already gated above), so surfacing the real
     // error message back is useful for debugging rather than a leak risk.
-    console.error('admin-api error:', err);
+    captureError('admin-api', 'admin-api error:', err);
     const msg = err instanceof Error ? err.message : 'Admin API error';
     return errResponse(msg, 500, origin);
   }

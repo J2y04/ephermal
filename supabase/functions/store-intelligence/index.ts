@@ -20,6 +20,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
@@ -240,7 +241,7 @@ ${JSON.stringify(products, null, 2)}`;
   // migration; now also fail loudly instead of pretending to succeed.
   const { error: upsertErr } = await supabase.from('store_intelligence').upsert(row, { onConflict: 'user_id' });
   if (upsertErr) {
-    console.error('store-intelligence: upsert failed:', upsertErr.message);
+    captureError('store-intelligence', 'store-intelligence: upsert failed:', upsertErr.message);
     throw new Error('Failed to save store intelligence brief');
   }
 
@@ -290,7 +291,7 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
-    console.error('store-intelligence error:', err);
+    captureError('store-intelligence', 'store-intelligence error:', err);
     return errResponse('Store intelligence error', 500, origin);
   }
 });

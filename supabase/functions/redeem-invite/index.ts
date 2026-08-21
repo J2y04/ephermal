@@ -31,8 +31,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { corsHeaders, errResponse, okResponse, extractUserId } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
-import { captureException } from '../_shared/sentry.ts';
-
+import { captureError } from '../_shared/sentry.ts';
 const CLERK_API = 'https://api.clerk.com/v1';
 
 const supabase = createClient(
@@ -52,7 +51,7 @@ async function patchClerkMetadata(userId: string, publicMetadata: Record<string,
     body: JSON.stringify({ public_metadata: publicMetadata }),
   });
   if (!res.ok) {
-    console.error('[redeem-invite] Clerk metadata patch failed:', res.status, await res.text());
+    captureError('redeem-invite', '[redeem-invite] Clerk metadata patch failed:', res.status, await res.text());
     throw new Error('Could not apply tester access to your account');
   }
 }
@@ -172,8 +171,7 @@ Deno.serve(async (req) => {
 
     return okResponse({ ok: true, role: 'testuser', granted_plan: grantedPlan }, origin);
   } catch (e) {
-    console.error('[redeem-invite]', (e as Error).message);
-    captureException(e, { fn: 'redeem-invite' });
+    captureError('redeem-invite', e);
     return errResponse((e as Error).message || 'Could not redeem invite', 500, origin);
   }
 });

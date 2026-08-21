@@ -23,6 +23,7 @@ import { rateLimitTiered, rateLimitResponse, bodyTooLarge } from '../_shared/rat
 import { requirePlan } from '../_shared/plan.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 import { parseClaudeJson } from '../_shared/ai-json.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -129,7 +130,7 @@ async function handleSearch(
     const err = await res.json().catch(() => ({})) as Record<string, unknown>;
     const metaErrObj = err?.error as Record<string, unknown> | undefined;
     const metaMsg = String(metaErrObj?.message ?? `Meta API error ${res.status}`);
-    console.error('[competitor-radar] Meta ads_archive error:', res.status, metaMsg);
+    captureError('competitor-radar', '[competitor-radar] Meta ads_archive error:', res.status, metaMsg);
     // Surface permission errors with a clear message. This is expected, user-facing
     // feedback (missing Ad Library API access, bad token, etc.) — not a server
     // failure — so return it the same way NO_META_TOKEN is returned below, rather
@@ -264,7 +265,7 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
-    console.error('competitor-radar error:', err);
+    captureError('competitor-radar', 'competitor-radar error:', err);
     return errResponse('Competitor radar error', 500, origin);
   }
 });

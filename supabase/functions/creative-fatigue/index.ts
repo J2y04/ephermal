@@ -20,6 +20,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { metaGet, CAMPAIGN_INSIGHT_FIELDS, parseROAS } from '../_shared/meta.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -167,7 +168,7 @@ async function sendFatigueAlertEmail(userId: string, count: number): Promise<voi
     });
     // fetch() only rejects on network failure, not on an HTTP error status — without this check
     // a user with real ad fatigue who should be alerted gets nothing, with zero trace in logs.
-    if (!emailRes.ok) console.error(`fatigue_alert email failed for ${userId}: ${emailRes.status} ${await emailRes.text().catch(() => '')}`);
+    if (!emailRes.ok) captureError('creative-fatigue', `fatigue_alert email failed for ${userId}: ${emailRes.status} ${await emailRes.text().catch(() => '')}`);
   } catch (e) {
     console.warn('fatigue_alert email failed (non-fatal):', e);
   }
@@ -203,7 +204,7 @@ Deno.serve(async (req) => {
   ]);
 
   if (dbErr) {
-    console.error('creative-fatigue creatives fetch error:', dbErr);
+    captureError('creative-fatigue', 'creative-fatigue creatives fetch error:', dbErr);
     return errResponse('Failed to load fatigue data', 500, origin);
   }
   if (!creatives?.length) {

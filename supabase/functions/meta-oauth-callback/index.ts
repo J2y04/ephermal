@@ -22,6 +22,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { signOAuthState, timingSafeEqualHex } from '../_shared/auth.ts'
 import { rateLimitIp } from '../_shared/rate-limit.ts'
+import { captureError } from '../_shared/sentry.ts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -81,12 +82,12 @@ Deno.serve(async (req: Request) => {
   // ── Verify HMAC — ensures userId was set by an authenticated server call ─
   const stateSecret = Deno.env.get('OAUTH_STATE_SECRET') ?? ''
   if (!stateSecret) {
-    console.error('[meta-oauth] OAUTH_STATE_SECRET not configured')
+    captureError('meta-oauth-callback', '[meta-oauth] OAUTH_STATE_SECRET not configured')
     return redirectTo(APP_URL, returnPage, { meta_error: 'server_config_error' })
   }
   const expectedHmac = await signOAuthState(stateSecret, userId, 'meta', sourcePage, nonce)
   if (!timingSafeEqualHex(expectedHmac, hmac)) {
-    console.error('[meta-oauth] State HMAC verification failed')
+    captureError('meta-oauth-callback', '[meta-oauth] State HMAC verification failed')
     return redirectTo(APP_URL, 'setup.html', { meta_error: 'invalid_state' })
   }
 
@@ -104,7 +105,7 @@ Deno.serve(async (req: Request) => {
     .gt('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
     .select('nonce')
   if (!consumedNonce || consumedNonce.length === 0) {
-    console.error('[meta-oauth] Nonce already used, unknown, or expired')
+    captureError('meta-oauth-callback', '[meta-oauth] Nonce already used, unknown, or expired')
     return redirectTo(APP_URL, 'setup.html', { meta_error: 'invalid_state' })
   }
 
@@ -114,7 +115,7 @@ Deno.serve(async (req: Request) => {
   const META_CALLBACK_URL = Deno.env.get('META_CALLBACK_URL')
 
   if (!META_APP_ID || !META_APP_SECRET || !META_CALLBACK_URL) {
-    console.error('[meta-oauth] Missing required env vars')
+    captureError('meta-oauth-callback', '[meta-oauth] Missing required env vars')
     return redirectTo(APP_URL, returnPage, { meta_error: 'server_config_error' })
   }
 
@@ -132,12 +133,12 @@ Deno.serve(async (req: Request) => {
 
     if (tokenData.error || !tokenData.access_token) {
       // Log detail server-side; return generic error to browser
-      console.error('[meta-oauth] Token exchange failed:', JSON.stringify(tokenData.error))
+      captureError('meta-oauth-callback', '[meta-oauth] Token exchange failed:', JSON.stringify(tokenData.error))
       return redirectTo(APP_URL, returnPage, { meta_error: 'auth_failed' })
     }
     accessToken = tokenData.access_token as string
   } catch (e) {
-    console.error('[meta-oauth] Token exchange fetch threw:', e)
+    captureError('meta-oauth-callback', '[meta-oauth] Token exchange fetch threw:', e)
     return redirectTo(APP_URL, returnPage, { meta_error: 'network_error' })
   }
 
@@ -162,10 +163,10 @@ Deno.serve(async (req: Request) => {
     if (longLivedRes.ok && longLivedData.access_token) {
       accessToken = longLivedData.access_token as string
     } else {
-      console.error('[meta-oauth] Long-lived token exchange failed, using short-lived token:', JSON.stringify(longLivedData.error ?? longLivedData))
+      captureError('meta-oauth-callback', '[meta-oauth] Long-lived token exchange failed, using short-lived token:', JSON.stringify(longLivedData.error ?? longLivedData))
     }
   } catch (e) {
-    console.error('[meta-oauth] Long-lived token exchange threw, using short-lived token:', e)
+    captureError('meta-oauth-callback', '[meta-oauth] Long-lived token exchange threw, using short-lived token:', e)
   }
 
   // ── Connection checker: prove the fresh token can actually reach the Meta ──
@@ -181,7 +182,7 @@ Deno.serve(async (req: Request) => {
     )
     const accData = await accRes.json()
     if (!accRes.ok || accData.error) {
-      console.error('[meta-oauth] Connection test failed:', accRes.status, JSON.stringify(accData.error ?? accData))
+      captureError('meta-oauth-callback', '[meta-oauth] Connection test failed:', accRes.status, JSON.stringify(accData.error ?? accData))
       return redirectTo(APP_URL, returnPage, { meta_error: 'connection_test_failed' })
     }
     accounts = (accData.data ?? []).map((a: any) => ({
@@ -189,7 +190,7 @@ Deno.serve(async (req: Request) => {
       name: a.name as string,
     }))
   } catch (e) {
-    console.error('[meta-oauth] Ad accounts fetch threw:', e)
+    captureError('meta-oauth-callback', '[meta-oauth] Ad accounts fetch threw:', e)
     return redirectTo(APP_URL, returnPage, { meta_error: 'connection_test_failed' })
   }
 
@@ -210,7 +211,7 @@ Deno.serve(async (req: Request) => {
       access_token: p.access_token as string,
     }))
   } catch (e) {
-    console.error('[meta-oauth] Pages fetch threw:', e)
+    captureError('meta-oauth-callback', '[meta-oauth] Pages fetch threw:', e)
     // Non-fatal — ad launches will fall back to campaign+adset only until a page is connected
   }
 
@@ -229,7 +230,7 @@ Deno.serve(async (req: Request) => {
       { onConflict: 'user_id' },
     )
   if (upsertErr) {
-    console.error('[meta-oauth] user_integrations upsert failed:', upsertErr.message)
+    captureError('meta-oauth-callback', '[meta-oauth] user_integrations upsert failed:', upsertErr.message)
   }
 
   // ── Create one-time claim (token NEVER goes in redirect URL) ─────────────
@@ -253,7 +254,7 @@ Deno.serve(async (req: Request) => {
     .single()
 
   if (claimErr || !claim) {
-    console.error('[meta-oauth] oauth_claims insert failed:', claimErr?.message)
+    captureError('meta-oauth-callback', '[meta-oauth] oauth_claims insert failed:', claimErr?.message)
     return redirectTo(APP_URL, returnPage, { meta_error: 'internal_error' })
   }
 

@@ -25,6 +25,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { getPlan } from '../_shared/plan.ts';
 import { listStores, resolveStore, countStores, storeLimitFor } from '../_shared/store.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -116,7 +117,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (error) {
-      console.error('stores-api create error:', error.message);
+      captureError('stores-api', 'stores-api create error:', error.message);
       return errResponse('Could not create the store.', 500, origin);
     }
     return okResponse({ store: toSummary(data as Record<string, unknown>) }, origin);
@@ -136,7 +137,7 @@ Deno.serve(async (req) => {
       .eq('user_id', userId);
 
     if (error) {
-      console.error('stores-api rename error:', error.message);
+      captureError('stores-api', 'stores-api rename error:', error.message);
       return errResponse('Could not rename the store.', 500, origin);
     }
     return okResponse({ success: true, id: store.id, label }, origin);
@@ -155,7 +156,7 @@ Deno.serve(async (req) => {
       .neq('id', store.id);
 
     if (clearErr) {
-      console.error('stores-api set_default clear error:', clearErr.message);
+      captureError('stores-api', 'stores-api set_default clear error:', clearErr.message);
       return errResponse('Could not switch the default store.', 500, origin);
     }
 
@@ -166,7 +167,7 @@ Deno.serve(async (req) => {
       .eq('user_id', userId);
 
     if (error) {
-      console.error('stores-api set_default error:', error.message);
+      captureError('stores-api', 'stores-api set_default error:', error.message);
       return errResponse('Could not switch the default store.', 500, origin);
     }
     return okResponse({ success: true, id: store.id }, origin);
@@ -191,7 +192,7 @@ Deno.serve(async (req) => {
       .eq('user_id', userId);
 
     if (error) {
-      console.error('stores-api archive error:', error.message);
+      captureError('stores-api', 'stores-api archive error:', error.message);
       return errResponse('Could not remove the store.', 500, origin);
     }
 

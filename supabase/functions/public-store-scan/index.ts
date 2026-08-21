@@ -20,6 +20,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { rateLimitIp, rateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const ANTHROPIC_KEY   = Deno.env.get('ANTHROPIC_API_KEY') ?? '';
 const ANTHROPIC_URL   = 'https://api.anthropic.com/v1/messages';
@@ -207,7 +208,7 @@ async function callClaude(system: string, user: string): Promise<string> {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    console.error('public-store-scan Anthropic error:', res.status, (err as { error?: { message: string } }).error?.message);
+    captureError('public-store-scan', 'public-store-scan Anthropic error:', res.status, (err as { error?: { message: string } }).error?.message);
     throw new Error('AI store analysis is temporarily unavailable. Please try again shortly.');
   }
   const data = await res.json() as { content: { type: string; text?: string }[] };
@@ -315,7 +316,7 @@ Deno.serve(async (req) => {
 
     return okResponse({ ...result, cached: false }, origin);
   } catch (err) {
-    console.error('public-store-scan error:', err);
+    captureError('public-store-scan', 'public-store-scan error:', err);
     return errResponse('Store analysis failed', 500, origin);
   }
 });

@@ -1,3 +1,4 @@
+import { captureError } from './sentry.ts';
 /**
  * Ephermal — Admin gate (shared)
  *
@@ -53,7 +54,7 @@ export async function requireAdmin(userId: string): Promise<AdminCheck> {
 async function checkAdmin(userId: string): Promise<AdminCheck> {
   const secret = Deno.env.get('CLERK_SECRET_KEY');
   if (!secret) {
-    console.error('[admin] CLERK_SECRET_KEY not configured — denying by default');
+    captureError('_shared/admin', '[admin] CLERK_SECRET_KEY not configured — denying by default');
     return { ok: false };
   }
 
@@ -83,7 +84,7 @@ async function checkAdmin(userId: string): Promise<AdminCheck> {
 
     return { ok: true, email };
   } catch (e) {
-    console.error('[admin] requireAdmin exception:', e instanceof Error ? e.message : String(e));
+    captureError('_shared/admin', '[admin] requireAdmin exception:', e instanceof Error ? e.message : String(e));
     return { ok: false };
   }
 }

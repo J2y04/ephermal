@@ -129,3 +129,52 @@ export function captureException(err: unknown, context: Record<string, unknown> 
 export function sentryConfigured(): boolean {
   return parseDsn() !== null;
 }
+
+/**
+ * Drop-in replacement for console.error across every backend function.
+ *
+ * Jamal's point, and he is right: an error printed to a console nobody opens
+ * has not been handled, it has been hidden. A caught exception that only
+ * console.errors is a silent failure wearing a hi-vis jacket. Every error path
+ * in this backend now routes here, and here always routes to Sentry.
+ *
+ * Signature is deliberately identical to console.error's, variadic and
+ * untyped, so the migration was a mechanical replacement of the call token
+ * rather than 145 hand-rewritten call sites, each of which is a chance to
+ * change behaviour by accident. Argument expressions, including inline
+ * `await res.text()`, are preserved exactly as written.
+ *
+ * `fn` is the function name, injected automatically so every event is tagged
+ * with where it came from without the call site having to remember.
+ *
+ * On the console line below: it is kept ON PURPOSE and it is the only one left
+ * in the backend. Two reasons. `supabase functions serve` has no Sentry, so
+ * without it local debugging goes dark. And if Sentry is ever unreachable, the
+ * platform log is the only remaining record. It is a fallback, not the
+ * destination. Every call site's error reaches Sentry regardless.
+ */
+export function captureError(fn: string, ...args: unknown[]): void {
+  // Prefer a real Error from the arguments, so Sentry gets the actual stack
+  // rather than a stringified copy of it.
+  const realError = args.find((a): a is Error => a instanceof Error);
+
+  const message = args
+    .map(a => {
+      if (a instanceof Error) return a.message;
+      if (typeof a === 'string') return a;
+      try { return JSON.stringify(a); } catch { return String(a); }
+    })
+    .filter(Boolean)
+    .join(' ');
+
+  const err = realError ?? new Error(message || `${fn}: unspecified error`);
+  // Keep the assembled message when the Error carried a less useful one.
+  if (realError && message && message !== realError.message) {
+    captureException(err, { fn, detail: message });
+  } else {
+    captureException(err, { fn });
+  }
+
+  // Fallback only. See the note above.
+  console.error(`[${fn}]`, ...args);
+}

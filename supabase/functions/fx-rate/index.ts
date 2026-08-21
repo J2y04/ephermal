@@ -21,6 +21,7 @@
 import { corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitIp } from '../_shared/rate-limit.ts';
 import { redis, redisAvailable } from '../_shared/redis.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const FX_CACHE_KEY = 'ephermal:fx:eur:usd';
 const FX_CACHE_TTL = 12 * 60 * 60; // 12h — a display preference doesn't need to be fresher than this
@@ -34,7 +35,7 @@ async function fetchLiveRate(): Promise<number | null> {
     const rate = data?.rates?.USD;
     return typeof rate === 'number' && Number.isFinite(rate) && rate > 0 ? rate : null;
   } catch (e) {
-    console.error('[fx-rate] Frankfurter fetch threw:', e);
+    captureError('fx-rate', '[fx-rate] Frankfurter fetch threw:', e);
     return null;
   }
 }

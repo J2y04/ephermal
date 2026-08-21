@@ -23,6 +23,7 @@
 
 import { corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitIp, rateLimit, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const SALES_INBOX = Deno.env.get('SALES_INBOX') ?? 'hello@ephermal.app';
@@ -83,11 +84,11 @@ Deno.serve(async (req) => {
       }),
     });
     if (!res.ok) {
-      console.error('[contact-sales] send-email failed:', res.status, (await res.text()).slice(0, 300));
+      captureError('contact-sales', '[contact-sales] send-email failed:', res.status, (await res.text()).slice(0, 300));
       return errResponse('We could not send that just now. Please email hello@ephermal.app directly.', 502, origin);
     }
   } catch (e) {
-    console.error('[contact-sales]', (e as Error).message);
+    captureError('contact-sales', '[contact-sales]', (e as Error).message);
     return errResponse('We could not send that just now. Please email hello@ephermal.app directly.', 502, origin);
   }
 

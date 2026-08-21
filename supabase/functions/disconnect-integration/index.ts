@@ -17,6 +17,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -70,7 +71,7 @@ Deno.serve(async (req) => {
     .eq('user_id', userId);
 
   if (error) {
-    console.error('disconnect-integration error:', error.message);
+    captureError('disconnect-integration', 'disconnect-integration error:', error.message);
     return errResponse('Failed to disconnect', 500, origin);
   }
 

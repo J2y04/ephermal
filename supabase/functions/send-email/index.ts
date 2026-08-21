@@ -24,6 +24,7 @@
  */
 
 import { TEMPLATE_HTML } from './templates.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const RESEND_API = 'https://api.resend.com/emails';
 
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
   const fromEmail = Deno.env.get('FROM_EMAIL') ?? 'Ephermal <hello@ephermal.app>';
 
   if (!resendKey) {
-    console.error('RESEND_API_KEY not set');
+    captureError('send-email', 'RESEND_API_KEY not set');
     return new Response('Email service not configured', { status: 503 });
   }
 
@@ -114,7 +115,7 @@ Deno.serve(async (req) => {
   // from the filesystem, so this can never fail due to a bundling/deploy quirk.
   const templateHtml = TEMPLATE_HTML[template];
   if (!templateHtml) {
-    console.error(`Template not found in TEMPLATE_HTML: ${template}`);
+    captureError('send-email', `Template not found in TEMPLATE_HTML: ${template}`);
     return new Response('Template not found', { status: 500 });
   }
 
@@ -155,7 +156,7 @@ Deno.serve(async (req) => {
 
   if (!res.ok) {
     const err = await res.text();
-    console.error('Resend error:', res.status, err);
+    captureError('send-email', 'Resend error:', res.status, err);
     return new Response('Failed to send email', { status: 502 });
   }
 

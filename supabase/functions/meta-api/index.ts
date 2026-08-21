@@ -35,6 +35,7 @@ import {
   CREATIVE_FIELDS, AUDIENCE_FIELDS,
   parseROAS, parseConversions,
 } from '../_shared/meta.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -804,7 +805,7 @@ Deno.serve(async (req) => {
     return errResponse('Method not allowed', 405, origin);
 
   } catch (err) {
-    console.error('meta-api error:', err);
+    captureError('meta-api', 'meta-api error:', err);
     const msg = err instanceof Error ? err.message : 'Internal error';
     return errResponse(msg, 500, origin);
   }

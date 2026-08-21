@@ -26,6 +26,7 @@ import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { metaPost } from '../_shared/meta.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 import { parseClaudeJson } from '../_shared/ai-json.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -414,7 +415,7 @@ Deno.serve(async (req) => {
           .update({ applied: anySuccess, auto_applied: false })
           .eq('id', recId)
           .eq('user_id', userId);
-        if (markErr) console.error('budget-ai: failed to mark recommendation applied:', markErr.message);
+        if (markErr) captureError('budget-ai', 'budget-ai: failed to mark recommendation applied:', markErr.message);
 
         return okResponse({ applied, recommendation_id: recId, any_success: anySuccess }, origin);
       }
@@ -434,7 +435,7 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
-    console.error('budget-ai error:', err);
+    captureError('budget-ai', 'budget-ai error:', err);
     // Discarding the real error into a generic string made every failure (a bad Google Ads
     // response, an AI JSON-parse error, a Supabase error) look identical to the caller -
     // same fix already applied to google-api/campaign-launcher's equivalent catches.

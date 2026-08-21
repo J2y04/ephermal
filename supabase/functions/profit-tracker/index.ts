@@ -28,6 +28,7 @@ import {
   toVariableCosts,
   type VariableCosts,
 } from '../_shared/margin.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -304,7 +305,7 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
-    console.error('profit-tracker error:', err);
+    captureError('profit-tracker', 'profit-tracker error:', err);
     return errResponse('Profit tracker error', 500, origin);
   }
 });

@@ -23,8 +23,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders } from '../_shared/auth.ts';
 import { rateLimitTiered } from '../_shared/rate-limit.ts';
 import { topupPriceEurCents, TOPUP_PERCENTS } from '../_shared/ai-usage.ts';
-import { captureException } from '../_shared/sentry.ts';
-
+import { captureError } from '../_shared/sentry.ts';
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
@@ -280,8 +279,7 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
     });
   } catch (err) {
-    console.error('Stripe error:', err);
-    captureException(err, { fn: 'create-checkout', at: 'stripe' });
+    captureError('create-checkout', 'Stripe error:', err);
     return new Response('Checkout session creation failed', { status: 502, headers: CORS_HEADERS });
   }
 });

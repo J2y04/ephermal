@@ -20,6 +20,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { signOAuthState, timingSafeEqualHex } from '../_shared/auth.ts'
 import { rateLimitIp } from '../_shared/rate-limit.ts'
+import { captureError } from '../_shared/sentry.ts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -108,7 +109,7 @@ Deno.serve(async (req: Request) => {
 
   // ── Strict shop domain validation ────────────────────────────────────────
   if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(shop)) {
-    console.error('[shopify-oauth] Invalid shop domain:', shop)
+    captureError('shopify-oauth-callback', '[shopify-oauth] Invalid shop domain:', shop)
     return redirectTo(APP_URL, 'setup.html', { shopify_error: 'invalid_shop' })
   }
 
@@ -129,12 +130,12 @@ Deno.serve(async (req: Request) => {
   // ── Verify state HMAC — ensures userId was set by an authenticated server call ─
   const stateSecret = Deno.env.get('OAUTH_STATE_SECRET') ?? ''
   if (!stateSecret) {
-    console.error('[shopify-oauth] OAUTH_STATE_SECRET not configured')
+    captureError('shopify-oauth-callback', '[shopify-oauth] OAUTH_STATE_SECRET not configured')
     return redirectTo(APP_URL, returnPage, { shopify_error: 'server_config_error' })
   }
   const expectedStateHmac = await signOAuthState(stateSecret, userId, 'shopify', sourcePage, nonce)
   if (!timingSafeEqualHex(expectedStateHmac, stateHmac)) {
-    console.error('[shopify-oauth] State HMAC verification failed')
+    captureError('shopify-oauth-callback', '[shopify-oauth] State HMAC verification failed')
     return redirectTo(APP_URL, 'setup.html', { shopify_error: 'invalid_state' })
   }
 
@@ -152,7 +153,7 @@ Deno.serve(async (req: Request) => {
     .gt('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
     .select('nonce')
   if (!consumedNonce || consumedNonce.length === 0) {
-    console.error('[shopify-oauth] Nonce already used, unknown, or expired')
+    captureError('shopify-oauth-callback', '[shopify-oauth] Nonce already used, unknown, or expired')
     return redirectTo(APP_URL, returnPage, { shopify_error: 'invalid_state' })
   }
 
@@ -161,14 +162,14 @@ Deno.serve(async (req: Request) => {
   const SHOPIFY_API_SECRET = Deno.env.get('SHOPIFY_API_SECRET')
 
   if (!SHOPIFY_APP_KEY || !SHOPIFY_API_SECRET) {
-    console.error('[shopify-oauth] Missing required env vars')
+    captureError('shopify-oauth-callback', '[shopify-oauth] Missing required env vars')
     return redirectTo(APP_URL, returnPage, { shopify_error: 'server_config_error' })
   }
 
   // ── HMAC verification (tamper protection) ────────────────────────────────
   const hmacValid = await verifyShopifyHmac(url.searchParams, SHOPIFY_API_SECRET)
   if (!hmacValid) {
-    console.error('[shopify-oauth] HMAC verification failed for shop:', shop)
+    captureError('shopify-oauth-callback', '[shopify-oauth] HMAC verification failed for shop:', shop)
     return redirectTo(APP_URL, returnPage, { shopify_error: 'security_check_failed' })
   }
 
@@ -187,12 +188,12 @@ Deno.serve(async (req: Request) => {
     const tokenData = await tokenRes.json()
 
     if (!tokenData.access_token) {
-      console.error('[shopify-oauth] Token exchange failed:', JSON.stringify(tokenData))
+      captureError('shopify-oauth-callback', '[shopify-oauth] Token exchange failed:', JSON.stringify(tokenData))
       return redirectTo(APP_URL, returnPage, { shopify_error: 'auth_failed' })
     }
     accessToken = tokenData.access_token as string
   } catch (e) {
-    console.error('[shopify-oauth] Token exchange threw:', e)
+    captureError('shopify-oauth-callback', '[shopify-oauth] Token exchange threw:', e)
     return redirectTo(APP_URL, returnPage, { shopify_error: 'network_error' })
   }
 
@@ -207,13 +208,13 @@ Deno.serve(async (req: Request) => {
       headers: { 'X-Shopify-Access-Token': accessToken },
     })
     if (!shopRes.ok) {
-      console.error('[shopify-oauth] Connection test failed:', shopRes.status, await shopRes.text())
+      captureError('shopify-oauth-callback', '[shopify-oauth] Connection test failed:', shopRes.status, await shopRes.text())
       return redirectTo(APP_URL, returnPage, { shopify_error: 'connection_test_failed' })
     }
     const shopData = await shopRes.json()
     shopName = (shopData.shop?.name as string) || shop
   } catch (e) {
-    console.error('[shopify-oauth] Shop info fetch threw:', e)
+    captureError('shopify-oauth-callback', '[shopify-oauth] Shop info fetch threw:', e)
     return redirectTo(APP_URL, returnPage, { shopify_error: 'connection_test_failed' })
   }
 
@@ -230,7 +231,7 @@ Deno.serve(async (req: Request) => {
       { onConflict: 'user_id' },
     )
   if (upsertErr) {
-    console.error('[shopify-oauth] user_integrations upsert failed:', upsertErr.message)
+    captureError('shopify-oauth-callback', '[shopify-oauth] user_integrations upsert failed:', upsertErr.message)
   }
 
   // ── Create one-time claim (token NEVER goes in redirect URL) ─────────────
@@ -250,7 +251,7 @@ Deno.serve(async (req: Request) => {
     .single()
 
   if (claimErr || !claim) {
-    console.error('[shopify-oauth] oauth_claims insert failed:', claimErr?.message)
+    captureError('shopify-oauth-callback', '[shopify-oauth] oauth_claims insert failed:', claimErr?.message)
     return redirectTo(APP_URL, returnPage, { shopify_error: 'internal_error' })
   }
 

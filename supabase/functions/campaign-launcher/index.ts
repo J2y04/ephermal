@@ -33,6 +33,7 @@ import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { checkAIBudget, recordAIUsage } from '../_shared/ai-usage.ts';
 import { renderStrategies, validateStrategySelection } from '../_shared/ad-strategies.ts';
 import { computeProductMargin, toVariableCosts } from '../_shared/margin.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -252,7 +253,7 @@ For google.keywords, produce 8-15 keywords with a real match-type mix (mostly ex
     const cleaned = raw.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '').trim();
     copy = JSON.parse(cleaned);
   } catch (e) {
-    console.error('[campaign-launcher] prepare: failed to parse AI response as JSON.',
+    captureError('campaign-launcher', '[campaign-launcher] prepare: failed to parse AI response as JSON.',
       'Parse error:', e instanceof Error ? e.message : String(e),
       'Raw response (first 2000 chars):', raw.slice(0, 2000));
     throw new Error('AI returned invalid campaign structure');
@@ -280,7 +281,7 @@ Return the same JSON schema, but strategy_ids MUST contain at least 3 ids copied
         selection = retrySelection;
       }
     } catch (e) {
-      console.error('[campaign-launcher] prepare: strategy retry also failed to parse:',
+      captureError('campaign-launcher', '[campaign-launcher] prepare: strategy retry also failed to parse:',
         e instanceof Error ? e.message : String(e));
     }
   }
@@ -292,7 +293,7 @@ Return the same JSON schema, but strategy_ids MUST contain at least 3 ids copied
   copy.strategy_validated = selection.ok;
   if (!selection.ok) {
     copy.strategy_error = selection.reason;
-    console.error(`[campaign-launcher] prepare: shipping campaign WITHOUT valid strategy selection: ${selection.reason}`);
+    captureError('campaign-launcher', `[campaign-launcher] prepare: shipping campaign WITHOUT valid strategy selection: ${selection.reason}`);
   } else {
     console.log(`[campaign-launcher] prepare: strategies applied: ${selection.ids.join(', ')}`);
   }
@@ -527,7 +528,7 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
     try {
       await gAdsPost(rawCid, accessToken, devToken, 'campaignBudgets:mutate', { operations: [{ remove: budgetRn }] }, 'budget_cleanup');
     } catch (cleanupErr) {
-      console.error(`campaign create failed AND orphaned budget cleanup failed — budget ${budgetRn} is live and unattached in Google Ads account ${rawCid}:`, cleanupErr);
+      captureError('campaign-launcher', `campaign create failed AND orphaned budget cleanup failed — budget ${budgetRn} is live and unattached in Google Ads account ${rawCid}:`, cleanupErr);
     }
     throw e;
   }
@@ -636,13 +637,13 @@ async function launchToGoogleInner(userId: string, campaignId: string, row: Reco
       }
     }
   } catch (e) {
-    console.error(`campaign ${campaignId}: ad extensions failed (non-fatal, campaign still launched):`, e);
+    captureError('campaign-launcher', `campaign ${campaignId}: ad extensions failed (non-fatal, campaign still launched):`, e);
   }
 
   const { error: updateErr } = await supabase.from('launched_campaigns').update({ google_campaign_id: googleCampaignId, google_status: 'active', launched_at: new Date().toISOString() }).eq('id', campaignId).eq('user_id', userId);
 
   if (updateErr) {
-    console.error(`CRITICAL: campaign ${campaignId} launched live on Google but DB update failed:`, updateErr);
+    captureError('campaign-launcher', `CRITICAL: campaign ${campaignId} launched live on Google but DB update failed:`, updateErr);
   }
 
   const baseNote = autoEnable ? 'Google Search campaign is LIVE.' : 'Google Search campaign created as PAUSED. Enable in Google Ads Manager.';
@@ -812,7 +813,7 @@ async function launchToMetaInner(userId: string, campaignId: string, row: Record
         adIds.push(adObj.id);
       } catch (e) {
         adCreationError = e instanceof Error ? e.message : 'Ad creation failed';
-        console.error('launchToMeta ad creation error:', adCreationError);
+        captureError('campaign-launcher', 'launchToMeta ad creation error:', adCreationError);
       }
     }
   }
@@ -830,7 +831,7 @@ async function launchToMetaInner(userId: string, campaignId: string, row: Record
     .eq('user_id', userId);
 
   if (updateErr) {
-    console.error(`CRITICAL: campaign ${campaignId} launched live on Meta but DB update failed:`, updateErr);
+    captureError('campaign-launcher', `CRITICAL: campaign ${campaignId} launched live on Meta but DB update failed:`, updateErr);
   }
 
   const notePrefix = autoEnable ? 'Campaign is LIVE on Meta.' : 'Campaign created as PAUSED.';
@@ -1067,7 +1068,7 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
-    console.error('campaign-launcher error:', err);
+    captureError('campaign-launcher', 'campaign-launcher error:', err);
     // Every throw in this file is an intentional, user-safe message (e.g. "This campaign is
     // already live...", "Meta Ads not connected", AI-generation failures) — matching meta-api's
     // convention of surfacing err.message instead of collapsing every failure into one generic

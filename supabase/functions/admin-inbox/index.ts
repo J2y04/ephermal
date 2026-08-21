@@ -29,8 +29,7 @@ import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/
 import { requireAdmin } from '../_shared/admin.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { ImapClient, extractEmail, type Envelope } from '../_shared/imap.ts';
-import { captureException } from '../_shared/sentry.ts';
-
+import { captureError } from '../_shared/sentry.ts';
 const MAILBOX = 'Ephermal';
 const FETCH_WINDOW = 60;   // messages pulled from the server
 const RETURN_MAX   = 40;   // messages returned after filtering
@@ -178,8 +177,7 @@ Deno.serve(async (req) => {
     return errResponse('Unknown action', 400, origin);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    console.error('[admin-inbox]', msg);
-    captureException(e, { fn: 'admin-inbox', action, userId });
+    captureError('admin-inbox', e, 'action:', action);
 
     if (msg.includes('credentials not configured')) {
       return errResponse('Inbox is not configured yet. Set GMAIL_IMAP_USER and GMAIL_IMAP_APP_PASSWORD.', 503, origin);

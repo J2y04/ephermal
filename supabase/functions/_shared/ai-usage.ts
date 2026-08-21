@@ -9,6 +9,7 @@
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { captureError } from './sentry.ts';
 
 const supabase = createClient(
   Deno.env.get('SUPABASE_URL')!,
@@ -89,7 +90,7 @@ export async function recordAIUsage(
     p_tokens:      totalTokens,
     p_cost_micros: costMicros,
   });
-  if (error) console.error('[ai-usage] increment_ai_usage_cost failed:', error.message);
+  if (error) captureError('_shared/ai-usage', '[ai-usage] increment_ai_usage_cost failed:', error.message);
 }
 
 export interface AIUsageStatus {

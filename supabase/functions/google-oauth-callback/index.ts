@@ -27,6 +27,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { signOAuthState, timingSafeEqualHex } from '../_shared/auth.ts'
 import { rateLimitIp } from '../_shared/rate-limit.ts'
+import { captureError } from '../_shared/sentry.ts';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -84,12 +85,12 @@ Deno.serve(async (req: Request) => {
   // ── Verify HMAC — ensures userId was set by an authenticated server call ─
   const stateSecret = Deno.env.get('OAUTH_STATE_SECRET') ?? ''
   if (!stateSecret) {
-    console.error('[google-oauth] OAUTH_STATE_SECRET not configured')
+    captureError('google-oauth-callback', '[google-oauth] OAUTH_STATE_SECRET not configured')
     return redirectTo(APP_URL, returnPage, { google_error: 'server_config_error' })
   }
   const expectedHmac = await signOAuthState(stateSecret, userId, 'google', sourcePage, nonce)
   if (!timingSafeEqualHex(expectedHmac, hmac)) {
-    console.error('[google-oauth] State HMAC verification failed')
+    captureError('google-oauth-callback', '[google-oauth] State HMAC verification failed')
     return redirectTo(APP_URL, 'setup.html', { google_error: 'invalid_state' })
   }
 
@@ -107,7 +108,7 @@ Deno.serve(async (req: Request) => {
     .gt('created_at', new Date(Date.now() - 15 * 60 * 1000).toISOString())
     .select('nonce')
   if (!consumedNonce || consumedNonce.length === 0) {
-    console.error('[google-oauth] Nonce already used, unknown, or expired')
+    captureError('google-oauth-callback', '[google-oauth] Nonce already used, unknown, or expired')
     return redirectTo(APP_URL, 'setup.html', { google_error: 'invalid_state' })
   }
 
@@ -118,7 +119,7 @@ Deno.serve(async (req: Request) => {
   const DEVELOPER_TOKEN      = Deno.env.get('GOOGLE_ADS_DEVELOPER_TOKEN') ?? ''
 
   if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !GOOGLE_CALLBACK_URL) {
-    console.error('[google-oauth] Missing required env vars')
+    captureError('google-oauth-callback', '[google-oauth] Missing required env vars')
     return redirectTo(APP_URL, returnPage, { google_error: 'server_config_error' })
   }
 
@@ -142,7 +143,7 @@ Deno.serve(async (req: Request) => {
     const tokenData = await tokenRes.json()
 
     if (tokenData.error || !tokenData.access_token) {
-      console.error('[google-oauth] Token exchange failed:', JSON.stringify(tokenData.error))
+      captureError('google-oauth-callback', '[google-oauth] Token exchange failed:', JSON.stringify(tokenData.error))
       return redirectTo(APP_URL, returnPage, { google_error: 'auth_failed' })
     }
 
@@ -155,7 +156,7 @@ Deno.serve(async (req: Request) => {
       console.warn('[google-oauth] No refresh_token in response (user may have already authorized)')
     }
   } catch (e) {
-    console.error('[google-oauth] Token exchange fetch threw:', e)
+    captureError('google-oauth-callback', '[google-oauth] Token exchange fetch threw:', e)
     return redirectTo(APP_URL, returnPage, { google_error: 'network_error' })
   }
 
@@ -201,7 +202,7 @@ Deno.serve(async (req: Request) => {
       try { custData = JSON.parse(rawCustBody) } catch { /* fall through with raw text below */ }
       if (!custRes.ok || custData.error) {
         const detail = JSON.stringify(custData.error ?? custData) || rawCustBody.slice(0, 300)
-        console.error('[google-oauth] Connection test failed:', custRes.status, detail)
+        captureError('google-oauth-callback', '[google-oauth] Connection test failed:', custRes.status, detail)
         connectionCheckError = `HTTP ${custRes.status}: ${detail}`.slice(0, 500)
       } else if (Array.isArray(custData.resourceNames)) {
         // resourceNames are like "customers/1234567890"
@@ -210,7 +211,7 @@ Deno.serve(async (req: Request) => {
       }
     } catch (e) {
       const detail = e instanceof Error ? e.message : String(e)
-      console.error('[google-oauth] Customer IDs fetch threw:', detail)
+      captureError('google-oauth-callback', '[google-oauth] Customer IDs fetch threw:', detail)
       connectionCheckError = detail.slice(0, 500)
     }
   }
@@ -240,7 +241,7 @@ Deno.serve(async (req: Request) => {
       .eq('user_id', userId)
       .maybeSingle()
     if (!existing?.google_refresh_token) {
-      console.error('[google-oauth] No refresh_token from Google and none on file - not a real connection')
+      captureError('google-oauth-callback', '[google-oauth] No refresh_token from Google and none on file - not a real connection')
       return redirectTo(APP_URL, returnPage, { google_error: 'no_refresh_token' })
     }
   }
@@ -250,7 +251,7 @@ Deno.serve(async (req: Request) => {
     .upsert(upsertData, { onConflict: 'user_id' })
 
   if (upsertErr) {
-    console.error('[google-oauth] user_integrations upsert failed:', upsertErr.message)
+    captureError('google-oauth-callback', '[google-oauth] user_integrations upsert failed:', upsertErr.message)
   }
 
   // The refresh_token (if we got one) is now saved regardless of the outcome below - only the
@@ -282,7 +283,7 @@ Deno.serve(async (req: Request) => {
     .single()
 
   if (claimErr || !claim) {
-    console.error('[google-oauth] oauth_claims insert failed:', claimErr?.message)
+    captureError('google-oauth-callback', '[google-oauth] oauth_claims insert failed:', claimErr?.message)
     return redirectTo(APP_URL, returnPage, { google_error: 'internal_error' })
   }
 

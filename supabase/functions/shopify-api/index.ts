@@ -18,6 +18,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 const SHOPIFY_API_VERSION = '2025-07';
 
@@ -284,7 +285,7 @@ Deno.serve(async (req) => {
                 .eq('user_id', userId)
                 .is('cogs_cents', null)
                 .select('id');
-              if (error) console.error('[shopify-api] cogs auto-fill update failed:', error.message);
+              if (error) captureError('shopify-api', '[shopify-api] cogs auto-fill update failed:', error.message);
               return !!data && data.length > 0;
             }));
             cogsAutoFilled = fillResults.filter(Boolean).length;
@@ -319,7 +320,7 @@ Deno.serve(async (req) => {
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }
   } catch (err) {
-    console.error('shopify-api error:', err);
+    captureError('shopify-api', 'shopify-api error:', err);
     const msg = err instanceof Error ? err.message : 'Shopify API error';
     return errResponse(msg, 500, origin);
   }

@@ -21,6 +21,7 @@ import Stripe from 'https://esm.sh/stripe@14';
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
 import { USER_OWNED_TABLES, RETENTION_TABLES } from '../_shared/user-owned-tables.ts';
+import { captureError } from '../_shared/sentry.ts';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -58,7 +59,7 @@ async function cancelStripeSubscription(userId: string): Promise<{ ok: true } | 
     if ((e as { code?: string })?.code === 'resource_missing') {
       console.log(`Stripe subscription ${subId} already gone for ${userId}, proceeding with deletion`);
     } else {
-      console.error(`Stripe cancel failed during account deletion for ${userId}:`, e);
+      captureError('delete-account', `Stripe cancel failed during account deletion for ${userId}:`, e);
       return { ok: false, error: e instanceof Error ? e.message : 'Stripe cancellation failed' };
     }
   }
@@ -78,7 +79,7 @@ async function cancelStripeSubscription(userId: string): Promise<{ ok: true } | 
 async function deleteClerkUser(userId: string): Promise<void> {
   const secret = Deno.env.get('CLERK_SECRET_KEY');
   if (!secret) {
-    console.error('CLERK_SECRET_KEY not configured — Clerk identity not deleted for', userId);
+    captureError('delete-account', 'CLERK_SECRET_KEY not configured — Clerk identity not deleted for', userId);
     return;
   }
   const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
@@ -86,7 +87,7 @@ async function deleteClerkUser(userId: string): Promise<void> {
     headers: { 'Authorization': `Bearer ${secret}` },
   });
   if (!res.ok) {
-    console.error(`Clerk user deletion failed for ${userId}:`, res.status, await res.text());
+    captureError('delete-account', `Clerk user deletion failed for ${userId}:`, res.status, await res.text());
   }
 }
 
@@ -134,7 +135,7 @@ Deno.serve(async (req) => {
         ? await supabase.from(table).update({ deleted_at: new Date().toISOString() }).eq('user_id', userId)
         : await supabase.from(table).delete().eq('user_id', userId);
       if (error) {
-        console.error(`delete-account: failed to clear ${table} for ${userId}:`, error.message);
+        captureError('delete-account', `delete-account: failed to clear ${table} for ${userId}:`, error.message);
         failures.push(table);
       }
     }
@@ -153,7 +154,7 @@ Deno.serve(async (req) => {
 
     return okResponse({ success: true }, origin);
   } catch (err) {
-    console.error('delete-account error:', err);
+    captureError('delete-account', 'delete-account error:', err);
     return errResponse('Account deletion failed', 500, origin);
   }
 });
