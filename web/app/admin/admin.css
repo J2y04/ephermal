@@ -362,3 +362,100 @@
   .eph-inbox-refresh, .eph-inbox-retry, .eph-inbox-row { transition: background 120ms linear, border-color 120ms linear; }
   .eph-inbox-refresh:hover:not(:disabled), .eph-inbox-retry:hover { transform: none; }
 }
+
+/* ── Inbox, spacing corrections ──
+   From Jamal, looking at the shipped version: "way too shady, it's all pressed
+   together, weirdly placed text."
+
+   He was right, and the cause was that the panel had been given colour and
+   corners but no rhythm. Concretely:
+
+     - The page header sat flush against the top of the viewport with the
+       Refresh button crowding it, because nothing established a top margin.
+     - The header, the filter note and the panes were all separated by the same
+       20px, so a title, an explanation and the content read as one undivided
+       block.
+     - In the reader, the subject, the sender block and the date were packed
+       into a single tight row with the date jammed against the right edge.
+     - List rows sat at 11px padding with 2px between them, which at 13px type
+       leaves no daylight between one message and the next.
+
+   Fixed by giving the page an actual vertical scale rather than one repeated
+   gap, and by letting the reader's metadata breathe. No colour, no corner and
+   no type size changes: the material was fine, the spacing was not.
+   ------------------------------------------------------------------------- */
+
+.eph-inbox {
+  gap: 0;
+  padding-top: 4px;
+}
+
+/* Title block: own the top of the page, and separate from what follows. */
+.eph-inbox-head {
+  align-items: center;
+  margin-bottom: 10px;
+}
+.eph-inbox-head h1 { line-height: 1.15; }
+.eph-inbox-head p { margin-top: 7px; line-height: 1.5; }
+
+/* The filter note is a caption for the panes below it, so it sits closer to
+   them than to the title. */
+.eph-inbox-note {
+  margin: 0 0 22px;
+  line-height: 1.55;
+  max-width: 70ch;
+}
+
+.eph-inbox-split { gap: 24px; }
+
+/* Rows need daylight between them at this type size. */
+.eph-inbox-rows { padding: 8px; gap: 4px; }
+.eph-inbox-row  { padding: 13px 13px 14px; gap: 12px; }
+.eph-inbox-rowbody { gap: 5px; }
+.eph-inbox-rowtop  { gap: 12px; }
+.eph-inbox-from    { font-size: 13.5px; }
+.eph-inbox-subject { font-size: 12.5px; line-height: 1.45; }
+.eph-inbox-search  { padding: 14px 14px 13px; }
+
+/* Reader: the subject is a heading, so treat it like one and give the metadata
+   room underneath rather than stacking everything into one strip. */
+.eph-inbox-article { padding: 32px 34px 36px; }
+.eph-inbox-article h2 { font-size: 22px; line-height: 1.28; margin-bottom: 2px; }
+
+.eph-inbox-meta {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0 26px;
+  padding-bottom: 20px;
+}
+.eph-inbox-meta > div { min-width: 0; flex: 1 1 auto; }
+.eph-inbox-metaname { line-height: 1.45; gap: 9px; }
+.eph-inbox-metato   { margin-top: 4px; line-height: 1.5; word-break: break-word; }
+
+/* The date was pinned to the right edge on the same line as the sender. On a
+   narrow reader that collides; let it drop to its own line instead of
+   colliding, and stop it hugging the border. */
+.eph-inbox-metadate {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  padding-top: 3px;
+  opacity: 0.85;
+}
+@media (max-width: 1240px) {
+  .eph-inbox-metadate { margin-left: 0; width: 100%; padding-top: 2px; }
+}
+
+.eph-inbox-body { line-height: 1.75; }
+.eph-inbox-replyhint { margin-top: 30px; padding-top: 18px; }
+
+/* Empty states were vertically centred in a very tall pane, which left the
+   message floating alone in the middle of nothing. Pull it up. */
+.eph-inbox-empty.inline { padding: 72px 28px; justify-content: flex-start; }
+.eph-inbox-empty h3 { margin-top: 2px; }
+.eph-inbox-empty p  { line-height: 1.6; }
+
+@media (max-width: 1000px) {
+  .eph-inbox-split { gap: 18px; }
+  .eph-inbox-article { padding: 26px 22px 30px; }
+}

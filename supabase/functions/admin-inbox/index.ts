@@ -28,7 +28,7 @@
 import { extractUserId, corsHeaders, errResponse, okResponse } from '../_shared/auth.ts';
 import { requireAdmin } from '../_shared/admin.ts';
 import { rateLimitTiered, rateLimitResponse } from '../_shared/rate-limit.ts';
-import { ImapClient, extractEmail, type Envelope } from '../_shared/imap.ts';
+import { ImapClient, readableBody, type Envelope } from '../_shared/imap.ts';
 import { captureError } from '../_shared/sentry.ts';
 const MAILBOX = 'Ephermal';
 const FETCH_WINDOW = 60;   // messages pulled from the server
@@ -48,30 +48,6 @@ const OUR_DOMAIN   = '@ephermal.app';
  */
 function addressedToUs(env: Envelope): boolean {
   return env.to.toLowerCase().includes(OUR_DOMAIN);
-}
-
-function safeSnippet(raw: string, max = 200): string {
-  return raw
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/=\r?\n/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, max);
-}
-
-/** Quoted-printable shows up constantly in forwarded mail; decode it for display. */
-function decodeQP(s: string): string {
-  return s
-    .replace(/=\r?\n/g, '')
-    .replace(/=([0-9A-F]{2})/gi, (_m, h) => String.fromCharCode(parseInt(h, 16)));
 }
 
 async function withClient<T>(fn: (c: ImapClient) => Promise<T>): Promise<T> {
@@ -150,8 +126,11 @@ Deno.serve(async (req) => {
         const envelopes = await c.fetchRecent(total, FETCH_WINDOW);
         const match = envelopes.find(e => e.uid === uid);
         if (!match || !addressedToUs(match)) return null;
+        // The boundary lives in the MESSAGE's Content-Type, not in the body,
+        // so both are needed before the body can be split into parts.
         const raw = await c.fetchBody(uid);
-        return { match, raw };
+        const ctype = await c.fetchContentType(uid);
+        return { match, raw, ctype };
       });
 
       if (!data) return errResponse('Message not found', 404, origin);
@@ -163,9 +142,13 @@ Deno.serve(async (req) => {
         from_email: data.match.fromEmail,
         to: data.match.to,
         date: data.match.date,
-        // Plain text only. The body is untrusted input rendered in an admin
-        // panel, so no HTML and no remote images ever reach the page.
-        body: safeSnippet(decodeQP(data.raw), 20000),
+        // readableBody picks the text/plain part, decodes its transfer
+        // encoding to BYTES and then applies its charset, so a German
+        // non-breaking space arrives as a space rather than "Â ". Falling back
+        // to the raw text would put MIME boundaries in front of a human, which
+        // is what the first version did.
+        body: readableBody(data.raw, data.ctype).slice(0, 20000)
+              || '(no readable text in this message)',
       }, origin);
     }
 
