@@ -77,7 +77,7 @@ export default function AccessibilityPage() {
           <a href="../privacy">Privacy Policy</a>
           <a href="../terms">Terms of Service</a>
           <a href="../accessibility">Accessibility Statement</a>
-          <a href="mailto:hello@ephermal.app">Contact</a>
+          <a href="/contact">Contact</a>
         </div>
         <div className="legal-footer-copy">© 2026 Interlink Platforms. All rights reserved.</div>
       </footer>

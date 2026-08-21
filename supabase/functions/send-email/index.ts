@@ -49,6 +49,7 @@ const TEMPLATES: Record<string, { subject: string }> = {
   ugc_video_topup_receipt:   { subject: 'UGC video credits added — ready to generate' },
   payment_failed:            { subject: 'Payment failed — update your card to keep Ephermal running' },
   tester_invite:             { subject: 'Your Ephermal tester access — 3 months of Growth, free' },
+  contact_enquiry:           { subject: 'New enquiry from ephermal.app' },
 };
 
 function escapeHtml(s: string): string {
@@ -86,14 +87,14 @@ Deno.serve(async (req) => {
     return new Response('Email service not configured', { status: 503 });
   }
 
-  let body: { template: string; to: string; subject?: string; vars?: Record<string, string> };
+  let body: { template: string; to: string; subject?: string; vars?: Record<string, string>; reply_to?: string };
   try {
     body = await req.json();
   } catch {
     return new Response('Invalid JSON body', { status: 400 });
   }
 
-  const { template, to, subject, vars = {} } = body;
+  const { template, to, subject, vars = {}, reply_to } = body;
 
   if (!template || !to) {
     return new Response('Missing required fields: template, to', { status: 400 });
@@ -125,6 +126,14 @@ Deno.serve(async (req) => {
 
   const emailSubject = subject ?? TEMPLATES[template].subject;
 
+  // Reject a malformed reply_to outright rather than silently dropping it: a
+  // caller that asked for one and did not get it would look like a working send
+  // whose replies quietly go nowhere useful.
+  const replyTo = typeof reply_to === 'string' ? reply_to.trim() : '';
+  if (replyTo && (!EMAIL_RE.test(replyTo) || replyTo.length > 320)) {
+    return new Response('Invalid reply_to address', { status: 400 });
+  }
+
   // Send via Resend
   const res = await fetch(RESEND_API, {
     method: 'POST',
@@ -137,6 +146,10 @@ Deno.serve(async (req) => {
       to:      [to],
       subject: emailSubject,
       html,
+      // Only set for enquiry mail, where a reply has to reach the person who
+      // wrote in rather than our own from-address. Validated against the same
+      // regex as `to`, so it cannot be used to inject a header.
+      ...(replyTo ? { reply_to: [replyTo] } : {}),
     }),
   });
 

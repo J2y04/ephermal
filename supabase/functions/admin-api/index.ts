@@ -799,14 +799,32 @@ async function handleSendTestEmail(body: Record<string, unknown>): Promise<Recor
 
 const INVITE_BASE_URL = Deno.env.get('APP_URL') ?? 'https://ephermal.app';
 
-/** 32 URL-safe characters from crypto.getRandomValues — ~190 bits, so guessing
- *  one is not a threat model even before the rate limit on redeem-invite. */
+// 57 characters: A-Z a-z 0-9 minus I, O, l, 0 and 1, which are the pairs people
+// mistype when a link is read aloud or copied off a screen.
+const INVITE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+const INVITE_LEN = 32;
+// 256 is not a multiple of 57 (256 = 4*57 + 28), so a plain `byte % 57` would
+// hand the first 28 characters a 5-in-256 chance and the rest 4-in-256. The bias
+// is small, but it is free to remove: reject the tail above the largest exact
+// multiple and redraw, which makes every character exactly uniform.
+const INVITE_REJECT_ABOVE = 256 - (256 % INVITE_ALPHABET.length); // 228
+
+/** 32 characters drawn uniformly from a 57-character alphabet: 57^32, about
+ *  1e56 possibilities and ~186 bits. Guessing one is not a threat model, and the
+ *  space cannot realistically be exhausted or collided into. */
 function generateInviteToken(): string {
-  const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
-  const bytes = new Uint8Array(32);
-  crypto.getRandomValues(bytes);
   let out = '';
-  for (const b of bytes) out += ALPHABET[b % ALPHABET.length];
+  while (out.length < INVITE_LEN) {
+    // Draw a generous batch so the loop almost always finishes in one pass;
+    // roughly 11% of bytes are rejected.
+    const bytes = new Uint8Array(INVITE_LEN);
+    crypto.getRandomValues(bytes);
+    for (const b of bytes) {
+      if (b >= INVITE_REJECT_ABOVE) continue;
+      out += INVITE_ALPHABET[b % INVITE_ALPHABET.length];
+      if (out.length === INVITE_LEN) break;
+    }
+  }
   return out;
 }
 
@@ -823,14 +841,24 @@ async function handleCreateInvite(callerId: string, body: Record<string, unknown
   const days = Number(body.expires_days ?? 30);
   if (!Number.isFinite(days) || days < 1 || days > 365) throw new Error('expires_days must be between 1 and 365');
 
-  const token = generateInviteToken();
   const expiresAt = new Date(Date.now() + days * 86_400_000).toISOString();
 
-  const { data, error } = await supabase.from('tester_invites')
-    .insert({ token, label, email, created_by: callerId, expires_at: expiresAt })
-    .select('id, token, label, email, created_at, expires_at')
-    .single();
-  if (error) throw new Error(error.message);
+  // The token column is UNIQUE. At 1e56 possibilities a collision will never
+  // happen, but "never" resting on chance alone would surface as a raw Postgres
+  // 23505 in Jamal's face, so the one-in-forever case retries instead.
+  let data: Record<string, unknown> | null = null;
+  let token = '';
+  for (let attempt = 0; attempt < 3; attempt++) {
+    token = generateInviteToken();
+    const res = await supabase.from('tester_invites')
+      .insert({ token, label, email, created_by: callerId, expires_at: expiresAt })
+      .select('id, token, label, email, created_at, expires_at')
+      .single();
+    if (!res.error) { data = res.data as Record<string, unknown>; break; }
+    // 23505 = unique_violation. Anything else is a real failure, so surface it.
+    if (res.error.code !== '23505') throw new Error(res.error.message);
+  }
+  if (!data) throw new Error('Could not generate a unique invite token, please try again');
 
   // Emailing is opt-in: an invite can be created just to copy the link into a
   // DM, which is how most of these actually get sent.

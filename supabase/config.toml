@@ -83,3 +83,8 @@ verify_jwt = true
 # function ever ran, which is the exact regression that broke production in July.
 [functions.redeem-invite]
 verify_jwt = false
+
+# Public by design: someone without an account has to be able to reach us.
+# Protected by IP rate limiting, a global daily ceiling and a honeypot instead.
+[functions.contact-sales]
+verify_jwt = false

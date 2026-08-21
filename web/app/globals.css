@@ -1052,3 +1052,60 @@ button:focus-visible,
   .footer-right { align-items: center; margin: 0 auto; }
   .footer-copy { text-align: center; }
 }
+
+/* ── Contact page ──
+   Deliberately short: a heading, one line of context, and the form. A long
+   pitch here would be arguing with someone who has already decided to talk. */
+.contact-page { max-width: 620px; margin: 0 auto; padding: 160px 24px 100px; }
+.contact-label {
+  font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--primary); margin-bottom: 18px;
+}
+.contact-title {
+  font-size: clamp(38px, 6vw, 56px); font-weight: 900; letter-spacing: -2px;
+  line-height: 1.05; margin: 0 0 20px; text-wrap: balance;
+}
+.contact-sub {
+  font-size: 17px; line-height: 1.65; color: var(--muted); margin: 0 0 44px; max-width: 52ch;
+}
+
+.contact-form { display: flex; flex-direction: column; gap: 18px; }
+.contact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 620px) { .contact-row { grid-template-columns: 1fr; } }
+
+.contact-field { display: flex; flex-direction: column; gap: 8px; }
+.contact-field > span {
+  font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: var(--muted);
+}
+.contact-field > span em { font-style: normal; font-weight: 500; text-transform: none; letter-spacing: 0; opacity: .65; }
+.contact-field input,
+.contact-field textarea {
+  width: 100%; padding: 13px 15px; font-family: inherit; font-size: 15px; color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  transition: border-color .2s, background .2s; resize: vertical;
+}
+.contact-field input::placeholder,
+.contact-field textarea::placeholder { color: var(--muted); opacity: .55; }
+.contact-field input:focus,
+.contact-field textarea:focus {
+  outline: none; border-color: var(--primary); background: var(--surface2);
+}
+.contact-field input:focus-visible,
+.contact-field textarea:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+/* Positioned off-screen rather than display:none — some bots skip hidden
+   inputs but happily fill a positioned one, which is the whole point. */
+.contact-hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+.contact-submit { width: 100%; margin-top: 4px; }
+.contact-submit:disabled { opacity: .6; cursor: not-allowed; }
+.contact-error {
+  font-size: 14px; color: var(--danger, #f87171); background: rgba(248,113,113,.08);
+  border: 1px solid rgba(248,113,113,.25); border-radius: 10px; padding: 11px 14px;
+}
+.contact-note { font-size: 13px; color: var(--muted); margin: 2px 0 0; text-align: center; }
+
+.contact-done { text-align: center; padding: 26px 0 10px; }
+.contact-done svg { width: 42px; height: 42px; color: var(--primary); margin-bottom: 18px; }
+.contact-done h2 { font-size: 30px; font-weight: 800; letter-spacing: -1px; margin: 0 0 12px; }
+.contact-done p { font-size: 16px; line-height: 1.6; color: var(--muted); margin: 0 auto 26px; max-width: 40ch; }

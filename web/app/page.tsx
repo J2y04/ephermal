@@ -801,7 +801,7 @@ export default function Home() {
                 per: '/ month, for established stores & agencies',
                 credits: '350 AI script credits + 32 UGC video ads / month',
                 featured: false,
-                cta: { label: 'Contact Sales', href: 'mailto:hello@ephermal.app', primary: false },
+                cta: { label: 'Contact Sales', href: '/contact', primary: false },
                 /* Stacked layers. */
                 icon: (<><path d="m12 2 9 5-9 5-9-5 9-5z" /><path d="m3 12 9 5 9-5" /><path d="m3 17 9 5 9-5" /></>),
                 lead: 'Everything in Growth, plus:',
@@ -895,7 +895,7 @@ export default function Home() {
           <a href="/terms">Terms</a>
           <a href="/accessibility">Accessibility</a>
           <a href="/data-deletion">Data Deletion</a>
-          <a href="mailto:hello@ephermal.app">Contact</a>
+          <a href="/contact">Contact</a>
         </div>
         <div className="footer-right">
           <div className="footer-copy">© 2026 Interlink Platforms. Built &amp; based in Germany. All rights reserved.</div>
