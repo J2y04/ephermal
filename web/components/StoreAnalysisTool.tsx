@@ -86,7 +86,7 @@ export default function StoreAnalysisTool() {
     <section className="section store-scan-section" id="analyse">
       <div className="container">
         <div data-reveal style={{ textAlign: 'center', maxWidth: '640px', margin: '0 auto 40px' }}>
-          <div className="section-label" style={{ justifyContent: 'center', display: 'flex' }}>Free — no signup required</div>
+          <div className="section-label" style={{ justifyContent: 'center', display: 'flex' }}>Free, no signup required</div>
           <h2 className="section-title">Analyse Your Store Now.</h2>
           <p className="section-sub" style={{ margin: '0 auto' }}>
             Paste your store URL. In seconds, see the exact brand brief, color palette, and ad strategy Ephermal would build for you, for free, right now.

@@ -18,6 +18,35 @@
   --success: #34d399;
   --warning: #fbbf24;
   --danger: #f87171;
+
+  /* Motion system.
+     Everything on this page used to transition with `transition: all <time>`
+     and no easing curve, which falls back to the browser default. That single
+     omission is most of why the page felt generic: a nav pill, a pricing card
+     and a stat block all moved on the same soft curve.
+
+     Two curves, three durations, used everywhere:
+       exit   leaves fast and lands soft. The workhorse for hover.
+       entry  the reveal curve already in use, kept so scroll motion is unchanged.
+       press  overshoots very slightly, for the moment a control is released.
+
+     The durations are deliberately asymmetric in use. A hover moves its
+     transform on --dur-2 and settles its shadow on --dur-3, so the surface
+     arrives before its light does. That lag is what reads as weight. */
+  --ease-exit:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-entry: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-press: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --dur-3: 340ms;
+
+  /* Shape scale. Sixteen distinct radius values were in use, including 3px,
+     5px, 7px, 9px and 11px one-offs. These are the five that stay. */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-pill: 100px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -462,86 +491,6 @@ a { text-decoration: none; color: inherit; }
 .agent-section { background: var(--surface); position: relative; z-index: 2; }
 .agent-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
 
-/* radial network visual */
-.an-wrap {
-  position: relative; width: 460px; height: 460px; max-width: 100%;
-  justify-self: center;
-}
-.an-svg {
-  position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none;
-}
-@keyframes haloPulse {
-  0%, 100% { r: 72; opacity: 0.5; }
-  50%       { r: 88; opacity: 0.9; }
-}
-.an-halo { animation: haloPulse 3s ease-in-out infinite; }
-
-/* connection lines */
-.an-line { transition: stroke 0.35s; }
-.an-line.active { stroke: rgba(var(--primary-rgb),0.45) !important; }
-
-/* signal dots */
-.an-dot { opacity: 0; transition: opacity 0.3s; }
-.an-dot.active { opacity: 1; }
-
-/* center hub */
-.an-hub {
-  position: absolute;
-  left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  width: 84px; height: 84px;
-  background: linear-gradient(135deg, rgba(var(--primary-rgb),0.18), rgba(var(--primary-rgb),0.06));
-  border: 1px solid rgba(var(--primary-rgb),0.45);
-  border-radius: 50%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-  color: var(--primary-light);
-  z-index: 10;
-}
-.an-hub svg { width: 20px; height: 20px; stroke: var(--primary-light); }
-.an-hub span { font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--primary-light); }
-
-@keyframes ringPulse {
-  0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.5; }
-  100% { transform: translate(-50%,-50%) scale(1.85); opacity: 0; }
-}
-.an-hub-ring {
-  position: absolute; left: 50%; top: 50%;
-  width: 84px; height: 84px;
-  border-radius: 50%;
-  border: 1px solid rgba(var(--primary-rgb),0.35);
-  animation: ringPulse 2.4s ease-out infinite;
-}
-.an-hub-ring2 { animation-delay: 1.2s; }
-
-/* agent nodes */
-.an-node {
-  position: absolute; width: 92px;
-  display: flex; align-items: center; gap: 8px;
-  padding: 10px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  transition: border-color 0.35s, box-shadow 0.35s, transform 0.35s;
-  z-index: 5; cursor: default;
-}
-.an-node.active {
-  border-color: rgba(var(--primary-rgb),0.5);
-  box-shadow: 0 0 18px rgba(var(--primary-rgb),0.15), 0 0 36px rgba(var(--primary-rgb),0.07);
-  transform: scale(1.06);
-}
-.an-node-icon {
-  flex-shrink: 0;
-  width: 26px; height: 26px;
-  background: rgba(var(--primary-rgb),0.07);
-  border-radius: 7px;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.35s;
-}
-.an-node.active .an-node-icon { background: rgba(var(--primary-rgb),0.18); }
-.an-node-icon svg { width: 13px; height: 13px; stroke: var(--primary-light); }
-.an-node-num  { font-size: 9px; font-weight: 700; color: var(--primary); letter-spacing: 0.5px; }
-.an-node-name { font-size: 10px; font-weight: 600; color: var(--text); line-height: 1.3; }
-
 /* feature list */
 .feature-list { margin-top: 32px; display: flex; flex-direction: column; gap: 16px; }
 .feat-item { display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; transition: all 0.2s; }
@@ -806,7 +755,6 @@ footer {
   .mobile-nav-panel-divider { height: 1px; background: var(--border); margin: 6px 4px; }
   .mobile-nav-panel-auth { padding: 6px 4px 2px; }
   .agent-wrap { grid-template-columns: 1fr; }
-  .an-wrap { width: 320px; height: 320px; }
   .agent-diagram { height: 300px; }
   .steps::before { display: none; }
   .stat-block:first-child, .stat-block:last-child { border-radius: 20px; }
@@ -1137,3 +1085,533 @@ button:focus-visible,
   .price-sales-link:hover, .price-sales-link:hover svg { transform: none; }
 }
 @media (max-width: 620px) { .price-sales-cta { flex-direction: column; text-align: center; gap: 14px; } }
+
+/* ============================================================================
+   INTERACTION LAYER
+   ----------------------------------------------------------------------------
+   The page had twelve `transition: all <time>` declarations with no easing
+   curve, and almost every hover changed exactly one property: a border colour,
+   or a background. One property moving on a default curve is what a hover state
+   looks like before anyone has designed it.
+
+   What a considered hover does instead is answer with more than one thing at
+   once, on different clocks. The surface lifts, its shadow deepens and spreads,
+   its edge catches a little more light. Same idea every time, so the page feels
+   like one object rather than a pile of components.
+
+   Nothing here changes a colour value, a font, or the position of any section.
+   ============================================================================ */
+
+/* ── Surfaces that respond to the pointer ──
+   .price-card is the important one: it declared `transition: all 0.3s` and had
+   no :hover rule at all, so the transition was dead code and the pricing cards,
+   the most decision-heavy element on the page, did not react to the cursor. */
+.price-card,
+.quote-card,
+.stat-block,
+.feat-item,
+.service-card {
+  transition:
+    transform    var(--dur-2) var(--ease-exit),
+    border-color var(--dur-2) var(--ease-exit),
+    background   var(--dur-3) var(--ease-exit),
+    box-shadow   var(--dur-3) var(--ease-exit);
+}
+
+.price-card:hover,
+.quote-card:hover,
+.stat-block:hover,
+.feat-item:hover {
+  transform: translateY(-3px);
+  border-color: rgba(var(--primary-rgb), 0.28);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.05) inset,
+    0 18px 40px -28px rgba(0,0,0,0.9),
+    0 12px 48px -32px rgba(var(--primary-rgb), 0.35);
+}
+
+/* The stat blocks are edge-to-edge in a row, so a lift would break the seam.
+   They get the light without the movement. */
+.stat-block {
+  transition:
+    background   var(--dur-3) var(--ease-exit),
+    border-color var(--dur-2) var(--ease-exit),
+    box-shadow   var(--dur-3) var(--ease-exit);
+}
+.stat-block:hover {
+  transform: none;
+  background: var(--surface2);
+}
+
+/* ── Buttons ──
+   A control should acknowledge the press, not just the approach. The lift on
+   hover is undone on :active with a faster curve, so clicking feels like the
+   button actually took the weight. */
+.btn-primary,
+.btn-secondary,
+.btn-ghost,
+.btn-nav-cta,
+.price-btn,
+.nav-toggle {
+  transition:
+    transform    var(--dur-1) var(--ease-press),
+    background   var(--dur-2) var(--ease-exit),
+    border-color var(--dur-2) var(--ease-exit),
+    color        var(--dur-2) var(--ease-exit),
+    box-shadow   var(--dur-3) var(--ease-exit);
+}
+
+.btn-primary:hover,
+.btn-nav-cta:hover,
+.price-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 8px  rgba(0,0,0,0.4),
+    0 8px 28px -10px rgba(var(--primary-rgb), 0.55);
+}
+
+.btn-ghost:hover,
+.price-btn:hover,
+.nav-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(var(--primary-rgb), 0.4);
+}
+
+.btn-primary:active,
+.btn-secondary:active,
+.btn-ghost:active,
+.btn-nav-cta:active,
+.price-btn:active,
+.nav-toggle:active {
+  transform: translateY(0) scale(0.985);
+  transition-duration: var(--dur-1);
+}
+
+/* ── Pricing card pointer spotlight ──
+   The one borrowed move. A soft light tracks the cursor across the card, which
+   is what makes Stripe's pricing feel like a physical surface under glass
+   rather than a rectangle with a border. Driven by --mx/--my, set from a
+   pointermove handler outside React state so it never re-renders the tree.
+   Falls back to a completely static card if the script never runs. */
+.price-card { position: relative; isolation: isolate; }
+.price-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity var(--dur-3) var(--ease-exit);
+  background: radial-gradient(
+    380px circle at var(--mx, 50%) var(--my, 0%),
+    rgba(var(--primary-rgb), 0.10),
+    transparent 62%
+  );
+}
+.price-card:hover::after { opacity: 1; }
+
+/* ── Nav links: underline that grows from the side the cursor is on ──
+   A colour change alone gives no sense of direction. */
+.nav-links a {
+  position: relative;
+  transition: color var(--dur-2) var(--ease-exit);
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: -5px;
+  height: 1px;
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform var(--dur-2) var(--ease-exit);
+}
+.nav-links a:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* ── Shape scale, applied ──
+   Collapsing the arbitrary one-off radii onto the five-step scale. */
+.feat-item   { border-radius: var(--r-md); }
+.quote-card  { border-radius: var(--r-xl); }
+.price-card  { border-radius: var(--r-xl); }
+
+/* ── Focus stays visible and is never replaced by the hover treatment ── */
+.price-card:focus-visible,
+.quote-card:focus-visible,
+.feat-item:focus-visible,
+.btn-primary:focus-visible,
+.btn-secondary:focus-visible,
+.btn-ghost:focus-visible,
+.btn-nav-cta:focus-visible,
+.price-btn:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+
+/* ── Reduced motion ──
+   Everything above is transform and opacity, so it all collapses cleanly.
+   The colour and border feedback stays, because that is information, not
+   decoration: without it a hover would give no response at all. */
+@media (prefers-reduced-motion: reduce) {
+  .price-card, .quote-card, .stat-block, .feat-item, .service-card,
+  .btn-primary, .btn-secondary, .btn-ghost, .btn-nav-cta, .price-btn, .nav-toggle {
+    transition: border-color var(--dur-1) linear, background var(--dur-1) linear, color var(--dur-1) linear;
+  }
+  .price-card:hover, .quote-card:hover, .feat-item:hover,
+  .btn-primary:hover, .btn-nav-cta:hover, .price-btn.primary:hover,
+  .btn-ghost:hover, .price-btn:hover, .nav-toggle:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  .price-card:active, .btn-primary:active, .btn-secondary:active,
+  .btn-ghost:active, .btn-nav-cta:active, .price-btn:active, .nav-toggle:active {
+    transform: none;
+  }
+  .price-card::after { display: none; }
+  .nav-links a::after { transition: none; }
+}
+
+/* ── "One brain. Seven specialists." ──
+   This section used to be a two-column split: text on the left, an animated
+   seven-node orbital graph on the right. The graph drew a ring of agent nodes
+   with pulsing connector lines, which looked like a system diagram without
+   describing any real system. It is the clearest AI tell the page had, so it
+   is gone.
+
+   With it removed the section becomes a centred statement over a row of three,
+   which is shorter than what it replaced rather than longer. */
+.agent-wrap {
+  grid-template-columns: 1fr;
+  gap: 48px;
+  text-align: center;
+}
+.agent-text { max-width: 680px; margin: 0 auto; }
+.agent-text .section-sub { margin-left: auto; margin-right: auto; }
+.feature-list {
+  margin-top: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  text-align: left;
+}
+.feat-item {
+  flex-direction: column;
+  gap: 14px;
+  padding: 26px 24px;
+}
+/* The dot sat beside the text as a bullet. Given its own line it reads as a
+   marker for the group rather than punctuation. */
+.feat-dot { margin-top: 0; }
+
+@media (max-width: 860px) {
+  .feature-list { grid-template-columns: 1fr; }
+}
+
+/* ── Entrance motion, retimed ──
+   The reveal curve was already the right one. What was wrong was everything it
+   was applied to: 900ms, 40px of travel and a 3px blur on every element that
+   enters. Slow, heavy, and the blur in particular is the signature of a reveal
+   that wants to be noticed. Content that announces itself for nearly a second
+   before it can be read is the page performing rather than working.
+
+   Retimed to roughly two thirds the duration over less than half the distance,
+   with the blur dropped. The motion now finishes about when the eye arrives
+   instead of making it wait.
+
+   will-change is also released once an element has landed. It was declared
+   permanently, which pins a compositor layer per element for the life of the
+   page whether or not anything is still moving. */
+[data-reveal] {
+  transform: translateY(18px);
+  filter: none;
+  transition:
+    opacity   620ms var(--ease-entry),
+    transform 620ms var(--ease-entry);
+}
+[data-reveal="left"]  { transform: translateX(-22px); filter: none; }
+[data-reveal="right"] { transform: translateX(22px);  filter: none; }
+[data-reveal="scale"] { transform: translateY(14px) scale(0.97); filter: none; }
+[data-reveal="blur"]  { transform: translateY(8px);  filter: none; }
+[data-reveal="rise"]  { transform: translateY(28px); filter: none; }
+[data-reveal="pop"]   { transform: translateY(10px) scale(0.96); filter: none; }
+
+[data-reveal].is-visible {
+  filter: none;
+  will-change: auto;
+}
+
+/* Tighter stagger. A group should read as one gesture, not a queue. */
+[data-reveal][data-delay="1"] { transition-delay: 60ms;  }
+[data-reveal][data-delay="2"] { transition-delay: 120ms; }
+[data-reveal][data-delay="3"] { transition-delay: 180ms; }
+[data-reveal][data-delay="4"] { transition-delay: 240ms; }
+[data-reveal][data-delay="5"] { transition-delay: 300ms; }
+[data-reveal][data-delay="6"] { transition-delay: 360ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal] {
+    transition: opacity 160ms linear;
+    transform: none;
+    filter: none;
+  }
+  [data-reveal][data-delay="1"], [data-reveal][data-delay="2"],
+  [data-reveal][data-delay="3"], [data-reveal][data-delay="4"],
+  [data-reveal][data-delay="5"], [data-reveal][data-delay="6"] { transition-delay: 0ms; }
+}
+
+/* The last three `transition: all` holdouts on this page.
+   .nav animates its own backdrop as you scroll past the hero, .brand-pill and
+   .tl-node change state rather than respond to a pointer. Same treatment: name
+   the properties, name the curve. */
+.nav {
+  transition:
+    background var(--dur-3) var(--ease-exit),
+    box-shadow var(--dur-3) var(--ease-exit),
+    border-color var(--dur-3) var(--ease-exit);
+}
+.brand-pill {
+  transition:
+    border-color var(--dur-2) var(--ease-exit),
+    background   var(--dur-2) var(--ease-exit),
+    color        var(--dur-2) var(--ease-exit),
+    transform    var(--dur-2) var(--ease-exit);
+}
+.tl-node {
+  transition:
+    border-color var(--dur-3) var(--ease-exit),
+    background   var(--dur-3) var(--ease-exit),
+    box-shadow   var(--dur-3) var(--ease-exit),
+    transform    var(--dur-3) var(--ease-exit);
+}
+
+/* ============================================================================
+   DESIGN SYSTEM: one material, one rhythm, one accent
+   ----------------------------------------------------------------------------
+   The refinement pass before this one fixed how things move. It did not fix why
+   the page reads as generic, which is structural and visible from the scrollbar
+   alone:
+
+     - 20,474px of page across 18 sections.
+     - Six CONSECUTIVE sections share one layout family, ~6,400px of it.
+     - Every section used the identical 158px / 178px padding, so nothing was
+       ever more or less important than anything else.
+     - Those six sections carried five DIFFERENT background colour washes:
+       Shopify green, Google blue, lime, and two teals. The page changed brand
+       identity five times while scrolling.
+
+   Uniform spacing plus rotating colour is the signature of a page assembled
+   section by section rather than composed. Fixing it needs no new sections and
+   no reordering.
+
+   Three rules:
+
+     1  ONE ACCENT. The colour washes are gone. Google blue and Shopify green
+        belong on the platform cards that are actually about Google and Shopify,
+        not as full-bleed section backgrounds. The teal is the only accent.
+
+     2  RHYTHM CARRIES HIERARCHY. Sections that make an argument breathe.
+        Sections that list capability tighten. Consecutive sections in the same
+        family tighten further, so the six read as one chapter with six beats
+        rather than six separate pages.
+
+     3  SEPARATION BY STRUCTURE, NOT COLOUR. A hairline and spacing do the work
+        the tints were doing, without spending the palette on it.
+   ============================================================================ */
+
+/* Rhythm scale, replacing the single uniform value. */
+:root {
+  --sp-major: 168px;  /* an argument: hero-adjacent, pricing, closing */
+  --sp-base:  116px;  /* standard */
+  --sp-tight: 84px;   /* inside a run of related sections */
+}
+
+.section { padding: var(--sp-base) 24px; }
+
+/* Statement sections keep room to breathe. */
+.hero + .section,
+.pricing-section,
+.quotes-section,
+.cta-section {
+  padding-top: var(--sp-major);
+  padding-bottom: var(--sp-major);
+}
+
+/* ── The six-section run ──
+   These are one chapter. Tighten them, and let a single hairline separate each
+   beat instead of a colour change. The first gets air above it to open the
+   chapter, the last gets air below it to close. */
+.meta-section {
+  padding-top: var(--sp-tight);
+  padding-bottom: var(--sp-tight);
+  background: none;
+  border-top: 1px solid var(--border);
+}
+/* Open the chapter with a little more air. :first-of-type would never match
+   here, since the first <section> sibling is the hero, so key off the section
+   that actually precedes the run. */
+.section:not(.meta-section) + .meta-section { padding-top: var(--sp-base); }
+
+/* The run sits on a very slightly raised ground so it reads as one block
+   against the sections either side of it. One surface value, not five hues. */
+.meta-section { background: linear-gradient(180deg, rgba(255,255,255,0.012), transparent 60%); }
+
+/* ── Composition within the run ──
+   Checked against the DOM rather than assumed: these six already alternate,
+   because the markup puts the visual before the copy in some and after it in
+   others. No CSS reordering needed, and forcing one would have fought it. What
+   they lacked was a shared ground, which is what the single background above
+   gives them. */
+
+/* Section headings tighten as the eye descends a run: the first beat states,
+   the rest support. */
+.meta-section .section-title { letter-spacing: -1.2px; }
+
+@media (max-width: 860px) {
+  :root { --sp-major: 96px; --sp-base: 72px; --sp-tight: 56px; }
+}
+
+/* ── Hero, tightened ──
+   The hero itself is unchanged: same headline, same two buttons, same centred
+   composition. What changed is how much it asked you to read before you could
+   act.
+
+   The sub-paragraph ran to about fifty words and wrapped to five lines, which
+   pushed the buttons toward the fold and made the first thing on the site a
+   block of prose. It is now two lines carrying the one claim that separates
+   Ephermal from every other tool in the category: real Google Search, and
+   margin rather than ROAS. The detail it used to carry is not lost, it is in
+   the six feature sections that exist to carry it.
+
+   The proof line under the buttons dropped the item that now repeats the
+   sub-copy, and lost the dot separators. Four values divided by three dots is
+   a lot of punctuation for one small line. Spacing separates them just as well
+   and leaves the row quieter, which is what a line that small should be. */
+.hero-sub { max-width: 620px; margin-bottom: 40px; }
+
+.hero-proof {
+  gap: 28px;
+  margin-top: 26px;
+  font-size: 12.5px;
+  letter-spacing: 0.1px;
+  opacity: 0.86;
+}
+/* The dots are gone from the markup; this keeps any that come back from
+   reintroducing the old look by accident. */
+.hero-proof .dot { display: none; }
+
+@media (max-width: 640px) {
+  .hero-proof { gap: 8px 18px; }
+}
+
+/* The shortened sub-copy broke 3 lines with "margin." stranded alone on the
+   last one. text-wrap: balance evens the line lengths so the block reads as a
+   shape rather than a paragraph that ran out. Browsers without it fall back to
+   normal wrapping, which is the current behaviour, so nothing regresses. */
+.hero-sub { text-wrap: balance; }
+
+/* ── The three specialist cards ──
+   These were a 6px teal dot, a heading and a paragraph. The dot carried no
+   information, so all three cards looked identical and the row read as filler.
+
+   Each card now has a drawing of what it actually does rather than a noun icon:
+   a single input forking into three (one brain, several specialists), a result
+   trace climbing with the latest reading called out, and a decision panel with
+   the approval that gates it. Deliberately not a ring of orbiting nodes; that
+   was the graphic removed from this very section for being decoration dressed
+   up as a diagram.
+
+   On hover each one draws itself. Every stroke carries pathLength="1", so the
+   dash length is normalised and one rule animates all of them regardless of
+   their real geometry. Staggered, so the fork resolves outward and the check
+   lands last, after the thing it approves is legible. */
+.feat-item {
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+.feat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px; height: 46px;
+  border-radius: var(--r-md);
+  color: var(--primary);
+  background: rgba(var(--primary-rgb), 0.07);
+  border: 1px solid rgba(var(--primary-rgb), 0.16);
+  transition:
+    background   var(--dur-2) var(--ease-exit),
+    border-color var(--dur-2) var(--ease-exit),
+    transform    var(--dur-2) var(--ease-exit),
+    box-shadow   var(--dur-3) var(--ease-exit);
+}
+.feat-icon svg { width: 25px; height: 25px; display: block; overflow: visible; }
+
+/* Resting state: fully drawn, so the card is complete before anyone touches it
+   and reads correctly if the pointer never arrives. */
+.feat-icon .fi-p,
+.feat-icon .fi-n,
+.feat-icon .fi-check {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 520ms var(--ease-entry), opacity var(--dur-2) var(--ease-exit);
+}
+.feat-icon .fi-dim { opacity: 0.42; }
+.feat-icon .fi-n   { fill: rgba(var(--primary-rgb), 0.14); }
+.feat-icon .fi-check { stroke: var(--primary); stroke-width: 2.1; }
+
+/* Hover: wipe the strokes out and let them redraw. Setting the offset to 1 and
+   releasing it in the same frame is what produces the draw. */
+.feat-item:hover .feat-icon {
+  background: rgba(var(--primary-rgb), 0.13);
+  border-color: rgba(var(--primary-rgb), 0.38);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -12px rgba(var(--primary-rgb), 0.7);
+}
+.feat-item:hover .feat-icon .fi-p     { animation: fiDraw 620ms var(--ease-entry) both; }
+.feat-item:hover .feat-icon .fi-n     { animation: fiPop  460ms var(--ease-press) both; }
+.feat-item:hover .feat-icon .fi-check { animation: fiDraw 460ms var(--ease-entry) both; animation-delay: 260ms; }
+
+/* Stagger the fork so it resolves outward instead of all at once. */
+.feat-item:hover .feat-icon .fi-p:nth-of-type(2) { animation-delay: 70ms; }
+.feat-item:hover .feat-icon .fi-p:nth-of-type(3) { animation-delay: 130ms; }
+.feat-item:hover .feat-icon .fi-p:nth-of-type(4) { animation-delay: 190ms; }
+.feat-item:hover .feat-icon .fi-n:nth-of-type(2) { animation-delay: 180ms; }
+.feat-item:hover .feat-icon .fi-n:nth-of-type(3) { animation-delay: 240ms; }
+.feat-item:hover .feat-icon .fi-n:nth-of-type(4) { animation-delay: 300ms; }
+
+@keyframes fiDraw {
+  from { stroke-dashoffset: 1; }
+  to   { stroke-dashoffset: 0; }
+}
+@keyframes fiPop {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  60%  { opacity: 1; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+
+/* A quiet light follows the card's top edge on hover, so the row reads as one
+   family with the pricing cards rather than a different component. */
+.feat-item::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--primary-rgb), 0.55), transparent);
+  opacity: 0;
+  transition: opacity var(--dur-3) var(--ease-exit);
+}
+.feat-item:hover::before { opacity: 1; }
+
+.feat-item h4 { transition: color var(--dur-2) var(--ease-exit); }
+.feat-item:hover h4 { color: var(--primary-light); }
+
+@media (prefers-reduced-motion: reduce) {
+  .feat-item:hover .feat-icon .fi-p,
+  .feat-item:hover .feat-icon .fi-n,
+  .feat-item:hover .feat-icon .fi-check { animation: none; stroke-dashoffset: 0; }
+  .feat-item:hover .feat-icon { transform: none; box-shadow: none; }
+  .feat-icon { transition: background var(--dur-1) linear, border-color var(--dur-1) linear; }
+}

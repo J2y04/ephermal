@@ -3,8 +3,8 @@ import ScrollReveal from '../components/ScrollReveal';
 import NavScrolled from '../components/NavScrolled';
 import NavAuth from '../components/NavAuth';
 import MobileNav from '../components/MobileNav';
-import AgentNetwork from '../components/AgentNetwork';
 import HeroMotion from '../components/HeroMotion';
+import PointerSpotlight from '../components/PointerSpotlight';
 import StatsMotion from '../components/StatsMotion';
 import ShopifyReveal from '../components/ShopifyReveal';
 import StoreAnalysisTool from '../components/StoreAnalysisTool';
@@ -15,6 +15,7 @@ export default function Home() {
       <a href="#main-content" className="skip-link">Skip to content</a>
       <ScrollReveal />
       <NavScrolled />
+      <PointerSpotlight />
 
       {/* ── Navigation ── */}
       <nav className="nav" id="main-nav">
@@ -41,17 +42,13 @@ export default function Home() {
         <HeroMotion
           line1={['Your', 'First']}
           line2={['€10K', 'Starts', 'Here.']}
-          sub={<>Built for Shopify stores chasing their first (or next) revenue milestone. Most AI ad tools stop at Meta and chase ROAS. Ephermal also runs real Google Search ads, tracks true product margins so you scale what&apos;s actually profitable, and watches competitors before they outspend you. Live in 3 minutes.</>}
+          sub={<>Most AI ad tools stop at Meta and chase ROAS. Ephermal runs real Google Search ads for your Shopify store, and scales on true margin.</>}
           cta={<><a href="/auth/register.html" className="btn-primary">Get Started</a><a href="#how-it-works" className="btn-secondary">See how it works</a></>}
           oneLine
         />
         <p className="hero-proof" data-reveal data-delay="3">
-          <span>No agency needed</span>
-          <span className="dot" />
           <span>From €89/month</span>
-          <span className="dot" />
-          <span>Meta + real Google Search ads</span>
-          <span className="dot" />
+          <span>No agency needed</span>
           <span>Built &amp; based in Germany</span>
         </p>
 
@@ -278,7 +275,7 @@ export default function Home() {
       </section>
 
       {/* ── Shopify Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(0,128,96,0.06) 0%, rgba(150,191,72,0.04) 100%)' }}>
+      <section className="section meta-section">
         <div className="container" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
           <ShopifyReveal />
         </div>
@@ -338,7 +335,7 @@ export default function Home() {
       </section>
 
       {/* ── Google Ads Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(66,133,244,0.06) 0%, rgba(52,168,83,0.04) 100%)' }}>
+      <section className="section meta-section">
         <div className="container">
           <div className="meta-inner">
             <div className="meta-content" data-reveal="left" data-delay="1">
@@ -405,7 +402,7 @@ export default function Home() {
       </section>
 
       {/* ── Competitor Radar Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(var(--primary-rgb),0.05) 0%, rgba(255,255,255,0.02) 100%)' }}>
+      <section className="section meta-section">
         <div className="container">
           <div className="meta-inner">
             <div className="meta-content" data-reveal="left" data-delay="1">
@@ -471,7 +468,7 @@ export default function Home() {
       </section>
 
       {/* ── Creative Brief Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(var(--primary-rgb),0.05) 0%, rgba(var(--primary-rgb),0.01) 100%)' }}>
+      <section className="section meta-section">
         <div className="container">
           <div className="meta-inner" style={{ direction: 'rtl' }}>
             <div className="meta-content" data-reveal="right" data-delay="1" style={{ direction: 'ltr' }}>
@@ -522,7 +519,7 @@ export default function Home() {
       </section>
 
       {/* ── Profit Tracker Section ── */}
-      <section className="section meta-section" style={{ background: 'linear-gradient(135deg, rgba(150,191,72,0.06) 0%, rgba(150,191,72,0.01) 100%)' }}>
+      <section className="section meta-section">
         <div className="container">
           <div className="meta-inner">
             <div className="meta-content" data-reveal="left" data-delay="1">
@@ -647,24 +644,68 @@ export default function Home() {
       <section className="agent-section section">
         <div className="container">
           <div className="agent-wrap">
-            <div className="agent-text" data-reveal="left">
+            <div className="agent-text" data-reveal>
               <div className="section-label">Under the hood</div>
               <h2 className="section-title">One brain.<br />Seven specialists.</h2>
-              <p className="section-sub">The Ephermal Orchestrator coordinates a team of specialized AI agents, each one built for a specific part of running your ad operation, so you don't have to learn any of it.</p>
-              <div className="feature-list">
-                {[
-                  { title: 'Orchestrator Agent', body: 'The core intelligence. Analyzes your store, plans strategy and coordinates every specialist agent in sequence.' },
-                  { title: 'Performance Signals', body: 'Ephermal tracks results across your campaigns and refines its strategy based on what actually converts in your category.' },
-                  { title: 'Full Transparency', body: 'See exactly what the AI decided and why. Approve creatives before launch. You are always in control.' },
-                ].map((f, i) => (
-                  <div key={i} className="feat-item">
-                    <div className="feat-dot" />
-                    <div><h4>{f.title}</h4><p>{f.body}</p></div>
-                  </div>
-                ))}
-              </div>
+              <p className="section-sub">The Ephermal Orchestrator coordinates a team of specialized AI agents, each one built for a specific part of running your ad operation, so you don&apos;t have to learn any of it.</p>
             </div>
-            <AgentNetwork />
+            <div className="feature-list">
+              {[
+                {
+                  title: 'Orchestrator Agent',
+                  body: 'The core intelligence. Analyzes your store, plans strategy and coordinates every specialist agent in sequence.',
+                  // One input branching into three: a single brain directing several
+                  // specialists. Drawn as a fork rather than a ring, deliberately.
+                  icon: (
+                    <>
+                      <path className="fi-p" pathLength={1} d="M4 16h5" />
+                      <path className="fi-p" pathLength={1} d="M9 16c4 0 3-9 7-9" />
+                      <path className="fi-p" pathLength={1} d="M9 16h7" />
+                      <path className="fi-p" pathLength={1} d="M9 16c4 0 3 9 7 9" />
+                      <circle className="fi-n" pathLength={1} cx="4"  cy="16" r="2.1" />
+                      <circle className="fi-n" pathLength={1} cx="19" cy="7"  r="2.1" />
+                      <circle className="fi-n" pathLength={1} cx="19" cy="16" r="2.1" />
+                      <circle className="fi-n" pathLength={1} cx="19" cy="25" r="2.1" />
+                    </>
+                  ),
+                },
+                {
+                  title: 'Performance Signals',
+                  body: 'Ephermal tracks results across your campaigns and refines its strategy based on what actually converts in your category.',
+                  // The trace it actually reads: a result climbing, with the latest
+                  // reading called out.
+                  icon: (
+                    <>
+                      <path className="fi-p" pathLength={1} d="M4 27h23" />
+                      <path className="fi-p" pathLength={1} d="M5 22l6-7 5 4 6-11" />
+                      <path className="fi-p fi-dim" pathLength={1} d="M4 11h4M4 16h4" />
+                      <circle className="fi-n fi-pulse" pathLength={1} cx="22" cy="8" r="2.4" />
+                    </>
+                  ),
+                },
+                {
+                  title: 'Full Transparency',
+                  body: 'See exactly what the AI decided and why. Approve creatives before launch. You are always in control.',
+                  // The decision itself, legible, with the approval that gates it.
+                  icon: (
+                    <>
+                      <rect className="fi-p" pathLength={1} x="4" y="5" width="19" height="21" rx="3" />
+                      <path className="fi-p fi-dim" pathLength={1} d="M9 11h9M9 15h9M9 19h5" />
+                      <path className="fi-check" pathLength={1} d="M17.5 21.5l3 3 6-6.5" />
+                    </>
+                  ),
+                },
+              ].map((f, i) => (
+                <div key={i} className="feat-item" data-reveal data-delay={i + 1}>
+                  <span className="feat-icon" aria-hidden="true">
+                    <svg viewBox="0 0 31 31" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+                      {f.icon}
+                    </svg>
+                  </span>
+                  <div><h4>{f.title}</h4><p>{f.body}</p></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -748,13 +789,13 @@ export default function Home() {
                 lead: null,
                 features: [
                   '15 AI ad scripts / month',
-                  'Meta Ads automation — campaigns, ad sets, creatives',
+                  'Meta Ads automation: campaigns, ad sets, creatives',
                   '21-strategy ad playbook behind every campaign',
                   'Profit-aware campaign generation from your real COGS',
                   'AI store analysis & brand brief',
                   'Live Shopify product sync',
                   'Campaign dashboard',
-                  'Performance charts — ROAS, spend, campaign status',
+                  'Performance charts: ROAS, spend, campaign status',
                   'Creative approval workflow',
                   'Creative fatigue monitor',
                   'Docs & help centre',
@@ -781,16 +822,16 @@ export default function Home() {
                 features: [
                   '75 AI ad scripts / month',
                   '18 real UGC video ads / month',
-                  'Google Search Ads — keywords, match types, negatives',
+                  'Google Search Ads: keywords, match types, negatives',
                   'Auren AI ad strategist chat',
-                  'Audience Intelligence — custom & lookalike audiences',
-                  'Budget AI — allocation, forecasting, history',
+                  'Audience Intelligence: custom and lookalike audiences',
+                  'Budget AI: allocation, forecasting, history',
                   'MRR Tracker',
                   'Full campaign analytics',
                   'Closed-loop ROAS optimization',
                   'Competitor Radar (ad spy)',
                   'Creative Brief AI',
-                  'Profit Tracker — true margin per product',
+                  'Profit Tracker: true margin per product',
                 ],
                 locked: ['Bulk campaign management'],
                 lockedBadge: 'Scale',
@@ -870,7 +911,7 @@ export default function Home() {
             </a>
           </div>
           <p className="price-credits-note">
-            Each plan includes monthly AI script credits as shown — hooks, headlines and ad copy generated from your product catalog, not finished video or image creative. Additional credit packs are available from inside your dashboard.
+            Each plan includes monthly AI script credits as shown: hooks, headlines and ad copy generated from your product catalog, not finished video or image creative. Additional credit packs are available from inside your dashboard.
           </p>
         </div>
       </section>
