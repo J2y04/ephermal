@@ -6,6 +6,8 @@ import { TextInput, Badge } from '@tremor/react';
 import { adminFetch, isLocalDev } from '../lib/adminFetch';
 import Reveal from '../lib/Reveal';
 import Squircle from '../lib/Squircle';
+import { SegmentedBar } from '../lib/charts/Distribution';
+import { STATUS } from '../lib/charts/tokens';
 
 interface AdminUser {
   id: string;
@@ -40,6 +42,28 @@ interface UserDetail {
   cost_log_total_eur: number;
 }
 
+interface TesterInvite {
+  id: string;
+  token: string;
+  label: string | null;
+  email: string | null;
+  created_at: string;
+  expires_at: string;
+  used_at: string | null;
+  used_by_email: string | null;
+  revoked_at: string | null;
+  status: 'pending' | 'used' | 'expired' | 'revoked';
+  url: string;
+}
+
+interface InviteSummary {
+  total: number;
+  used: number;
+  pending: number;
+  expired: number;
+  revoked: number;
+}
+
 interface ActivityItem {
   label: string;
   sublabel: string;
@@ -63,6 +87,15 @@ function timeAgo(iso: string | null): string {
   if (days < 30) return `${days}d ago`;
   return fmtDate(iso);
 }
+
+/** One colour per invite state, shared by the badge and the segmented bar so the
+ *  two can never disagree about what "waiting" looks like. */
+const STATUS_COLOR: Record<string, string> = {
+  used:    STATUS.good,
+  pending: '#26bdae',
+  expired: STATUS.warning,
+  revoked: STATUS.critical,
+};
 
 const PROVIDER_LABEL: Record<string, string> = {
   anthropic:  'Auren / AI script',
@@ -108,6 +141,18 @@ export default function AdminTestersPage() {
   const [addQuery, setAddQuery] = useState('');
   const [addBusy, setAddBusy] = useState<string | null>(null);
 
+  // Invite links
+  const [invites, setInvites] = useState<TesterInvite[]>([]);
+  const [inviteSummary, setInviteSummary] = useState<InviteSummary | null>(null);
+  const [inviteLabel, setInviteLabel] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [sendEmail, setSendEmail] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [freshLink, setFreshLink] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
+  const [inviteNote, setInviteNote] = useState<string | null>(null);
+
   async function load() {
     if (!session) {
       if (isLocalDev()) { setAllUsers(buildMockUsers()); setLoading(false); }
@@ -121,7 +166,61 @@ export default function AdminTestersPage() {
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
+  async function loadInvites() {
+    if (!session) {
+      if (isLocalDev()) {
+        const mock: TesterInvite[] = [
+          { id: 'inv1', token: 'aaa', label: 'Fakhar (LinkedIn)', email: null, created_at: '2026-08-20', expires_at: '2026-09-19', used_at: '2026-08-21', used_by_email: 'tester@example.com', revoked_at: null, status: 'used', url: 'https://ephermal.app/auth/register.html?invite=aaa' },
+          { id: 'inv2', token: 'bbb', label: 'Primexa.store', email: 'owner@primexa.store', created_at: '2026-08-21', expires_at: '2026-09-20', used_at: null, used_by_email: null, revoked_at: null, status: 'pending', url: 'https://ephermal.app/auth/register.html?invite=bbb' },
+          { id: 'inv3', token: 'ccc', label: 'Old link', email: null, created_at: '2026-07-01', expires_at: '2026-07-31', used_at: null, used_by_email: null, revoked_at: null, status: 'expired', url: 'https://ephermal.app/auth/register.html?invite=ccc' },
+        ];
+        setInvites(mock);
+        setInviteSummary({ total: 3, used: 1, pending: 1, expired: 1, revoked: 0 });
+      }
+      return;
+    }
+    const res = await adminFetch<{ invites: TesterInvite[]; summary: InviteSummary }>(session, 'list_invites');
+    if (res.ok && res.data) { setInvites(res.data.invites); setInviteSummary(res.data.summary); }
+  }
+
+  async function handleCreateInvite() {
+    setCreating(true);
+    setInviteNote(null);
+    const res = await adminFetch<{ invite: { url: string }; emailed: boolean; email_error: string | null }>(
+      session, 'create_invite',
+      { label: inviteLabel.trim(), email: inviteEmail.trim(), send_email: sendEmail && !!inviteEmail.trim() },
+    );
+    setCreating(false);
+    if (!res.ok || !res.data) { setInviteNote(res.error ?? 'Failed to create invite'); return; }
+    setFreshLink(res.data.invite.url);
+    if (sendEmail && res.data.email_error) setInviteNote(`Link created, but the email failed: ${res.data.email_error}`);
+    else if (res.data.emailed) setInviteNote(`Link created and emailed to ${inviteEmail.trim()}.`);
+    setInviteLabel('');
+    setInviteEmail('');
+    setSendEmail(false);
+    loadInvites();
+  }
+
+  async function copyLink(id: string, url: string) {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(c => (c === id ? null : c)), 1800);
+    } catch {
+      setInviteNote('Could not copy. Select the link and copy it manually.');
+    }
+  }
+
+  async function handleRevoke(inv: TesterInvite) {
+    if (!window.confirm(`Revoke this invite${inv.label ? ` for ${inv.label}` : ''}? The link stops working immediately.`)) return;
+    setRevokingId(inv.id);
+    const res = await adminFetch(session, 'revoke_invite', { invite_id: inv.id });
+    setRevokingId(null);
+    if (!res.ok) { setInviteNote(res.error ?? 'Failed to revoke'); return; }
+    loadInvites();
+  }
+
+  useEffect(() => { load(); loadInvites(); }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const testers = useMemo(() => allUsers.filter(u => u.role === 'testuser'), [allUsers]);
 
@@ -180,6 +279,146 @@ export default function AdminTestersPage() {
 
       <Reveal delay={0.05}>
         <Squircle cornerRadius={28} className="widget-shadow mt-7 border border-eph-border bg-eph-surface p-6">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <div className="text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Invite links</div>
+            {inviteSummary && inviteSummary.total > 0 && (
+              <div className="text-[12px] text-eph-muted">
+                <span className="font-semibold text-eph-text">{inviteSummary.used}</span> of {inviteSummary.total} accepted
+              </div>
+            )}
+          </div>
+          <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-eph-muted">
+            A one-time link that creates the account with tester access already applied. They sign up normally and land on Growth, free, without you touching anything afterwards.
+          </p>
+
+          {inviteSummary && inviteSummary.total > 0 && (
+            <div className="mt-5">
+              <SegmentedBar
+                height={10}
+                emptyLabel="No invites created yet"
+                // Empty states are filtered out rather than shown as "Revoked 0 0%".
+                // The legend should describe what happened, not enumerate what didn't.
+                segments={[
+                  { label: 'Accepted', value: inviteSummary.used, color: STATUS_COLOR.used },
+                  { label: 'Waiting', value: inviteSummary.pending, color: STATUS_COLOR.pending },
+                  { label: 'Expired', value: inviteSummary.expired, color: STATUS_COLOR.expired },
+                  { label: 'Revoked', value: inviteSummary.revoked, color: STATUS_COLOR.revoked },
+                ].filter(seg => seg.value > 0)}
+              />
+            </div>
+          )}
+
+          <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
+            <label className="block">
+              <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Who is it for</span>
+              <TextInput
+                placeholder="Name, store or where you met them"
+                value={inviteLabel}
+                onValueChange={setInviteLabel}
+                className="[&>input]:bg-eph-surface2 [&>input]:text-eph-text"
+              />
+            </label>
+            <label className="block">
+              <span className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Email (optional)</span>
+              <TextInput
+                placeholder="them@theirstore.com"
+                value={inviteEmail}
+                onValueChange={setInviteEmail}
+                className="[&>input]:bg-eph-surface2 [&>input]:text-eph-text"
+              />
+            </label>
+            <button
+              onClick={handleCreateInvite}
+              disabled={creating}
+              className="h-[38px] rounded-xl bg-eph-primary px-5 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {creating ? 'Creating...' : 'Create link'}
+            </button>
+          </div>
+
+          <label className="mt-3 inline-flex items-center gap-2 text-[13px] text-eph-muted">
+            <input
+              type="checkbox"
+              checked={sendEmail}
+              disabled={!inviteEmail.trim()}
+              onChange={e => setSendEmail(e.target.checked)}
+              className="h-3.5 w-3.5 accent-eph-primary"
+            />
+            Email the link to them as well
+            {!inviteEmail.trim() && <span className="text-eph-subtle">(add an email first)</span>}
+          </label>
+
+          {freshLink && (
+            <div className="mt-5 rounded-xl border border-eph-primary/25 bg-eph-primary/[0.06] p-4">
+              <div className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-eph-primary">New link, copy it now</div>
+              <div className="flex flex-wrap items-center gap-3">
+                <code className="min-w-0 flex-1 truncate rounded-lg bg-eph-surface2 px-3 py-2 text-[12.5px] text-eph-text">{freshLink}</code>
+                <button
+                  onClick={() => copyLink('fresh', freshLink)}
+                  className="rounded-lg border border-eph-primary/30 px-3 py-2 text-xs font-semibold text-eph-primary transition-colors hover:bg-eph-primary/10"
+                >
+                  {copiedId === 'fresh' ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {inviteNote && <div className="mt-3 text-[13px] text-eph-muted">{inviteNote}</div>}
+
+          {invites.length > 0 && (
+            <div className="mt-6 border-t border-eph-border/60 pt-5">
+              <div className="space-y-1.5">
+                {invites.map(inv => (
+                  <div key={inv.id} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-eph-border/60 bg-eph-surface2 px-4 py-2.5">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm text-eph-text">
+                        {inv.label || inv.email || 'Untitled invite'}
+                      </div>
+                      <div className="text-xs text-eph-subtle">
+                        {inv.status === 'used'
+                          ? 'Accepted ' + fmtDate(inv.used_at) + (inv.used_by_email ? ' \u00b7 ' + inv.used_by_email : '')
+                          : inv.status === 'expired'
+                            ? 'Expired ' + fmtDate(inv.expires_at)
+                            : inv.status === 'revoked'
+                              ? 'Revoked'
+                              : 'Created ' + fmtDate(inv.created_at) + ' \u00b7 expires ' + fmtDate(inv.expires_at)}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide"
+                        style={{ color: STATUS_COLOR[inv.status], background: STATUS_COLOR[inv.status] + '1f' }}
+                      >
+                        {inv.status === 'used' ? 'Accepted' : inv.status === 'pending' ? 'Waiting' : inv.status}
+                      </span>
+                      {inv.status === 'pending' && (
+                        <>
+                          <button
+                            onClick={() => copyLink(inv.id, inv.url)}
+                            className="rounded-lg border border-eph-border px-3 py-1.5 text-xs font-semibold text-eph-muted transition-colors hover:text-eph-text"
+                          >
+                            {copiedId === inv.id ? 'Copied' : 'Copy link'}
+                          </button>
+                          <button
+                            onClick={() => handleRevoke(inv)}
+                            disabled={revokingId === inv.id}
+                            className="rounded-lg border border-eph-danger/30 px-3 py-1.5 text-xs font-semibold text-eph-danger transition-colors hover:bg-eph-danger/10 disabled:opacity-50"
+                          >
+                            {revokingId === inv.id ? '...' : 'Revoke'}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Squircle>
+      </Reveal>
+
+      <Reveal delay={0.1}>
+        <Squircle cornerRadius={28} className="widget-shadow mt-7 border border-eph-border bg-eph-surface p-6">
           <div className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-eph-subtle">Add a test user</div>
           <TextInput
             placeholder="Search an existing account by email…"
@@ -213,7 +452,7 @@ export default function AdminTestersPage() {
         </Squircle>
       </Reveal>
 
-      <Reveal delay={0.1}>
+      <Reveal delay={0.15}>
         <Squircle cornerRadius={32} className="widget-shadow mt-7 overflow-hidden border border-eph-border bg-eph-surface">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">

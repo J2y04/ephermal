@@ -795,6 +795,130 @@ async function handleSendTestEmail(body: Record<string, unknown>): Promise<Recor
   return { ok: true, to, template, resend_id: data.id ?? null, raw: data.id ? undefined : text.slice(0, 300) };
 }
 
+// ── tester invites ────────────────────────────────────────────────────────────
+
+const INVITE_BASE_URL = Deno.env.get('APP_URL') ?? 'https://ephermal.app';
+
+/** 32 URL-safe characters from crypto.getRandomValues — ~190 bits, so guessing
+ *  one is not a threat model even before the rate limit on redeem-invite. */
+function generateInviteToken(): string {
+  const ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  let out = '';
+  for (const b of bytes) out += ALPHABET[b % ALPHABET.length];
+  return out;
+}
+
+function inviteUrl(token: string): string {
+  return `${INVITE_BASE_URL}/auth/register.html?invite=${token}`;
+}
+
+async function handleCreateInvite(callerId: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const label = String(body.label ?? '').trim().slice(0, 120) || null;
+  const emailRaw = String(body.email ?? '').trim().toLowerCase();
+  const email = emailRaw ? emailRaw : null;
+  if (email && !EMAIL_RE_ADMIN.test(email)) throw new Error('Invalid email address');
+
+  const days = Number(body.expires_days ?? 30);
+  if (!Number.isFinite(days) || days < 1 || days > 365) throw new Error('expires_days must be between 1 and 365');
+
+  const token = generateInviteToken();
+  const expiresAt = new Date(Date.now() + days * 86_400_000).toISOString();
+
+  const { data, error } = await supabase.from('tester_invites')
+    .insert({ token, label, email, created_by: callerId, expires_at: expiresAt })
+    .select('id, token, label, email, created_at, expires_at')
+    .single();
+  if (error) throw new Error(error.message);
+
+  // Emailing is opt-in: an invite can be created just to copy the link into a
+  // DM, which is how most of these actually get sent.
+  let emailed = false;
+  let emailError: string | null = null;
+  if (email && body.send_email) {
+    try {
+      const res = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          template: 'tester_invite',
+          to: email,
+          vars: {
+            name: label ?? '',
+            invite_url: inviteUrl(token),
+            expires_days: String(days),
+            unsubscribe_url: 'https://ephermal.app/unsubscribe',
+          },
+        }),
+      });
+      if (!res.ok) emailError = `send-email returned ${res.status}: ${(await res.text()).slice(0, 200)}`;
+      else emailed = true;
+    } catch (e) {
+      emailError = (e as Error).message;
+    }
+  }
+
+  return { ok: true, invite: { ...data, url: inviteUrl(token) }, emailed, email_error: emailError };
+}
+
+async function handleListInvites(): Promise<Record<string, unknown>> {
+  const { data, error } = await supabase.from('tester_invites')
+    .select('id, token, label, email, created_at, expires_at, used_at, used_by_user_id, used_by_email, revoked_at')
+    .order('created_at', { ascending: false })
+    .limit(200);
+  if (error) throw new Error(error.message);
+
+  const now = Date.now();
+  const invites = (data ?? []).map(r => {
+    // One derived status rather than four booleans the UI has to re-derive and
+    // could get subtly wrong. Order matters: used beats revoked beats expired.
+    const status = r.used_at ? 'used'
+      : r.revoked_at ? 'revoked'
+      : new Date(r.expires_at).getTime() < now ? 'expired'
+      : 'pending';
+    return { ...r, status, url: inviteUrl(r.token) };
+  });
+
+  const counts = invites.reduce((acc: Record<string, number>, i) => {
+    acc[i.status] = (acc[i.status] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  return {
+    invites,
+    summary: {
+      total: invites.length,
+      used: counts.used ?? 0,
+      pending: counts.pending ?? 0,
+      expired: counts.expired ?? 0,
+      revoked: counts.revoked ?? 0,
+    },
+  };
+}
+
+async function handleRevokeInvite(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const id = String(body.invite_id ?? '').trim();
+  if (!id) throw new Error('invite_id is required');
+
+  // Only an unused invite can be revoked. Revoking one that was already
+  // redeemed would imply the tester lost access, which is not what it does —
+  // access is removed by clearing their role, not by touching the invite.
+  const { data, error } = await supabase.from('tester_invites')
+    .update({ revoked_at: new Date().toISOString() })
+    .eq('id', id)
+    .is('used_at', null)
+    .is('revoked_at', null)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error('That invite has already been used or revoked');
+  return { ok: true, invite_id: id };
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
 
@@ -850,6 +974,12 @@ Deno.serve(async (req) => {
         return okResponse(await handleCancelSubscription(body), origin);
       case 'send_test_email':
         return okResponse(await handleSendTestEmail(body), origin);
+      case 'create_invite':
+        return okResponse(await handleCreateInvite(userId, body), origin);
+      case 'list_invites':
+        return okResponse(await handleListInvites(), origin);
+      case 'revoke_invite':
+        return okResponse(await handleRevokeInvite(body), origin);
       default:
         return errResponse(`Unknown action: ${action}`, 400, origin);
     }

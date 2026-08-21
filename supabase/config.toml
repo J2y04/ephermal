@@ -77,3 +77,9 @@ verify_jwt = true
 verify_jwt = true
 [functions.profit-tracker]
 verify_jwt = true
+
+# Auth is enforced in-function via extractUserId (Clerk JWT), like every other
+# user-facing function here. Leaving the gateway flag on would 401 before the
+# function ever ran, which is the exact regression that broke production in July.
+[functions.redeem-invite]
+verify_jwt = false

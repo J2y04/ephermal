@@ -23,6 +23,62 @@
 
 export const TEMPLATE_HTML: Record<string, string> = {
 
+tester_invite: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+</head>
+<body style="margin:0;padding:0;background:#08080c;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#08080c;padding:40px 16px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#0f0f13;border:1px solid rgba(255,255,255,0.08);border-radius:16px;overflow:hidden">
+        <tr><td style="padding:36px 36px 8px">
+          <div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#06d6c7;margin-bottom:18px">Ephermal</div>
+          <h1 style="margin:0 0 16px;font-size:24px;line-height:1.3;font-weight:800;color:#eef0f7">You're in, {{name}}</h1>
+          <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#a8adbd">
+            This link creates your account with tester access already applied. No card, nothing to cancel.
+          </p>
+          <p style="margin:0 0 24px;font-size:15px;line-height:1.6;color:#a8adbd">
+            You get the Growth plan free for three months: Google Search and Meta ads for small Shopify stores, optimised on real contribution margin rather than ROAS.
+          </p>
+        </td></tr>
+        <tr><td style="padding:0 36px 28px">
+          <a href="{{invite_url}}" style="display:block;background:#06d6c7;color:#08080c;text-decoration:none;text-align:center;padding:15px 24px;border-radius:12px;font-size:15px;font-weight:700">Create your account</a>
+          <p style="margin:14px 0 0;font-size:12.5px;line-height:1.6;color:#6b7280;text-align:center">
+            This link works once and expires in {{expires_days}} days.
+          </p>
+        </td></tr>
+        <tr><td style="padding:0 36px 32px">
+          <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:20px">
+            <p style="margin:0 0 10px;font-size:13px;line-height:1.6;color:#a8adbd"><strong style="color:#eef0f7">Two honest notes before you start.</strong></p>
+            <p style="margin:0 0 8px;font-size:13px;line-height:1.6;color:#a8adbd">
+              UGC video generation is not switched on yet. Everything else is working and ready to use.
+            </p>
+            <p style="margin:0;font-size:13px;line-height:1.6;color:#a8adbd">
+              The Meta connection is still in app review, so reply and I'll add you as a tester on the app. The Google Search side works immediately.
+            </p>
+          </div>
+        </td></tr>
+        <tr><td style="padding:0 36px 34px">
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#6b7280">
+            If it turns out not to be useful, telling me why is worth as much to me as a signup.
+          </p>
+          <p style="margin:12px 0 0;font-size:13px;line-height:1.6;color:#6b7280">Jamal, founder</p>
+        </td></tr>
+        <tr><td style="padding:20px 36px;background:#0b0b0f;border-top:1px solid rgba(255,255,255,0.06)">
+          <p style="margin:0;font-size:11px;line-height:1.6;color:#4b5563">
+            Sent because you were personally invited to test Ephermal.
+            <a href="{{unsubscribe_url}}" style="color:#6b7280">Unsubscribe</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+
 welcome: `<!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>

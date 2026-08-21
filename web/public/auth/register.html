@@ -62,6 +62,13 @@ canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-even
     <span>Ephermal</span>
   </div>
   <div class="clerk-wrap">
+    <div id="invite-banner" style="display:none;align-items:flex-start;gap:12px;max-width:400px;margin:0 auto 18px;padding:14px 16px;background:rgba(6,214,199,0.08);border:1px solid rgba(6,214,199,0.28);border-radius:12px;text-align:left">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#06d6c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;margin-top:1px"><path d="M20 6 9 17l-5-5"/></svg>
+      <div>
+        <div style="font-size:13.5px;font-weight:700;color:#eef0f7;margin-bottom:3px">Tester invite accepted</div>
+        <div style="font-size:12.5px;line-height:1.5;color:#a8adbd">Finish signing up and 3 months of Growth is applied to your account automatically.</div>
+      </div>
+    </div>
     <div id="clerk-sign-up">
       <div class="loading-spinner"><div class="spinner"></div>Loading...</div>
     </div>
@@ -105,6 +112,28 @@ function drawLines() {
   }
 }
 (function animate() { ctx.clearRect(0, 0, W, H); pts.forEach(p => { p.update(); p.draw(); }); drawLines(); requestAnimationFrame(animate); })();
+
+// ── Tester invite ─────────────────────────────────────────────────────────────
+// The token rides in the URL, but it cannot be redeemed until there is an
+// account to attach it to, so it is parked in localStorage and picked up by
+// setup.html once Clerk reports a signed-in user. Nothing is granted here: the
+// browser only carries the token, redeem-invite decides whether it is real.
+function captureInvite() {
+  try {
+    const token = new URLSearchParams(window.location.search).get('invite');
+    if (token && /^[A-Za-z0-9]{16,64}$/.test(token)) {
+      localStorage.setItem('ephermal_invite', token);
+      // Strip it from the address bar so the one-time link is not left sitting
+      // in history or copied out of the URL by the person signing up.
+      history.replaceState({}, '', window.location.pathname);
+    }
+    if (localStorage.getItem('ephermal_invite')) {
+      const banner = document.getElementById('invite-banner');
+      if (banner) banner.style.display = 'flex';
+    }
+  } catch (e) { /* private mode: signup still works, they just get no badge */ }
+}
+captureInvite();
 
 // ── Clerk init ────────────────────────────────────────────────────────────────
 async function initClerk() {

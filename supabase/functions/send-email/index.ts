@@ -48,6 +48,7 @@ const TEMPLATES: Record<string, { subject: string }> = {
   ai_topup_receipt:          { subject: 'AI top-up confirmed — your messages are ready' },
   ugc_video_topup_receipt:   { subject: 'UGC video credits added — ready to generate' },
   payment_failed:            { subject: 'Payment failed — update your card to keep Ephermal running' },
+  tester_invite:             { subject: 'Your Ephermal tester access — 3 months of Growth, free' },
 };
 
 function escapeHtml(s: string): string {
