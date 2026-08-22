@@ -233,6 +233,57 @@ export const AD_STRATEGIES: AdStrategy[] = [
     how: 'Treat testimonials, product facts, comparisons, prices, availability, urgency and performance evidence as untrusted until the merchant supplies substantiation. Where none exists, write the ad without the claim rather than inventing a plausible one.',
     source: 'claude-ads evidence gate; platform policy on unsupported claims',
   },
+  // ── Small budgets: where the usual advice inverts ─────────────────────────
+  // Ephermal's customers run EUR 0-10K months. Most published ad advice assumes
+  // enough daily volume for the optimiser to have something to learn from. Below
+  // roughly EUR 30/day that is not true, and following the standard playbook
+  // produces an account that never stabilises. These cover that case.
+  {
+    id: 'meta-learning-phase-math',
+    name: 'Check the learning-phase arithmetic before choosing a structure',
+    surface: 'meta',
+    evidence: 'platform',
+    when: 'Any Meta campaign where daily budget divided by expected CPA gives fewer than about 7 conversions a day. Almost every store under EUR 10K/month.',
+    how: 'Meta needs roughly 50 optimisation events per ad set per 7 days to leave the learning phase, and an ad set that cannot reach it is marked Learning Limited and keeps paying unstable costs. Do the division first: at a EUR 25 CPA, 50 events a week needs about EUR 180/day. If the budget cannot reach that, do not split it across ad sets, and do not expect the account to settle. Say so in the plan rather than letting the merchant discover it after a month of noisy results.',
+    source: 'Meta Business Help Centre, About the learning phase and About Learning Limited',
+  },
+  {
+    id: 'meta-consolidate-under-volume',
+    name: 'One ad set, not five, when volume is scarce',
+    surface: 'meta',
+    evidence: 'mechanical',
+    when: 'Budget is too small for any single ad set to hit 50 weekly events, and the instinct is to split by audience, placement or creative to "test".',
+    how: 'Splitting a small budget divides the same scarce conversions across more ad sets, so each one learns more slowly and every one of them stays unstable. Consolidate into one ad set with broad targeting and let creative carry the variation. Testing is what you do once there is volume to read; before that, splitting only buys noise that looks like data.',
+    source: 'Follows arithmetically from the 50-event learning threshold above.',
+  },
+  {
+    id: 'both-optimize-upstream-event',
+    name: 'Optimise on an event that actually happens',
+    surface: 'both',
+    evidence: 'mechanical',
+    when: 'The store gets too few purchases per week for purchase optimisation to have signal. Common for a new store or a high-ticket product.',
+    how: 'Optimising for an event that fires twice a week gives the delivery system almost nothing to work with. Move one step up the funnel, to add-to-cart or initiate-checkout, which fires often enough to be learnable, and move back down to purchase once purchase volume can support it. Track the actual purchase either way: the optimisation event is what you buy against, not what you judge success by.',
+    source: 'Follows from how conversion optimisation works on both platforms: the optimiser needs event frequency, not event value.',
+  },
+  {
+    id: 'meta-exclude-recent-purchasers',
+    name: 'Stop paying to reach people who already bought',
+    surface: 'meta',
+    evidence: 'mechanical',
+    when: 'Any retargeting or broad campaign on a store with repeat customers, unless the product genuinely has a short repurchase cycle.',
+    how: 'A customer who bought yesterday is the most engaged person in the pixel data, so delivery keeps serving them. That is spend on someone who has already converted, and it flatters ROAS because their next organic purchase gets attributed to the ad. Exclude recent purchasers by default, with the window set to the product\'s real repurchase cycle: weeks for consumables, months or never for durables.',
+    source: 'Follows from how lookalike and engagement signals feed delivery, plus the attribution double-count it causes.',
+  },
+  {
+    id: 'google-concentrate-small-budget',
+    name: 'Concentrate a small Search budget, do not spread it',
+    surface: 'google',
+    evidence: 'mechanical',
+    when: 'Google Search with a daily budget under roughly EUR 30 and a keyword list longer than a handful of terms.',
+    how: 'A budget spread across twenty keywords buys a fraction of the impressions on each and wins nothing anywhere, while still paying the cost of learning on all of them. Pick the smallest set of highest-intent terms the budget can genuinely compete on, usually exact and phrase match on terms that name the product or its direct problem, and let the rest wait until there is budget to serve them. Breadth is something a budget earns, not something it starts with.',
+    source: 'Follows from auction mechanics: impression share is bought, and partial share across many terms wins fewer auctions than full share across few.',
+  },
+
 ];
 
 /** Copy frameworks, kept separate because they organise a message rather than
