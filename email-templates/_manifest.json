@@ -87,7 +87,7 @@
   },
   {
     "key": "plan_activated_starter",
-    "bytes": 8741,
+    "bytes": 8747,
     "vars": [
       "name",
       "unsubscribe_url"
@@ -96,7 +96,7 @@
   },
   {
     "key": "plan_activated_growth",
-    "bytes": 12776,
+    "bytes": 12803,
     "vars": [
       "name",
       "unsubscribe_url"

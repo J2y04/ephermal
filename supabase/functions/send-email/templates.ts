@@ -1008,7 +1008,7 @@ plan_activated_starter: `<!DOCTYPE html>
                     </table>
 
                     <p style="margin:0 0 18px;font-size:15px;color:#eef0f7;line-height:1.75;">
-                      Your Starter plan is active. You have <strong style="color:#06d6c7;">15 UGC credits</strong> this month and your Meta Ads account is ready to connect.
+                      Your Starter plan is active. You have <strong style="color:#06d6c7;">15 AI script credits</strong> this month and your Meta Ads account is ready to connect.
                     </p>
                     <p style="margin:0 0 28px;font-size:15px;color:#6b7280;line-height:1.75;">
                       Starter is where most brands discover what's possible. Connect your store, run your first analysis, generate your first UGC creative — and see what automated ad management actually feels like.
@@ -1268,7 +1268,7 @@ plan_activated_growth: `<!DOCTYPE html>
                         </td>
                       </tr>
                     </table>
-                    <p style="margin:8px 0 0;font-size:12px;color:#6b7280;text-align:center;">75 UGC credits this month</p>
+                    <p style="margin:8px 0 0;font-size:12px;color:#6b7280;text-align:center;">75 AI script credits and 18 UGC video ads this month</p>
 
                   </td>
                 </tr>
