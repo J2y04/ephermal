@@ -1,5 +1,19 @@
 [
   {
+    "key": "campaign_ready",
+    "bytes": 3303,
+    "vars": [
+      "campaign_name",
+      "daily_budget",
+      "name",
+      "platform",
+      "product_name",
+      "review_url",
+      "unsubscribe_url"
+    ],
+    "subject": "Your campaign is ready to review"
+  },
+  {
     "key": "contact_enquiry",
     "bytes": 1456,
     "vars": [

@@ -27,6 +27,64 @@
 
 export const TEMPLATE_HTML: Record<string, string> = {
 
+campaign_ready: `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#f4f5f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e4e6ea">
+
+        <tr><td style="padding:26px 28px 6px">
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#06a99e">Ready to review</div>
+          <h1 style="margin:8px 0 0;font-size:20px;font-weight:700;color:#14161a;line-height:1.3">Your campaign is built and waiting</h1>
+          <p style="margin:10px 0 0;font-size:15px;line-height:1.6;color:#5b6472">
+            {{name}}, Ephermal finished writing and structuring your campaign. It is <strong style="color:#14161a">paused</strong>, so nothing is spending yet. It runs when you say so.
+          </p>
+        </td></tr>
+
+        <tr><td style="padding:18px 28px 4px">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f7f9;border-radius:10px">
+            <tr><td style="padding:16px 18px">
+              <div style="font-size:15px;font-weight:650;color:#14161a">{{campaign_name}}</div>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:12px;font-size:13px;color:#5b6472">
+                <tr>
+                  <td style="padding:3px 0;width:110px;color:#8a93a0">Platform</td>
+                  <td style="padding:3px 0;color:#22262e">{{platform}}</td>
+                </tr>
+                <tr>
+                  <td style="padding:3px 0;color:#8a93a0">Product</td>
+                  <td style="padding:3px 0;color:#22262e">{{product_name}}</td>
+                </tr>
+                <tr>
+                  <td style="padding:3px 0;color:#8a93a0">Daily budget</td>
+                  <td style="padding:3px 0;color:#22262e">{{daily_budget}}</td>
+                </tr>
+              </table>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <tr><td style="padding:20px 28px 6px" align="center">
+          <a href="{{review_url}}" style="display:inline-block;padding:13px 30px;background:#06d6c7;color:#08080c;font-size:15px;font-weight:650;text-decoration:none;border-radius:100px">Review and launch</a>
+        </td></tr>
+
+        <tr><td style="padding:14px 28px 26px">
+          <p style="margin:0;font-size:13px;line-height:1.6;color:#5b6472">
+            Read the copy, check the budget, change anything you disagree with. Nothing goes live until you launch it yourself.
+          </p>
+          <p style="margin:14px 0 0;padding-top:14px;border-top:1px solid #e9ebef;font-size:11px;line-height:1.5;color:#98a1ad">
+            You are getting this because a campaign was created on your Ephermal account.
+            <a href="{{unsubscribe_url}}" style="color:#98a1ad">Unsubscribe</a>
+          </p>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+
 contact_enquiry: `<!DOCTYPE html>
 <html lang="en">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>

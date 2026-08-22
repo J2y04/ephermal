@@ -11,7 +11,11 @@ authentication and already sends those. Adding ours would duplicate them.
 
 ---
 
-## 1. `campaign_ready` — the biggest hole
+## 1. ~~`campaign_ready`~~ SHIPPED 2026-08-22
+
+Built and deployed. Wired into campaign-launcher after the draft saves, and
+sent without awaiting it, so a campaign that saved correctly can never fail
+because an email did not. What it was and why it mattered:
 
 **Trigger:** `campaign-launcher` finishes creating a campaign.
 
@@ -221,7 +225,7 @@ emails, or one of them is not important.
 
 ## Build order
 
-1. `campaign_ready` — closes the core loop, and the loop is currently open
+1. ~~`campaign_ready`~~ DONE 2026-08-22
 2. `invite_redeemed` — cheap, and serves the live bottleneck
 3. `subscription_cancelled` — the webhook branch already exists
 4. `integration_disconnected` — needs the detector built first

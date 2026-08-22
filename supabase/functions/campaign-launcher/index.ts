@@ -317,6 +317,19 @@ Return the same JSON schema, but strategy_ids MUST contain at least 3 ids copied
 
   if (error) throw new Error(`Failed to save campaign: ${error.message}`);
 
+  // Not awaited: the campaign is already saved and the caller should not wait on
+  // an email to get its response. Failures inside are reported to Sentry.
+  if (saved?.id) {
+    sendCampaignReadyEmail(
+      userId,
+      String(saved.id),
+      name,
+      'both',
+      budget,
+      String((copy as Record<string, unknown>)?.product_name ?? ''),
+    );
+  }
+
   return { campaign_id: saved?.id, copy, status: 'draft' };
 }
 
@@ -944,6 +957,77 @@ async function deleteDraft(userId: string, campaignId: string): Promise<Record<s
     .eq('user_id', userId);
   if (error) throw new Error(`Failed to delete campaign: ${error.message}`);
   return { deleted: true, campaign_id: campaignId };
+}
+
+/**
+ * Tell the merchant a campaign is waiting for them.
+ *
+ * Campaigns are created PAUSED on purpose, so the moment of value is not the
+ * creation, it is the person coming back to review and launch it. Nothing
+ * carried that message before, which left finished work sitting unseen.
+ *
+ * Non-fatal by construction: a campaign that saved correctly must not fail
+ * because an email did not send. But a send that fails is reported rather than
+ * swallowed, because "the email quietly never arrived" is the exact failure
+ * this function exists to prevent.
+ */
+async function sendCampaignReadyEmail(
+  userId: string,
+  campaignId: string,
+  campaignName: string,
+  platform: string,
+  budgetDaily: number,
+  productName: string,
+): Promise<void> {
+  try {
+    const clerkSecret = Deno.env.get('CLERK_SECRET_KEY');
+    if (!clerkSecret) return;
+
+    const res = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
+      headers: { Authorization: `Bearer ${clerkSecret}` },
+    });
+    if (!res.ok) {
+      captureError('campaign-launcher', `campaign_ready: Clerk lookup failed for ${userId}: ${res.status}`);
+      return;
+    }
+    const user = await res.json() as {
+      first_name?: string | null;
+      email_addresses?: { id: string; email_address: string }[];
+      primary_email_address_id?: string;
+    };
+    const email = user.email_addresses?.find(e => e.id === user.primary_email_address_id)?.email_address;
+    if (!email) return;
+
+    const appUrl = Deno.env.get('APP_URL') ?? 'https://ephermal.app';
+    const label = platform === 'both' ? 'Meta and Google Search'
+                : platform === 'google' ? 'Google Search'
+                : 'Meta';
+
+    const emailRes = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+      },
+      body: JSON.stringify({
+        template: 'campaign_ready',
+        to: email,
+        vars: {
+          name: user.first_name || 'there',
+          campaign_name: campaignName,
+          platform: label,
+          product_name: productName || 'your catalog',
+          daily_budget: `EUR ${budgetDaily.toFixed(2)}`,
+          review_url: `${appUrl.replace('//ephermal', '//dashboard.ephermal')}/dashboard.html#campaign-${campaignId}`,
+        },
+      }),
+    });
+    if (!emailRes.ok) {
+      captureError('campaign-launcher', `campaign_ready email failed for ${userId}: ${emailRes.status} ${await emailRes.text().catch(() => '')}`);
+    }
+  } catch (e) {
+    captureError('campaign-launcher', 'campaign_ready email threw:', e);
+  }
 }
 
 Deno.serve(async (req) => {

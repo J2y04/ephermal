@@ -50,6 +50,7 @@ const TEMPLATES: Record<string, { subject: string }> = {
   ugc_video_topup_receipt:   { subject: 'UGC video credits added — ready to generate' },
   payment_failed:            { subject: 'Payment failed — update your card to keep Ephermal running' },
   tester_invite:             { subject: 'Your Ephermal tester access — 3 months of Growth, free' },
+  campaign_ready:            { subject: 'Your campaign is ready to review' },
   contact_enquiry:           { subject: 'New enquiry from ephermal.app' },
 };
 

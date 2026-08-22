@@ -43,6 +43,7 @@ here now.
 | `ugc_video_topup_receipt.html` | Your UGC video top-up | `name`, `credits` |
 | `payment_failed.html` | Payment failed | `name`, `attempt` |
 | `ai_limit_80.html` | AI credits 80% used | none |
+| `campaign_ready.html` | Your campaign is ready to review | `name`, `campaign_name`, `platform`, `product_name`, `daily_budget`, `review_url` |
 
 `unsubscribe_url` is injected automatically by `send-email` and is available to
 every template without being passed.
@@ -66,7 +67,7 @@ Templates are allowlisted server-side, so only the keys above are accepted:
 ```bash
 curl -X POST "$SUPABASE_URL/functions/v1/send-email" \
   -H "Content-Type: application/json" \
-  -H "x-send-email-secret: $SEND_EMAIL_SECRET" \
+  -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
   -d '{"template":"welcome","to":"you@example.com","vars":{"name":"Jamal"}}'
 ```
 
