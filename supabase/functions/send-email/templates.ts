@@ -16,9 +16,13 @@
  * ordinary code, which both bundling modes already handle correctly (proven by every
  * _shared/*.ts import working under the same --use-api fallback all session).
  *
- * The templates/*.html files still exist alongside this and MUST be kept byte-identical to the
- * strings below - they're kept for local preview/rendering (easier to hand-edit as real HTML)
- * and are not read at runtime. If you change a template, update both.
+ * Design-facing copies live in /email-templates at the repo root, extracted from the strings
+ * below and byte-identical to them. They are for previewing and for Claude Design, and are NOT
+ * read at runtime. If you change a template, change it here too, or customers keep receiving the
+ * old one.
+ *
+ * There used to be a second copy at ./templates/ next to this file. It drifted: missing
+ * contact_enquiry and tester_invite, still carrying a dead ai_limit_80. Removed 2026-08-21.
  */
 
 export const TEMPLATE_HTML: Record<string, string> = {

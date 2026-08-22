@@ -4,8 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from '@/components/clerk-react';
 import { Badge } from '@tremor/react';
 import { inboxFetch, isLocalDev } from '../lib/adminFetch';
-import Reveal from '../lib/Reveal';
-import Squircle from '../lib/Squircle';
 import { IconMail } from '../lib/icons';
 
 interface InboxMessage {
@@ -123,11 +121,11 @@ export default function InboxPage() {
     return (
       <div className="eph-inbox">
         <Header count={0} />
-        <Squircle className="eph-inbox-empty">
+        <div className="eph-inbox-empty">
           <IconMail className="eph-inbox-empty-icon" />
           <h3>Sign in to read the inbox</h3>
           <p>Local preview has no Clerk session, so there is no admin token to send.</p>
-        </Squircle>
+        </div>
       </div>
     );
   }
@@ -137,30 +135,26 @@ export default function InboxPage() {
       <Header count={messages.length} mailbox={meta?.mailbox} onRefresh={load} refreshing={loading} />
 
       {meta && !loading && !error && (
-        <Reveal>
-          <p className="eph-inbox-note">
-            Showing mail addressed to <strong>@ephermal.app</strong> only.
-            {meta.filtered_out > 0
-              ? ` ${meta.filtered_out} of ${meta.scanned} messages in the label were addressed elsewhere and are hidden.`
-              : ` All ${meta.scanned} messages in the label qualified.`}
-          </p>
-        </Reveal>
+        <p className="eph-inbox-note">
+          Showing mail addressed to <strong>@ephermal.app</strong> only.
+          {meta.filtered_out > 0
+            ? ` ${meta.filtered_out} of ${meta.scanned} messages in the label were addressed elsewhere and are hidden.`
+            : ` All ${meta.scanned} messages in the label qualified.`}
+        </p>
       )}
 
       {error && (
-        <Reveal>
-          <Squircle className="eph-inbox-error">
-            <h3>The mailbox did not answer</h3>
-            <p>{error}</p>
-            <button type="button" onClick={load} className="eph-inbox-retry">Try again</button>
-          </Squircle>
-        </Reveal>
+        <div className="eph-inbox-error">
+          <h3>The mailbox did not answer</h3>
+          <p>{error}</p>
+          <button type="button" onClick={load} className="eph-inbox-retry">Try again</button>
+        </div>
       )}
 
       {!error && (
         <div className="eph-inbox-split">
-          <Reveal className="eph-inbox-listcol">
-            <Squircle className="eph-inbox-list">
+          <div className="eph-inbox-listcol">
+            <div className="eph-inbox-list">
               <div className="eph-inbox-search">
                 <input
                   type="search"
@@ -222,11 +216,11 @@ export default function InboxPage() {
                   ))}
                 </ul>
               )}
-            </Squircle>
-          </Reveal>
+            </div>
+          </div>
 
-          <Reveal className="eph-inbox-readcol" delay={0.06}>
-            <Squircle className="eph-inbox-reader">
+          <div className="eph-inbox-readcol">
+            <div className="eph-inbox-reader">
               {!activeUid && (
                 <div className="eph-inbox-empty inline">
                   <IconMail className="eph-inbox-empty-icon" />
@@ -288,8 +282,8 @@ export default function InboxPage() {
                   </p>
                 </article>
               )}
-            </Squircle>
-          </Reveal>
+            </div>
+          </div>
         </div>
       )}
     </div>

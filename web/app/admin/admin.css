@@ -459,3 +459,177 @@
   .eph-inbox-split { gap: 18px; }
   .eph-inbox-article { padding: 26px 22px 30px; }
 }
+
+/* ── Inbox, full-height two-pane ──
+   Jamal: "it all looks floating around, make it full screen, no need for
+   widgets here. Left side the emails, right side the email."
+
+   Right on both counts. The first version was built like every other admin
+   page: cards floating on a page that scrolls, inside a max-width column. That
+   is the correct shape for a dashboard, where the unit is a widget, and the
+   wrong shape for a mail client, where the unit is the message list and the
+   message. Two panes that each own their scroll is the layout every mail
+   client has converged on for thirty years, and it is what a person already
+   knows how to use.
+
+   So: the page fills the admin shell exactly, nothing floats, nothing is a
+   card, and the page itself never scrolls. The list scrolls, the reader
+   scrolls, independently. The Squircle and Reveal wrappers are gone from the
+   markup, since a full-screen application view that fades in on every visit
+   reads as a decoration, not a tool.
+
+   These rules come after the earlier inbox block on purpose and override it.
+   ------------------------------------------------------------------------- */
+
+/* #admin-main scrolls by default. For this one page it must not: the panes do.
+   Scoped by :has so no other admin page is affected. */
+#admin-main:has(.eph-inbox) {
+  overflow: hidden;
+  display: flex;
+}
+
+.eph-inbox {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  gap: 0;
+  padding: 0;
+}
+
+/* Header: a fixed strip across the top, not a floating title block. */
+.eph-inbox-head {
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 20px;
+  margin: 0;
+  padding: 18px 26px 16px;
+  border-bottom: 1px solid rgb(var(--border));
+}
+.eph-inbox-head h1 { font-size: 22px; }
+.eph-inbox-head p  { margin-top: 5px; font-size: 12.5px; }
+
+.eph-inbox-note {
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 11px 26px;
+  border-bottom: 1px solid rgb(var(--border));
+  background: rgba(var(--primary), 0.028);
+  font-size: 12px;
+  max-width: none;
+}
+
+/* The two panes fill everything left over. min-height:0 is load-bearing:
+   without it a flex child refuses to shrink below its content and the panes
+   push the page into scrolling instead of scrolling themselves. */
+.eph-inbox-split {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(300px, 400px) 1fr;
+  gap: 0;
+}
+
+.eph-inbox-listcol,
+.eph-inbox-readcol {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Flat panes divided by a rule, rather than two cards with a gutter. */
+.eph-inbox-list,
+.eph-inbox-reader {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+.eph-inbox-list {
+  border-right: 1px solid rgb(var(--border));
+  background: rgba(255, 255, 255, 0.012);
+}
+.eph-inbox-reader { overflow-y: auto; }
+
+.eph-inbox-search {
+  flex: 0 0 auto;
+  padding: 13px 14px;
+}
+.eph-inbox-rows {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 8px 10px;
+}
+
+/* Rows sit flush in a list, so the active one is marked by a rail on the edge
+   it is attached to rather than by floating away from its neighbours. */
+.eph-inbox-row { border-radius: 9px; }
+.eph-inbox-row.is-active {
+  background: rgba(var(--primary), 0.09);
+  border-color: transparent;
+  box-shadow: inset 2px 0 0 rgb(var(--primary));
+}
+
+.eph-inbox-article { padding: 30px 36px 40px; max-width: 900px; }
+
+/* Empty states fill their pane instead of sitting in a box inside it. */
+.eph-inbox-empty,
+.eph-inbox-error {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+.eph-inbox-error {
+  flex: 1 1 auto;
+  justify-content: center;
+}
+.eph-inbox-empty.inline {
+  flex: 1 1 auto;
+  justify-content: center;
+  padding: 40px 28px;
+}
+
+/* Narrow: stack, list above reader, each keeping its own scroll. */
+@media (max-width: 1000px) {
+  .eph-inbox-split {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(180px, 38%) 1fr;
+  }
+  .eph-inbox-list {
+    border-right: none;
+    border-bottom: 1px solid rgb(var(--border));
+  }
+  .eph-inbox-head { padding: 14px 18px 12px; }
+  .eph-inbox-note { padding: 10px 18px; }
+  .eph-inbox-article { padding: 22px 20px 30px; }
+}
+
+/* The admin shell is a flex row sized by its tallest child, and the sidebar
+   (nav + dev tools + back link) is taller than a short viewport. On a dashboard
+   that is fine, the page just scrolls. On a full-height mail client it is not:
+   it makes the whole app scroll behind panes that are trying to own their own
+   scrolling, which is the "floating around" Jamal saw.
+
+   Pinned to the viewport for this page only, matched via :has so no other admin
+   route changes. dvh rather than vh so a mobile browser's collapsing address
+   bar does not cut the panes off. */
+body:has(.eph-inbox) { overflow: hidden; }
+
+div:has(> #admin-main > .eph-inbox) {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+/* If the sidebar itself is taller than the viewport it now scrolls on its own
+   rather than stretching the shell. */
+div:has(> #admin-main > .eph-inbox) > aside {
+  overflow-y: auto;
+  max-height: 100dvh;
+}

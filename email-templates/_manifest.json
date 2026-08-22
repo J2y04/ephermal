@@ -1,0 +1,107 @@
+[
+  {
+    "key": "contact_enquiry",
+    "bytes": 1456,
+    "vars": [
+      "company_suffix",
+      "from_email",
+      "message",
+      "name"
+    ],
+    "subject": "New enquiry from ephermal.app"
+  },
+  {
+    "key": "tester_invite",
+    "bytes": 3512,
+    "vars": [
+      "expires_days",
+      "invite_url",
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "Your Ephermal tester access \u2014 3 months of Growth, free"
+  },
+  {
+    "key": "welcome",
+    "bytes": 14411,
+    "vars": [
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "Welcome to Ephermal \ud83d\ude80"
+  },
+  {
+    "key": "payment_failed",
+    "bytes": 5194,
+    "vars": [
+      "attempt",
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "Payment failed \u2014 update your card to keep Ephermal running"
+  },
+  {
+    "key": "fatigue_alert",
+    "bytes": 6442,
+    "vars": [
+      "unsubscribe_url"
+    ],
+    "subject": "\u26a0\ufe0f Ad fatigue detected \u2014 take action now"
+  },
+  {
+    "key": "ai_limit_hit",
+    "bytes": 6200,
+    "vars": [
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "AI message limit reached \u2014 top up to continue"
+  },
+  {
+    "key": "ai_topup_receipt",
+    "bytes": 5646,
+    "vars": [
+      "credits",
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "AI top-up confirmed \u2014 your messages are ready"
+  },
+  {
+    "key": "ugc_video_topup_receipt",
+    "bytes": 5707,
+    "vars": [
+      "credits",
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "UGC video credits added \u2014 ready to generate"
+  },
+  {
+    "key": "plan_activated_starter",
+    "bytes": 8741,
+    "vars": [
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "Your Starter plan is live \u2014 let\\"
+  },
+  {
+    "key": "plan_activated_growth",
+    "bytes": 12776,
+    "vars": [
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "\u26a1 Growth is live \u2014 your AI ad engine is unlocked"
+  },
+  {
+    "key": "plan_activated_scale",
+    "bytes": 8578,
+    "vars": [
+      "name",
+      "unsubscribe_url"
+    ],
+    "subject": "\ud83d\ude80 Scale is live \u2014 the full operator stack is yours"
+  }
+]
