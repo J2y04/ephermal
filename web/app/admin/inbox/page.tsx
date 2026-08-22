@@ -97,14 +97,25 @@ export default function InboxPage() {
 
   const openMessage = useCallback(async (uid: string) => {
     setActiveUid(uid);
-    setDetail(null);
     setDetailError(null);
+
+    // Everything except the body is already on screen in the list row, so show
+    // it immediately rather than blanking the pane and waiting a round trip to
+    // redraw the same words. Only the body is genuinely unknown, so only the
+    // body gets a skeleton.
+    const known = messages.find(m => m.uid === uid);
+    setDetail(known ? { ...known, body: '' } : null);
     setDetailLoading(true);
+
     const res = await inboxFetch<MessageResponse>(session, 'message', { uid });
-    if (!res.ok || !res.data) setDetailError(res.error ?? 'Could not open this message.');
-    else setDetail(res.data);
+    if (!res.ok || !res.data) {
+      setDetailError(res.error ?? 'Could not open this message.');
+      setDetail(null);
+    } else {
+      setDetail(res.data);
+    }
     setDetailLoading(false);
-  }, [session]);
+  }, [session, messages]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -226,16 +237,6 @@ export default function InboxPage() {
                 </div>
               )}
 
-              {activeUid && detailLoading && (
-                <div className="eph-inbox-readskeleton" aria-busy="true">
-                  <span className="sk-line sk-line-title" />
-                  <span className="sk-line sk-line-meta" />
-                  {Array.from({ length: 7 }).map((_, i) => (
-                    <span key={i} className="sk-line sk-line-body" />
-                  ))}
-                </div>
-              )}
-
               {activeUid && detailError && (
                 <div className="eph-inbox-empty inline">
                   <h3>Could not open this message</h3>
@@ -243,7 +244,7 @@ export default function InboxPage() {
                 </div>
               )}
 
-              {activeUid && detail && !detailLoading && (
+              {activeUid && detail && (
                 <article className="eph-inbox-article">
                   <h2>{detail.subject}</h2>
                   <div className="eph-inbox-meta">
@@ -265,18 +266,26 @@ export default function InboxPage() {
                   </div>
 
                   <div className="eph-inbox-bodywrap">
-                    {/* Rendered as plain text on purpose. Inbound mail is
-                        untrusted input, so no HTML and no remote images are
-                        ever put on the page. */}
-                    <pre className="eph-inbox-body">{detail.body || '(this message has no readable text part)'}</pre>
+                    {detailLoading ? (
+                      <div className="eph-inbox-bodyskeleton" aria-busy="true">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <span key={i} className="sk-line sk-line-body" />
+                        ))}
+                      </div>
+                    ) : (
+                      /* Rendered as plain text on purpose. Inbound mail is
+                         untrusted input, so no HTML and no remote images are
+                         ever put on the page. */
+                      <pre className="eph-inbox-body">{detail.body || '(this message has no readable text part)'}</pre>
+                    )}
                   </div>
 
-                  <p className="eph-inbox-replyhint">
+                  {!detailLoading && <p className="eph-inbox-replyhint">
                     Replies go from Gmail for now.{' '}
                     <a href={`mailto:${detail.from_email}?subject=${encodeURIComponent('Re: ' + detail.subject)}`}>
                       Open a reply
                     </a>
-                  </p>
+                  </p>}
                 </article>
               )}
             </div>

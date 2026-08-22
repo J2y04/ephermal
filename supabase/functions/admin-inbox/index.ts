@@ -119,18 +119,19 @@ Deno.serve(async (req) => {
       if (!/^\d+$/.test(uid)) return errResponse('Invalid message id', 400, origin);
 
       const data = await withClient(async (c) => {
-        const total = await c.examine(MAILBOX);
+        await c.examine(MAILBOX);
         // Re-check the envelope rather than trusting the uid the client sent.
         // Without this, an admin could read any message in the mailbox by
         // guessing a uid, which would defeat the whole filter.
-        const envelopes = await c.fetchRecent(total, FETCH_WINDOW);
-        const match = envelopes.find(e => e.uid === uid);
+        //
+        // fetchOne asks for exactly this message. The previous version called
+        // fetchRecent(total, 60) here, pulling sixty message headers off the
+        // server to validate one, and then made a second round trip for the
+        // Content-Type that carries the MIME boundary. fetchOne returns both.
+        const match = await c.fetchOne(uid);
         if (!match || !addressedToUs(match)) return null;
-        // The boundary lives in the MESSAGE's Content-Type, not in the body,
-        // so both are needed before the body can be split into parts.
         const raw = await c.fetchBody(uid);
-        const ctype = await c.fetchContentType(uid);
-        return { match, raw, ctype };
+        return { match, raw, ctype: match.contentType };
       });
 
       if (!data) return errResponse('Message not found', 404, origin);

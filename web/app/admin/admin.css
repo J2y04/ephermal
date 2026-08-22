@@ -880,3 +880,13 @@ div:has(> #admin-main > .eph-inbox) > aside {
   .eph-inbox-head { padding: 16px 18px 14px; }
   .eph-inbox-article { padding: 26px 20px 34px; }
 }
+
+/* Body-only skeleton. Opening a message no longer blanks the reader: the
+   subject, sender and date come straight from the list row the user just
+   clicked, so only the one genuinely unknown thing waits. */
+.eph-inbox-bodyskeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding-top: 2px;
+}

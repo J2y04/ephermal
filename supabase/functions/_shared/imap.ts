@@ -285,7 +285,49 @@ export class ImapClient {
     const h = parseHeaderBlock(res);
     const ct = h['content-type'] ?? '';
     const cte = h['content-transfer-encoding'] ?? '';
-    return cte ? `${ct} ${cte}` : ct;
+    return cte ? `${ct} ${cte}` : ct;
+  }
+
+  /**
+   * One message's envelope by UID, including the Content-Type needed to parse
+   * its body.
+   *
+   * Replaces a genuinely wasteful path. Opening a single message used to call
+   * fetchRecent(total, 60) purely to re-check that the message was addressed to
+   * us, which pulled sixty message headers off the server to validate one, and
+   * then made a SECOND round trip for the Content-Type. Four round trips and
+   * sixty headers to read one email.
+   *
+   * The ownership re-check itself is not optional and stays: without it an
+   * admin could read anything in the mailbox by guessing a uid. It simply does
+   * not require fetching the whole window to do it.
+   */
+  async fetchOne(uid: string): Promise<(Envelope & { contentType: string }) | null> {
+    const res = await this.cmd(
+      `UID FETCH ${uid} (UID FLAGS BODY.PEEK[HEADER.FIELDS ` +
+      `(SUBJECT FROM TO CC DELIVERED-TO X-FORWARDED-TO DATE CONTENT-TYPE CONTENT-TRANSFER-ENCODING)])`,
+    );
+    if (!/FETCH /.test(res)) return null;
+
+    const h = parseHeaderBlock(res);
+    const header = (f: string) => h[f.toLowerCase()] ?? '';
+    const fromRaw = decodeMime(header('From'));
+    const ct = header('content-type');
+    const cte = header('content-transfer-encoding');
+    const flags = (res.match(/FLAGS \(([^)]*)\)/) || [])[1] ?? '';
+
+    return {
+      uid,
+      subject: decodeMime(header('Subject')) || '(no subject)',
+      from: fromRaw.replace(/<[^>]*>/, '').replace(/"/g, '').trim() || extractEmail(fromRaw),
+      fromEmail: extractEmail(fromRaw),
+      to: [header('To'), header('Cc'), header('Delivered-To'), header('X-Forwarded-To')]
+        .filter(Boolean).join(', '),
+      date: header('Date'),
+      seen: flags.includes('Seen'),
+      snippet: '',
+      contentType: cte ? ct + ' ' + cte : ct,
+    };
   }
 
   async logout(): Promise<void> {
