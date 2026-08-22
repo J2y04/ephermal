@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from '@/components/clerk-react';
-import { Badge } from '@tremor/react';
 import { inboxFetch, isLocalDev } from '../lib/adminFetch';
 import { IconMail } from '../lib/icons';
 
@@ -132,16 +131,7 @@ export default function InboxPage() {
 
   return (
     <div className="eph-inbox">
-      <Header count={messages.length} mailbox={meta?.mailbox} onRefresh={load} refreshing={loading} />
-
-      {meta && !loading && !error && (
-        <p className="eph-inbox-note">
-          Showing mail addressed to <strong>@ephermal.app</strong> only.
-          {meta.filtered_out > 0
-            ? ` ${meta.filtered_out} of ${meta.scanned} messages in the label were addressed elsewhere and are hidden.`
-            : ` All ${meta.scanned} messages in the label qualified.`}
-        </p>
-      )}
+      <Header count={messages.length} onRefresh={load} refreshing={loading} />
 
       {error && (
         <div className="eph-inbox-error">
@@ -164,6 +154,13 @@ export default function InboxPage() {
                   aria-label="Search the inbox"
                 />
               </div>
+
+              {meta && !loading && (
+                <p className="eph-inbox-scope">
+                  <span>@ephermal.app only</span>
+                  {meta.filtered_out > 0 && <span className="eph-inbox-scope-hidden">{meta.filtered_out} hidden</span>}
+                </p>
+              )}
 
               {loading && (
                 <ul className="eph-inbox-rows" aria-busy="true">
@@ -291,19 +288,17 @@ export default function InboxPage() {
 }
 
 function Header({
-  count, mailbox, onRefresh, refreshing,
-}: { count: number; mailbox?: string; onRefresh?: () => void; refreshing?: boolean }) {
+  count, onRefresh, refreshing,
+}: { count: number; onRefresh?: () => void; refreshing?: boolean }) {
   return (
     <header className="eph-inbox-head">
-      <div>
-        <h1>Inbox</h1>
-        <p>
-          The <code>{mailbox ?? 'Ephermal'}</code> label, read over IMAP.
-          {count > 0 && <Badge className="eph-inbox-count">{count}</Badge>}
-        </p>
-      </div>
+      <h1>
+        Inbox
+        {count > 0 && <span className="eph-inbox-count">{count}</span>}
+      </h1>
       {onRefresh && (
         <button type="button" onClick={onRefresh} disabled={refreshing} className="eph-inbox-refresh">
+          <span className={refreshing ? 'eph-inbox-refresh-dot is-busy' : 'eph-inbox-refresh-dot'} aria-hidden="true" />
           {refreshing ? 'Refreshing' : 'Refresh'}
         </button>
       )}

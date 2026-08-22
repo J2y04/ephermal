@@ -49,6 +49,14 @@
     "subject": "\u26a0\ufe0f Ad fatigue detected \u2014 take action now"
   },
   {
+    "key": "ai_limit_80",
+    "bytes": 6188,
+    "vars": [
+      "unsubscribe_url"
+    ],
+    "subject": "You\\"
+  },
+  {
     "key": "ai_limit_hit",
     "bytes": 6200,
     "vars": [

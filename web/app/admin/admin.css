@@ -633,3 +633,250 @@ div:has(> #admin-main > .eph-inbox) > aside {
   overflow-y: auto;
   max-height: 100dvh;
 }
+
+/* ============================================================================
+   INBOX — premium pass
+   ----------------------------------------------------------------------------
+   Built from the same vocabulary as the overview charts rather than a second
+   language invented for this page:
+
+     ink        #eef0f7 primary, #9aa3b2 secondary, #7b8794 muted
+     hairlines  rgba(255,255,255,0.06), the chart grid value
+     elevation  .widget-shadow, an inset top highlight over a deep soft shadow
+     labels     11px, 600, uppercase, 0.08em tracking, in muted ink
+     chips      10% teal fill with an inset 18% teal ring
+     figures    tabular numerals, tight tracking on anything large
+
+   The restraint is the point. One accent, used on the active message and
+   nowhere else it is not carrying meaning. Everything else is ink and hairline.
+   Expensive reads as quiet and exact, not as more colour.
+   ============================================================================ */
+
+/* ── Header: the word, the count, the action ── */
+.eph-inbox-head {
+  padding: 22px 28px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.014), transparent 70%);
+}
+.eph-inbox-head h1 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: #eef0f7;
+}
+
+/* Count sits as a chip, matching the stat-tile icon chips. */
+.eph-inbox-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  color: #06d6c7;
+  background: rgba(6, 214, 199, 0.10);
+  box-shadow: inset 0 0 0 1px rgba(6, 214, 199, 0.18);
+}
+
+.eph-inbox-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 15px 7px 12px;
+  font-size: 12.5px;
+  font-weight: 550;
+  color: #9aa3b2;
+  background: rgba(255, 255, 255, 0.022);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+}
+.eph-inbox-refresh:hover:not(:disabled) {
+  color: #eef0f7;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+.eph-inbox-refresh-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: #06d6c7;
+  box-shadow: 0 0 0 3px rgba(6, 214, 199, 0.12);
+}
+.eph-inbox-refresh-dot.is-busy { animation: ephDot 1.1s ease-in-out infinite; }
+@keyframes ephDot {
+  0%, 100% { opacity: 1;   box-shadow: 0 0 0 3px rgba(6, 214, 199, 0.12); }
+  50%      { opacity: 0.45; box-shadow: 0 0 0 5px rgba(6, 214, 199, 0.06); }
+}
+
+/* ── List pane ── */
+.eph-inbox-list {
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.008);
+}
+.eph-inbox-search { padding: 16px 16px 10px; }
+.eph-inbox-search input {
+  font-size: 12.5px;
+  padding: 9px 13px;
+  border-radius: 10px;
+  color: #eef0f7;
+  background: rgba(255, 255, 255, 0.028);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+}
+.eph-inbox-search input::placeholder { color: #6c7684; }
+.eph-inbox-search input:focus {
+  border-color: rgba(6, 214, 199, 0.4);
+  box-shadow: inset 0 1px 0 0 rgba(255,255,255,0.03), 0 0 0 3px rgba(6, 214, 199, 0.07);
+}
+
+/* Scope caption. The micro-label from the chart tiles, doing the job the
+   full-width banner used to do with a fraction of the ink. */
+.eph-inbox-scope {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 18px 10px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6c7684;
+}
+.eph-inbox-scope-hidden {
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.eph-inbox-rows { padding: 0 10px 12px; gap: 1px; }
+
+.eph-inbox-row {
+  padding: 12px 12px 13px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  align-items: center;
+}
+.eph-inbox-row:hover { background: rgba(255, 255, 255, 0.032); }
+
+/* The active message is the one place the accent appears in this pane. */
+.eph-inbox-row.is-active {
+  background: rgba(6, 214, 199, 0.055);
+  border-color: rgba(6, 214, 199, 0.14);
+  box-shadow: inset 2px 0 0 #06d6c7, inset 0 1px 0 0 rgba(255, 255, 255, 0.03);
+}
+.eph-inbox-row.is-active .eph-inbox-from { color: #eef0f7; }
+
+.eph-inbox-avatar {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  color: #06d6c7;
+  background: rgba(6, 214, 199, 0.10);
+  border: none;
+  box-shadow: inset 0 0 0 1px rgba(6, 214, 199, 0.18);
+}
+.eph-inbox-avatar.lg {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  font-size: 12px;
+}
+
+.eph-inbox-from {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #9aa3b2;
+  letter-spacing: -0.005em;
+}
+.eph-inbox-row.is-unread .eph-inbox-from { font-weight: 650; color: #eef0f7; }
+.eph-inbox-subject { font-size: 12px; color: #6c7684; }
+.eph-inbox-row.is-unread .eph-inbox-subject { color: #9aa3b2; }
+.eph-inbox-when {
+  font-size: 10.5px;
+  color: #6c7684;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* Unread marker: a small teal dot, aligned to the row's optical centre. */
+.eph-inbox-row::before { width: 4px; }
+.eph-inbox-row.is-unread::before {
+  height: 4px;
+  margin-top: 0;
+  background: #06d6c7;
+  box-shadow: 0 0 0 2.5px rgba(6, 214, 199, 0.14);
+}
+
+/* ── Reader ── */
+.eph-inbox-reader {
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(255, 255, 255, 0.016), transparent 70%);
+}
+.eph-inbox-article { padding: 38px 44px 48px; max-width: 820px; }
+.eph-inbox-article h2 {
+  font-size: 24px;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  color: #eef0f7;
+}
+
+.eph-inbox-meta {
+  gap: 13px;
+  margin: 24px 0 30px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.eph-inbox-metaname { font-size: 13px; font-weight: 600; color: #eef0f7; }
+.eph-inbox-metaaddr { font-size: 11.5px; color: #6c7684; }
+.eph-inbox-metato   { font-size: 11.5px; color: #6c7684; }
+.eph-inbox-metato span { color: #9aa3b2; opacity: 1; }
+.eph-inbox-metadate {
+  font-size: 11px;
+  color: #6c7684;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+.eph-inbox-body {
+  font-size: 13.5px;
+  line-height: 1.78;
+  color: #c8cedb;
+  letter-spacing: 0.002em;
+}
+
+.eph-inbox-replyhint {
+  margin-top: 34px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11.5px;
+  color: #6c7684;
+}
+.eph-inbox-replyhint a { color: #06d6c7; border-bottom-color: rgba(6, 214, 199, 0.28); }
+
+/* ── Empty and error ── */
+.eph-inbox-empty h3 { font-size: 14px; font-weight: 600; color: #9aa3b2; }
+.eph-inbox-empty p  { font-size: 12.5px; color: #6c7684; }
+.eph-inbox-empty-icon { width: 22px; height: 22px; opacity: 0.35; }
+
+/* ── Skeletons: ink, not colour ── */
+.sk-line, .eph-inbox-avatar.sk {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.035) 25%,
+    rgba(255, 255, 255, 0.065) 37%,
+    rgba(255, 255, 255, 0.035) 63%
+  );
+  background-size: 400% 100%;
+}
+
+@media (max-width: 1000px) {
+  .eph-inbox-head { padding: 16px 18px 14px; }
+  .eph-inbox-article { padding: 26px 20px 34px; }
+}

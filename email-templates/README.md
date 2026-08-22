@@ -18,9 +18,14 @@ So: design here, then paste the result back into `templates.ts`. Changing only
 these files changes nothing that a customer receives.
 
 There used to be a second copy at `supabase/functions/send-email/templates/`.
-It had drifted, missing `contact_enquiry` and `tester_invite` and still carrying
-a dead `ai_limit_80`, which is exactly what a third copy nobody syncs turns
-into. It is gone; this folder replaces it.
+It had drifted, missing `contact_enquiry` and `tester_invite`. It is gone; this
+folder replaces it.
+
+A correction worth recording: the first extraction of this folder matched
+template keys with `[a-z_]+`, which silently skipped `ai_limit_80` because of
+the digits, and it was wrongly described as dead. It is live and wired, sent
+from `ai-assistant` when a user crosses 80% of their AI budget. All twelve are
+here now.
 
 ## The templates
 
@@ -37,6 +42,7 @@ into. It is gone; this folder replaces it.
 | `ai_topup_receipt.html` | Your AI credit top-up | `name`, `credits` |
 | `ugc_video_topup_receipt.html` | Your UGC video top-up | `name`, `credits` |
 | `payment_failed.html` | Payment failed | `name`, `attempt` |
+| `ai_limit_80.html` | AI credits 80% used | none |
 
 `unsubscribe_url` is injected automatically by `send-email` and is available to
 every template without being passed.
