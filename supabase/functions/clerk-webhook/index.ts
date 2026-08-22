@@ -273,6 +273,16 @@ Deno.serve(async (req) => {
           method: 'POST', headers,
           body: JSON.stringify({ user_id: userId }),
         }),
+        // Default store. Added with the multi-store schema: the backfill gave
+        // every EXISTING user a store, but nothing created one at signup, so
+        // new accounts had none at all. Without it resolveStore() answers "no
+        // store connected" and the fill_default_store_id trigger has no default
+        // to point at, which would leave every row a new user creates with a
+        // null store_id and invisible once the read paths start filtering.
+        fetch(`${supabaseUrl}/rest/v1/stores`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ user_id: userId, label: 'My store', is_default: true }),
+        }),
       ]);
       for (const r of seedResults) {
         if (r.status === 'rejected') {
